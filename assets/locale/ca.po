@@ -1,0 +1,671 @@
+# MediaShell translations.
+# Copyright (C) 2026 MediaShell contributors
+# This file is distributed under the same license as MediaShell.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MediaShell 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-14 17:04-0300\n"
+"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ca\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/prefs/about/AboutDialogController.js:36
+msgid "About MediaShell"
+msgstr "Quant a MediaShell"
+
+#: src/prefs/about/AboutDialogController.js:76
+msgid ""
+"MediaShell integrates configurable MPRIS media controls into the GNOME Shell "
+"top bar, with an App selector, Track Information, Playback Controls, Volume "
+"Control, Album Art, Playback Progress, Mouse Actions, and Keyboard Shortcuts."
+msgstr ""
+"MediaShell integra les aplicacions multimèdia compatibles amb MPRIS amb la "
+"barra superior del GNOME Shell. Ofereix informació configurable de la pista, "
+"controls de reproducció, caràtula de l'àlbum, progrés de reproducció, canvi "
+"d'aplicació i accions d'entrada sense substituir la infraestructura "
+"multimèdia del GNOME."
+
+#: src/prefs/about/AboutDialogController.js:84
+msgid "Donate"
+msgstr "Fes una donació"
+
+#: src/prefs/about/AboutDialogController.js:85
+msgid "Developed by"
+msgstr "Desenvolupat per"
+
+#: src/prefs/about/AboutDialogController.js:91
+msgid "View all..."
+msgstr "Mostra-ho tot..."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:16 assets/ui/prefs.ui:170
+#: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
+msgid "Play / Pause"
+msgstr "Reprodueix / Pausa"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:17 assets/ui/prefs.ui:175
+#: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
+msgid "Next Track"
+msgstr "Pista següent"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:18 assets/ui/prefs.ui:180
+#: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
+msgid "Previous Track"
+msgstr "Pista anterior"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:19 assets/ui/prefs.ui:474
+#: assets/ui/prefs.ui:756
+msgid "Volume Up"
+msgstr "Apuja el volum"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:20 assets/ui/prefs.ui:491
+#: assets/ui/prefs.ui:757
+msgid "Volume Down"
+msgstr "Abaixa el volum"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:21 assets/ui/prefs.ui:508
+#: assets/ui/prefs.ui:758
+msgid "Repeat"
+msgstr "Repetició"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:22 assets/ui/prefs.ui:525
+#: assets/ui/prefs.ui:759
+msgid "Shuffle"
+msgstr "Aleatori"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:23 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
+msgid "Popup"
+msgstr "Finestra emergent"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:24 assets/ui/prefs.ui:559
+#: assets/ui/prefs.ui:761
+msgid "Open App"
+msgstr "Obre l’aplicació"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:25 assets/ui/prefs.ui:576
+#: assets/ui/prefs.ui:762
+msgid "Quit App"
+msgstr "Tanca l’aplicació"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:26 assets/ui/prefs.ui:593
+#: assets/ui/prefs.ui:763
+msgid "Preferences"
+msgstr "Preferències"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:27 assets/ui/prefs.ui:610
+#: assets/ui/prefs.ui:764
+msgid "Next App"
+msgstr "Aplicació següent"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:33
+msgid "Playback"
+msgstr "Reproducció"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:34
+msgid "Audio"
+msgstr "Àudio"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:35 assets/ui/prefs.ui:146
+#: assets/ui/prefs.ui:349
+msgid "Apps"
+msgstr "Aplicacions"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:36
+msgid "Interface"
+msgstr "Interfície"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:99
+msgid ""
+"Press Escape to cancel.\n"
+"Press Enter to save.\n"
+"Press Backspace to clear the shortcut."
+msgstr ""
+"Premeu Esc per cancel·lar.\n"
+"Premeu Retorn per desar.\n"
+"Premeu Retrocés per esborrar la drecera."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:106
+msgid "Press a shortcut"
+msgstr "Premeu una drecera"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:197
+#, javascript-format
+msgid "Shortcut already used by %s"
+msgstr "La drecera ja la fa servir %s"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:215 assets/ui/prefs.ui:414
+msgid "Keyboard Shortcuts"
+msgstr "Dreceres de teclat"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:235
+msgid "Not set"
+msgstr "No definida"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:263
+msgid "Reset keyboard shortcuts?"
+msgstr "Voleu restablir les dreceres de teclat?"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:264
+msgid "Every keyboard shortcut will be disabled."
+msgstr "Es desactivaran totes les dreceres de teclat."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:267
+#: src/prefs/groups/OthersPageController.js:88
+#: src/prefs/widgets/BlockedAppChooserDialog.js:42
+msgid "Cancel"
+msgstr "Cancel·la"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:268
+#: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
+msgid "Reset"
+msgstr "Restableix"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:284
+msgid "Keyboard shortcuts reset"
+msgstr "Dreceres de teclat restablertes"
+
+#: src/prefs/groups/OthersPageController.js:49
+msgid "Reset all settings"
+msgstr "Restableix tota la configuració"
+
+#: src/prefs/groups/OthersPageController.js:59
+msgid "Reset all settings?"
+msgstr "Voleu restablir tota la configuració?"
+
+#: src/prefs/groups/OthersPageController.js:60
+msgid "Every MediaShell preference will return to its default value."
+msgstr ""
+"Totes les preferències del MediaShell tornaran als valors predeterminats."
+
+#: src/prefs/groups/OthersPageController.js:71
+msgid "Settings reset"
+msgstr "Configuració restablerta"
+
+#: src/prefs/groups/OthersPageController.js:79
+msgid "Clear the album art cache?"
+msgstr "Voleu buidar la memòria cau de caràtules?"
+
+#: src/prefs/groups/OthersPageController.js:80
+msgid "Cached images will be downloaded again when needed."
+msgstr "Les imatges de la memòria cau es tornaran a baixar quan calgui."
+
+#: src/prefs/groups/OthersPageController.js:81 assets/ui/prefs.ui:720
+msgid "Clear Cache"
+msgstr "Neteja la memòria cau"
+
+#: src/prefs/groups/OthersPageController.js:121
+msgid "Album art cache cleared"
+msgstr "S’ha buidat la memòria cau de caràtules"
+
+#: src/prefs/groups/OthersPageController.js:130
+msgid "Could not clear the album art cache"
+msgstr "No s’ha pogut buidar la memòria cau de caràtules"
+
+#: src/prefs/groups/OthersPageController.js:139
+#, javascript-format
+msgid "%d cover — %s"
+msgid_plural "%d covers — %s"
+msgstr[0] "%d caràtula — %s"
+msgstr[1] "%d caràtules — %s"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:20
+msgid "Select an app to block"
+msgstr "Selecciona una aplicació per bloquejar"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:45
+#: src/prefs/widgets/BlockedAppChooserDialog.js:61
+msgid "Search apps"
+msgstr "Cerca aplicacions"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:48
+msgid "Select"
+msgstr "Selecciona"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:81
+msgid "No apps found"
+msgstr "No s'ha trobat cap aplicació"
+
+#: src/prefs/widgets/BlockedAppsGroup.js:80
+msgid "No apps are blocked"
+msgstr "No hi ha cap aplicació bloquejada"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:13
+msgid "Artist"
+msgstr "Artista"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:14
+msgid "Title"
+msgstr "Títol"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:15
+msgid "Album"
+msgstr "Àlbum"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:16
+msgid "Disc"
+msgstr "Disc"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:17
+msgid "Track"
+msgstr "Pista"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:53
+msgid "No track information fields added"
+msgstr "No s’ha afegit cap camp d’informació de la pista"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:70
+msgid "Custom text"
+msgstr "Text personalitzat"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:94
+msgid "Remove"
+msgstr "Suprimeix"
+
+#: src/shell/ui/popup/PopupAppSelectorButton.js:64
+#: src/shell/ui/popup/PopupAppSelectorList.js:167
+msgid "Unknown app"
+msgstr "Aplicació desconeguda"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:59
+#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+msgid "Unknown artist"
+msgstr "Artista desconegut"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:60
+#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+msgid "Unknown album"
+msgstr "Àlbum desconegut"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked Apps"
+msgstr "Aplicacions bloquejades"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Block and hide apps so they are ignored by the extension"
+msgstr "Bloqueja i amaga aplicacions perquè l’extensió les ignori"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Afegeix"
+
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:161
+msgid "Layout"
+msgstr "Disposició"
+
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:257
+msgid "Width"
+msgstr "Amplada"
+
+#: assets/ui/prefs.ui:12
+msgid "Total width in pixels"
+msgstr "Amplada total en píxels"
+
+#: assets/ui/prefs.ui:25
+msgid "Progress Bar"
+msgstr "Barra de progrés"
+
+#: assets/ui/prefs.ui:26
+msgid "Show the current playback position"
+msgstr "Mostra la posició de reproducció actual"
+
+#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:248
+msgid "Metadata"
+msgstr "Metadades"
+
+#: assets/ui/prefs.ui:37
+msgid "Album Art"
+msgstr "Caràtula de l’àlbum"
+
+#: assets/ui/prefs.ui:38
+msgid "Artwork displayed in the popup"
+msgstr "Caràtula de l’àlbum mostrada a la finestra emergent"
+
+#: assets/ui/prefs.ui:42
+msgid "Corner radius"
+msgstr "Radi de les cantonades"
+
+#: assets/ui/prefs.ui:43
+msgid "0 disables rounded corners"
+msgstr "0 desactiva les cantonades arrodonides"
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:252
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track Information"
+msgstr "Informació de la pista"
+
+#: assets/ui/prefs.ui:60
+msgid "Title, artist, album, and scrolling behavior"
+msgstr "Títol, artista, àlbum i desplaçament del text"
+
+#: assets/ui/prefs.ui:64
+msgid "Show Title"
+msgstr "Mostra el títol"
+
+#: assets/ui/prefs.ui:69
+msgid "Show Artist"
+msgstr "Mostra l’artista"
+
+#: assets/ui/prefs.ui:74
+msgid "Show Album"
+msgstr "Mostra l’àlbum"
+
+#: assets/ui/prefs.ui:79 assets/ui/prefs.ui:277
+msgid "Scroll track information"
+msgstr "Desplaça la informació de la pista"
+
+#: assets/ui/prefs.ui:80 assets/ui/prefs.ui:278
+msgid "Scroll overflowing track information"
+msgstr "Desplaça la informació de la pista quan desbordi"
+
+#: assets/ui/prefs.ui:84 assets/ui/prefs.ui:282
+msgid "Scrolling Performance"
+msgstr "Rendiment del desplaçament"
+
+#: assets/ui/prefs.ui:91 assets/ui/prefs.ui:289
+msgid ""
+"Continuous text scrolling may increase CPU and GPU usage, and animation may "
+"be less smooth on very low-end hardware."
+msgstr ""
+"El desplaçament continu del text pot augmentar l’ús de la CPU i la GPU, i "
+"l’animació pot ser menys fluida en maquinari de gamma molt baixa."
+
+#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:312
+msgid "Scroll speed"
+msgstr "Velocitat de desplaçament"
+
+#: assets/ui/prefs.ui:115 assets/ui/prefs.ui:313
+msgid "Higher values scroll faster"
+msgstr "Els valors més alts desplacen més de pressa"
+
+#: assets/ui/prefs.ui:128 assets/ui/prefs.ui:326
+msgid "Scroll pause"
+msgstr "Pausa del desplaçament"
+
+#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:327
+msgid "Seconds before scrolling starts again"
+msgstr "Segons d’espera abans que comenci o es reiniciï el desplaçament"
+
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:358
+msgid "Colored Icon"
+msgstr "Icona en color"
+
+#: assets/ui/prefs.ui:150 assets/ui/prefs.ui:359
+msgid "Use the app's full-color icon"
+msgstr ""
+"Utilitza la icona a tot color de l’aplicació en lloc de la icona simbòlica"
+
+#: assets/ui/prefs.ui:157
+msgid "Top Bar"
+msgstr "Barra superior"
+
+#: assets/ui/prefs.ui:165 assets/ui/top-bar-element-order.ui:49
+msgid "Playback Controls"
+msgstr "Controls de reproducció"
+
+#: assets/ui/prefs.ui:166
+msgid "Playback buttons shown in the top bar"
+msgstr "Botons de reproducció que es mostren a la barra superior"
+
+#: assets/ui/prefs.ui:187 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr "Visualitzador"
+
+#: assets/ui/prefs.ui:188
+msgid "Animated playback indicator in the top bar"
+msgstr "Indicador de reproducció animat a la barra superior"
+
+#: assets/ui/prefs.ui:194
+msgid "Visualizer Performance"
+msgstr "Rendiment del visualitzador"
+
+#: assets/ui/prefs.ui:201
+msgid ""
+"The visualizer redraws continuously while media is playing. This may "
+"increase CPU and GPU usage, and animation may be less smooth on very low-end "
+"hardware."
+msgstr ""
+"El visualitzador es redibuixa contínuament mentre es reprodueix contingut "
+"multimèdia. Això pot augmentar l'ús de CPU i GPU, i l'animació pot ser menys "
+"fluida en maquinari de gamma molt baixa."
+
+#: assets/ui/prefs.ui:217
+msgid "Style"
+msgstr "Estil"
+
+#: assets/ui/prefs.ui:221
+msgid "Wave"
+msgstr "Ona"
+
+#: assets/ui/prefs.ui:222
+msgid "Pulse"
+msgstr "Pols"
+
+#: assets/ui/prefs.ui:230
+msgid "Animation speed"
+msgstr "Velocitat de l’animació"
+
+#: assets/ui/prefs.ui:231
+msgid "Higher values animate faster"
+msgstr "Els valors més alts acceleren l’animació"
+
+#: assets/ui/prefs.ui:253
+msgid "Track information shown in the top bar"
+msgstr ""
+"Títol de la pista, artista, àlbum i text personalitzat mostrats a la barra "
+"superior"
+
+#: assets/ui/prefs.ui:258
+msgid "Maximum width in pixels; 0 uses available space"
+msgstr "Amplada màxima en píxels; 0 utilitza tot l’espai disponible"
+
+#: assets/ui/prefs.ui:271
+msgid "Lock Width"
+msgstr "Fixa l’amplada"
+
+#: assets/ui/prefs.ui:272
+msgid "Keep the configured width for short text"
+msgstr "Mantén l’amplada configurada quan el contingut sigui més curt"
+
+#: assets/ui/prefs.ui:353 assets/ui/top-bar-element-order.ui:16
+msgid "App Icon"
+msgstr "Icona de l’aplicació"
+
+#: assets/ui/prefs.ui:354
+msgid "App icon shown in the top bar"
+msgstr "Icona de l'aplicació que es mostra a la barra superior"
+
+#: assets/ui/prefs.ui:368
+msgid "Panel"
+msgstr "Tauler"
+
+#: assets/ui/prefs.ui:372
+msgid "Extension Placement"
+msgstr "Extensió"
+
+#: assets/ui/prefs.ui:373
+msgid "Choose where the extension appears in the top bar"
+msgstr "Trieu on apareix l’extensió a la barra superior"
+
+#: assets/ui/prefs.ui:376
+msgid "Position"
+msgstr "Posició"
+
+#: assets/ui/prefs.ui:377
+msgid "Top bar section where the extension appears"
+msgstr "Secció de la barra superior on apareix l’extensió"
+
+#: assets/ui/prefs.ui:381
+msgid "Left"
+msgstr "Esquerra"
+
+#: assets/ui/prefs.ui:382
+msgid "Center"
+msgstr "Centre"
+
+#: assets/ui/prefs.ui:383
+msgid "Right"
+msgstr "Dreta"
+
+#: assets/ui/prefs.ui:391
+msgid "Index"
+msgstr "Índex"
+
+#: assets/ui/prefs.ui:392
+msgid "Order among items in the same top bar section"
+msgstr "Ordre entre els elements de la mateixa secció de la barra superior"
+
+#: assets/ui/prefs.ui:410
+msgid "Interactions"
+msgstr "Interaccions"
+
+#: assets/ui/prefs.ui:415
+msgid "Assign global keyboard shortcuts to media actions"
+msgstr "Assigna dreceres globals de teclat a les accions multimèdia"
+
+#: assets/ui/prefs.ui:418
+msgid "Shortcut Assignments"
+msgstr "Assignacions de dreceres"
+
+#: assets/ui/prefs.ui:419
+msgid "Configure each keyboard action"
+msgstr "Configura cada acció del teclat"
+
+#: assets/ui/prefs.ui:431 assets/ui/prefs.ui:448 assets/ui/prefs.ui:465
+#: assets/ui/prefs.ui:482 assets/ui/prefs.ui:499 assets/ui/prefs.ui:516
+#: assets/ui/prefs.ui:533 assets/ui/prefs.ui:550 assets/ui/prefs.ui:567
+#: assets/ui/prefs.ui:584 assets/ui/prefs.ui:601 assets/ui/prefs.ui:618
+msgid "Set"
+msgstr "Defineix"
+
+#: assets/ui/prefs.ui:628
+msgid "Shortcut Overview"
+msgstr "Resum de dreceres"
+
+#: assets/ui/prefs.ui:629
+msgid "View all assigned shortcuts"
+msgstr "Visualitza totes les dreceres assignades"
+
+#: assets/ui/prefs.ui:634
+msgid "View"
+msgstr "Visualitza"
+
+#: assets/ui/prefs.ui:642
+msgid "Reset Keyboard Shortcuts"
+msgstr "Restableix les dreceres de teclat"
+
+#: assets/ui/prefs.ui:653
+msgid "Mouse Actions"
+msgstr "Accions del ratolí"
+
+#: assets/ui/prefs.ui:654
+msgid ""
+"Assign actions to clicks, scrolling, and touch gestures on the top bar button"
+msgstr ""
+"Assigna accions als clics, el desplaçament i els gestos tàctils del botó de "
+"la barra superior"
+
+#: assets/ui/prefs.ui:657
+msgid "Left Click / Tap"
+msgstr "Clic esquerre / Toc"
+
+#: assets/ui/prefs.ui:663
+msgid "Middle Click"
+msgstr "Clic del mig"
+
+#: assets/ui/prefs.ui:669
+msgid "Right Click"
+msgstr "Clic dret"
+
+#: assets/ui/prefs.ui:675
+msgid "Double Click / Tap"
+msgstr "Doble clic / Toc"
+
+#: assets/ui/prefs.ui:681
+msgid "Scroll Up / Swipe Right"
+msgstr "Desplaça amunt / Llisca a la dreta"
+
+#: assets/ui/prefs.ui:687
+msgid "Scroll Down / Swipe Left"
+msgstr "Desplaça avall / Llisca a l’esquerra"
+
+#: assets/ui/prefs.ui:695
+msgid "Others"
+msgstr "Altres"
+
+#: assets/ui/prefs.ui:699
+msgid "System"
+msgstr "Sistema"
+
+#: assets/ui/prefs.ui:700
+msgid "Control how MediaShell integrates with GNOME Shell"
+msgstr "Controla com s’integra MediaShell amb GNOME Shell"
+
+#: assets/ui/prefs.ui:703
+msgid "Hide system media controls"
+msgstr "Amaga els controls multimèdia del sistema"
+
+#: assets/ui/prefs.ui:704
+msgid "Hide GNOME Shell's default media controls from the notification list"
+msgstr ""
+"Amaga els controls multimèdia predeterminats de GNOME Shell de la llista de "
+"notificacions"
+
+#: assets/ui/prefs.ui:711
+msgid "Album Art Cache"
+msgstr "Memòria cau de caràtules"
+
+#: assets/ui/prefs.ui:712
+msgid "Store album art on disk to load it faster"
+msgstr "Desa les caràtules al disc per carregar-les més de pressa"
+
+#: assets/ui/prefs.ui:715
+msgid "Cache Album Art"
+msgstr "Desa les caràtules a la memòria cau"
+
+#: assets/ui/prefs.ui:730
+msgid "Clear"
+msgstr "Buida"
+
+#: assets/ui/prefs.ui:746
+msgid "Restore the extension's factory defaults"
+msgstr "Restaura els valors de fàbrica de l’extensió"
+
+#: assets/ui/prefs.ui:752
+msgid "None"
+msgstr "Cap"
+
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element Order"
+msgstr "Ordre dels elements"
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr ""
+"Arrossegueu per reordenar els elements dins del botó de la barra superior"
+
+#: assets/ui/top-bar-track-information-content-row.ui:6
+msgid "Track Information Content"
+msgstr "Contingut de la informació de la pista"
+
+#: assets/ui/top-bar-track-information-content-row.ui:7
+msgid "Choose and reorder the information shown in the top bar"
+msgstr "Tria i reordena la informació que es mostra a la barra superior"
+
+#: assets/ui/top-bar-track-information-content-row.ui:11
+msgid "Add Item"
+msgstr "Afegeix un element"
+
+#: assets/ui/top-bar-track-information-content-row.ui:20
+msgid "Add Field"
+msgstr "Afegeix un camp"
+
+#: assets/ui/top-bar-track-information-content-row.ui:26
+msgid "Add Text"
+msgstr "Afegeix text"

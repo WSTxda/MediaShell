@@ -1,0 +1,380 @@
+/*
+ * MediaShell shell stylesheet.
+ *
+ * Layout map for customization
+ * ----------------------------
+ * The popup intentionally follows the GNOME Quick Settings hierarchy:
+ *
+ * 1. Parent padding: `.mediashell-popup-box` owns the single outer inset for every
+ *    full-width component. The title/artist/album labels, progress slider,
+ *    slider time row, and app selector card all size themselves from the same
+ *    JS content width and must not add horizontal padding of their own.
+ *
+ * 2. Slider group: `.mediashell-popup-playback-progress` contains only the progress slider and
+ *    `.mediashell-popup-playback-progress-time`. The time labels are expanded/aligned by the
+ *    actor code, so this stylesheet only controls vertical spacing.
+ *
+ * 3. Controls inset: `.mediashell-popup-primary-controls` keeps the stock fixed
+ *    transport row (previous / primary / next). Album art is a separate
+ *    full-width component, so it follows popup-width changes without stretching
+ *    the controls.
+ *
+ * Prefer even values for spacing, sizes, and radii. If the popup width setting
+ * changes, JS recalculates track-information/album-art widths; controls stay fixed and
+ * centered. Avoid compensating with extra left/right margins here, because that
+ * breaks Quick Settings alignment.
+ */
+
+/* Icons ----------------------------------------------------------------
+ * Toggle between colored app icons and symbolic icons. The class is
+ * attached by JS because St only reads -st-icon-style when building icons.
+ */
+.colored-icon {
+    -st-icon-style: requested;
+}
+
+.symbolic-icon {
+    -st-icon-style: symbolic;
+}
+
+/* Utilities ------------------------------------------------------------
+ * Small reset classes used where GNOME Shell's stock actors would otherwise add
+ * their own margins/padding. Keep these generic and side-effect free.
+ */
+.no-margin {
+    margin: 0;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+/* top bar button -----------------------------------------------------
+ * top bar spacing mirrors GNOME Shell panel buttons and is unrelated to popup padding.
+ */
+.panel-button {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.mediashell-top-bar-box > * {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.mediashell-top-bar-box > *:last-child:not(.mediashell-top-bar-playback-controls) {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+/* St.ScrollView reapplies its fade from theme properties whenever its style
+ * changes. Keeping the offset in CSS makes the effect survive popup, focus,
+ * hover, playback, and remapping state changes. */
+.mediashell-scrolling-label {
+    -st-hfade-offset: 12px;
+}
+
+.mediashell-top-bar-visualizer {
+    spacing: 2px;
+}
+
+.mediashell-top-bar-visualizer-bar {
+    border-radius: 1px;
+}
+
+.mediashell-top-bar-playback-controls {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.mediashell-top-bar-playback-controls > * {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+/* Popup structure ------------------------------------------------------
+ * `.mediashell-popup-container` is the Shell menu box; it stays flush so only the
+ * component root below controls spacing.
+ *
+ * `.mediashell-popup-box` is the single source of truth for popup outer padding:
+ * - horizontal padding: 16px, matched by POPUP_PARENT_PADDING in PopupContent.js;
+ * - top padding: 16px, matching Quick Settings density;
+ * - bottom padding: 18px, a small optical balance for round controls.
+ */
+.mediashell-popup-container {
+    padding: 0;
+}
+
+.mediashell-popup-box {
+    border-width: 0;
+    padding: 16px 16px 18px;
+    spacing: 12px;
+}
+
+.mediashell-popup-box > * {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* App selector trigger ---------------------------------------------
+ * The pill keeps its stock Quick Settings shape. It is centered and does not
+ * participate in the full-width parent-padding grid.
+ */
+.mediashell-popup-apps {
+    spacing: 6px;
+}
+
+.mediashell-popup-app-selector {
+    border-radius: 999px;
+    padding: 4px 8px;
+    spacing: 6px;
+    min-height: 24px;
+    max-height: 28px;
+}
+
+.mediashell-popup-app-selector-icon {
+    icon-size: 20px;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0;
+}
+
+.mediashell-popup-app-selector-icon.symbolic-icon {
+    icon-size: 18px;
+}
+
+.mediashell-popup-app-expand-icon {
+    icon-size: 14px;
+    opacity: 140;
+    transition-duration: 140ms;
+}
+
+.mediashell-popup-app-label {
+    font-weight: bold;
+    font-size: 100%;
+}
+
+/* App selector popup ------------------------------------------------
+ * Full-width component: the card starts and ends at the parent padding, exactly
+ * like the slider and labels. The card owns only internal organization padding.
+ *
+ * The neutral translucent background is intentionally gray instead of fixed
+ * black/white: it gets slightly lighter on dark themes and slightly darker on
+ * light themes while preserving custom user colors behind it.
+ */
+.mediashell-popup-app-selector-revealer {
+    padding: 0;
+    min-width: 0;
+}
+
+.mediashell-popup-app-selector-card {
+    background-color: rgba(128, 128, 128, 0.12);
+    border-radius: 20px;
+    border-width: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 12px;
+    min-width: 0;
+}
+
+.mediashell-popup-app-selector-list {
+    spacing: 4px;
+}
+
+.mediashell-popup-app-selector-row-item {
+    spacing: 6px;
+}
+
+.mediashell-popup-app-selector-row {
+    border-radius: 10px;
+    padding: 4px 8px;
+    min-height: 32px;
+}
+
+.mediashell-popup-app-selector-row-box {
+    spacing: 8px;
+}
+
+.mediashell-popup-app-selector-app-icon {
+    icon-size: 20px;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0;
+}
+
+.mediashell-popup-app-selector-app-icon.symbolic-icon {
+    icon-size: 18px;
+}
+
+.mediashell-popup-app-selector-label {
+    font-size: 100%;
+}
+
+.mediashell-popup-app-selector-check-icon {
+    icon-size: 16px;
+}
+
+.mediashell-popup-app-selector-pin-button {
+    border-radius: 999px;
+    min-width: 30px;
+    min-height: 30px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+}
+
+.mediashell-popup-app-selector-pin-button:checked {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+}
+
+.mediashell-popup-app-selector-pin-button:checked:hover {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+}
+
+.mediashell-popup-app-selector-pin-button:checked:active {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+}
+
+.mediashell-popup-app-selector-pin-icon {
+    icon-size: 14px;
+}
+
+/* Album art ------------------------------------------------------------
+ * Full-width component: the actor code sizes album art to the parent content
+ * width. It responds to popup-width independently from the fixed controls row.
+ */
+.mediashell-popup-album-art-frame {
+    background-color: rgba(128, 128, 128, 0.38);
+}
+
+.mediashell-popup-album-art {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+/* The native .button class supplies the theme-aware fallback surface. */
+.mediashell-popup-album-art-fallback {
+    padding: 0;
+}
+
+/* Title, artist, and album --------------------------------------------
+ * Full-width component: labels are sized by JS to the parent content width and
+ * should not define horizontal padding here. Use spacing/font rules only.
+ */
+.mediashell-popup-track-information {
+    spacing: 4px;
+}
+
+.mediashell-popup-track-information-title {
+    font-weight: bold;
+    font-size: 140%;
+}
+
+.mediashell-popup-track-information-artist {
+    font-size: 100%;
+}
+
+.mediashell-popup-track-information-album {
+    font-size: 90%;
+}
+
+/* Progress slider ------------------------------------------------------
+ * Full-width component: slider and time row share the parent content width.
+ * The elapsed time aligns to the left edge; duration aligns to the right edge.
+ */
+.mediashell-popup-playback-progress {
+    spacing: 8px;
+}
+
+.mediashell-popup-playback-progress-time {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.mediashell-popup-playback-progress-time-label {
+    font-feature-settings: "tnum";
+}
+
+/* Playback controls ---------------------------------------------------
+ * Fixed stock controls row. Popup-width changes should not stretch the gaps
+ * between previous/play/next; the row stays centered like secondary controls.
+ */
+.mediashell-popup-playback-controls {
+    spacing: 12px;
+}
+
+.mediashell-popup-primary-controls {
+    spacing: 12px;
+}
+
+.mediashell-popup-secondary-controls {
+    spacing: 12px;
+}
+
+.mediashell-popup-control-button {
+    border-radius: 100px;
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0;
+}
+
+.mediashell-popup-control-button-circular {
+    width: 48px;
+    height: 48px;
+}
+
+.mediashell-popup-control-button-primary {
+    min-width: 96px;
+    width: 96px;
+    height: 48px;
+    transition-duration: 100ms;
+    box-shadow: none;
+}
+
+/* Primary transport button uses the Shell accent color for stock styling. */
+.mediashell-popup-control-button-primary,
+.mediashell-popup-control-button-primary:checked {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+}
+
+.mediashell-popup-control-button-primary:hover {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+}
+
+.mediashell-popup-control-button-primary:active {
+    background-color: -st-accent-color;
+    color: -st-accent-fg-color;
+    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+}
+
+.mediashell-popup-control-button-state {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+}
+
+.mediashell-popup-control-icon {
+    icon-size: 14px;
+}
+
+.mediashell-popup-control-button-primary .mediashell-popup-control-icon {
+    icon-size: 16px;
+}
+
+.mediashell-popup-control-button-state .mediashell-popup-control-icon {
+    icon-size: 16px;
+}

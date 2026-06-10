@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<interface domain="mediashell@wstxda.github.com">
+  <requires lib="gtk" version="4.0"/>
+  <template class="TopBarElementOrderGroup" parent="AdwPreferencesGroup">
+    <property name="title" translatable="yes">Element Order</property>
+    <property name="description" translatable="yes">Drag to reorder elements inside the top bar button</property>
+    <child>
+      <object class="GtkListBox" id="lb-top-bar-element-order">
+        <style>
+          <class name="boxed-list"/>
+        </style>
+        <property name="selection-mode">3</property>
+        <child>
+          <object class="AdwActionRow" id="row-app-icon">
+            <property name="title" translatable="yes">App Icon</property>
+            <property name="activatable">true</property>
+            <child type="suffix">
+              <object class="GtkImage">
+                <property name="icon-name">list-drag-handle-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="row-track-information">
+            <property name="title" translatable="yes">Track Information</property>
+            <property name="activatable">true</property>
+            <child type="suffix">
+              <object class="GtkImage">
+                <property name="icon-name">list-drag-handle-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="row-visualizer">
+            <property name="title" translatable="yes">Visualizer</property>
+            <property name="activatable">true</property>
+            <child type="suffix">
+              <object class="GtkImage">
+                <property name="icon-name">list-drag-handle-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="row-playback-controls">
+            <property name="title" translatable="yes">Playback Controls</property>
+            <property name="activatable">true</property>
+            <child type="suffix">
+              <object class="GtkImage">
+                <property name="icon-name">list-drag-handle-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

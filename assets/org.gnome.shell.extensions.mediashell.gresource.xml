@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/gnome/shell/extensions/mediashell/">
+    <file>ui/prefs.ui</file>
+    <file>ui/blocked-apps.ui</file>
+    <file>ui/top-bar-element-order.ui</file>
+    <file>ui/top-bar-track-information-content-row.ui</file>
+
+    <file>dbus/mprisNode.xml</file>
+    <file>dbus/watchNode.xml</file>
+  </gresource>
+</gresources>

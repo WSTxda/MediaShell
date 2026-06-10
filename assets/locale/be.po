@@ -1,0 +1,667 @@
+# MediaShell translations.
+# Copyright (C) 2026 MediaShell contributors
+# This file is distributed under the same license as MediaShell.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MediaShell 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-14 17:04-0300\n"
+"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: be\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: src/prefs/about/AboutDialogController.js:36
+msgid "About MediaShell"
+msgstr "Пра MediaShell"
+
+#: src/prefs/about/AboutDialogController.js:76
+msgid ""
+"MediaShell integrates configurable MPRIS media controls into the GNOME Shell "
+"top bar, with an App selector, Track Information, Playback Controls, Volume "
+"Control, Album Art, Playback Progress, Mouse Actions, and Keyboard Shortcuts."
+msgstr ""
+"MediaShell інтэгруе медыяпраграмы з падтрымкай MPRIS у верхнюю панэль GNOME "
+"Shell. Ён забяспечвае наладжвальныя звесткі пра трэк, элементы кіравання "
+"прайграваннем, вокладку альбома, ход прайгравання, пераключэнне праграм і "
+"дзеянні ўводу без замены медыястэка GNOME."
+
+#: src/prefs/about/AboutDialogController.js:84
+msgid "Donate"
+msgstr "Ахвяраваць"
+
+#: src/prefs/about/AboutDialogController.js:85
+msgid "Developed by"
+msgstr "Распрацавана"
+
+#: src/prefs/about/AboutDialogController.js:91
+msgid "View all..."
+msgstr "Паказаць усіх..."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:16 assets/ui/prefs.ui:170
+#: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
+msgid "Play / Pause"
+msgstr "Прайграць / Паўза"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:17 assets/ui/prefs.ui:175
+#: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
+msgid "Next Track"
+msgstr "Наступны трэк"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:18 assets/ui/prefs.ui:180
+#: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
+msgid "Previous Track"
+msgstr "Папярэдні трэк"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:19 assets/ui/prefs.ui:474
+#: assets/ui/prefs.ui:756
+msgid "Volume Up"
+msgstr "Павялічыць гучнасць"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:20 assets/ui/prefs.ui:491
+#: assets/ui/prefs.ui:757
+msgid "Volume Down"
+msgstr "Паменшыць гучнасць"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:21 assets/ui/prefs.ui:508
+#: assets/ui/prefs.ui:758
+msgid "Repeat"
+msgstr "Паўтор"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:22 assets/ui/prefs.ui:525
+#: assets/ui/prefs.ui:759
+msgid "Shuffle"
+msgstr "Выпадкова"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:23 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
+msgid "Popup"
+msgstr "Усплывальнае меню"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:24 assets/ui/prefs.ui:559
+#: assets/ui/prefs.ui:761
+msgid "Open App"
+msgstr "Адкрыць праграму"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:25 assets/ui/prefs.ui:576
+#: assets/ui/prefs.ui:762
+msgid "Quit App"
+msgstr "Завяршыць праграму"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:26 assets/ui/prefs.ui:593
+#: assets/ui/prefs.ui:763
+msgid "Preferences"
+msgstr "Налады"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:27 assets/ui/prefs.ui:610
+#: assets/ui/prefs.ui:764
+msgid "Next App"
+msgstr "Наступная праграма"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:33
+msgid "Playback"
+msgstr "Прайграванне"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:34
+msgid "Audio"
+msgstr "Аўдыя"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:35 assets/ui/prefs.ui:146
+#: assets/ui/prefs.ui:349
+msgid "Apps"
+msgstr "Праграмы"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:36
+msgid "Interface"
+msgstr "Інтэрфейс"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:99
+msgid ""
+"Press Escape to cancel.\n"
+"Press Enter to save.\n"
+"Press Backspace to clear the shortcut."
+msgstr ""
+"Націсніце Escape, каб скасаваць.\n"
+"Націсніце Enter, каб захаваць.\n"
+"Націсніце Backspace, каб ачысціць спалучэнне."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:106
+msgid "Press a shortcut"
+msgstr "Націсніце клавіятурнае спалучэнне"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:197
+#, javascript-format
+msgid "Shortcut already used by %s"
+msgstr "Спалучэнне ўжо выкарыстоўваецца для %s"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:215 assets/ui/prefs.ui:414
+msgid "Keyboard Shortcuts"
+msgstr "Спалучэнні клавіш"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:235
+msgid "Not set"
+msgstr "Не зададзена"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:263
+msgid "Reset keyboard shortcuts?"
+msgstr "Скінуць спалучэнні клавіш?"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:264
+msgid "Every keyboard shortcut will be disabled."
+msgstr "Усе спалучэнні клавіш будуць адключаны."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:267
+#: src/prefs/groups/OthersPageController.js:88
+#: src/prefs/widgets/BlockedAppChooserDialog.js:42
+msgid "Cancel"
+msgstr "Скасаваць"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:268
+#: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
+msgid "Reset"
+msgstr "Скінуць"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:284
+msgid "Keyboard shortcuts reset"
+msgstr "Спалучэнні клавіш скінуты"
+
+#: src/prefs/groups/OthersPageController.js:49
+msgid "Reset all settings"
+msgstr "Скінуць усе налады"
+
+#: src/prefs/groups/OthersPageController.js:59
+msgid "Reset all settings?"
+msgstr "Скінуць усе налады?"
+
+#: src/prefs/groups/OthersPageController.js:60
+msgid "Every MediaShell preference will return to its default value."
+msgstr "Усе налады MediaShell вернуцца да прадвызначаных значэнняў."
+
+#: src/prefs/groups/OthersPageController.js:71
+msgid "Settings reset"
+msgstr "Налады скінуты"
+
+#: src/prefs/groups/OthersPageController.js:79
+msgid "Clear the album art cache?"
+msgstr "Ачысціць кэш вокладак альбомаў?"
+
+#: src/prefs/groups/OthersPageController.js:80
+msgid "Cached images will be downloaded again when needed."
+msgstr "Кэшаваныя выявы будуць спампаваны паўторна пры неабходнасці."
+
+#: src/prefs/groups/OthersPageController.js:81 assets/ui/prefs.ui:720
+msgid "Clear Cache"
+msgstr "Ачысціць кэш"
+
+#: src/prefs/groups/OthersPageController.js:121
+msgid "Album art cache cleared"
+msgstr "Кэш вокладак альбомаў ачышчаны"
+
+#: src/prefs/groups/OthersPageController.js:130
+msgid "Could not clear the album art cache"
+msgstr "Не ўдалося ачысціць кэш вокладак альбомаў"
+
+#: src/prefs/groups/OthersPageController.js:139
+#, javascript-format
+msgid "%d cover — %s"
+msgid_plural "%d covers — %s"
+msgstr[0] "%d вокладка — %s"
+msgstr[1] "%d вокладкі — %s"
+msgstr[2] "%d вокладак — %s"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:20
+msgid "Select an app to block"
+msgstr "Выбраць праграму для блакіроўкі"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:45
+#: src/prefs/widgets/BlockedAppChooserDialog.js:61
+msgid "Search apps"
+msgstr "Пошук праграм"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:48
+msgid "Select"
+msgstr "Выбраць"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:81
+msgid "No apps found"
+msgstr "Праграмы не знойдзены"
+
+#: src/prefs/widgets/BlockedAppsGroup.js:80
+msgid "No apps are blocked"
+msgstr "Няма заблакіраваных праграм"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:13
+msgid "Artist"
+msgstr "Выканаўца"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:14
+msgid "Title"
+msgstr "Назва"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:15
+msgid "Album"
+msgstr "Альбом"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:16
+msgid "Disc"
+msgstr "Дыск"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:17
+msgid "Track"
+msgstr "Трэк"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:53
+msgid "No track information fields added"
+msgstr "Палі звестак аб трэку не дададзены"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:70
+msgid "Custom text"
+msgstr "Уласны тэкст"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:94
+msgid "Remove"
+msgstr "Выдаліць"
+
+#: src/shell/ui/popup/PopupAppSelectorButton.js:64
+#: src/shell/ui/popup/PopupAppSelectorList.js:167
+msgid "Unknown app"
+msgstr "Невядомая праграма"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:59
+#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+msgid "Unknown artist"
+msgstr "Невядомы выканаўца"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:60
+#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+msgid "Unknown album"
+msgstr "Невядомы альбом"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked Apps"
+msgstr "Заблакіраваныя праграмы"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Block and hide apps so they are ignored by the extension"
+msgstr "Блакіруйце і хавайце праграмы, каб пашырэнне іх ігнаравала"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Дадаць"
+
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:161
+msgid "Layout"
+msgstr "Размяшчэнне"
+
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:257
+msgid "Width"
+msgstr "Шырыня"
+
+#: assets/ui/prefs.ui:12
+msgid "Total width in pixels"
+msgstr "Агульная шырыня ў пікселях"
+
+#: assets/ui/prefs.ui:25
+msgid "Progress Bar"
+msgstr "Паласа прагрэсу"
+
+#: assets/ui/prefs.ui:26
+msgid "Show the current playback position"
+msgstr "Паказваць бягучую пазіцыю прайгравання"
+
+#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:248
+msgid "Metadata"
+msgstr "Метаданыя"
+
+#: assets/ui/prefs.ui:37
+msgid "Album Art"
+msgstr "Вокладка альбома"
+
+#: assets/ui/prefs.ui:38
+msgid "Artwork displayed in the popup"
+msgstr "Вокладка альбома, паказаная ва ўсплывальным меню"
+
+#: assets/ui/prefs.ui:42
+msgid "Corner radius"
+msgstr "Радыус вуглоў"
+
+#: assets/ui/prefs.ui:43
+msgid "0 disables rounded corners"
+msgstr "0 адключае закругленне вуглоў"
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:252
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track Information"
+msgstr "Звесткі аб трэку"
+
+#: assets/ui/prefs.ui:60
+msgid "Title, artist, album, and scrolling behavior"
+msgstr "Назва, выканаўца, альбом і пракрутка тэксту"
+
+#: assets/ui/prefs.ui:64
+msgid "Show Title"
+msgstr "Паказваць назву"
+
+#: assets/ui/prefs.ui:69
+msgid "Show Artist"
+msgstr "Паказваць выканаўцу"
+
+#: assets/ui/prefs.ui:74
+msgid "Show Album"
+msgstr "Паказваць альбом"
+
+#: assets/ui/prefs.ui:79 assets/ui/prefs.ui:277
+msgid "Scroll track information"
+msgstr "Пракручваць звесткі аб трэку"
+
+#: assets/ui/prefs.ui:80 assets/ui/prefs.ui:278
+msgid "Scroll overflowing track information"
+msgstr "Пракручваць звесткі аб трэку, калі яны не змяшчаюцца"
+
+#: assets/ui/prefs.ui:84 assets/ui/prefs.ui:282
+msgid "Scrolling Performance"
+msgstr "Прадукцыйнасць пракруткі"
+
+#: assets/ui/prefs.ui:91 assets/ui/prefs.ui:289
+msgid ""
+"Continuous text scrolling may increase CPU and GPU usage, and animation may "
+"be less smooth on very low-end hardware."
+msgstr ""
+"Бесперапынная пракрутка тэксту можа павялічыць выкарыстанне CPU і GPU, а на "
+"вельмі слабым абсталяванні анімацыя можа быць менш плаўнай."
+
+#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:312
+msgid "Scroll speed"
+msgstr "Хуткасць пракруткі"
+
+#: assets/ui/prefs.ui:115 assets/ui/prefs.ui:313
+msgid "Higher values scroll faster"
+msgstr "Пры большых значэннях пракрутка адбываецца хутчэй"
+
+#: assets/ui/prefs.ui:128 assets/ui/prefs.ui:326
+msgid "Scroll pause"
+msgstr "Паўза пракруткі"
+
+#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:327
+msgid "Seconds before scrolling starts again"
+msgstr "Секунды чакання да пачатку або перазапуску пракруткі"
+
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:358
+msgid "Colored Icon"
+msgstr "Каляровы значок"
+
+#: assets/ui/prefs.ui:150 assets/ui/prefs.ui:359
+msgid "Use the app's full-color icon"
+msgstr "Выкарыстоўваць поўнакаляровы значок праграмы замест сімвалічнага"
+
+#: assets/ui/prefs.ui:157
+msgid "Top Bar"
+msgstr "Верхняя панэль"
+
+#: assets/ui/prefs.ui:165 assets/ui/top-bar-element-order.ui:49
+msgid "Playback Controls"
+msgstr "Элементы кіравання прайграваннем"
+
+#: assets/ui/prefs.ui:166
+msgid "Playback buttons shown in the top bar"
+msgstr "Кнопкі прайгравання, якія паказваюцца на верхняй панэлі"
+
+#: assets/ui/prefs.ui:187 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr "Візуалізатар"
+
+#: assets/ui/prefs.ui:188
+msgid "Animated playback indicator in the top bar"
+msgstr "Анімаваны індыкатар прайгравання на верхняй панэлі"
+
+#: assets/ui/prefs.ui:194
+msgid "Visualizer Performance"
+msgstr "Прадукцыйнасць візуалізатара"
+
+#: assets/ui/prefs.ui:201
+msgid ""
+"The visualizer redraws continuously while media is playing. This may "
+"increase CPU and GPU usage, and animation may be less smooth on very low-end "
+"hardware."
+msgstr ""
+"Візуалізатар бесперапынна перамалёўваецца падчас прайгравання медыя. Гэта "
+"можа павялічыць выкарыстанне CPU і GPU, а анімацыя можа быць менш плаўнай на "
+"вельмі слабым абсталяванні."
+
+#: assets/ui/prefs.ui:217
+msgid "Style"
+msgstr "Стыль"
+
+#: assets/ui/prefs.ui:221
+msgid "Wave"
+msgstr "Хваля"
+
+#: assets/ui/prefs.ui:222
+msgid "Pulse"
+msgstr "Пульсацыя"
+
+#: assets/ui/prefs.ui:230
+msgid "Animation speed"
+msgstr "Хуткасць анімацыі"
+
+#: assets/ui/prefs.ui:231
+msgid "Higher values animate faster"
+msgstr "Больш высокія значэнні паскараюць анімацыю"
+
+#: assets/ui/prefs.ui:253
+msgid "Track information shown in the top bar"
+msgstr "Назва трэка, выканаўца, альбом і ўласны тэкст на верхняй панэлі"
+
+#: assets/ui/prefs.ui:258
+msgid "Maximum width in pixels; 0 uses available space"
+msgstr "Максімальная шырыня ў пікселях; 0 выкарыстоўвае ўсю даступную прастору"
+
+#: assets/ui/prefs.ui:271
+msgid "Lock Width"
+msgstr "Зафіксаваць шырыню"
+
+#: assets/ui/prefs.ui:272
+msgid "Keep the configured width for short text"
+msgstr "Захоўваць зададзеную шырыню, калі змесціва карацейшае"
+
+#: assets/ui/prefs.ui:353 assets/ui/top-bar-element-order.ui:16
+msgid "App Icon"
+msgstr "Значок праграмы"
+
+#: assets/ui/prefs.ui:354
+msgid "App icon shown in the top bar"
+msgstr "Значок праграмы, які паказваецца на верхняй панэлі"
+
+#: assets/ui/prefs.ui:368
+msgid "Panel"
+msgstr "Панэль"
+
+#: assets/ui/prefs.ui:372
+msgid "Extension Placement"
+msgstr "Пашырэнне"
+
+#: assets/ui/prefs.ui:373
+msgid "Choose where the extension appears in the top bar"
+msgstr "Выберыце, дзе пашырэнне будзе паказвацца на верхняй панэлі"
+
+#: assets/ui/prefs.ui:376
+msgid "Position"
+msgstr "Пазіцыя"
+
+#: assets/ui/prefs.ui:377
+msgid "Top bar section where the extension appears"
+msgstr "Вобласць верхняй панэлі, у якой паказваецца пашырэнне"
+
+#: assets/ui/prefs.ui:381
+msgid "Left"
+msgstr "Злева"
+
+#: assets/ui/prefs.ui:382
+msgid "Center"
+msgstr "Па цэнтры"
+
+#: assets/ui/prefs.ui:383
+msgid "Right"
+msgstr "Справа"
+
+#: assets/ui/prefs.ui:391
+msgid "Index"
+msgstr "Індэкс"
+
+#: assets/ui/prefs.ui:392
+msgid "Order among items in the same top bar section"
+msgstr "Парадак сярод элементаў у той жа вобласці верхняй панэлі"
+
+#: assets/ui/prefs.ui:410
+msgid "Interactions"
+msgstr "Узаемадзеянні"
+
+#: assets/ui/prefs.ui:415
+msgid "Assign global keyboard shortcuts to media actions"
+msgstr "Прызначце глабальныя спалучэнні клавіш для медыя-дзеянняў"
+
+#: assets/ui/prefs.ui:418
+msgid "Shortcut Assignments"
+msgstr "Прызначэнні спалучэнняў клавіш"
+
+#: assets/ui/prefs.ui:419
+msgid "Configure each keyboard action"
+msgstr "Наладзіць кожнае дзеянне клавіятуры"
+
+#: assets/ui/prefs.ui:431 assets/ui/prefs.ui:448 assets/ui/prefs.ui:465
+#: assets/ui/prefs.ui:482 assets/ui/prefs.ui:499 assets/ui/prefs.ui:516
+#: assets/ui/prefs.ui:533 assets/ui/prefs.ui:550 assets/ui/prefs.ui:567
+#: assets/ui/prefs.ui:584 assets/ui/prefs.ui:601 assets/ui/prefs.ui:618
+msgid "Set"
+msgstr "Задаць"
+
+#: assets/ui/prefs.ui:628
+msgid "Shortcut Overview"
+msgstr "Агляд спалучэнняў"
+
+#: assets/ui/prefs.ui:629
+msgid "View all assigned shortcuts"
+msgstr "Паказаць усе прызначаныя спалучэнні"
+
+#: assets/ui/prefs.ui:634
+msgid "View"
+msgstr "Паказаць"
+
+#: assets/ui/prefs.ui:642
+msgid "Reset Keyboard Shortcuts"
+msgstr "Скінуць спалучэнні клавіш"
+
+#: assets/ui/prefs.ui:653
+msgid "Mouse Actions"
+msgstr "Дзеянні мышы"
+
+#: assets/ui/prefs.ui:654
+msgid ""
+"Assign actions to clicks, scrolling, and touch gestures on the top bar button"
+msgstr ""
+"Прызначце дзеянні пстрычкам, пракрутцы і жэстам дотыку на кнопцы верхняй "
+"панэлі"
+
+#: assets/ui/prefs.ui:657
+msgid "Left Click / Tap"
+msgstr "Левая пстрычка / Дотык"
+
+#: assets/ui/prefs.ui:663
+msgid "Middle Click"
+msgstr "Сярэдні клік"
+
+#: assets/ui/prefs.ui:669
+msgid "Right Click"
+msgstr "Правы клік"
+
+#: assets/ui/prefs.ui:675
+msgid "Double Click / Tap"
+msgstr "Падвойная пстрычка / Дотык"
+
+#: assets/ui/prefs.ui:681
+msgid "Scroll Up / Swipe Right"
+msgstr "Пракруціць уверх / Правесці ўправа"
+
+#: assets/ui/prefs.ui:687
+msgid "Scroll Down / Swipe Left"
+msgstr "Пракруціць уніз / Правесці ўлева"
+
+#: assets/ui/prefs.ui:695
+msgid "Others"
+msgstr "Іншае"
+
+#: assets/ui/prefs.ui:699
+msgid "System"
+msgstr "Сістэма"
+
+#: assets/ui/prefs.ui:700
+msgid "Control how MediaShell integrates with GNOME Shell"
+msgstr "Наладзьце інтэграцыю MediaShell з GNOME Shell"
+
+#: assets/ui/prefs.ui:703
+msgid "Hide system media controls"
+msgstr "Схаваць сістэмныя элементы кіравання медыя"
+
+#: assets/ui/prefs.ui:704
+msgid "Hide GNOME Shell's default media controls from the notification list"
+msgstr ""
+"Схаваць стандартныя элементы кіравання медыя GNOME Shell са спіса "
+"апавяшчэнняў"
+
+#: assets/ui/prefs.ui:711
+msgid "Album Art Cache"
+msgstr "Кэш вокладак альбомаў"
+
+#: assets/ui/prefs.ui:712
+msgid "Store album art on disk to load it faster"
+msgstr "Захоўваць вокладкі альбомаў на дыску для хутчэйшай загрузкі"
+
+#: assets/ui/prefs.ui:715
+msgid "Cache Album Art"
+msgstr "Кэшаваць вокладкі альбомаў"
+
+#: assets/ui/prefs.ui:730
+msgid "Clear"
+msgstr "Ачысціць"
+
+#: assets/ui/prefs.ui:746
+msgid "Restore the extension's factory defaults"
+msgstr "Аднавіць заводскія налады пашырэння"
+
+#: assets/ui/prefs.ui:752
+msgid "None"
+msgstr "Няма"
+
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element Order"
+msgstr "Парадак элементаў"
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr "Перацягвайце элементы, каб змяніць іх парадак у кнопцы верхняй панэлі"
+
+#: assets/ui/top-bar-track-information-content-row.ui:6
+msgid "Track Information Content"
+msgstr "Змесціва звестак аб трэку"
+
+#: assets/ui/top-bar-track-information-content-row.ui:7
+msgid "Choose and reorder the information shown in the top bar"
+msgstr "Выберыце і ўпарадкуйце звесткі, паказаныя на верхняй панэлі"
+
+#: assets/ui/top-bar-track-information-content-row.ui:11
+msgid "Add Item"
+msgstr "Дадаць элемент"
+
+#: assets/ui/top-bar-track-information-content-row.ui:20
+msgid "Add Field"
+msgstr "Дадаць поле"
+
+#: assets/ui/top-bar-track-information-content-row.ui:26
+msgid "Add Text"
+msgstr "Дадаць тэкст"

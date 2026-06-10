@@ -1,0 +1,45 @@
+name: Code Checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Run pnpm check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Install Native Validation Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gettext libglib2.0-bin
+
+      - name: Set Up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Project Checks
+        run: pnpm check
