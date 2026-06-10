@@ -1,0 +1,667 @@
+# MediaShell translations.
+# Copyright (C) 2026 MediaShell contributors
+# This file is distributed under the same license as MediaShell.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MediaShell 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-14 17:04-0300\n"
+"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: src/prefs/about/AboutDialogController.js:36
+msgid "About MediaShell"
+msgstr "О MediaShell"
+
+#: src/prefs/about/AboutDialogController.js:76
+msgid "MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top bar. It provides configurable track information, playback controls, album art, playback progress, app switching, and input actions without replacing GNOME's media stack."
+msgstr ""
+"MediaShell интегрирует медиаприложения с поддержкой MPRIS в верхнюю панель "
+"GNOME Shell. Он предоставляет настраиваемую информацию о треке, элементы "
+"управления воспроизведением, обложку альбома, ход воспроизведения, "
+"переключение приложений и действия ввода, не заменяя медиастек GNOME."
+
+#: src/prefs/about/AboutDialogController.js:84
+msgid "Donate"
+msgstr "Поддержать"
+
+#: src/prefs/about/AboutDialogController.js:85
+msgid "Developed by"
+msgstr "Разработано"
+
+#: src/prefs/about/AboutDialogController.js:91
+msgid "View all..."
+msgstr "Показать всех..."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:16 assets/ui/prefs.ui:170
+#: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
+msgid "Play / Pause"
+msgstr "Воспроизвести / Приостановить"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:17 assets/ui/prefs.ui:175
+#: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
+msgid "Next Track"
+msgstr "Следующая композиция"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:18 assets/ui/prefs.ui:180
+#: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
+msgid "Previous Track"
+msgstr "Предыдущая композиция"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:19 assets/ui/prefs.ui:474
+#: assets/ui/prefs.ui:756
+msgid "Volume Up"
+msgstr "Увеличить громкость"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:20 assets/ui/prefs.ui:491
+#: assets/ui/prefs.ui:757
+msgid "Volume Down"
+msgstr "Уменьшить громкость"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:21 assets/ui/prefs.ui:508
+#: assets/ui/prefs.ui:758
+msgid "Repeat"
+msgstr "Повтор"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:22 assets/ui/prefs.ui:525
+#: assets/ui/prefs.ui:759
+msgid "Shuffle"
+msgstr "Случайно"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:23 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
+msgid "Popup"
+msgstr "Всплывающее меню"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:24 assets/ui/prefs.ui:559
+#: assets/ui/prefs.ui:761
+msgid "Open App"
+msgstr "Открыть приложение"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:25 assets/ui/prefs.ui:576
+#: assets/ui/prefs.ui:762
+msgid "Quit App"
+msgstr "Завершить приложение"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:26 assets/ui/prefs.ui:593
+#: assets/ui/prefs.ui:763
+msgid "Preferences"
+msgstr "Параметры"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:27 assets/ui/prefs.ui:610
+#: assets/ui/prefs.ui:764
+msgid "Next App"
+msgstr "Следующее приложение"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:33
+msgid "Playback"
+msgstr "Воспроизведение"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:34
+msgid "Audio"
+msgstr "Звук"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:35 assets/ui/prefs.ui:146
+#: assets/ui/prefs.ui:349
+msgid "Apps"
+msgstr "Приложения"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:36
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:99
+msgid ""
+"Press Escape to cancel.\n"
+"Press Enter to save.\n"
+"Press Backspace to clear the shortcut."
+msgstr ""
+"Нажмите Escape для отмены.\n"
+"Нажмите Enter для сохранения.\n"
+"Нажмите Backspace, чтобы очистить сочетание клавиш."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:106
+msgid "Press a shortcut"
+msgstr "Нажмите сочетание клавиш"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:197
+#, javascript-format
+msgid "Shortcut already used by %s"
+msgstr "Сочетание уже используется для %s"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:215 assets/ui/prefs.ui:414
+msgid "Keyboard Shortcuts"
+msgstr "Сочетания клавиш"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:235
+msgid "Not set"
+msgstr "Не задано"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:263
+msgid "Reset keyboard shortcuts?"
+msgstr "Сбросить сочетания клавиш?"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:264
+msgid "Every keyboard shortcut will be disabled."
+msgstr "Все сочетания клавиш будут отключены."
+
+#: src/prefs/groups/KeyboardShortcutsController.js:267
+#: src/prefs/groups/OthersPageController.js:88
+#: src/prefs/widgets/BlockedAppChooserDialog.js:42
+msgid "Cancel"
+msgstr "Отмена"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:268
+#: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
+msgid "Reset"
+msgstr "Сбросить"
+
+#: src/prefs/groups/KeyboardShortcutsController.js:284
+msgid "Keyboard shortcuts reset"
+msgstr "Сочетания клавиш сброшены"
+
+#: src/prefs/groups/OthersPageController.js:49
+msgid "Reset all settings"
+msgstr "Сбросить все параметры"
+
+#: src/prefs/groups/OthersPageController.js:59
+msgid "Reset all settings?"
+msgstr "Сбросить все параметры?"
+
+#: src/prefs/groups/OthersPageController.js:60
+msgid "Every MediaShell preference will return to its default value."
+msgstr "Все параметры MediaShell вернутся к значениям по умолчанию."
+
+#: src/prefs/groups/OthersPageController.js:71
+msgid "Settings reset"
+msgstr "Параметры сброшены"
+
+#: src/prefs/groups/OthersPageController.js:79
+msgid "Clear the album art cache?"
+msgstr "Очистить кэш обложек альбомов?"
+
+#: src/prefs/groups/OthersPageController.js:80
+msgid "Cached images will be downloaded again when needed."
+msgstr "Кэшированные изображения будут загружены повторно при необходимости."
+
+#: src/prefs/groups/OthersPageController.js:81 assets/ui/prefs.ui:720
+msgid "Clear Cache"
+msgstr "Очистить кэш"
+
+#: src/prefs/groups/OthersPageController.js:121
+msgid "Album art cache cleared"
+msgstr "Кэш обложек альбомов очищен"
+
+#: src/prefs/groups/OthersPageController.js:130
+msgid "Could not clear the album art cache"
+msgstr "Не удалось очистить кэш обложек альбомов"
+
+#: src/prefs/groups/OthersPageController.js:139
+#, javascript-format
+msgid "%d cover — %s"
+msgid_plural "%d covers — %s"
+msgstr[0] "%d обложка — %s"
+msgstr[1] "%d обложки — %s"
+msgstr[2] "%d обложек — %s"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:20
+msgid "Select an app to block"
+msgstr "Выбрать приложение для блокировки"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:45
+#: src/prefs/widgets/BlockedAppChooserDialog.js:61
+msgid "Search apps"
+msgstr "Поиск приложений"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:48
+msgid "Select"
+msgstr "Выбрать"
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:81
+msgid "No apps found"
+msgstr "Приложения не найдены"
+
+#: src/prefs/widgets/BlockedAppsGroup.js:80
+msgid "No apps are blocked"
+msgstr "Нет заблокированных приложений"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:13
+msgid "Artist"
+msgstr "Исполнитель"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:14
+msgid "Title"
+msgstr "Название"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:15
+msgid "Album"
+msgstr "Альбом"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:16
+msgid "Disc"
+msgstr "Диск"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:17
+msgid "Track"
+msgstr "Композиция"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:53
+msgid "No track information fields added"
+msgstr "Поля сведений о композиции не добавлены"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:70
+msgid "Custom text"
+msgstr "Пользовательский текст"
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:94
+msgid "Remove"
+msgstr "Удалить"
+
+#: src/shell/ui/popup/PopupAppSelectorButton.js:64
+#: src/shell/ui/popup/PopupAppSelectorList.js:167
+msgid "Unknown app"
+msgstr "Неизвестное приложение"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:59
+#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+msgid "Unknown artist"
+msgstr "Неизвестный исполнитель"
+
+#: src/shell/ui/popup/PopupTrackInformation.js:60
+#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+msgid "Unknown album"
+msgstr "Неизвестный альбом"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked Apps"
+msgstr "Заблокированные приложения"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Block and hide apps so they are ignored by the extension"
+msgstr "Блокируйте и скрывайте приложения, чтобы расширение их игнорировало"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Добавить"
+
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:161
+msgid "Layout"
+msgstr "Компоновка"
+
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:257
+msgid "Width"
+msgstr "Ширина"
+
+#: assets/ui/prefs.ui:12
+msgid "Total width in pixels"
+msgstr "Общая ширина в пикселях"
+
+#: assets/ui/prefs.ui:25
+msgid "Progress Bar"
+msgstr "Индикатор хода воспроизведения"
+
+#: assets/ui/prefs.ui:26
+msgid "Show the current playback position"
+msgstr "Показывать текущую позицию воспроизведения"
+
+#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:248
+msgid "Metadata"
+msgstr "Метаданные"
+
+#: assets/ui/prefs.ui:37
+msgid "Album Art"
+msgstr "Обложка альбома"
+
+#: assets/ui/prefs.ui:38
+msgid "Artwork displayed in the popup"
+msgstr "Обложка альбома во всплывающем меню"
+
+#: assets/ui/prefs.ui:42
+msgid "Corner radius"
+msgstr "Радиус скругления"
+
+#: assets/ui/prefs.ui:43
+msgid "0 disables rounded corners"
+msgstr "0 отключает скругление углов"
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:252
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track Information"
+msgstr "Сведения о композиции"
+
+#: assets/ui/prefs.ui:60
+msgid "Title, artist, album, and scrolling behavior"
+msgstr "Название, исполнитель, альбом и прокрутка текста"
+
+#: assets/ui/prefs.ui:64
+msgid "Show Title"
+msgstr "Показывать название"
+
+#: assets/ui/prefs.ui:69
+msgid "Show Artist"
+msgstr "Показывать исполнителя"
+
+#: assets/ui/prefs.ui:74
+msgid "Show Album"
+msgstr "Показывать альбом"
+
+#: assets/ui/prefs.ui:79 assets/ui/prefs.ui:277
+msgid "Scroll track information"
+msgstr "Прокручивать сведения о композиции"
+
+#: assets/ui/prefs.ui:80 assets/ui/prefs.ui:278
+msgid "Scroll overflowing track information"
+msgstr "Прокручивать сведения о композиции, когда они не помещаются"
+
+#: assets/ui/prefs.ui:84 assets/ui/prefs.ui:282
+msgid "Scrolling Performance"
+msgstr "Производительность прокрутки"
+
+#: assets/ui/prefs.ui:91 assets/ui/prefs.ui:289
+msgid ""
+"Continuous text scrolling may increase CPU and GPU usage, and animation may "
+"be less smooth on very low-end hardware."
+msgstr ""
+"Непрерывная прокрутка текста может увеличить нагрузку на процессор и "
+"графический процессор, а на очень слабом оборудовании анимация может быть "
+"менее плавной."
+
+#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:312
+msgid "Scroll speed"
+msgstr "Скорость прокрутки"
+
+#: assets/ui/prefs.ui:115 assets/ui/prefs.ui:313
+msgid "Higher values scroll faster"
+msgstr "При больших значениях прокрутка выполняется быстрее"
+
+#: assets/ui/prefs.ui:128 assets/ui/prefs.ui:326
+msgid "Scroll pause"
+msgstr "Пауза прокрутки"
+
+#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:327
+msgid "Seconds before scrolling starts again"
+msgstr "Секунды ожидания до начала или перезапуска прокрутки"
+
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:358
+msgid "Colored Icon"
+msgstr "Цветной значок"
+
+#: assets/ui/prefs.ui:150 assets/ui/prefs.ui:359
+msgid "Use the app's full-color icon"
+msgstr "Использовать полноцветный значок приложения вместо символического"
+
+#: assets/ui/prefs.ui:157
+msgid "Top Bar"
+msgstr "Верхняя панель"
+
+#: assets/ui/prefs.ui:165 assets/ui/top-bar-element-order.ui:49
+msgid "Playback Controls"
+msgstr "Элементы управления воспроизведением"
+
+#: assets/ui/prefs.ui:166
+msgid "Playback buttons shown in the top bar"
+msgstr "Кнопки воспроизведения на верхней панели"
+
+#: assets/ui/prefs.ui:187 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr "Визуализатор"
+
+#: assets/ui/prefs.ui:188
+msgid "Animated playback indicator in the top bar"
+msgstr "Анимированный индикатор воспроизведения на верхней панели"
+
+#: assets/ui/prefs.ui:194
+msgid "Visualizer Performance"
+msgstr "Производительность визуализатора"
+
+#: assets/ui/prefs.ui:201
+msgid ""
+"The visualizer redraws continuously while media is playing. This may "
+"increase CPU and GPU usage, and animation may be less smooth on very low-end "
+"hardware."
+msgstr ""
+"Визуализатор непрерывно перерисовывается во время воспроизведения "
+"мультимедиа. Это может увеличить нагрузку на ЦП и ГП, а на очень слабом "
+"оборудовании анимация может быть менее плавной."
+
+#: assets/ui/prefs.ui:217
+msgid "Style"
+msgstr "Стиль"
+
+#: assets/ui/prefs.ui:221
+msgid "Wave"
+msgstr "Волна"
+
+#: assets/ui/prefs.ui:222
+msgid "Pulse"
+msgstr "Пульсация"
+
+#: assets/ui/prefs.ui:230
+msgid "Animation speed"
+msgstr "Скорость анимации"
+
+#: assets/ui/prefs.ui:231
+msgid "Higher values animate faster"
+msgstr "Более высокие значения ускоряют анимацию"
+
+#: assets/ui/prefs.ui:253
+msgid "Track information shown in the top bar"
+msgstr ""
+"Название композиции, исполнитель, альбом и пользовательский текст на верхней "
+"панели"
+
+#: assets/ui/prefs.ui:258
+msgid "Maximum width in pixels; 0 uses available space"
+msgstr ""
+"Максимальная ширина в пикселях; 0 использует всё доступное пространство"
+
+#: assets/ui/prefs.ui:271
+msgid "Lock Width"
+msgstr "Зафиксировать ширину"
+
+#: assets/ui/prefs.ui:272
+msgid "Keep the configured width for short text"
+msgstr "Сохранять заданную ширину, когда содержимое короче"
+
+#: assets/ui/prefs.ui:353 assets/ui/top-bar-element-order.ui:16
+msgid "App Icon"
+msgstr "Значок приложения"
+
+#: assets/ui/prefs.ui:354
+msgid "App icon shown in the top bar"
+msgstr "Значок приложения на верхней панели"
+
+#: assets/ui/prefs.ui:368
+msgid "Panel"
+msgstr "Панель"
+
+#: assets/ui/prefs.ui:372
+msgid "Extension Placement"
+msgstr "Расширение"
+
+#: assets/ui/prefs.ui:373
+msgid "Choose where the extension appears in the top bar"
+msgstr "Выберите, где расширение будет отображаться на верхней панели"
+
+#: assets/ui/prefs.ui:376
+msgid "Position"
+msgstr "Положение"
+
+#: assets/ui/prefs.ui:377
+msgid "Top bar section where the extension appears"
+msgstr "Область верхней панели, в которой отображается расширение"
+
+#: assets/ui/prefs.ui:381
+msgid "Left"
+msgstr "Слева"
+
+#: assets/ui/prefs.ui:382
+msgid "Center"
+msgstr "По центру"
+
+#: assets/ui/prefs.ui:383
+msgid "Right"
+msgstr "Справа"
+
+#: assets/ui/prefs.ui:391
+msgid "Index"
+msgstr "Индекс"
+
+#: assets/ui/prefs.ui:392
+msgid "Order among items in the same top bar section"
+msgstr "Порядок среди элементов в той же области верхней панели"
+
+#: assets/ui/prefs.ui:410
+msgid "Interactions"
+msgstr "Взаимодействия"
+
+#: assets/ui/prefs.ui:415
+msgid "Assign global keyboard shortcuts to media actions"
+msgstr "Назначьте глобальные сочетания клавиш для действий с мультимедиа"
+
+#: assets/ui/prefs.ui:418
+msgid "Shortcut Assignments"
+msgstr "Назначения сочетаний клавиш"
+
+#: assets/ui/prefs.ui:419
+msgid "Configure each keyboard action"
+msgstr "Настроить каждое действие клавиатуры"
+
+#: assets/ui/prefs.ui:431 assets/ui/prefs.ui:448 assets/ui/prefs.ui:465
+#: assets/ui/prefs.ui:482 assets/ui/prefs.ui:499 assets/ui/prefs.ui:516
+#: assets/ui/prefs.ui:533 assets/ui/prefs.ui:550 assets/ui/prefs.ui:567
+#: assets/ui/prefs.ui:584 assets/ui/prefs.ui:601 assets/ui/prefs.ui:618
+msgid "Set"
+msgstr "Задать"
+
+#: assets/ui/prefs.ui:628
+msgid "Shortcut Overview"
+msgstr "Обзор сочетаний"
+
+#: assets/ui/prefs.ui:629
+msgid "View all assigned shortcuts"
+msgstr "Показать все назначенные сочетания"
+
+#: assets/ui/prefs.ui:634
+msgid "View"
+msgstr "Показать"
+
+#: assets/ui/prefs.ui:642
+msgid "Reset Keyboard Shortcuts"
+msgstr "Сбросить сочетания клавиш"
+
+#: assets/ui/prefs.ui:653
+msgid "Mouse Actions"
+msgstr "Действия мыши"
+
+#: assets/ui/prefs.ui:654
+msgid "Assign actions to clicks and scrolling on the top bar button"
+msgstr "Назначьте действия для щелчков и прокрутки на кнопке верхней панели"
+
+#: assets/ui/prefs.ui:657
+msgid "Left Click / Tap"
+msgstr "Левый щелчок / Касание"
+
+#: assets/ui/prefs.ui:663
+msgid "Middle Click"
+msgstr "Средний щелчок"
+
+#: assets/ui/prefs.ui:669
+msgid "Right Click"
+msgstr "Правый щелчок"
+
+#: assets/ui/prefs.ui:675
+msgid "Double Click / Tap"
+msgstr "Двойной щелчок / Касание"
+
+#: assets/ui/prefs.ui:681
+msgid "Scroll Up"
+msgstr "Прокрутить вверх"
+
+#: assets/ui/prefs.ui:687
+msgid "Scroll Down"
+msgstr "Прокрутить вниз"
+
+#: assets/ui/prefs.ui:695
+msgid "Others"
+msgstr "Прочее"
+
+#: assets/ui/prefs.ui:699
+msgid "System"
+msgstr "Система"
+
+#: assets/ui/prefs.ui:700
+msgid "Control how MediaShell integrates with GNOME Shell"
+msgstr "Настройте интеграцию MediaShell с GNOME Shell"
+
+#: assets/ui/prefs.ui:703
+msgid "Hide system media controls"
+msgstr "Скрыть системные элементы управления мультимедиа"
+
+#: assets/ui/prefs.ui:704
+msgid "Hide GNOME Shell's default media controls from the notification list"
+msgstr ""
+"Скрыть стандартные элементы управления мультимедиа GNOME Shell из списка "
+"уведомлений"
+
+#: assets/ui/prefs.ui:711
+msgid "Album Art Cache"
+msgstr "Кэш обложек альбомов"
+
+#: assets/ui/prefs.ui:712
+msgid "Store album art on disk to load it faster"
+msgstr "Хранить обложки альбомов на диске для более быстрой загрузки"
+
+#: assets/ui/prefs.ui:715
+msgid "Cache Album Art"
+msgstr "Кэшировать обложки альбомов"
+
+#: assets/ui/prefs.ui:730
+msgid "Clear"
+msgstr "Очистить"
+
+#: assets/ui/prefs.ui:746
+msgid "Restore the extension's factory defaults"
+msgstr "Восстановить заводские настройки расширения"
+
+#: assets/ui/prefs.ui:752
+msgid "None"
+msgstr "Нет"
+
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element Order"
+msgstr "Порядок элементов"
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr ""
+"Перетаскивайте элементы, чтобы изменить их порядок внутри кнопки верхней "
+"панели"
+
+#: assets/ui/top-bar-track-information-content-row.ui:6
+msgid "Track Information Content"
+msgstr "Содержимое сведений о композиции"
+
+#: assets/ui/top-bar-track-information-content-row.ui:7
+msgid "Choose and reorder the information shown in the top bar"
+msgstr "Выберите и упорядочьте сведения, отображаемые на верхней панели"
+
+#: assets/ui/top-bar-track-information-content-row.ui:11
+msgid "Add Item"
+msgstr "Добавить элемент"
+
+#: assets/ui/top-bar-track-information-content-row.ui:20
+msgid "Add Field"
+msgstr "Добавить поле"
+
+#: assets/ui/top-bar-track-information-content-row.ui:26
+msgid "Add Text"
+msgstr "Добавить текст"

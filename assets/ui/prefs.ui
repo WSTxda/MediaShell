@@ -1,0 +1,767 @@
+<interface domain="mediashell@wstxda.github.com">
+  <requires lib="gtk" version="4.0"/>
+  <object class="AdwPreferencesPage" id="page-popup">
+    <property name="title" translatable="yes">Popup</property>
+    <property name="icon-name">org.gnome.Settings-multitasking-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Layout</property>
+        <child>
+          <object class="AdwSpinRow" id="sp-popup-width">
+            <property name="title" translatable="yes">Width</property>
+            <property name="subtitle" translatable="yes">Total width in pixels</property>
+            <property name="adjustment">
+              <object class="GtkAdjustment">
+                <property name="lower">250</property>
+                <property name="upper">500</property>
+                <property name="step-increment">10</property>
+                <property name="value">250</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="sr-popup-show-progress-bar">
+            <property name="title" translatable="yes">Progress Bar</property>
+            <property name="subtitle" translatable="yes">Show the current playback position</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Metadata</property>
+        <child>
+          <object class="AdwExpanderRow" id="er-popup-album-art">
+            <property name="show-enable-switch">true</property>
+            <property name="title" translatable="yes">Album Art</property>
+            <property name="subtitle" translatable="yes">Artwork displayed in the popup</property>
+            <property name="expanded">false</property>
+            <child>
+              <object class="AdwSpinRow" id="sp-popup-album-art-radius">
+                <property name="title" translatable="yes">Corner radius</property>
+                <property name="subtitle" translatable="yes">0 disables rounded corners</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">50</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">20</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwExpanderRow" id="er-popup-track-information">
+            <property name="show-enable-switch">true</property>
+            <property name="title" translatable="yes">Track Information</property>
+            <property name="subtitle" translatable="yes">Title, artist, album, and scrolling behavior</property>
+            <property name="expanded">false</property>
+            <child>
+              <object class="AdwSwitchRow" id="sr-popup-show-title">
+                <property name="title" translatable="yes">Show Title</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-popup-show-artist">
+                <property name="title" translatable="yes">Show Artist</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-popup-show-album">
+                <property name="title" translatable="yes">Show Album</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="sr-popup-scroll-track-information">
+                <property name="title" translatable="yes">Scroll track information</property>
+                <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
+                <child type="suffix">
+                  <object class="GtkMenuButton" id="mb-popup-scroll-track-information-info">
+                    <property name="icon-name">info-outline-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Scrolling Performance</property>
+                    <property name="has-frame">false</property>
+                    <property name="valign">center</property>
+                    <property name="popover">
+                      <object class="GtkPopover">
+                        <property name="child">
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">Continuous text scrolling may increase CPU and GPU usage, and animation may be less smooth on very low-end hardware.</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">42</property>
+                            <property name="xalign">0</property>
+                            <property name="margin-top">12</property>
+                            <property name="margin-bottom">12</property>
+                            <property name="margin-start">12</property>
+                            <property name="margin-end">12</property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkSwitch" id="sw-popup-scroll-track-information">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-popup-scroll-speed">
+                <property name="title" translatable="yes">Scroll speed</property>
+                <property name="subtitle" translatable="yes">Higher values scroll faster</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">1</property>
+                    <property name="upper">10</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">4</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-popup-scroll-pause">
+                <property name="title" translatable="yes">Scroll pause</property>
+                <property name="subtitle" translatable="yes">Seconds before scrolling starts again</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">10</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">0</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Apps</property>
+        <child>
+          <object class="AdwSwitchRow" id="sr-popup-use-colored-app-icon">
+            <property name="title" translatable="yes">Colored Icon</property>
+            <property name="subtitle" translatable="yes">Use the app's full-color icon</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="AdwPreferencesPage" id="page-top-bar">
+    <property name="title" translatable="yes">Top Bar</property>
+    <property name="icon-name">focus-top-bar-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Layout</property>
+        <child>
+          <object class="AdwExpanderRow" id="er-top-bar-playback-controls">
+            <property name="show-enable-switch">true</property>
+            <property name="title" translatable="yes">Playback Controls</property>
+            <property name="subtitle" translatable="yes">Playback buttons shown in the top bar</property>
+            <property name="expanded">false</property>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-show-play-pause">
+                <property name="title" translatable="yes">Play / Pause</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-show-next-track">
+                <property name="title" translatable="yes">Next Track</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-show-previous-track">
+                <property name="title" translatable="yes">Previous Track</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwExpanderRow" id="er-top-bar-visualizer">
+            <property name="title" translatable="yes">Visualizer</property>
+            <property name="subtitle" translatable="yes">Animated playback indicator in the top bar</property>
+            <property name="expanded">false</property>
+            <property name="show-enable-switch">true</property>
+            <child type="suffix">
+              <object class="GtkMenuButton" id="mb-top-bar-visualizer-info">
+                <property name="icon-name">info-outline-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Visualizer Performance</property>
+                <property name="has-frame">false</property>
+                <property name="valign">center</property>
+                <property name="popover">
+                  <object class="GtkPopover">
+                    <property name="child">
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">The visualizer redraws continuously while media is playing. This may increase CPU and GPU usage, and animation may be less smooth on very low-end hardware.</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">42</property>
+                        <property name="xalign">0</property>
+                        <property name="margin-top">12</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin-start">12</property>
+                        <property name="margin-end">12</property>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwComboRow" id="cr-top-bar-visualizer-style">
+                <property name="title" translatable="yes">Style</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Wave</item>
+                      <item translatable="yes">Pulse</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-top-bar-visualizer-speed">
+                <property name="title" translatable="yes">Animation speed</property>
+                <property name="subtitle" translatable="yes">Higher values animate faster</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">1</property>
+                    <property name="upper">8</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">4</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Metadata</property>
+        <child>
+          <object class="AdwExpanderRow" id="er-top-bar-track-information">
+            <property name="show-enable-switch">true</property>
+            <property name="title" translatable="yes">Track Information</property>
+            <property name="subtitle" translatable="yes">Track information shown in the top bar</property>
+            <property name="expanded">false</property>
+            <child>
+              <object class="AdwSpinRow" id="sp-top-bar-track-information-width">
+                <property name="title" translatable="yes">Width</property>
+                <property name="subtitle" translatable="yes">Maximum width in pixels; 0 uses available space</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">1000</property>
+                    <property name="step-increment">10</property>
+                    <property name="value">200</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-lock-track-information-width">
+                <property name="title" translatable="yes">Lock Width</property>
+                <property name="subtitle" translatable="yes">Keep the configured width for short text</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="sr-top-bar-scroll-track-information">
+                <property name="title" translatable="yes">Scroll track information</property>
+                <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
+                <child type="suffix">
+                  <object class="GtkMenuButton" id="mb-top-bar-scroll-track-information-info">
+                    <property name="icon-name">info-outline-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Scrolling Performance</property>
+                    <property name="has-frame">false</property>
+                    <property name="valign">center</property>
+                    <property name="popover">
+                      <object class="GtkPopover">
+                        <property name="child">
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">Continuous text scrolling may increase CPU and GPU usage, and animation may be less smooth on very low-end hardware.</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">42</property>
+                            <property name="xalign">0</property>
+                            <property name="margin-top">12</property>
+                            <property name="margin-bottom">12</property>
+                            <property name="margin-start">12</property>
+                            <property name="margin-end">12</property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkSwitch" id="sw-top-bar-scroll-track-information">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-top-bar-scroll-speed">
+                <property name="title" translatable="yes">Scroll speed</property>
+                <property name="subtitle" translatable="yes">Higher values scroll faster</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">1</property>
+                    <property name="upper">10</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">4</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-top-bar-scroll-pause">
+                <property name="title" translatable="yes">Scroll pause</property>
+                <property name="subtitle" translatable="yes">Seconds before scrolling starts again</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">10</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">0</property>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="TopBarTrackInformationContentRow" id="er-top-bar-track-information-content">
+            <property name="expanded">false</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Apps</property>
+        <child>
+          <object class="AdwExpanderRow" id="er-top-bar-app-icon">
+            <property name="show-enable-switch">true</property>
+            <property name="title" translatable="yes">App Icon</property>
+            <property name="subtitle" translatable="yes">App icon shown in the top bar</property>
+            <property name="expanded">false</property>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-use-colored-app-icon">
+                <property name="title" translatable="yes">Colored Icon</property>
+                <property name="subtitle" translatable="yes">Use the app's full-color icon</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="AdwPreferencesPage" id="page-panel">
+    <property name="title" translatable="yes">Panel</property>
+    <property name="icon-name">org.gnome.Settings-display-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Extension Placement</property>
+        <property name="description" translatable="yes">Choose where the extension appears in the top bar</property>
+        <child>
+          <object class="AdwComboRow" id="cr-panel-top-bar-position">
+            <property name="title" translatable="yes">Position</property>
+            <property name="subtitle" translatable="yes">Top bar section where the extension appears</property>
+            <property name="model">
+              <object class="GtkStringList">
+                <items>
+                  <item translatable="yes">Left</item>
+                  <item translatable="yes">Center</item>
+                  <item translatable="yes">Right</item>
+                </items>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSpinRow" id="sp-panel-top-bar-index">
+            <property name="title" translatable="yes">Index</property>
+            <property name="subtitle" translatable="yes">Order among items in the same top bar section</property>
+            <property name="adjustment">
+              <object class="GtkAdjustment">
+                <property name="lower">0</property>
+                <property name="upper">100</property>
+                <property name="value">0</property>
+                <property name="step-increment">1</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="TopBarElementOrderGroup" id="gp-panel-top-bar-element-order"/>
+    </child>
+  </object>
+  <object class="AdwPreferencesPage" id="page-interactions">
+    <property name="title" translatable="yes">Interactions</property>
+    <property name="icon-name">org.gnome.Settings-keyboard-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Keyboard Shortcuts</property>
+        <property name="description" translatable="yes">Assign global keyboard shortcuts to media actions</property>
+        <child>
+          <object class="AdwExpanderRow" id="er-interactions-keyboard-shortcuts">
+            <property name="title" translatable="yes">Shortcut Assignments</property>
+            <property name="subtitle" translatable="yes">Configure each keyboard action</property>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-play-pause">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Play / Pause</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playback-start-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-play-pause">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-next-track">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Next Track</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-skip-forward-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-next-track">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-previous-track">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Previous Track</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-skip-backward-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-previous-track">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-volume-up">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Volume Up</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">audio-volume-high-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-volume-up">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-volume-down">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Volume Down</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">audio-volume-low-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-volume-down">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-loop">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Repeat</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playlist-repeat-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-loop">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-shuffle">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Shuffle</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-shuffle">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-popup">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Popup</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">org.gnome.Settings-multitasking-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-popup">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-raise-app">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Open App</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">application-x-executable-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-raise-app">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-quit-app">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Quit App</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">process-stop-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-quit-app">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-open-preferences">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Preferences</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">org.gnome.Settings-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-open-preferences">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-next-app">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Next App</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">network-transmit-receive-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-next-app">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="ar-interactions-shortcut-overview">
+            <property name="title" translatable="yes">Shortcut Overview</property>
+            <property name="subtitle" translatable="yes">View all assigned shortcuts</property>
+            <property name="activatable">false</property>
+            <property name="selectable">false</property>
+            <child type="suffix">
+              <object class="GtkButton" id="btn-interactions-shortcut-overview">
+                <property name="label" translatable="yes">View</property>
+                <property name="valign">3</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwButtonRow" id="br-interactions-reset-shortcuts">
+            <property name="title" translatable="yes">Reset Keyboard Shortcuts</property>
+            <property name="start-icon-name">edit-clear-symbolic</property>
+            <style>
+              <class name="destructive-action"/>
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Mouse Actions</property>
+        <property name="description" translatable="yes">Assign actions to clicks and scrolling on the top bar button</property>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-left-click">
+            <property name="title" translatable="yes">Left Click / Tap</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-middle-click">
+            <property name="title" translatable="yes">Middle Click</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-right-click">
+            <property name="title" translatable="yes">Right Click</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-double-click">
+            <property name="title" translatable="yes">Double Click / Tap</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-scroll-up">
+            <property name="title" translatable="yes">Scroll Up</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="cr-interactions-scroll-down">
+            <property name="title" translatable="yes">Scroll Down</property>
+            <property name="model">model-input-actions</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="AdwPreferencesPage" id="page-others">
+    <property name="title" translatable="yes">Others</property>
+    <property name="icon-name">preferences-other-symbolic</property>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">System</property>
+        <property name="description" translatable="yes">Control how MediaShell integrates with GNOME Shell</property>
+        <child>
+          <object class="AdwSwitchRow" id="sr-others-hide-system-media-controls">
+            <property name="title" translatable="yes">Hide system media controls</property>
+            <property name="subtitle" translatable="yes">Hide GNOME Shell's default media controls from the notification list</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Album Art Cache</property>
+        <property name="description" translatable="yes">Store album art on disk to load it faster</property>
+        <child>
+          <object class="AdwSwitchRow" id="sr-others-cache-album-art">
+            <property name="title" translatable="yes">Cache Album Art</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="ar-others-clear-cache">
+            <property name="title" translatable="yes">Clear Cache</property>
+            <child>
+              <object class="GtkButton" id="btn-others-clear-cache">
+                <property name="halign">2</property>
+                <property name="valign">3</property>
+                <style>
+                  <class name="destructive-action"/>
+                </style>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="label" translatable="yes">Clear</property>
+                    <property name="icon-name">user-trash-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="BlockedAppsGroup" id="gp-others-blocked-apps"/>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup" id="gp-others-reset">
+        <property name="title" translatable="yes">Reset</property>
+        <property name="description" translatable="yes">Restore the extension's factory defaults</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkStringList" id="model-input-actions">
+    <items>
+      <item translatable="yes">None</item>
+      <item translatable="yes">Play / Pause</item>
+      <item translatable="yes">Next Track</item>
+      <item translatable="yes">Previous Track</item>
+      <item translatable="yes">Volume Up</item>
+      <item translatable="yes">Volume Down</item>
+      <item translatable="yes">Repeat</item>
+      <item translatable="yes">Shuffle</item>
+      <item translatable="yes">Popup</item>
+      <item translatable="yes">Open App</item>
+      <item translatable="yes">Quit App</item>
+      <item translatable="yes">Preferences</item>
+      <item translatable="yes">Next App</item>
+    </items>
+  </object>
+</interface>

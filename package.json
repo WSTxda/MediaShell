@@ -1,0 +1,32 @@
+{
+  "name": "mediashell",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Configurable MPRIS media controls for the GNOME Shell top bar.",
+  "type": "module",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node --test",
+    "doctor": "bash scripts/development.sh doctor",
+    "debug": "bash scripts/development.sh debug",
+    "build:clean": "rm -rf dist",
+    "build:dirs": "mkdir -p dist/temp dist/builds",
+    "build:copy": "cp -r src/* dist/temp/",
+    "build:resources": "glib-compile-resources assets/org.gnome.shell.extensions.mediashell.gresource.xml --target=dist/temp/org.gnome.shell.extensions.mediashell.gresource --sourcedir=assets",
+    "build:pack": "cd dist/temp && gnome-extensions pack -f -o ../builds/ --schema='../../assets/org.gnome.shell.extensions.mediashell.gschema.xml' --podir='../../assets/locale' --extra-source=shell --extra-source=prefs --extra-source=shared --extra-source=icons --extra-source=org.gnome.shell.extensions.mediashell.gresource .",
+    "build": "pnpm run check && pnpm run build:clean && pnpm run build:dirs && pnpm run build:copy && pnpm run build:resources && pnpm run build:pack",
+    "ext:install": "gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
+    "ext:uninstall": "gnome-extensions uninstall mediashell@wstxda.github.com",
+    "ext:enable": "gnome-extensions enable mediashell@wstxda.github.com",
+    "ext:disable": "gnome-extensions disable mediashell@wstxda.github.com",
+    "ext:prefs": "gnome-extensions prefs mediashell@wstxda.github.com",
+    "ext:upload": "gnome-extensions upload --accept-tos --user WSTxda ${EGO_ARGS} dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
+    "translations:extract": "rm -f assets/locale/mediashell@wstxda.github.com.pot && xgettext --from-code=UTF-8 --add-comments --keyword=_ --keyword=ngettext:1,2 --keyword=C_:1c,2 --language=Javascript --output=assets/locale/mediashell@wstxda.github.com.pot $(find . -type f -name '*.js' -not -path './node_modules/*' -not -path './dist/*') && xgettext --from-code=UTF-8 --add-comments --join-existing --language=Glade --output=assets/locale/mediashell@wstxda.github.com.pot $(find assets/ui -type f -name '*.ui')",
+    "translations:merge": "for po in assets/locale/*.po; do msgmerge -U \"$po\" assets/locale/mediashell@wstxda.github.com.pot; done && rm -f assets/locale/*.po~",
+    "translations": "pnpm run translations:extract && pnpm run translations:merge"
+  }
+}

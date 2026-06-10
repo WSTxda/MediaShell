@@ -1,0 +1,651 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-15 00:18-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/prefs/about/AboutDialogController.js:36
+msgid "About MediaShell"
+msgstr ""
+
+#: src/prefs/about/AboutDialogController.js:76
+msgid ""
+"MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top "
+"bar. It provides configurable track information, playback controls, album "
+"art, playback progress, app switching, and input actions without replacing "
+"GNOME's media stack."
+msgstr ""
+
+#: src/prefs/about/AboutDialogController.js:84
+msgid "Donate"
+msgstr ""
+
+#: src/prefs/about/AboutDialogController.js:85
+msgid "Developed by"
+msgstr ""
+
+#: src/prefs/about/AboutDialogController.js:91
+msgid "View all..."
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:16 assets/ui/prefs.ui:170
+#: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
+msgid "Play / Pause"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:17 assets/ui/prefs.ui:175
+#: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
+msgid "Next Track"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:18 assets/ui/prefs.ui:180
+#: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
+msgid "Previous Track"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:19 assets/ui/prefs.ui:474
+#: assets/ui/prefs.ui:756
+msgid "Volume Up"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:20 assets/ui/prefs.ui:491
+#: assets/ui/prefs.ui:757
+msgid "Volume Down"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:21 assets/ui/prefs.ui:508
+#: assets/ui/prefs.ui:758
+msgid "Repeat"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:22 assets/ui/prefs.ui:525
+#: assets/ui/prefs.ui:759
+msgid "Shuffle"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:23 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
+msgid "Popup"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:24 assets/ui/prefs.ui:559
+#: assets/ui/prefs.ui:761
+msgid "Open App"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:25 assets/ui/prefs.ui:576
+#: assets/ui/prefs.ui:762
+msgid "Quit App"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:26 assets/ui/prefs.ui:593
+#: assets/ui/prefs.ui:763
+msgid "Preferences"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:27 assets/ui/prefs.ui:610
+#: assets/ui/prefs.ui:764
+msgid "Next App"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:33
+msgid "Playback"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:34
+msgid "Audio"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:35 assets/ui/prefs.ui:146
+#: assets/ui/prefs.ui:349
+msgid "Apps"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:36
+msgid "Interface"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:99
+msgid ""
+"Press Escape to cancel.\n"
+"Press Enter to save.\n"
+"Press Backspace to clear the shortcut."
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:106
+msgid "Press a shortcut"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:197
+#, javascript-format
+msgid "Shortcut already used by %s"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:215 assets/ui/prefs.ui:414
+msgid "Keyboard Shortcuts"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:235
+msgid "Not set"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:263
+msgid "Reset keyboard shortcuts?"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:264
+msgid "Every keyboard shortcut will be disabled."
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:267
+#: src/prefs/groups/OthersPageController.js:88
+#: src/prefs/widgets/BlockedAppChooserDialog.js:42
+msgid "Cancel"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:268
+#: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
+msgid "Reset"
+msgstr ""
+
+#: src/prefs/groups/KeyboardShortcutsController.js:284
+msgid "Keyboard shortcuts reset"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:49
+msgid "Reset all settings"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:59
+msgid "Reset all settings?"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:60
+msgid "Every MediaShell preference will return to its default value."
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:71
+msgid "Settings reset"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:79
+msgid "Clear the album art cache?"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:80
+msgid "Cached images will be downloaded again when needed."
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:81 assets/ui/prefs.ui:720
+msgid "Clear Cache"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:121
+msgid "Album art cache cleared"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:130
+msgid "Could not clear the album art cache"
+msgstr ""
+
+#: src/prefs/groups/OthersPageController.js:139
+#, javascript-format
+msgid "%d cover — %s"
+msgid_plural "%d covers — %s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:20
+msgid "Select an app to block"
+msgstr ""
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:45
+#: src/prefs/widgets/BlockedAppChooserDialog.js:61
+msgid "Search apps"
+msgstr ""
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:48
+msgid "Select"
+msgstr ""
+
+#: src/prefs/widgets/BlockedAppChooserDialog.js:81
+msgid "No apps found"
+msgstr ""
+
+#: src/prefs/widgets/BlockedAppsGroup.js:80
+msgid "No apps are blocked"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:13
+msgid "Artist"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:14
+msgid "Title"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:15
+msgid "Album"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:16
+msgid "Disc"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:17
+msgid "Track"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:53
+msgid "No track information fields added"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:70
+msgid "Custom text"
+msgstr ""
+
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:94
+msgid "Remove"
+msgstr ""
+
+#: src/shell/ui/popup/PopupAppSelectorButton.js:64
+#: src/shell/ui/popup/PopupAppSelectorList.js:167
+msgid "Unknown app"
+msgstr ""
+
+#: src/shell/ui/popup/PopupTrackInformation.js:59
+#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+msgid "Unknown artist"
+msgstr ""
+
+#: src/shell/ui/popup/PopupTrackInformation.js:60
+#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+msgid "Unknown album"
+msgstr ""
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked Apps"
+msgstr ""
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Block and hide apps so they are ignored by the extension"
+msgstr ""
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr ""
+
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:161
+msgid "Layout"
+msgstr ""
+
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:257
+msgid "Width"
+msgstr ""
+
+#: assets/ui/prefs.ui:12
+msgid "Total width in pixels"
+msgstr ""
+
+#: assets/ui/prefs.ui:25
+msgid "Progress Bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:26
+msgid "Show the current playback position"
+msgstr ""
+
+#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:248
+msgid "Metadata"
+msgstr ""
+
+#: assets/ui/prefs.ui:37
+msgid "Album Art"
+msgstr ""
+
+#: assets/ui/prefs.ui:38
+msgid "Artwork displayed in the popup"
+msgstr ""
+
+#: assets/ui/prefs.ui:42
+msgid "Corner radius"
+msgstr ""
+
+#: assets/ui/prefs.ui:43
+msgid "0 disables rounded corners"
+msgstr ""
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:252
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track Information"
+msgstr ""
+
+#: assets/ui/prefs.ui:60
+msgid "Title, artist, album, and scrolling behavior"
+msgstr ""
+
+#: assets/ui/prefs.ui:64
+msgid "Show Title"
+msgstr ""
+
+#: assets/ui/prefs.ui:69
+msgid "Show Artist"
+msgstr ""
+
+#: assets/ui/prefs.ui:74
+msgid "Show Album"
+msgstr ""
+
+#: assets/ui/prefs.ui:79 assets/ui/prefs.ui:277
+msgid "Scroll track information"
+msgstr ""
+
+#: assets/ui/prefs.ui:80 assets/ui/prefs.ui:278
+msgid "Scroll overflowing track information"
+msgstr ""
+
+#: assets/ui/prefs.ui:84 assets/ui/prefs.ui:282
+msgid "Scrolling Performance"
+msgstr ""
+
+#: assets/ui/prefs.ui:91 assets/ui/prefs.ui:289
+msgid ""
+"Continuous text scrolling may increase CPU and GPU usage, and animation may "
+"be less smooth on very low-end hardware."
+msgstr ""
+
+#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:312
+msgid "Scroll speed"
+msgstr ""
+
+#: assets/ui/prefs.ui:115 assets/ui/prefs.ui:313
+msgid "Higher values scroll faster"
+msgstr ""
+
+#: assets/ui/prefs.ui:128 assets/ui/prefs.ui:326
+msgid "Scroll pause"
+msgstr ""
+
+#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:327
+msgid "Seconds before scrolling starts again"
+msgstr ""
+
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:358
+msgid "Colored Icon"
+msgstr ""
+
+#: assets/ui/prefs.ui:150 assets/ui/prefs.ui:359
+msgid "Use the app's full-color icon"
+msgstr ""
+
+#: assets/ui/prefs.ui:157
+msgid "Top Bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:165 assets/ui/top-bar-element-order.ui:49
+msgid "Playback Controls"
+msgstr ""
+
+#: assets/ui/prefs.ui:166
+msgid "Playback buttons shown in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:187 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr ""
+
+#: assets/ui/prefs.ui:188
+msgid "Animated playback indicator in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:194
+msgid "Visualizer Performance"
+msgstr ""
+
+#: assets/ui/prefs.ui:201
+msgid ""
+"The visualizer redraws continuously while media is playing. This may "
+"increase CPU and GPU usage, and animation may be less smooth on very low-end "
+"hardware."
+msgstr ""
+
+#: assets/ui/prefs.ui:217
+msgid "Style"
+msgstr ""
+
+#: assets/ui/prefs.ui:221
+msgid "Wave"
+msgstr ""
+
+#: assets/ui/prefs.ui:222
+msgid "Pulse"
+msgstr ""
+
+#: assets/ui/prefs.ui:230
+msgid "Animation speed"
+msgstr ""
+
+#: assets/ui/prefs.ui:231
+msgid "Higher values animate faster"
+msgstr ""
+
+#: assets/ui/prefs.ui:253
+msgid "Track information shown in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:258
+msgid "Maximum width in pixels; 0 uses available space"
+msgstr ""
+
+#: assets/ui/prefs.ui:271
+msgid "Lock Width"
+msgstr ""
+
+#: assets/ui/prefs.ui:272
+msgid "Keep the configured width for short text"
+msgstr ""
+
+#: assets/ui/prefs.ui:353 assets/ui/top-bar-element-order.ui:16
+msgid "App Icon"
+msgstr ""
+
+#: assets/ui/prefs.ui:354
+msgid "App icon shown in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:368
+msgid "Panel"
+msgstr ""
+
+#: assets/ui/prefs.ui:372
+msgid "Extension Placement"
+msgstr ""
+
+#: assets/ui/prefs.ui:373
+msgid "Choose where the extension appears in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:376
+msgid "Position"
+msgstr ""
+
+#: assets/ui/prefs.ui:377
+msgid "Top bar section where the extension appears"
+msgstr ""
+
+#: assets/ui/prefs.ui:381
+msgid "Left"
+msgstr ""
+
+#: assets/ui/prefs.ui:382
+msgid "Center"
+msgstr ""
+
+#: assets/ui/prefs.ui:383
+msgid "Right"
+msgstr ""
+
+#: assets/ui/prefs.ui:391
+msgid "Index"
+msgstr ""
+
+#: assets/ui/prefs.ui:392
+msgid "Order among items in the same top bar section"
+msgstr ""
+
+#: assets/ui/prefs.ui:410
+msgid "Interactions"
+msgstr ""
+
+#: assets/ui/prefs.ui:415
+msgid "Assign global keyboard shortcuts to media actions"
+msgstr ""
+
+#: assets/ui/prefs.ui:418
+msgid "Shortcut Assignments"
+msgstr ""
+
+#: assets/ui/prefs.ui:419
+msgid "Configure each keyboard action"
+msgstr ""
+
+#: assets/ui/prefs.ui:431 assets/ui/prefs.ui:448 assets/ui/prefs.ui:465
+#: assets/ui/prefs.ui:482 assets/ui/prefs.ui:499 assets/ui/prefs.ui:516
+#: assets/ui/prefs.ui:533 assets/ui/prefs.ui:550 assets/ui/prefs.ui:567
+#: assets/ui/prefs.ui:584 assets/ui/prefs.ui:601 assets/ui/prefs.ui:618
+msgid "Set"
+msgstr ""
+
+#: assets/ui/prefs.ui:628
+msgid "Shortcut Overview"
+msgstr ""
+
+#: assets/ui/prefs.ui:629
+msgid "View all assigned shortcuts"
+msgstr ""
+
+#: assets/ui/prefs.ui:634
+msgid "View"
+msgstr ""
+
+#: assets/ui/prefs.ui:642
+msgid "Reset Keyboard Shortcuts"
+msgstr ""
+
+#: assets/ui/prefs.ui:653
+msgid "Mouse Actions"
+msgstr ""
+
+#: assets/ui/prefs.ui:654
+msgid "Assign actions to clicks and scrolling on the top bar button"
+msgstr ""
+
+#: assets/ui/prefs.ui:657
+msgid "Left Click / Tap"
+msgstr ""
+
+#: assets/ui/prefs.ui:663
+msgid "Middle Click"
+msgstr ""
+
+#: assets/ui/prefs.ui:669
+msgid "Right Click"
+msgstr ""
+
+#: assets/ui/prefs.ui:675
+msgid "Double Click / Tap"
+msgstr ""
+
+#: assets/ui/prefs.ui:681
+msgid "Scroll Up"
+msgstr ""
+
+#: assets/ui/prefs.ui:687
+msgid "Scroll Down"
+msgstr ""
+
+#: assets/ui/prefs.ui:695
+msgid "Others"
+msgstr ""
+
+#: assets/ui/prefs.ui:699
+msgid "System"
+msgstr ""
+
+#: assets/ui/prefs.ui:700
+msgid "Control how MediaShell integrates with GNOME Shell"
+msgstr ""
+
+#: assets/ui/prefs.ui:703
+msgid "Hide system media controls"
+msgstr ""
+
+#: assets/ui/prefs.ui:704
+msgid "Hide GNOME Shell's default media controls from the notification list"
+msgstr ""
+
+#: assets/ui/prefs.ui:711
+msgid "Album Art Cache"
+msgstr ""
+
+#: assets/ui/prefs.ui:712
+msgid "Store album art on disk to load it faster"
+msgstr ""
+
+#: assets/ui/prefs.ui:715
+msgid "Cache Album Art"
+msgstr ""
+
+#: assets/ui/prefs.ui:730
+msgid "Clear"
+msgstr ""
+
+#: assets/ui/prefs.ui:746
+msgid "Restore the extension's factory defaults"
+msgstr ""
+
+#: assets/ui/prefs.ui:752
+msgid "None"
+msgstr ""
+
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element Order"
+msgstr ""
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr ""
+
+#: assets/ui/top-bar-track-information-content-row.ui:6
+msgid "Track Information Content"
+msgstr ""
+
+#: assets/ui/top-bar-track-information-content-row.ui:7
+msgid "Choose and reorder the information shown in the top bar"
+msgstr ""
+
+#: assets/ui/top-bar-track-information-content-row.ui:11
+msgid "Add Item"
+msgstr ""
+
+#: assets/ui/top-bar-track-information-content-row.ui:20
+msgid "Add Field"
+msgstr ""
+
+#: assets/ui/top-bar-track-information-content-row.ui:26
+msgid "Add Text"
+msgstr ""
