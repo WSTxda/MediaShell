@@ -34,6 +34,16 @@ pnpm check
 pnpm build
 ```
 
+## Translations
+
+Download the [.pot](https://github.com/WSTxda/MediaShell/blob/main/assets/locale/mediashell%40wstxda.github.com.pot) template from `assets/locale/` and translate it using [Gtranslator](https://flathub.org/apps/org.gnome.Gtranslator) or [Poedit](https://flathub.org/apps/net.poedit.Poedit). Open a pull request with the translated `.po` file.
+
+If your change touches any visible UI strings, regenerate the translation template before opening a pull request:
+
+```bash
+pnpm run translations
+```
+
 ## Pull requests
 
 Keep changes narrowly scoped. Describe the behavior being changed, the affected MPRIS or GNOME Shell scenario, and the live checks performed. Include focused logs for lifecycle, D-Bus, or private Shell API failures.
