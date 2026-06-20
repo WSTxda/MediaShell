@@ -192,11 +192,15 @@ export default class PopupContent {
             [this.menu, this.menuOpenSignalId, "menu open-state"],
             [this.popupItem, this.popupItemCapturedEventId, "popup captured-event"],
         ]) {
-            if (signalId === null) continue;
+            if (!object || signalId === null) continue;
             try {
                 object.disconnect(signalId);
-            } catch (error) {
-                logger.debug(`${label} signal was already disconnected`, error);
+            } catch {
+                // The top bar actor may already be in Shell-side teardown if the
+                // panel destroys the menu tree. Treat missing signal handlers or
+                // disposed menu actors as successful cleanup and avoid logging a
+                // misleading GObject stack trace.
+                logger.debug(`${label} signal was already gone during teardown`);
             }
         }
         this.menuOpenSignalId = null;

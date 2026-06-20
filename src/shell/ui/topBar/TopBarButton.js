@@ -43,7 +43,6 @@ class TopBarButton extends PanelMenu.Button {
         this.scheduleAppResolutionRetry();
         this.initializePointerActions();
         this.menu.box.add_style_class_name("mediashell-popup-container");
-        this.connect("destroy", () => this.onDestroy());
     }
 
     vfunc_event() {
@@ -51,7 +50,7 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     setMediaApp(mediaApp) {
-        if (this.isSameMediaApp(mediaApp)) return;
+        if (!mediaApp || this.isSameMediaApp(mediaApp)) return;
         logger.debug("Switched active media app", mediaApp.busName);
         this.removeMediaAppPropertyListeners();
         this.cancelPendingWidgetUpdate();
@@ -66,7 +65,7 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     isSameMediaApp(mediaApp) {
-        return this.mediaApp.busName === mediaApp.busName;
+        return Boolean(this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName);
     }
 
     requestWidgetUpdate(widgetFlags) {
@@ -100,6 +99,8 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     updateWidgets(widgetFlags) {
+        if (this.destroyed) return;
+
         if (!this.topBarBox) {
             this.topBarBox = new St.BoxLayout({ styleClass: "mediashell-top-bar-box" });
         } else if (widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER) {
@@ -300,8 +301,11 @@ class TopBarButton extends PanelMenu.Button {
     removeMediaAppPropertyListeners() {
         this.disconnectPositionChangeListener?.();
         this.disconnectPositionChangeListener = null;
-        for (const [property, listenerId] of this.mediaAppPropertyListenerIds.entries()) {
-            this.mediaApp.removePropertyChangeListener(property, listenerId);
+
+        if (this.mediaApp) {
+            for (const [property, listenerId] of this.mediaAppPropertyListenerIds.entries()) {
+                this.mediaApp.removePropertyChangeListener(property, listenerId);
+            }
         }
         this.mediaAppPropertyListenerIds.clear();
     }
@@ -435,7 +439,18 @@ class TopBarButton extends PanelMenu.Button {
         this.extensionController.executeInputAction(mouseAction);
     }
 
-    onDestroy() {
+    destroy() {
+        if (this.destroyed) return;
+
+        // PanelMenu.Button destroys its PopupMenu children as part of the actor
+        // teardown. Clean MediaShell-owned menu items and signals first, while
+        // the Shell objects are still valid, so teardown does not attempt to
+        // disconnect a disposed PopupBaseMenuItem.
+        this.destroyOwnedResources();
+        super.destroy();
+    }
+
+    destroyOwnedResources() {
         if (this.destroyed) return;
         this.destroyed = true;
         this.removeMediaAppPropertyListeners();
