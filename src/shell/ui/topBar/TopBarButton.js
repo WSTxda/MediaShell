@@ -30,6 +30,7 @@ class TopBarButton extends PanelMenu.Button {
         this.widgetUpdateSourceId = null;
         this.pendingWidgetFlags = 0;
         this.disconnectPositionChangeListener = null;
+        this.pointerActionCleanups = [];
         this.destroyed = false;
         this.topBarBox = null;
         this.topBarAppIcon = new TopBarAppIcon(this);
@@ -349,7 +350,7 @@ class TopBarButton extends PanelMenu.Button {
                 }
             });
         } else {
-            this.connect("button-press-event", (_, event) => {
+            this.addPointerSignal("button-press-event", (_, event) => {
                 const mouseButton = event.get_button();
 
                 if (mouseButton === Clutter.BUTTON_PRIMARY) {
@@ -372,7 +373,7 @@ class TopBarButton extends PanelMenu.Button {
                 return Clutter.EVENT_STOP;
             });
 
-            this.connect("touch-event", (_, event) => {
+            this.addPointerSignal("touch-event", (_, event) => {
                 const eventType = event.type();
                 if (eventType === Clutter.EventType.TOUCH_BEGIN) {
                     this.handlePrimaryActivation();
@@ -383,7 +384,7 @@ class TopBarButton extends PanelMenu.Button {
             });
         }
 
-        this.connect("scroll-event", (_, event) => {
+        this.addPointerSignal("scroll-event", (_, event) => {
             const direction = event.get_scroll_direction();
             let mouseAction = InputActions.NONE;
             if (direction === Clutter.ScrollDirection.UP) {
@@ -399,6 +400,17 @@ class TopBarButton extends PanelMenu.Button {
         });
     }
 
+    addPointerSignal(signalName, callback) {
+        const signalId = this.connect(signalName, callback);
+        this.pointerActionCleanups.push(() => {
+            try {
+                this.disconnect(signalId);
+            } catch (error) {
+                logger.debug("Pointer signal was already disconnected", signalName, error);
+            }
+        });
+    }
+
     addMouseButtonGesture(mouseButton, callback) {
         const gesture = new Clutter.ClickGesture();
         if (typeof gesture.set_required_button === "function") {
@@ -407,11 +419,22 @@ class TopBarButton extends PanelMenu.Button {
         if (typeof gesture.set_recognize_on_press === "function") {
             gesture.set_recognize_on_press(true);
         }
-        gesture.connect("recognize", () => {
+        const signalId = gesture.connect("recognize", () => {
             callback();
-            return Clutter.EVENT_STOP;
         });
         this.add_action(gesture);
+        this.pointerActionCleanups.push(() => {
+            try {
+                gesture.disconnect(signalId);
+            } catch (error) {
+                logger.debug("Pointer gesture signal was already disconnected", mouseButton, error);
+            }
+            try {
+                this.remove_action(gesture);
+            } catch (error) {
+                logger.debug("Pointer gesture was already removed", mouseButton, error);
+            }
+        });
     }
 
     handlePrimaryActivation() {
@@ -454,6 +477,7 @@ class TopBarButton extends PanelMenu.Button {
         if (this.destroyed) return;
         this.destroyed = true;
         this.removeMediaAppPropertyListeners();
+        for (const cleanup of this.pointerActionCleanups.splice(0).reverse()) cleanup();
         this.cancelPendingWidgetUpdate();
         this.cancelAppResolutionRetry();
         if (this.primaryActivationTimeoutId !== null) {

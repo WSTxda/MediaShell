@@ -11,6 +11,7 @@ import {
     FALLBACK_MEDIA_APP_ICON_NAME,
 } from "../../services/MediaAppResolver.js";
 import { createIcon, setGIcon } from "../IconUtils.js";
+import { installPrimaryClickAction } from "../PointerActionUtils.js";
 
 export default class PopupAppSelectorButton {
     constructor(popupContent, onActivate) {
@@ -23,6 +24,7 @@ export default class PopupAppSelectorButton {
         this.expandIcon = null;
         this.renderKey = null;
         this.hasMultipleMediaApps = null;
+        this.disconnectButtonClickAction = null;
     }
 
     get extensionController() {
@@ -109,26 +111,17 @@ export default class PopupAppSelectorButton {
     }
 
     installClickAction() {
-        if (typeof Clutter.ClickGesture !== "undefined") {
-            const clickAction = new Clutter.ClickGesture();
-            clickAction.set_n_clicks_required(1);
-            clickAction.set_recognize_on_press?.(true);
-            clickAction.connect("recognize", () => {
-                if (this.extensionController.getMediaApps().length > 1) this.onActivate?.();
-                return Clutter.EVENT_STOP;
-            });
-            this.button.add_action(clickAction);
-            return;
-        }
-
-        const clickAction = new Clutter.ClickAction();
-        clickAction.connect("clicked", () => {
-            if (this.extensionController.getMediaApps().length > 1) this.onActivate?.();
-        });
-        this.button.add_action(clickAction);
+        this.disconnectButtonClickAction = installPrimaryClickAction(
+            this.button,
+            () => this.onActivate?.(),
+            () => this.extensionController.getMediaApps().length > 1,
+        );
     }
 
     destroy() {
+        this.disconnectButtonClickAction?.();
+        this.disconnectButtonClickAction = null;
+
         this.container?.destroy();
         this.container = null;
         this.button = null;

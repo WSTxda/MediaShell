@@ -1,10 +1,10 @@
 // Owns the compact playback-control row shown in the top bar.
-import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
 import { PlaybackControlDefinitions } from "../PlaybackControlDefinitions.js";
 import { createIcon, setIconName } from "../IconUtils.js";
+import { installPrimaryClickAction } from "../PointerActionUtils.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
     PlaybackControlDefinitions.PREVIOUS.name,
@@ -92,7 +92,7 @@ export default class TopBarPlaybackControls {
                 name: controlDefinition.name,
                 styleClass: "system-status-icon no-margin",
             });
-            control = { actor, onClick };
+            control = { actor, onClick, disconnectClickAction: null };
             this.installClickAction(control);
             this.controlIcons.set(controlDefinition.name, control);
         }
@@ -104,23 +104,11 @@ export default class TopBarPlaybackControls {
     }
 
     installClickAction(control) {
-        if (typeof Clutter.ClickGesture !== "undefined") {
-            const clickAction = new Clutter.ClickGesture();
-            clickAction.set_n_clicks_required(1);
-            clickAction.set_recognize_on_press?.(true);
-            clickAction.connect("recognize", () => {
-                if (control.actor.reactive) control.onClick?.();
-                return Clutter.EVENT_STOP;
-            });
-            control.actor.add_action(clickAction);
-            return;
-        }
-
-        const clickAction = new Clutter.ClickAction();
-        clickAction.connect("clicked", () => {
-            if (control.actor.reactive) control.onClick?.();
-        });
-        control.actor.add_action(clickAction);
+        control.disconnectClickAction = installPrimaryClickAction(
+            control.actor,
+            () => control.onClick?.(),
+            () => control.actor.reactive,
+        );
     }
 
     reconcileOrder() {
@@ -139,6 +127,8 @@ export default class TopBarPlaybackControls {
     removePlaybackControlIcon(controlDefinition) {
         const control = this.controlIcons.get(controlDefinition.name);
         if (!control) return;
+        control.disconnectClickAction?.();
+        control.disconnectClickAction = null;
         control.actor.get_parent()?.remove_child(control.actor);
         control.actor.destroy();
         control.onClick = null;
@@ -157,10 +147,10 @@ export default class TopBarPlaybackControls {
 
     remove() {
         if (!this.actor) return;
+        for (const name of [...this.controlIcons.keys()]) this.removePlaybackControlIcon({ name });
         this.actor.get_parent()?.remove_child(this.actor);
         this.actor.destroy();
         this.actor = null;
-        this.controlIcons.clear();
     }
 
     destroy() {
