@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-15 00:18-0300\n"
+"POT-Creation-Date: 2026-06-21 23:19-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -262,18 +262,18 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:64
 #: src/shell/ui/popup/PopupAppSelectorList.js:167
+#: src/shell/ui/popup/PopupAppSelectorButton.js:66
 msgid "Unknown app"
 msgstr ""
 
 #: src/shell/ui/popup/PopupTrackInformation.js:59
-#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+#: src/shell/ui/topBar/TopBarTrackInformation.js:64
 msgid "Unknown artist"
 msgstr ""
 
 #: src/shell/ui/popup/PopupTrackInformation.js:60
-#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+#: src/shell/ui/topBar/TopBarTrackInformation.js:66
 msgid "Unknown album"
 msgstr ""
 

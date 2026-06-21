@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: MediaShell 1.0.0\n"
+"Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-14 17:04-0300\n"
+"POT-Creation-Date: 2026-06-21 23:19-0300\n"
 "PO-Revision-Date: 2026-06-13 21:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,11 @@ msgid "About MediaShell"
 msgstr "Acerca de MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:76
-msgid "MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top bar. It provides configurable track information, playback controls, album art, playback progress, app switching, and input actions without replacing GNOME's media stack."
+msgid ""
+"MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top "
+"bar. It provides configurable track information, playback controls, album "
+"art, playback progress, app switching, and input actions without replacing "
+"GNOME's media stack."
 msgstr ""
 "MediaShell integra las aplicaciones multimedia compatibles con MPRIS en la "
 "barra superior de GNOME Shell. Proporciona información configurable de la "
@@ -267,18 +271,18 @@ msgstr "Texto personalizado"
 msgid "Remove"
 msgstr "Quitar"
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:64
 #: src/shell/ui/popup/PopupAppSelectorList.js:167
+#: src/shell/ui/popup/PopupAppSelectorButton.js:66
 msgid "Unknown app"
 msgstr "Aplicación desconocida"
 
 #: src/shell/ui/popup/PopupTrackInformation.js:59
-#: src/shell/ui/topBar/TopBarTrackInformation.js:65
+#: src/shell/ui/topBar/TopBarTrackInformation.js:64
 msgid "Unknown artist"
 msgstr "Artista desconocido"
 
 #: src/shell/ui/popup/PopupTrackInformation.js:60
-#: src/shell/ui/topBar/TopBarTrackInformation.js:67
+#: src/shell/ui/topBar/TopBarTrackInformation.js:66
 msgid "Unknown album"
 msgstr "Álbum desconocido"
 
@@ -565,7 +569,9 @@ msgstr "Acciones del ratón"
 
 #: assets/ui/prefs.ui:654
 msgid "Assign actions to clicks and scrolling on the top bar button"
-msgstr "Asigna acciones a los clics y al desplazamiento del botón de la barra superior"
+msgstr ""
+"Asigna acciones a los clics y al desplazamiento del botón de la barra "
+"superior"
 
 #: assets/ui/prefs.ui:657
 msgid "Left Click / Tap"

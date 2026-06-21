@@ -5,11 +5,14 @@
   "url": "https://github.com/WSTxda/MediaShell",
   "settings-schema": "org.gnome.shell.extensions.mediashell",
   "gettext-domain": "mediashell@wstxda.github.com",
-  "version-name": "1.0.0",
+  "version-name": "1.0.1",
   "shell-version": [
     "47",
     "48",
     "49",
     "50"
-  ]
+  ],
+  "donations": {
+    "buymeacoffee": "wstxda"
+  }
 }
