@@ -193,6 +193,104 @@ async function checkCompatibility() {
     console.log("Compatibility declarations match runtime guards.");
 }
 
+// Verifies version-sensitive GNOME Shell API usage across maintained source files.
+async function checkGnomeShellCompatibility() {
+    const files = [
+        ...(await collect("src", (path) => extname(path) === ".js" || path.endsWith("metadata.json"))),
+        ...(await collect("assets", (path) => [".xml", ".ui"].includes(extname(path)))),
+    ];
+    const errors = [];
+
+    const forbiddenPatterns = [
+        [
+            /\bClutter\.(?:ClickAction|TapAction)\b/,
+            "removed Clutter action class; use ClickGesture or an isolated event fallback",
+        ],
+        [
+            /\bvertical\s*:/,
+            "deprecated St vertical property; use orientation with Clutter.Orientation",
+        ],
+        [/\bExtensionUtils\b|imports\.(?:ui|misc|gi)\b/, "legacy extension imports are not allowed"],
+    ];
+
+    for (const file of files) {
+        const text = await read(file);
+        for (const [pattern, description] of forbiddenPatterns) {
+            if (pattern.test(text)) errors.push(`${file}: ${description}`);
+        }
+    }
+
+    fail("GNOME Shell compatibility validation", errors);
+    console.log("GNOME Shell compatibility rules passed.");
+}
+
+// Verifies review-sensitive lifecycle and generated-artifact rules in the maintained source tree.
+async function checkGnomeReviewRules() {
+    const files = [
+        ...(await collect("src", (path) => extname(path) === ".js" || path.endsWith("metadata.json"))),
+        ...(await collect("assets", (path) => [".xml", ".ui"].includes(extname(path)))),
+    ];
+    const prefsEntry = await read("src/prefs.js");
+    const errors = [];
+
+    const forbiddenPatterns = [
+        [/\brun_dispose\s*\(/, "manual run_dispose usage"],
+        [/gschemas\.compiled/, "compiled GSettings schemas must not be shipped or referenced"],
+    ];
+
+    for (const file of files) {
+        const text = await read(file);
+        for (const [pattern, description] of forbiddenPatterns) {
+            if (pattern.test(text)) errors.push(`${file}: ${description}`);
+        }
+    }
+
+    if (/this\.preferencesController\b/.test(prefsEntry))
+        errors.push("src/prefs.js stores a window-scoped PreferencesController on the exported class");
+
+    fail("GNOME Shell review validation", errors);
+    console.log("GNOME Shell review rules passed.");
+}
+
+// Verifies MediaShell-specific release invariants that are intentionally project-owned.
+async function checkMediaShellInvariants() {
+    const metadata = JSON.parse(await read("src/metadata.json"));
+    const errors = [];
+
+    if (!metadata.donations?.buymeacoffee)
+        errors.push("metadata.json must keep the Buy Me a Coffee donation metadata for EGO");
+    if (!(await exists(rootPath("src/icons/hicolor/scalable/apps/mediashell.svg"))))
+        errors.push("application icon is missing from src/icons/hicolor/scalable/apps/mediashell.svg");
+
+    fail("MediaShell invariant validation", errors);
+    console.log("MediaShell project invariants passed.");
+}
+
+// Verifies release packaging configuration before the package is built.
+async function checkPackagingConfiguration() {
+    const packageJson = JSON.parse(await read("package.json"));
+    const resourceManifest = await read("assets/org.gnome.shell.extensions.mediashell.gresource.xml");
+    const errors = [];
+
+    const packCommand = packageJson.scripts?.["build:pack"] ?? "";
+    if (!packCommand.includes("--extra-source=icons"))
+        errors.push("build:pack must include the hicolor application icon directory");
+    for (const forbiddenSource of ["assets", "docs", "tests", "node_modules", "dist"])
+        if (packCommand.includes(`--extra-source=${forbiddenSource}`))
+            errors.push(`build:pack must not ship ${forbiddenSource} as an extra source`);
+
+    if (/images\//.test(resourceManifest) || /locale\//.test(resourceManifest))
+        errors.push("GResource manifest must not bundle screenshots or gettext catalogs");
+
+    if (!packageJson.scripts?.["check:package"]?.includes("scripts/check-package.mjs"))
+        errors.push("package.json must expose scripts/check-package.mjs as check:package");
+    if (!packageJson.scripts?.build?.includes("pnpm run check:package"))
+        errors.push("build script must validate the generated extension package");
+
+    fail("Packaging configuration validation", errors);
+    console.log("Packaging configuration passed.");
+}
+
 function parseSchemaKeys(schema) {
     return new Set([...schema.matchAll(/<key\s+name="([^"]+)"/g)].map((match) => match[1]));
 }
@@ -349,6 +447,10 @@ const checks = [
     ["JavaScript syntax", checkSyntax],
     ["imports and process boundaries", checkImports],
     ["compatibility declarations", checkCompatibility],
+    ["GNOME Shell compatibility", checkGnomeShellCompatibility],
+    ["GNOME Shell review rules", checkGnomeReviewRules],
+    ["MediaShell project invariants", checkMediaShellInvariants],
+    ["packaging configuration", checkPackagingConfiguration],
     ["settings and migrations", checkSettings],
     ["project references", checkProjectReferences],
     ["documentation", checkDocumentation],
