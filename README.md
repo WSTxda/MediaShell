@@ -4,7 +4,7 @@ A GNOME Shell extension that adds configurable MPRIS media controls to the top b
 
 [![Platform](https://img.shields.io/badge/linux-platform?style=for-the-badge&logo=linux&logoColor=white&label=platform&labelColor=21262D&color=6E7681)](https://www.kernel.org)
 [![GNOME](https://img.shields.io/badge/47%E2%80%9350-versions?style=for-the-badge&logo=gnome&logoColor=white&label=GNOME&labelColor=21262D&color=3584E4)](https://www.gnome.org)
-[![Release](https://img.shields.io/github/v/release/WSTxda/MediaShell?display_name=tag&style=for-the-badge&logo=github&labelColor=21262D&color=1F6FEB)](https://github.com/WSTxda/MediaShell/releases/latest)
+[![Release](https://img.shields.io/github/v/release/WSTxda/MediaShell?display_name=release&style=for-the-badge&logo=github&labelColor=21262D&color=1F6FEB)](https://github.com/WSTxda/MediaShell/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/WSTxda/MediaShell/total?style=for-the-badge&labelColor=21262D&color=238636)](https://github.com/WSTxda/MediaShell/releases)
 
 ![Banner](https://github.com/WSTxda/MediaShell/blob/main/assets/images/banner.svg)
