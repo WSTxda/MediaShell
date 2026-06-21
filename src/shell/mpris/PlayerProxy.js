@@ -5,7 +5,13 @@ import GLib from "gi://GLib";
 import { MPRIS_IFACE_NAME, MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
 import { LoopStatus, PlaybackStatus } from "../../shared/enums/MediaShellEnums.js";
 import { createLogger } from "../../shared/utils/log.js";
-import { metadataContainsTrack, normalizeLoopStatus, normalizePlaybackStatus } from "../../shared/utils/mpris.js";
+import {
+    MediaAppValidity,
+    metadataContainsTrack,
+    normalizeLoopStatus,
+    normalizePlaybackStatus,
+    resolveMediaAppValidity,
+} from "../../shared/utils/mpris.js";
 import PositionTracker from "./PositionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
@@ -276,29 +282,21 @@ export default class PlayerProxy {
     validateMediaApp() {
         const hasIdentity = Boolean(this.identity || this.desktopEntry);
         const hasTrackMetadata = this.hasCurrentTrackMetadata;
+        const validity = resolveMediaAppValidity({
+            hasIdentity,
+            hasTrackMetadata,
+            hasPresentedTrackMetadata: this.hasPresentedTrackMetadata,
+            playbackStatus: this.playbackStatus,
+        });
 
-        if (!hasIdentity) {
+        if (validity === MediaAppValidity.INVALID) {
             this.cancelMetadataInvalidation();
             this.setMediaAppInvalid(true);
             return;
         }
 
-        if (hasTrackMetadata) {
-            this.hasPresentedTrackMetadata = true;
-            this.cancelMetadataInvalidation();
-            this.setMediaAppInvalid(false);
-            return;
-        }
-
-        if (!this.hasPresentedTrackMetadata) {
-            this.setMediaAppInvalid(true);
-            return;
-        }
-
-        // An established endpoint with an incomplete metadata payload is still
-        // active while it reports Playing or Paused. Browsers commonly clear
-        // Metadata briefly while a feed hands playback to the next video.
-        if (this.playbackStatus !== PlaybackStatus.STOPPED) {
+        if (validity === MediaAppValidity.VALID) {
+            if (hasTrackMetadata) this.hasPresentedTrackMetadata = true;
             this.cancelMetadataInvalidation();
             this.setMediaAppInvalid(false);
             return;

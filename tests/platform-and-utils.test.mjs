@@ -139,10 +139,12 @@ test("visualizer styles produce bounded fixed-size levels", () => {
 test("MPRIS values are normalized to specification-safe defaults", async () => {
   const { LoopStatus, PlaybackStatus } = await import("../src/shared/enums/MediaShellEnums.js");
   const {
+    MediaAppValidity,
     MPRIS_NO_TRACK_PATH,
     metadataContainsTrack,
     normalizeLoopStatus,
     normalizePlaybackStatus,
+    resolveMediaAppValidity,
   } = await import("../src/shared/utils/mpris.js");
 
   assert.equal(normalizePlaybackStatus(PlaybackStatus.PLAYING), PlaybackStatus.PLAYING);
@@ -153,4 +155,59 @@ test("MPRIS values are normalized to specification-safe defaults", async () => {
   assert.equal(metadataContainsTrack({ "mpris:trackid": "/org/example/track/1" }), true);
   assert.equal(metadataContainsTrack({ "xesam:title": "Track without id" }), true);
   assert.equal(metadataContainsTrack({}), false);
+
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: false,
+      hasTrackMetadata: true,
+      hasPresentedTrackMetadata: false,
+      playbackStatus: PlaybackStatus.PLAYING,
+    }),
+    MediaAppValidity.INVALID,
+  );
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: true,
+      hasTrackMetadata: true,
+      hasPresentedTrackMetadata: false,
+      playbackStatus: PlaybackStatus.STOPPED,
+    }),
+    MediaAppValidity.VALID,
+  );
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: true,
+      hasTrackMetadata: false,
+      hasPresentedTrackMetadata: false,
+      playbackStatus: PlaybackStatus.PLAYING,
+    }),
+    MediaAppValidity.VALID,
+  );
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: true,
+      hasTrackMetadata: false,
+      hasPresentedTrackMetadata: false,
+      playbackStatus: PlaybackStatus.PAUSED,
+    }),
+    MediaAppValidity.VALID,
+  );
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: true,
+      hasTrackMetadata: false,
+      hasPresentedTrackMetadata: false,
+      playbackStatus: PlaybackStatus.STOPPED,
+    }),
+    MediaAppValidity.INVALID,
+  );
+  assert.equal(
+    resolveMediaAppValidity({
+      hasIdentity: true,
+      hasTrackMetadata: false,
+      hasPresentedTrackMetadata: true,
+      playbackStatus: PlaybackStatus.STOPPED,
+    }),
+    MediaAppValidity.EMPTY_STOPPED_GRACE,
+  );
 });
