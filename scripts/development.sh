@@ -2,6 +2,36 @@
 # Provides environment diagnostics and supported GNOME Shell development sessions.
 set -euo pipefail
 
+SUPPORTED_SHELL_MIN=47
+SUPPORTED_SHELL_MAX=50
+
+parse_shell_major() {
+  local version_output=$1
+  if [[ "$version_output" =~ ([0-9]+) ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  return 1
+}
+
+assert_supported_shell_version() {
+  local version_output=$1
+  local shell_major
+
+  if ! shell_major=$(parse_shell_major "$version_output"); then
+    printf 'MediaShell: unable to parse the GNOME Shell version from: %s\n' "$version_output" >&2
+    exit 1
+  fi
+
+  if (( shell_major < SUPPORTED_SHELL_MIN || shell_major > SUPPORTED_SHELL_MAX )); then
+    printf 'MediaShell: GNOME Shell %s through %s is required; found %s.\n' \
+      "$SUPPORTED_SHELL_MIN" "$SUPPORTED_SHELL_MAX" "$version_output" >&2
+    exit 1
+  fi
+
+  printf '%s\n' "$shell_major"
+}
+
 doctor_main() {
   missing_commands=()
   for command in node pnpm gjs glib-compile-resources glib-compile-schemas gnome-extensions gnome-shell msgfmt xgettext; do
@@ -25,16 +55,7 @@ doctor_main() {
     printf 'MediaShell: unable to read the GNOME Shell version.\n' >&2
     exit 1
   }
-  if [[ "$shell_version_output" =~ ([0-9]+) ]]; then
-    shell_major=${BASH_REMATCH[1]}
-  else
-    printf 'MediaShell: unable to parse the GNOME Shell version from: %s\n' "$shell_version_output" >&2
-    exit 1
-  fi
-  if (( shell_major < 47 || shell_major > 50 )); then
-    printf 'MediaShell: GNOME Shell 47 through 50 is required; found %s.\n' "$shell_version_output" >&2
-    exit 1
-  fi
+  shell_major=$(assert_supported_shell_version "$shell_version_output")
 
   adwaita_version=$(gjs -c 'imports.gi.versions.Adw = "1"; const Adw = imports.gi.Adw; print(`${Adw.get_major_version()}.${Adw.get_minor_version()}.${Adw.get_micro_version()}`);' 2>&1) || {
     printf 'MediaShell: unable to load Libadwaita through GJS:\n%s\n' "$adwaita_version" >&2
@@ -74,21 +95,7 @@ debug_main() {
     printf 'MediaShell: unable to read the GNOME Shell version.\n' >&2
     exit 1
   }
-  if [[ "$shell_version_output" =~ ([0-9]+) ]]; then
-    shell_major=${BASH_REMATCH[1]}
-  else
-    shell_major=""
-  fi
-
-  if [[ -z "$shell_major" ]]; then
-    printf 'MediaShell: unable to parse the GNOME Shell version from: %s\n' "$shell_version_output" >&2
-    exit 1
-  fi
-
-  if (( shell_major < 47 || shell_major > 50 )); then
-    printf 'MediaShell: supported GNOME Shell versions are 47 through 50; found %s.\n' "$shell_version_output" >&2
-    exit 1
-  fi
+  shell_major=$(assert_supported_shell_version "$shell_version_output")
 
   export G_MESSAGES_DEBUG=all
   export SHELL_DEBUG=all

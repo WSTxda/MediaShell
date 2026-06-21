@@ -119,16 +119,25 @@ gnome-extensions enable mediashell@wstxda.github.com
 
 ## Development
 
-Use the Node.js and pnpm versions listed in `package.json`, along with GJS, GNU gettext, GLib development tools, GNOME Shell, and `gnome-extensions`.
+Use the Node.js and pnpm versions listed in `package.json`, along with GJS, GNU gettext, GLib development tools, GNOME Shell, and `gnome-extensions`. Release verification also expects `shexli` in `PATH`.
 
 ```bash
 pnpm install
 pnpm doctor
 pnpm check
 pnpm build
+pnpm verify
 ```
 
-The generated extension package is saved to `dist/builds/`.
+The generated extension package is saved to `dist/builds/`. `pnpm build` validates source and package contents; `pnpm verify` runs the full release-oriented path, including `shexli` against the generated archive.
+
+From the repository root, inspect or install the generated package with the full path:
+
+```bash
+pnpm run check:package
+pnpm run check:shexli
+gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip
+```
 
 ### Documentation
 

@@ -4,7 +4,7 @@
 
 Use the Node.js and pnpm versions declared in `package.json`. The GNOME runtime and compatibility list are declared in `src/metadata.json` and `src/shared/constants/platform.js`.
 
-The development commands also require GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource tools.
+The development commands also require GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource tools. `pnpm verify` additionally expects `shexli` in `PATH`.
 
 ```bash
 pnpm install
@@ -18,12 +18,18 @@ pnpm debug
 pnpm test
 pnpm check
 pnpm build
+pnpm verify
 pnpm run check:package
+pnpm run check:shexli
 ```
 
-`pnpm check` is the maintained source validation entry point. It validates JavaScript syntax, import boundaries, compatibility declarations, GNOME Shell compatibility pitfalls, review-sensitive lifecycle rules, MediaShell project invariants, packaging configuration, settings references, documentation links, unit tests, XML resources, schemas, D-Bus contracts, translation catalogs, and the syntax of the development script.
+`pnpm check` is the maintained source validation entry point. It validates JavaScript syntax, import boundaries, compatibility declarations, review-sensitive API and lifecycle rules, MediaShell project invariants, packaging configuration, script wiring, settings references, documentation links, unit tests, XML resources, schemas, D-Bus contracts, translation catalogs, and the syntax of the development script.
 
-`pnpm build` runs `pnpm check`, builds the extension package, and then runs `pnpm run check:package` against the generated `.shell-extension.zip`. Use `pnpm run check:package` directly when inspecting an existing package under `dist/builds/`, or pass a package path to `node scripts/check-package.mjs`.
+`pnpm build` runs `pnpm check`, stages the runtime tree through `pnpm run build:stage`, builds the extension package, and then runs `pnpm run check:package` against `dist/builds/mediashell@wstxda.github.com.shell-extension.zip`. Use `pnpm run check:package` directly when inspecting that generated package, or pass a package path to `node scripts/check-package.mjs`.
+
+`pnpm verify` is the release-oriented command. It runs `pnpm build` and then `pnpm run check:shexli` against the generated package.
+
+`pnpm run check:shexli` runs `shexli dist/builds/mediashell@wstxda.github.com.shell-extension.zip`. When running `shexli` manually from the repository root, use the `dist/builds/` path; `shexli mediashell@wstxda.github.com.shell-extension.zip` only works if that file exists in the current directory.
 
 `python3 scripts/check-assets.py` may be run directly while changing schemas, GtkBuilder files, D-Bus XML, GResources, or translations.
 
@@ -100,7 +106,7 @@ Record the Shell release, media app, MPRIS bus name, relevant settings, reproduc
 3. Refresh translations when visible strings or source references change.
 4. Run `pnpm check` for source validation.
 5. Run `pnpm build`, which also validates the generated package contents.
-6. Run `shexli` against the generated `.shell-extension.zip` before uploading to EGO.
+6. Run `pnpm verify` before uploading to EGO.
 7. Perform the live test level required by the changed subsystems.
 8. Keep screenshots and store icon exports outside the installable package.
 9. Publish the package generated under `dist/builds/`.

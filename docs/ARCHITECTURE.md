@@ -1,6 +1,6 @@
 # Architecture
 
-MediaShell separates GNOME Shell runtime code, Preferences code, and toolkit-independent shared logic. Source boundaries are enforced by `scripts/check.mjs`, while generated package contents are enforced by `scripts/check-package.mjs`.
+MediaShell separates GNOME Shell runtime code, Preferences code, toolkit-independent shared logic, and developer tooling. Source boundaries are enforced by `scripts/check.mjs`, while generated package contents are enforced by `scripts/check-package.mjs`.
 
 ## Directory map
 
@@ -10,6 +10,7 @@ MediaShell separates GNOME Shell runtime code, Preferences code, and toolkit-ind
 - `src/prefs/`: GTK and Libadwaita Preferences implementation
 - `src/shared/`: constants, enums, migrations, and pure utilities
 - `assets/`: GtkBuilder UI, GSettings schema, D-Bus XML, translations, and repository/store images
+- `scripts/`: validation, package inspection, and local GNOME development helpers
 - `tests/`: Node.js tests for shared and policy logic
 
 Runtime packaging must include only files required by GNOME Shell at install time. Screenshots, source translation catalogs, documentation, tests, and repository-only media must not be shipped in the `.shell-extension.zip`. The build pipeline validates this with `scripts/check-package.mjs` after `gnome-extensions pack` creates the archive.
@@ -80,13 +81,7 @@ The EGO package must not ship compiled schemas, screenshots, `.po`/`.pot` source
 
 ## Validation model
 
-Validation is split by artifact boundary:
-
-- `scripts/check.mjs` validates maintained source, docs, settings, translations, compatibility rules, review-sensitive patterns, MediaShell invariants, and package configuration before a build.
-- `scripts/check-package.mjs` validates the generated `.shell-extension.zip` after packaging. It checks required runtime entries, rejects repository-only files, rejects store screenshots, rejects source translation catalogs, rejects compiled schemas, and scans packaged text files for review-sensitive API regressions.
-- `scripts/check-assets.py` focuses on GResource, GSettings, GtkBuilder, D-Bus XML, and gettext catalog structure.
-
-Rules that encode GNOME Shell compatibility belong in the compatibility group. Rules that encode MediaShell release policy belong in the project invariant or packaging group.
+Validation is split by artifact boundary because a package cannot be inspected before it exists: `scripts/check.mjs` validates the maintained source tree, `scripts/check-package.mjs` validates the generated `.shell-extension.zip`, and `shexli` is an external, EGO-oriented lint step that also targets the generated package. Shared constants for these scripts live in `scripts/project.mjs`. See [Development and validation](DEVELOPMENT.md) for the exact commands.
 
 ## Private GNOME Shell integration
 

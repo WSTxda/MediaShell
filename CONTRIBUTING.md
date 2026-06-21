@@ -34,7 +34,11 @@ pnpm check
 pnpm build
 ```
 
-`pnpm build` runs source validation first, creates the `.shell-extension.zip`, and validates the generated package contents before it finishes.
+`pnpm build` runs source validation first, creates the `.shell-extension.zip`, and validates the generated package contents before it finishes. For release or EGO-facing changes, install `shexli` and run the full verification command as well:
+
+```bash
+pnpm verify
+```
 
 ## Translations
 
@@ -50,4 +54,4 @@ pnpm run translations
 
 Keep changes narrowly scoped. Describe the behavior being changed, the affected MPRIS or GNOME Shell scenario, and the live checks performed. Include focused logs for lifecycle, D-Bus, or private Shell API failures.
 
-Follow the ownership and process boundaries in [Architecture](docs/ARCHITECTURE.md) and the risk-based test guidance in [Development and validation](docs/DEVELOPMENT.md). For packaging or compatibility changes, include the `pnpm check`, `pnpm build`, packaged live-test, and `shexli` result in the pull request notes.
+Follow the ownership and process boundaries in [Architecture](docs/ARCHITECTURE.md) and the risk-based test guidance in [Development and validation](docs/DEVELOPMENT.md). For packaging or compatibility changes, include the `pnpm check`, `pnpm build`, `pnpm verify`, and packaged live-test results in the pull request notes.

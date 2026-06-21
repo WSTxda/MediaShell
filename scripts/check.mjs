@@ -2,9 +2,8 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { access, readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { dirname, extname, join, normalize, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { PREFERENCE_WIDGET_BINDINGS } from "../src/prefs/bindings/PreferenceBindings.js";
 import { INPUT_ACTION_DEFINITIONS, KEYBOARD_SHORTCUT_KEYS } from "../src/shared/constants/inputActions.js";
@@ -18,25 +17,22 @@ import {
     SHORTCUT_SETTING_KEY_MIGRATIONS,
 } from "../src/shared/settings/SettingsMigration.js";
 import { SETTINGS_SPEC } from "../src/shell/settings/SettingsSpec.js";
-
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
-const IGNORED_DIRECTORIES = new Set([".git", "dist", "node_modules", "__pycache__"]);
-
-function rootPath(path) {
-    return join(ROOT, path);
-}
+import {
+    EXTENSION_PACKAGE,
+    EXTENSION_UUID,
+    FORBIDDEN_API_PATTERNS,
+    IGNORED_DIRECTORIES,
+    ROOT,
+    pathExists,
+    rootPath,
+} from "./project.mjs";
 
 async function read(path) {
     return readFile(rootPath(path), "utf8");
 }
 
 async function exists(path) {
-    try {
-        await access(path);
-        return true;
-    } catch {
-        return false;
-    }
+    return pathExists(path);
 }
 
 async function isFile(path) {
@@ -193,38 +189,7 @@ async function checkCompatibility() {
     console.log("Compatibility declarations match runtime guards.");
 }
 
-// Verifies version-sensitive GNOME Shell API usage across maintained source files.
-async function checkGnomeShellCompatibility() {
-    const files = [
-        ...(await collect("src", (path) => extname(path) === ".js" || path.endsWith("metadata.json"))),
-        ...(await collect("assets", (path) => [".xml", ".ui"].includes(extname(path)))),
-    ];
-    const errors = [];
-
-    const forbiddenPatterns = [
-        [
-            /\bClutter\.(?:ClickAction|TapAction)\b/,
-            "removed Clutter action class; use ClickGesture or an isolated event fallback",
-        ],
-        [
-            /\bvertical\s*:/,
-            "deprecated St vertical property; use orientation with Clutter.Orientation",
-        ],
-        [/\bExtensionUtils\b|imports\.(?:ui|misc|gi)\b/, "legacy extension imports are not allowed"],
-    ];
-
-    for (const file of files) {
-        const text = await read(file);
-        for (const [pattern, description] of forbiddenPatterns) {
-            if (pattern.test(text)) errors.push(`${file}: ${description}`);
-        }
-    }
-
-    fail("GNOME Shell compatibility validation", errors);
-    console.log("GNOME Shell compatibility rules passed.");
-}
-
-// Verifies review-sensitive lifecycle and generated-artifact rules in the maintained source tree.
+// Verifies review-sensitive API patterns and lifecycle rules in the maintained source tree.
 async function checkGnomeReviewRules() {
     const files = [
         ...(await collect("src", (path) => extname(path) === ".js" || path.endsWith("metadata.json"))),
@@ -233,14 +198,9 @@ async function checkGnomeReviewRules() {
     const prefsEntry = await read("src/prefs.js");
     const errors = [];
 
-    const forbiddenPatterns = [
-        [/\brun_dispose\s*\(/, "manual run_dispose usage"],
-        [/gschemas\.compiled/, "compiled GSettings schemas must not be shipped or referenced"],
-    ];
-
     for (const file of files) {
         const text = await read(file);
-        for (const [pattern, description] of forbiddenPatterns) {
+        for (const { pattern, description } of FORBIDDEN_API_PATTERNS) {
             if (pattern.test(text)) errors.push(`${file}: ${description}`);
         }
     }
@@ -249,7 +209,7 @@ async function checkGnomeReviewRules() {
         errors.push("src/prefs.js stores a window-scoped PreferencesController on the exported class");
 
     fail("GNOME Shell review validation", errors);
-    console.log("GNOME Shell review rules passed.");
+    console.log("GNOME Shell compatibility and review rules passed.");
 }
 
 // Verifies MediaShell-specific release invariants that are intentionally project-owned.
@@ -281,11 +241,6 @@ async function checkPackagingConfiguration() {
 
     if (/images\//.test(resourceManifest) || /locale\//.test(resourceManifest))
         errors.push("GResource manifest must not bundle screenshots or gettext catalogs");
-
-    if (!packageJson.scripts?.["check:package"]?.includes("scripts/check-package.mjs"))
-        errors.push("package.json must expose scripts/check-package.mjs as check:package");
-    if (!packageJson.scripts?.build?.includes("pnpm run check:package"))
-        errors.push("build script must validate the generated extension package");
 
     fail("Packaging configuration validation", errors);
     console.log("Packaging configuration passed.");
@@ -377,11 +332,48 @@ async function checkProjectReferences() {
     const schemaId = schema.match(/<schema\s+id="([^"]+)"/)?.[1];
     if (schemaId !== metadata["settings-schema"])
         errors.push("metadata settings-schema differs from the compiled schema ID");
+    if (metadata.uuid !== EXTENSION_UUID)
+        errors.push(`metadata uuid must be ${EXTENSION_UUID}`);
     if (metadata.uuid !== `${metadata["gettext-domain"]}`)
         errors.push("metadata uuid and gettext-domain differ");
 
     fail("Project reference validation", errors);
     console.log("Project entry points and package script references are valid.");
+}
+
+// Verifies that developer scripts are discoverable and wired consistently.
+async function checkScriptInventory() {
+    const packageJson = JSON.parse(await read("package.json"));
+    const scriptFiles = await collect("scripts", (path) => [".js", ".mjs", ".py", ".sh"].includes(extname(path)));
+    const errors = [];
+
+    const requiredPackageScripts = {
+        check: "node scripts/check.mjs",
+        "check:package": "node scripts/check-package.mjs",
+        "check:shexli": `shexli ${EXTENSION_PACKAGE}`,
+        verify: "pnpm run build && pnpm run check:shexli",
+        doctor: "bash scripts/development.sh doctor",
+        debug: "bash scripts/development.sh debug",
+        build: "pnpm run check",
+    };
+
+    for (const [name, expectedFragment] of Object.entries(requiredPackageScripts)) {
+        const command = packageJson.scripts?.[name];
+        if (!command) {
+            errors.push(`package.json is missing script ${name}`);
+            continue;
+        }
+        if (!command.includes(expectedFragment))
+            errors.push(`package.json script ${name} must include ${expectedFragment}`);
+    }
+
+    if (!packageJson.scripts?.build?.includes("pnpm run build:stage"))
+        errors.push("build script should use build:stage to keep packaging steps readable");
+    if (!packageJson.scripts?.build?.includes("pnpm run check:package"))
+        errors.push("build script must validate the generated extension package");
+
+    fail("Script inventory validation", errors);
+    console.log(`Script inventory passed for ${scriptFiles.length} maintained scripts.`);
 }
 
 function stripLinkSuffix(target) {
@@ -447,12 +439,12 @@ const checks = [
     ["JavaScript syntax", checkSyntax],
     ["imports and process boundaries", checkImports],
     ["compatibility declarations", checkCompatibility],
-    ["GNOME Shell compatibility", checkGnomeShellCompatibility],
     ["GNOME Shell review rules", checkGnomeReviewRules],
     ["MediaShell project invariants", checkMediaShellInvariants],
     ["packaging configuration", checkPackagingConfiguration],
     ["settings and migrations", checkSettings],
     ["project references", checkProjectReferences],
+    ["script inventory", checkScriptInventory],
     ["documentation", checkDocumentation],
 ];
 

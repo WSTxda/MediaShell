@@ -1,21 +1,25 @@
 // Validates the generated GNOME Shell extension package before release or upload.
 
 import { spawnSync } from "node:child_process";
-import { access } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+import { relative, resolve } from "node:path";
 
-const ROOT = fileURLToPath(new URL("../", import.meta.url));
-const DEFAULT_PACKAGE = "dist/builds/mediashell@wstxda.github.com.shell-extension.zip";
-const packagePath = process.argv[2] ?? join(ROOT, DEFAULT_PACKAGE);
+import { SUPPORTED_GNOME_SHELL_VERSIONS } from "../src/shared/constants/platform.js";
+import {
+    EXTENSION_PACKAGE,
+    EXTENSION_UUID,
+    FORBIDDEN_API_PATTERNS,
+    ROOT,
+    pathExists,
+    rootPath,
+} from "./project.mjs";
 
-async function exists(path) {
-    try {
-        await access(path);
-        return true;
-    } catch {
-        return false;
-    }
+const inputPackagePath = process.argv[2] ?? EXTENSION_PACKAGE;
+const packagePath = resolve(ROOT, inputPackagePath);
+const displayPackagePath = relative(ROOT, packagePath) || inputPackagePath;
+
+async function readJson(path) {
+    return JSON.parse(await readFile(path, "utf8"));
 }
 
 function fail(errors) {
@@ -56,9 +60,7 @@ print(json.dumps({"entries": entries, "contents": contents}))
     });
 
     if (result.error) throw result.error;
-    if (result.status !== 0) {
-        throw new Error(result.stderr.trim() || "python3 zipfile validation failed");
-    }
+    if (result.status !== 0) throw new Error(result.stderr.trim() || "python3 zipfile validation failed");
 
     return JSON.parse(result.stdout);
 }
@@ -74,6 +76,36 @@ function validateArchiveShape(entries) {
         if (name.startsWith("/") || name.includes("../") || name.startsWith("../"))
             errors.push(`${name}: unsafe archive path`);
     }
+
+    return errors;
+}
+
+function validateMetadata(metadata, packageJson) {
+    const errors = [];
+    const requiredFields = [
+        "uuid",
+        "name",
+        "description",
+        "shell-version",
+        "settings-schema",
+        "gettext-domain",
+        "version-name",
+        "url",
+    ];
+
+    for (const field of requiredFields) {
+        if (!(field in metadata)) errors.push(`metadata.json is missing ${field}`);
+    }
+
+    if (metadata.uuid !== EXTENSION_UUID) errors.push(`metadata.json uuid must be ${EXTENSION_UUID}`);
+    if (metadata["gettext-domain"] !== EXTENSION_UUID)
+        errors.push(`metadata.json gettext-domain must be ${EXTENSION_UUID}`);
+    if (metadata["version-name"] !== packageJson.version)
+        errors.push("metadata.json version-name differs from package.json version");
+    if (JSON.stringify(metadata["shell-version"]) !== JSON.stringify(SUPPORTED_GNOME_SHELL_VERSIONS))
+        errors.push("metadata.json shell-version differs from supported platform constants");
+    if (!metadata.donations?.buymeacoffee)
+        errors.push("metadata.json is missing Buy Me a Coffee donation metadata");
 
     return errors;
 }
@@ -125,16 +157,8 @@ function validateForbiddenEntries(entries) {
 
 function validateTextContents(contents) {
     const errors = [];
-    const forbiddenPatterns = [
-        [/\bClutter\.(?:ClickAction|TapAction)\b/, "removed Clutter action class"],
-        [/\bvertical\s*:/, "deprecated St vertical property"],
-        [/\bExtensionUtils\b|imports\.(?:ui|misc|gi)\b/, "legacy imports or ExtensionUtils usage"],
-        [/\brun_dispose\s*\(/, "manual run_dispose usage"],
-        [/gschemas\.compiled/, "compiled GSettings schema reference"],
-    ];
-
     for (const [name, text] of Object.entries(contents)) {
-        for (const [pattern, description] of forbiddenPatterns) {
+        for (const { pattern, description } of FORBIDDEN_API_PATTERNS) {
             if (pattern.test(text)) errors.push(`${name}: ${description}`);
         }
     }
@@ -142,8 +166,11 @@ function validateTextContents(contents) {
     return errors;
 }
 
-if (!(await exists(packagePath))) {
-    console.error(`Package validation failed:\n- package not found: ${packagePath}`);
+if (!(await pathExists(packagePath))) {
+    const hint = displayPackagePath.endsWith(`${EXTENSION_UUID}.shell-extension.zip`) && displayPackagePath !== EXTENSION_PACKAGE
+        ? `\n- from the repository root, use: ${EXTENSION_PACKAGE}`
+        : "";
+    console.error(`Package validation failed:\n- package not found: ${displayPackagePath}${hint}`);
     process.exit(1);
 }
 
@@ -155,6 +182,7 @@ try {
     process.exit(1);
 }
 
+const packageJson = await readJson(rootPath("package.json"));
 const entries = archive.entries;
 const entrySet = new Set(entries.map(({ name }) => name));
 let metadata = null;
@@ -171,9 +199,10 @@ if (archive.contents["metadata.json"]) {
 }
 
 errors.push(...validateArchiveShape(entries));
+if (metadata !== null) errors.push(...validateMetadata(metadata, packageJson));
 errors.push(...validateRequiredRuntimeEntries(entrySet, metadata));
 errors.push(...validateForbiddenEntries(entries));
 errors.push(...validateTextContents(archive.contents));
 
 fail(errors);
-console.log(`Package validation passed for ${entries.filter(({ is_dir }) => !is_dir).length} runtime files.`);
+console.log(`Package validation passed for ${entries.length} runtime files: ${displayPackagePath}`);
