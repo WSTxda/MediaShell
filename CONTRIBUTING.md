@@ -34,6 +34,8 @@ pnpm check
 pnpm build
 ```
 
+`pnpm build` runs source validation first, creates the `.shell-extension.zip`, and validates the generated package contents before it finishes.
+
 ## Translations
 
 Download the [.pot](https://github.com/WSTxda/MediaShell/blob/main/assets/locale/mediashell%40wstxda.github.com.pot) template from `assets/locale/` and translate it using [Gtranslator](https://flathub.org/apps/org.gnome.Gtranslator) or [Poedit](https://flathub.org/apps/net.poedit.Poedit). Open a pull request with the translated `.po` file.
@@ -48,4 +50,4 @@ pnpm run translations
 
 Keep changes narrowly scoped. Describe the behavior being changed, the affected MPRIS or GNOME Shell scenario, and the live checks performed. Include focused logs for lifecycle, D-Bus, or private Shell API failures.
 
-Follow the ownership and process boundaries in [Architecture](docs/ARCHITECTURE.md) and the risk-based test guidance in [Development and validation](docs/DEVELOPMENT.md).
+Follow the ownership and process boundaries in [Architecture](docs/ARCHITECTURE.md) and the risk-based test guidance in [Development and validation](docs/DEVELOPMENT.md). For packaging or compatibility changes, include the `pnpm check`, `pnpm build`, packaged live-test, and `shexli` result in the pull request notes.

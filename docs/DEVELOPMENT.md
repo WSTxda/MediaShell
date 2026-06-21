@@ -18,9 +18,12 @@ pnpm debug
 pnpm test
 pnpm check
 pnpm build
+pnpm run check:package
 ```
 
-`pnpm check` is the maintained validation entry point. It validates JavaScript syntax, import boundaries, settings references, documentation links, unit tests, XML resources, schemas, D-Bus contracts, translation catalogs, and the syntax of the development script.
+`pnpm check` is the maintained source validation entry point. It validates JavaScript syntax, import boundaries, compatibility declarations, GNOME Shell compatibility pitfalls, review-sensitive lifecycle rules, MediaShell project invariants, packaging configuration, settings references, documentation links, unit tests, XML resources, schemas, D-Bus contracts, translation catalogs, and the syntax of the development script.
+
+`pnpm build` runs `pnpm check`, builds the extension package, and then runs `pnpm run check:package` against the generated `.shell-extension.zip`. Use `pnpm run check:package` directly when inspecting an existing package under `dist/builds/`, or pass a package path to `node scripts/check-package.mjs`.
 
 `python3 scripts/check-assets.py` may be run directly while changing schemas, GtkBuilder files, D-Bus XML, GResources, or translations.
 
@@ -93,10 +96,13 @@ Record the Shell release, media app, MPRIS bus name, relevant settings, reproduc
 ## Release checks
 
 1. Start from a clean tree.
-2. Update release metadata in the manifest and package files.
-3. Refresh translations.
-4. Run `pnpm check` and `pnpm build`.
-5. Perform the live test level required by the changed subsystems.
-6. Publish the package generated under `dist/builds/`.
+2. Update release metadata in the manifest, package file, and gettext catalog headers.
+3. Refresh translations when visible strings or source references change.
+4. Run `pnpm check` for source validation.
+5. Run `pnpm build`, which also validates the generated package contents.
+6. Run `shexli` against the generated `.shell-extension.zip` before uploading to EGO.
+7. Perform the live test level required by the changed subsystems.
+8. Keep screenshots and store icon exports outside the installable package.
+9. Publish the package generated under `dist/builds/`.
 
 Do not maintain release instructions as prose duplication of checks that can be expressed in code. Add automated validation only when it catches an executable or structural failure without prescribing editorial wording.

@@ -1,6 +1,6 @@
 # Architecture
 
-MediaShell separates GNOME Shell runtime code, Preferences code, and toolkit-independent shared logic. The boundary is enforced by `scripts/check.mjs`.
+MediaShell separates GNOME Shell runtime code, Preferences code, and toolkit-independent shared logic. Source boundaries are enforced by `scripts/check.mjs`, while generated package contents are enforced by `scripts/check-package.mjs`.
 
 ## Directory map
 
@@ -9,8 +9,16 @@ MediaShell separates GNOME Shell runtime code, Preferences code, and toolkit-ind
 - `src/prefs.js`: Preferences entry point
 - `src/prefs/`: GTK and Libadwaita Preferences implementation
 - `src/shared/`: constants, enums, migrations, and pure utilities
-- `assets/`: GtkBuilder UI, GSettings schema, D-Bus XML, translations, and images
+- `assets/`: GtkBuilder UI, GSettings schema, D-Bus XML, translations, and repository/store images
 - `tests/`: Node.js tests for shared and policy logic
+
+Runtime packaging must include only files required by GNOME Shell at install time. Screenshots, source translation catalogs, documentation, tests, and repository-only media must not be shipped in the `.shell-extension.zip`. The build pipeline validates this with `scripts/check-package.mjs` after `gnome-extensions pack` creates the archive.
+
+## Compatibility baseline
+
+The supported GNOME Shell versions are declared in `src/metadata.json` and `src/shared/constants/platform.js`. Review and validation treat those two files as the compatibility contract.
+
+The project follows a sliding stable-window policy: when a new supported Shell version is added, the oldest unsupported compatibility branch should be removed with the same change. Prefer one code path that works across the supported window; use version branches only when they are isolated, documented by the owning component, and required by a real API difference.
 
 ## Process boundaries
 
@@ -60,7 +68,25 @@ Migrations copy legacy user values only when the destination does not already ha
 
 Property changes should update the narrowest affected component. Rebuilding the complete Top Bar button is reserved for placement changes that cannot be reconciled in place.
 
-Actor creation, signal ownership, and animation sources belong to the component that renders them. Hidden or unmapped visual components must stop timers and avoid background work.
+Actor creation, signal ownership, pointer gestures, and animation sources belong to the component that renders them. Hidden or unmapped visual components must stop timers and avoid background work.
+
+Top Bar pointer handling uses `Clutter.ClickGesture` when available and never uses removed `Clutter.ClickAction` or `Clutter.TapAction`. Older supported Shell versions use isolated event-signal fallbacks without reintroducing removed action classes.
+
+## Review-sensitive integration
+
+Preferences must not retain window-scoped controllers on the exported Preferences class. `PreferencesController` owns the window lifecycle, connects `close-request`, and releases binders, controllers, settings, builder, and window references during teardown.
+
+The EGO package must not ship compiled schemas, screenshots, `.po`/`.pot` source catalogs, tests, documentation, repository-only assets, or store raster exports. Store screenshots and icon exports are managed separately from the installable extension package. Source checks protect the build configuration, and package checks inspect the final archive.
+
+## Validation model
+
+Validation is split by artifact boundary:
+
+- `scripts/check.mjs` validates maintained source, docs, settings, translations, compatibility rules, review-sensitive patterns, MediaShell invariants, and package configuration before a build.
+- `scripts/check-package.mjs` validates the generated `.shell-extension.zip` after packaging. It checks required runtime entries, rejects repository-only files, rejects store screenshots, rejects source translation catalogs, rejects compiled schemas, and scans packaged text files for review-sensitive API regressions.
+- `scripts/check-assets.py` focuses on GResource, GSettings, GtkBuilder, D-Bus XML, and gettext catalog structure.
+
+Rules that encode GNOME Shell compatibility belong in the compatibility group. Rules that encode MediaShell release policy belong in the project invariant or packaging group.
 
 ## Private GNOME Shell integration
 

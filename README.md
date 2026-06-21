@@ -5,16 +5,16 @@ A GNOME Shell extension that adds configurable MPRIS media controls to the top b
 [![Platform](https://img.shields.io/badge/linux-platform?style=for-the-badge&logo=linux&logoColor=white&label=platform&labelColor=21262D&color=6E7681)](https://www.kernel.org)
 [![GNOME](https://img.shields.io/badge/47%E2%80%9350-versions?style=for-the-badge&logo=gnome&logoColor=white&label=GNOME&labelColor=21262D&color=3584E4)](https://www.gnome.org)
 [![Release](https://img.shields.io/github/v/release/WSTxda/MediaShell?display_name=release&style=for-the-badge&logo=github&labelColor=21262D&color=1F6FEB)](https://github.com/WSTxda/MediaShell/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/WSTxda/MediaShell/total?style=for-the-badge&labelColor=21262D&color=238636)](https://github.com/WSTxda/MediaShell/releases)
+[![Downloads](https://img.shields.io/github/downloads/WSTxda/MediaShell/latest/total?sort=date&style=for-the-badge&label=Downloads&labelColor=21262D&color=238636)](https://github.com/WSTxda/MediaShell/releases)
 
-![Banner](https://github.com/WSTxda/MediaShell/blob/main/assets/images/banner.svg)
+![Banner](https://raw.githubusercontent.com/WSTxda/MediaShell/main/assets/images/banner.svg)
 
 MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and a switcher for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
 
 <details>
   <summary>Screenshots</summary>
 
-### Workspaces
+### Workspace
 
 <table>
   <tr>
@@ -66,11 +66,11 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 * The top bar and popup use the GNOME Shell UI toolkit and follow the same design as Quick Settings.
 * Preferences are built with GTK4 and Libadwaita, adhering to the GNOME Human Interface Guidelines.
 
-#### Switching between apps
+#### App selector
 
-* The app selector in the popup switches between any active media app.
-* The pin feature keeps a media app selected while it's playing, but this selection does not save across shell restarts.
-* You can raise or close an app's window if its MPRIS implementation supports it.
+* The App selector in the Popup switches between any active media app.
+* The pin feature keeps a media app selected while it is playing, but this selection does not save across shell restarts.
+* You can raise or quit an app's window if its MPRIS implementation supports it.
 * Block apps that you don't want MediaShell to detect, without affecting their MPRIS service.
 
 #### Album art
@@ -80,12 +80,13 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 
 #### Mouse and keyboard
 
-* Left, middle, and right click actions as well as scroll actions on the top bar button.
-* Global keyboard shortcuts for playback, volume, app switching, raising or quitting, opening the popup, and accessing settings.
+* Left, middle, and right click actions as well as scroll actions on the Top Bar button.
+* Global keyboard shortcuts for playback, volume, app switching, raising or quitting, opening the Popup, and accessing settings.
 
 #### Layout
 
-* Choose where the button is placed in the top bar.
+* Choose where the button is placed in the Top Bar.
+* Configure Track Information, Playback Controls, and the optional Top Bar Visualizer in a stable element order.
 * Hide the built-in GNOME Shell media controls from the notification list and use MediaShell instead.
 
 ## Requirements
@@ -144,3 +145,4 @@ The generated extension package is saved to `dist/builds/`.
 
 **[Sakith B.](https://github.com/sakithb)**<br>
 For your work on the [Media Controls](https://github.com/sakithb/media-controls) extension.
+
