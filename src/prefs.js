@@ -23,16 +23,11 @@ export default class MediaShellPreferences extends ExtensionPreferences {
     async fillPreferencesWindow(preferencesWindow) {
         assertSupportedLibadwaita();
         initializePreferencesTranslations(this.gettext.bind(this), this.ngettext.bind(this));
-        try {
-            this.preferencesController?.destroy();
-        } catch (error) {
-            logger.warn("Previous preferences controller failed during teardown", error);
-        }
-        this.preferencesController = new PreferencesController(this, preferencesWindow);
-        await this.preferencesController.init().catch((error) => {
+
+        const preferencesController = new PreferencesController(this, preferencesWindow);
+        await preferencesController.init().catch((error) => {
             logger.error("Failed to open preferences", error);
-            this.preferencesController?.destroy();
-            this.preferencesController = null;
+            preferencesController.destroy();
         });
     }
 }
