@@ -11,6 +11,54 @@ A GNOME Shell extension that adds configurable MPRIS media controls to the top b
 
 MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and a switcher for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
 
+<details>
+  <summary>Screenshots</summary>
+
+### Workspaces
+
+<table>
+  <tr>
+    <td align="center"><strong>Popup</strong></td>
+    <td align="center"><strong>Popup app selector</strong></td>
+    <td align="center"><strong>Popup theming</strong></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/screenshots/screen_popup.png" alt="MediaShell popup" width="100%"></td>
+    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup app selector" width="100%"></td>
+    <td><img src="assets/images/screenshots/screen_popup_theming.png" alt="MediaShell popup theming" width="100%"></td>
+  </tr>
+</table>
+
+### Extension settings
+
+<table>
+  <tr>
+    <td align="center"><strong>Popup</strong></td>
+    <td align="center"><strong>Top Bar</strong></td>
+    <td align="center"><strong>Panel</strong></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/screenshots/settings_popup.png" alt="MediaShell Popup settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_top_bar.png" alt="MediaShell Top Bar settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_panel.png" alt="MediaShell Panel settings" width="100%"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><strong>Interactions</strong></td>
+    <td align="center"><strong>Others</strong></td>
+    <td align="center"><strong>About</strong></td>
+  </tr>
+  <tr>
+    <td><img src="assets/images/screenshots/settings_interactions.png" alt="MediaShell Interactions settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_others.png" alt="MediaShell Others settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_about.png" alt="MediaShell About dialog" width="100%"></td>
+  </tr>
+</table>
+
+</details>
+
 ## Features
 
 #### Fits into GNOME
