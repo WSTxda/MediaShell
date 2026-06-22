@@ -15,7 +15,7 @@ export default class TopBarAppIcon {
         this.usesColoredIcon = null;
     }
 
-    render(index) {
+    render(index, parentBox) {
         const identity = this.topBarButton.mediaApp.identity;
         const desktopEntry = this.topBarButton.mediaApp.desktopEntry;
         const useColoredIcon = this.topBarButton.extensionController.useColoredTopBarAppIcon;
@@ -35,7 +35,7 @@ export default class TopBarAppIcon {
             this.iconKey = app && hasResolvedMediaAppIcon(app) ? iconKey : null;
         }
 
-        this.attach(index);
+        this.attach(index, parentBox);
     }
 
     replaceIconActor(index, useColoredIcon) {
@@ -59,14 +59,13 @@ export default class TopBarAppIcon {
         previous?.destroy();
     }
 
-    attach(index) {
-        const topBarBox = this.topBarButton.topBarBox;
+    attach(index, parentBox) {
         const parent = this.actor.get_parent();
-        const currentIndex = parent === topBarBox ? topBarBox.get_children().indexOf(this.actor) : -1;
+        const currentIndex = parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
         if (currentIndex === index) return;
 
         parent?.remove_child(this.actor);
-        topBarBox.insert_child_at_index(this.actor, index);
+        parentBox.insert_child_at_index(this.actor, index);
     }
 
     remove() {

@@ -12,7 +12,7 @@ export default class TopBarTrackInformation {
         this.renderKey = null;
     }
 
-    render(index) {
+    render(index, parentBox) {
         const text = this.buildTrackInformationText();
         const renderKey = [
             text,
@@ -24,7 +24,7 @@ export default class TopBarTrackInformation {
         ].join("\u0001");
 
         if (this.actor && renderKey === this.renderKey) {
-            this.attach(index);
+            this.attach(index, parentBox);
             return;
         }
 
@@ -41,18 +41,17 @@ export default class TopBarTrackInformation {
         const oldLabel = this.actor;
         this.actor = label;
         this.renderKey = renderKey;
-        this.attach(index);
+        this.attach(index, parentBox);
         oldLabel?.destroy();
     }
 
-    attach(index) {
-        const topBarBox = this.topBarButton.topBarBox;
+    attach(index, parentBox) {
         const parent = this.actor.get_parent();
-        const currentIndex = parent === topBarBox ? topBarBox.get_children().indexOf(this.actor) : -1;
+        const currentIndex = parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
         if (currentIndex === index) return;
 
         parent?.remove_child(this.actor);
-        topBarBox.insert_child_at_index(this.actor, index);
+        parentBox.insert_child_at_index(this.actor, index);
     }
 
     buildTrackInformationText() {

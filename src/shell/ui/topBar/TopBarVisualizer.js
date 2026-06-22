@@ -33,12 +33,12 @@ export default class TopBarVisualizer {
         this.frameLevels = new Array(TOP_BAR_VISUALIZER_BAR_COUNT).fill(IDLE_LEVEL);
     }
 
-    render(index) {
+    render(index, parentBox) {
         this.ensureActor();
         this.setStyle(this.topBarButton.extensionController.topBarVisualizerStyle);
         this.setSpeed(this.topBarButton.extensionController.topBarVisualizerSpeed);
         this.setPlaying(this.topBarButton.mediaApp.playbackStatus === PlaybackStatus.PLAYING);
-        this.attach(index);
+        this.attach(index, parentBox);
     }
 
     ensureActor() {
@@ -171,14 +171,13 @@ export default class TopBarVisualizer {
         }
     }
 
-    attach(index) {
-        const topBarBox = this.topBarButton.topBarBox;
+    attach(index, parentBox) {
         const parent = this.actor.get_parent();
-        const currentIndex = parent === topBarBox ? topBarBox.get_children().indexOf(this.actor) : -1;
+        const currentIndex = parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
         if (currentIndex === index) return;
 
         parent?.remove_child(this.actor);
-        topBarBox.insert_child_at_index(this.actor, index);
+        parentBox.insert_child_at_index(this.actor, index);
     }
 
     remove() {

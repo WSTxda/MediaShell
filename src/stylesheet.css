@@ -50,19 +50,15 @@
 }
 
 /* top bar button -----------------------------------------------------
- * top bar spacing mirrors GNOME Shell panel buttons and is unrelated to popup padding.
+ * Top Bar actions live on the non-playback action boxes. Playback controls are
+ * separate interactive actors so their clicks never trigger the button gestures.
  */
 .panel-button {
     padding-left: 6px;
     padding-right: 6px;
 }
 
-.mediashell-top-bar-box > * {
-    padding-left: 6px;
-    padding-right: 6px;
-}
-
-.mediashell-top-bar-box > *:last-child:not(.mediashell-top-bar-playback-controls) {
+.mediashell-top-bar-action-box > * {
     padding-left: 6px;
     padding-right: 6px;
 }
@@ -87,9 +83,27 @@
     padding-right: 0;
 }
 
-.mediashell-top-bar-playback-controls > * {
+.mediashell-top-bar-control-button {
     padding-left: 6px;
     padding-right: 6px;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.mediashell-top-bar-control-button:hover,
+.mediashell-top-bar-control-button:active,
+.mediashell-top-bar-control-button:checked,
+.mediashell-top-bar-control-button:focus,
+.mediashell-top-bar-control-button:insensitive {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.mediashell-top-bar-control-icon {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 /* Popup structure ------------------------------------------------------

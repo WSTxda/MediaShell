@@ -1,10 +1,10 @@
 // Owns the compact playback-control row shown in the top bar.
+import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
 import { PlaybackControlDefinitions } from "../PlaybackControlDefinitions.js";
 import { createIcon, setIconName } from "../IconUtils.js";
-import { installPrimaryClickAction } from "../PointerActionUtils.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
     PlaybackControlDefinitions.PREVIOUS.name,
@@ -16,10 +16,10 @@ export default class TopBarPlaybackControls {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;
         this.actor = null;
-        this.controlIcons = new Map();
+        this.controlButtons = new Map();
     }
 
-    render(index, widgetFlags) {
+    render(widgetFlags) {
         this.ensureActor();
 
         if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS) {
@@ -44,7 +44,7 @@ export default class TopBarPlaybackControls {
         // one control in isolation. Reconcile the complete visible row once so
         // play/pause and capability changes cannot temporarily shuffle actors.
         this.reconcileOrder();
-        this.attach(index);
+        this.attach();
     }
 
     ensureActor() {
@@ -86,33 +86,33 @@ export default class TopBarPlaybackControls {
     }
 
     updatePlaybackControlIcon(controlDefinition, isReactive, onClick) {
-        let control = this.controlIcons.get(controlDefinition.name);
+        let control = this.controlButtons.get(controlDefinition.name);
         if (!control) {
-            const actor = createIcon({
+            const button = new St.Button({
                 name: controlDefinition.name,
-                styleClass: "system-status-icon no-margin",
+                styleClass: "mediashell-top-bar-control-button",
+                xAlign: Clutter.ActorAlign.CENTER,
+                yAlign: Clutter.ActorAlign.CENTER,
+                canFocus: false,
+                trackHover: false,
             });
-            control = { actor, onClick, disconnectClickAction: null };
-            this.installClickAction(control);
-            this.controlIcons.set(controlDefinition.name, control);
+            const icon = createIcon({
+                styleClass: "system-status-icon no-margin mediashell-top-bar-control-icon",
+            });
+            const signalId = button.connect("clicked", () => control.onClick?.());
+            control = { button, icon, signalId, onClick };
+            button.set_child(icon);
+            this.controlButtons.set(controlDefinition.name, control);
         }
 
         control.onClick = onClick;
-        setIconName(control.actor, controlDefinition.iconName);
-        control.actor.opacity = isReactive ? 255 : 160;
-        control.actor.reactive = isReactive;
-    }
-
-    installClickAction(control) {
-        control.disconnectClickAction = installPrimaryClickAction(
-            control.actor,
-            () => control.onClick?.(),
-            () => control.actor.reactive,
-        );
+        setIconName(control.icon, controlDefinition.iconName);
+        control.button.opacity = isReactive ? 255 : 160;
+        control.button.reactive = isReactive;
     }
 
     reconcileOrder() {
-        const orderedActors = PLAYBACK_CONTROL_ORDER.map((name) => this.controlIcons.get(name)?.actor).filter(Boolean);
+        const orderedActors = PLAYBACK_CONTROL_ORDER.map((name) => this.controlButtons.get(name)?.button).filter(Boolean);
 
         for (let index = 0; index < orderedActors.length; index++) {
             const actor = orderedActors[index];
@@ -125,29 +125,34 @@ export default class TopBarPlaybackControls {
     }
 
     removePlaybackControlIcon(controlDefinition) {
-        const control = this.controlIcons.get(controlDefinition.name);
+        const control = this.controlButtons.get(controlDefinition.name);
         if (!control) return;
-        control.disconnectClickAction?.();
-        control.disconnectClickAction = null;
-        control.actor.get_parent()?.remove_child(control.actor);
-        control.actor.destroy();
+        control.button.disconnect(control.signalId);
+        control.button.get_parent()?.remove_child(control.button);
+        control.button.destroy();
         control.onClick = null;
-        this.controlIcons.delete(controlDefinition.name);
+        this.controlButtons.delete(controlDefinition.name);
     }
 
-    attach(index) {
+    attach() {
         const topBarBox = this.topBarButton.topBarBox;
+        const afterActionBox = this.topBarButton.topBarActionBoxAfter;
         const parent = this.actor.get_parent();
+        const targetIndex = topBarBox.get_children().indexOf(afterActionBox);
         const currentIndex = parent === topBarBox ? topBarBox.get_children().indexOf(this.actor) : -1;
-        if (currentIndex === index) return;
+        if (targetIndex >= 0 && currentIndex === targetIndex - 1) return;
 
         parent?.remove_child(this.actor);
-        topBarBox.insert_child_at_index(this.actor, index);
+        const nextTargetIndex = topBarBox.get_children().indexOf(afterActionBox);
+        topBarBox.insert_child_at_index(
+            this.actor,
+            nextTargetIndex >= 0 ? nextTargetIndex : topBarBox.get_n_children(),
+        );
     }
 
     remove() {
         if (!this.actor) return;
-        for (const name of [...this.controlIcons.keys()]) this.removePlaybackControlIcon({ name });
+        for (const name of [...this.controlButtons.keys()]) this.removePlaybackControlIcon({ name });
         this.actor.get_parent()?.remove_child(this.actor);
         this.actor.destroy();
         this.actor = null;

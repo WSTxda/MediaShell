@@ -33,6 +33,8 @@ class TopBarButton extends PanelMenu.Button {
         this.pointerActionCleanups = [];
         this.destroyed = false;
         this.topBarBox = null;
+        this.topBarActionBoxBefore = null;
+        this.topBarActionBoxAfter = null;
         this.topBarAppIcon = new TopBarAppIcon(this);
         this.topBarTrackInformation = new TopBarTrackInformation(this);
         // The visualizer is created lazily so the disabled default owns no actor or timer.
@@ -102,23 +104,25 @@ class TopBarButton extends PanelMenu.Button {
     updateWidgets(widgetFlags) {
         if (this.destroyed) return;
 
-        if (!this.topBarBox) {
-            this.topBarBox = new St.BoxLayout({ styleClass: "mediashell-top-bar-box" });
-        } else if (widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER) {
-            this.topBarBox.remove_all_children();
-        }
+        this.ensureTopBarLayout();
 
-        let visibleIndex = 0;
-        for (const elementName of this.extensionController.topBarElementOrder) {
+        const playbackOrderIndex = this.extensionController.topBarElementOrder.indexOf("PLAYBACK_CONTROLS");
+        let beforePlaybackIndex = 0;
+        let afterPlaybackIndex = 0;
+
+        for (let orderIndex = 0; orderIndex < this.extensionController.topBarElementOrder.length; orderIndex++) {
+            const elementName = this.extensionController.topBarElementOrder[orderIndex];
             const element = TopBarElements[elementName];
             const isVisible = this.isTopBarElementVisible(element);
-            const targetIndex = visibleIndex;
+            const isBeforePlayback = playbackOrderIndex < 0 || orderIndex < playbackOrderIndex;
+            const targetBox = isBeforePlayback ? this.topBarActionBoxBefore : this.topBarActionBoxAfter;
+            const targetIndex = isBeforePlayback ? beforePlaybackIndex : afterPlaybackIndex;
             if (
                 element === TopBarElements.APP_ICON &&
                 (widgetFlags & WidgetFlags.TOP_BAR_APP_ICON || widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
             ) {
                 this.runWidgetUpdate("top bar app icon", () => {
-                    if (isVisible) this.topBarAppIcon.render(targetIndex);
+                    if (isVisible) this.topBarAppIcon.render(targetIndex, targetBox);
                     else this.topBarAppIcon.remove();
                 });
             }
@@ -127,7 +131,7 @@ class TopBarButton extends PanelMenu.Button {
                 (widgetFlags & WidgetFlags.TOP_BAR_TRACK_INFORMATION || widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
             ) {
                 this.runWidgetUpdate("top bar track information", () => {
-                    if (isVisible) this.topBarTrackInformation.render(targetIndex);
+                    if (isVisible) this.topBarTrackInformation.render(targetIndex, targetBox);
                     else this.topBarTrackInformation.remove();
                 });
             }
@@ -135,22 +139,43 @@ class TopBarButton extends PanelMenu.Button {
                 element === TopBarElements.VISUALIZER &&
                 (widgetFlags & WidgetFlags.TOP_BAR_VISUALIZER || widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
             ) {
-                this.runWidgetUpdate("top bar visualizer", () => this.updateTopBarVisualizer(targetIndex));
+                this.runWidgetUpdate("top bar visualizer", () => this.updateTopBarVisualizer(targetIndex, targetBox));
             }
             if (
                 element === TopBarElements.PLAYBACK_CONTROLS &&
                 (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS || widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
             ) {
                 this.runWidgetUpdate("top bar playback controls", () => {
-                    if (isVisible) this.topBarPlaybackControls.render(targetIndex, widgetFlags);
+                    if (isVisible) this.topBarPlaybackControls.render(widgetFlags);
                     else this.topBarPlaybackControls.remove();
                 });
             }
-            if (isVisible) visibleIndex++;
+            if (isVisible && element !== TopBarElements.PLAYBACK_CONTROLS) {
+                if (isBeforePlayback) beforePlaybackIndex++;
+                else afterPlaybackIndex++;
+            }
         }
 
         this.runWidgetUpdate("popup", () => this.popupContent.updateWidgets(widgetFlags));
         if (!this.topBarBox.get_parent()) this.add_child(this.topBarBox);
+    }
+
+    ensureTopBarLayout() {
+        if (this.topBarBox) return;
+
+        this.topBarBox = new St.BoxLayout({ styleClass: "mediashell-top-bar-box" });
+        this.topBarActionBoxBefore = this.createTopBarActionBox();
+        this.topBarActionBoxAfter = this.createTopBarActionBox();
+        this.topBarBox.add_child(this.topBarActionBoxBefore);
+        this.topBarBox.add_child(this.topBarActionBoxAfter);
+    }
+
+    createTopBarActionBox() {
+        return new St.BoxLayout({
+            styleClass: "mediashell-top-bar-action-box",
+            reactive: true,
+            trackHover: false,
+        });
     }
 
     isTopBarElementVisible(element) {
@@ -161,7 +186,7 @@ class TopBarButton extends PanelMenu.Button {
         return false;
     }
 
-    updateTopBarVisualizer(index) {
+    updateTopBarVisualizer(index, targetBox) {
         if (!this.extensionController.showTopBarVisualizer) {
             this.topBarVisualizer?.destroy();
             this.topBarVisualizer = null;
@@ -169,7 +194,7 @@ class TopBarButton extends PanelMenu.Button {
         }
 
         this.topBarVisualizer ??= new TopBarVisualizer(this);
-        this.topBarVisualizer.render(index);
+        this.topBarVisualizer.render(index, targetBox);
     }
 
     runWidgetUpdate(componentName, update) {
@@ -326,31 +351,34 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     initializePointerActions() {
-        if (typeof Clutter.ClickGesture !== "undefined") {
-            // GNOME 50 replaced PanelMenu.Button's vfunc_event with a
-            // Clutter.ClickGesture, so button-press-event no longer fires
-            // reliably for non-primary buttons. Disable the parent's gesture
-            // (which only toggles the menu on left click) and install our own
-            // per-button gestures so right/middle clicks work again.
-            if (this._clickGesture && typeof this._clickGesture.set_enabled === "function") {
-                this._clickGesture.set_enabled(false);
-            }
+        this.ensureTopBarLayout();
 
-            this.addMouseButtonGesture(Clutter.BUTTON_PRIMARY, () => this.handlePrimaryActivation());
-            this.addMouseButtonGesture(Clutter.BUTTON_MIDDLE, () => {
+        if (this._clickGesture && typeof this._clickGesture.set_enabled === "function") {
+            this._clickGesture.set_enabled(false);
+        }
+
+        for (const actor of [this.topBarActionBoxBefore, this.topBarActionBoxAfter]) {
+            this.initializePointerActionsForActor(actor);
+        }
+    }
+
+    initializePointerActionsForActor(actor) {
+        if (typeof Clutter.ClickGesture !== "undefined") {
+            // GNOME 49 removed the legacy Clutter click/tap action classes, and GNOME 50
+            // moved PanelMenu.Button primary activation to ClickGesture.
+            // Install explicit gestures only on the non-playback area so
+            // transport controls can own their clicks without defensive hit tests.
+            this.addMouseButtonGesture(actor, Clutter.BUTTON_PRIMARY, () => this.handlePrimaryActivation());
+            this.addMouseButtonGesture(actor, Clutter.BUTTON_MIDDLE, () => {
                 const mouseAction = this.extensionController.mouseActionMiddle;
-                if (mouseAction !== InputActions.NONE) {
-                    this.executeMouseAction(mouseAction);
-                }
+                if (mouseAction !== InputActions.NONE) this.executeMouseAction(mouseAction);
             });
-            this.addMouseButtonGesture(Clutter.BUTTON_SECONDARY, () => {
+            this.addMouseButtonGesture(actor, Clutter.BUTTON_SECONDARY, () => {
                 const mouseAction = this.extensionController.mouseActionRight;
-                if (mouseAction !== InputActions.NONE) {
-                    this.executeMouseAction(mouseAction);
-                }
+                if (mouseAction !== InputActions.NONE) this.executeMouseAction(mouseAction);
             });
         } else {
-            this.addPointerSignal("button-press-event", (_, event) => {
+            this.addPointerSignal(actor, "button-press-event", (_, event) => {
                 const mouseButton = event.get_button();
 
                 if (mouseButton === Clutter.BUTTON_PRIMARY) {
@@ -365,26 +393,21 @@ class TopBarButton extends PanelMenu.Button {
                     mouseAction = this.extensionController.mouseActionRight;
                 }
 
-                if (mouseAction === InputActions.NONE) {
-                    return Clutter.EVENT_PROPAGATE;
-                }
+                if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
 
                 this.executeMouseAction(mouseAction);
                 return Clutter.EVENT_STOP;
             });
 
-            this.addPointerSignal("touch-event", (_, event) => {
-                const eventType = event.type();
-                if (eventType === Clutter.EventType.TOUCH_BEGIN) {
-                    this.handlePrimaryActivation();
-                    return Clutter.EVENT_STOP;
-                }
+            this.addPointerSignal(actor, "touch-event", (_, event) => {
+                if (event.type() !== Clutter.EventType.TOUCH_BEGIN) return Clutter.EVENT_PROPAGATE;
 
-                return Clutter.EVENT_PROPAGATE;
+                this.handlePrimaryActivation();
+                return Clutter.EVENT_STOP;
             });
         }
 
-        this.addPointerSignal("scroll-event", (_, event) => {
+        this.addPointerSignal(actor, "scroll-event", (_, event) => {
             const direction = event.get_scroll_direction();
             let mouseAction = InputActions.NONE;
             if (direction === Clutter.ScrollDirection.UP) {
@@ -400,18 +423,18 @@ class TopBarButton extends PanelMenu.Button {
         });
     }
 
-    addPointerSignal(signalName, callback) {
-        const signalId = this.connect(signalName, callback);
+    addPointerSignal(actor, signalName, callback) {
+        const signalId = actor.connect(signalName, callback);
         this.pointerActionCleanups.push(() => {
             try {
-                this.disconnect(signalId);
+                actor.disconnect(signalId);
             } catch (error) {
                 logger.debug("Pointer signal was already disconnected", signalName, error);
             }
         });
     }
 
-    addMouseButtonGesture(mouseButton, callback) {
+    addMouseButtonGesture(actor, mouseButton, callback) {
         const gesture = new Clutter.ClickGesture();
         if (typeof gesture.set_required_button === "function") {
             gesture.set_required_button(mouseButton);
@@ -419,10 +442,8 @@ class TopBarButton extends PanelMenu.Button {
         if (typeof gesture.set_recognize_on_press === "function") {
             gesture.set_recognize_on_press(true);
         }
-        const signalId = gesture.connect("recognize", () => {
-            callback();
-        });
-        this.add_action(gesture);
+        const signalId = gesture.connect("recognize", callback);
+        actor.add_action(gesture);
         this.pointerActionCleanups.push(() => {
             try {
                 gesture.disconnect(signalId);
@@ -430,7 +451,7 @@ class TopBarButton extends PanelMenu.Button {
                 logger.debug("Pointer gesture signal was already disconnected", mouseButton, error);
             }
             try {
-                this.remove_action(gesture);
+                actor.remove_action(gesture);
             } catch (error) {
                 logger.debug("Pointer gesture was already removed", mouseButton, error);
             }
@@ -501,6 +522,8 @@ class TopBarButton extends PanelMenu.Button {
         this.mediaApp = null;
         this.extensionController = null;
         this.topBarBox = null;
+        this.topBarActionBoxBefore = null;
+        this.topBarActionBoxAfter = null;
     }
 }
 
