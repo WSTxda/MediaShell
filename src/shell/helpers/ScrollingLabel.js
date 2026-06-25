@@ -289,7 +289,7 @@ class ScrollingLabel extends St.ScrollView {
 
         this.scrollCompletedSignalId = this.scrollTransition.connect("completed", () => {
             if (this.isDestroyed || !this.scrollTransition) return;
-            this.scrollTransition.rewind(); // Snap back to 0
+            this.resetScrollPosition(adjustment);
 
             if (this.scrollPauseMilliseconds > 0) {
                 if (this.cyclePauseSourceId !== null) {
@@ -319,6 +319,14 @@ class ScrollingLabel extends St.ScrollView {
                 this.scrollTransition.pause();
             }
         }
+    }
+
+    resetScrollPosition(adjustment) {
+        // PropertyTransition.rewind() resets the timeline, but the St.Adjustment
+        // value is the visible scroll offset. Set it explicitly before the pause
+        // so the next cycle waits at the beginning instead of the end.
+        this.scrollTransition?.rewind();
+        adjustment.value = 0;
     }
 
     handleVisibilityOrMappingChange() {
