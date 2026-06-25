@@ -1,6 +1,19 @@
-// Defines executable input actions and their optional global-shortcut setting keys.
-import { InputActions } from "../enums/MediaShellEnums.js";
+/**
+ * @file inputActions.js
+ * @module shared.constants.inputActions
+ *
+ * Defines executable input actions and their optional global shortcut keys.
+ *
+ * The definitions map stable action IDs to InputActions enum values and the
+ * GSettings key used when the action can be bound globally. Shell services and
+ * preference controllers consume the same table so new actions remain consistent
+ * across runtime execution and shortcut editing UI.
+ */
+import { InputActions } from "../enums/input.js";
 
+// --- Input action definitions ---
+
+/** Action descriptors used for runtime dispatch and shortcut settings */
 export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     Object.freeze({ id: "play-pause", action: InputActions.PLAY_PAUSE, shortcutKey: "shortcut-play-pause" }),
     Object.freeze({ id: "next-track", action: InputActions.NEXT_TRACK, shortcutKey: "shortcut-next-track" }),
@@ -28,4 +41,5 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     Object.freeze({ id: "next-app", action: InputActions.NEXT_APP, shortcutKey: "shortcut-next-app" }),
 ]);
 
+/** GSettings keys that store user-configurable global keyboard shortcuts */
 export const KEYBOARD_SHORTCUT_KEYS = Object.freeze(INPUT_ACTION_DEFINITIONS.map(({ shortcutKey }) => shortcutKey));

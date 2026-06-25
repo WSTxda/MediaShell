@@ -1,8 +1,18 @@
-// Owns a fixed-size, playback-aware visualizer composed from ordinary St actors.
+/**
+ * @file TopBarVisualizer.js
+ * @module shell.ui.topBar.TopBarVisualizer
+ *
+ * Draws the optional top-bar visualizer for the active playing media app.
+ *
+ * TopBarButton owns the visualizer and enables it only when the corresponding
+ * setting and playback state allow it. The component owns its actor-bound
+ * timeline so animation stops cleanly when the actor is destroyed.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackStatus, VisualizerStyles } from "../../../shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import { VisualizerStyles } from "../../../shared/enums/topBar.js";
 import {
     getVisualizerBarLevels,
     normalizeVisualizerSpeed,
@@ -24,7 +34,7 @@ export default class TopBarVisualizer {
         this.actor = null;
         this.bars = [];
         this.timeline = null;
-        this.timelineFrameSignalId = 0;
+        this.timelineFrameSignalId = null;
         this.visualizerStyle = VisualizerStyles.WAVE;
         this.animationSpeed = normalizeVisualizerSpeed();
         this.playing = false;
@@ -190,9 +200,9 @@ export default class TopBarVisualizer {
 
     handleActorDestroyed() {
         this.stopAnimation();
-        if (this.timeline && this.timelineFrameSignalId) {
+        if (this.timeline && this.timelineFrameSignalId !== null) {
             this.timeline.disconnect(this.timelineFrameSignalId);
-            this.timelineFrameSignalId = 0;
+            this.timelineFrameSignalId = null;
         }
         this.timeline?.set_actor(null);
         this.timeline = null;

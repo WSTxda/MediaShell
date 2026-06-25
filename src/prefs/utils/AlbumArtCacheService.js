@@ -1,4 +1,13 @@
-// Provides cancellable, non-recursive access to the extension album-art cache.
+/**
+ * @file AlbumArtCacheService.js
+ * @module prefs.utils.AlbumArtCacheService
+ *
+ * Provides preferences-side maintenance for the album-art cache directory.
+ *
+ * OthersPageController uses this utility to inspect and clear cached album art
+ * without importing Shell runtime services. It operates only on files under the
+ * configured MediaShell cache directory.
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 

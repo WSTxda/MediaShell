@@ -1,4 +1,13 @@
-// Mirrors GSettings into the controller and routes each changed key to its declared impact.
+/**
+ * @file SettingsStore.js
+ * @module shell.settings.SettingsStore
+ *
+ * Wraps Gio.Settings with typed accessors and change-impact dispatch.
+ *
+ * ExtensionController and UI widgets read settings through this store instead of
+ * touching raw schema keys directly. The store owns subscription callbacks and
+ * logs setting changes before notifying runtime consumers.
+ */
 import { createLogger } from "../../shared/utils/log.js";
 import { SETTINGS_SPEC } from "./SettingsSpec.js";
 
@@ -15,7 +24,7 @@ export default class SettingsStore {
             this.readSettingIntoTarget(key, spec);
             const signalId = this.settings.connect(`changed::${key}`, () => {
                 const value = this.readSettingIntoTarget(key, spec);
-                logger.debug("Setting changed", key);
+                logger.debug(`Setting changed: ${key} = ${String(value)}`);
                 this.onSettingChanged?.(key, value, spec);
             });
             this.settingChangeSignalIds.push(signalId);

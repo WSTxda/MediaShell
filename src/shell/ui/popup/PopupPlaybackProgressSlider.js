@@ -1,4 +1,13 @@
-// Renders the popup playback-progress slider and advances elapsed time without polling MPRIS every frame.
+/**
+ * @file PopupPlaybackProgressSlider.js
+ * @module shell.ui.popup.PopupPlaybackProgressSlider
+ *
+ * Provides the popup seek slider and animated playback progress value.
+ *
+ * PopupPlaybackProgress owns this slider and passes active media-app state into
+ * it. The slider owns drag state, resume-after-drag behavior, and the Clutter
+ * interval used to animate progress while playback continues.
+ */
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import St from "gi://St";
@@ -10,7 +19,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
     constructor() {
         super({ orientation: Clutter.Orientation.VERTICAL, styleClass: "mediashell-popup-playback-progress" });
         this.playbackRate = 1;
-        this.resumeAfterDrag = false;
+        this.shouldResumeAfterDrag = false;
         this.isDisabled = true;
         this.lastRenderedElapsedSecond = -1;
 
@@ -29,6 +38,16 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
             xAlign: Clutter.ActorAlign.END,
         });
 
+        // Uses Clutter.PropertyTransition to animate the slider position in real time.
+        // The transition runs in GNOME Shell's animation loop so it stays frame-rate
+        // aware and can be paused without a separate timer. Duration is set to the
+        // remaining track length in milliseconds so the value moves from current
+        // position to 1.0 at natural playback speed.
+        //
+        // Dragging disables the transition (isDisabled = true) and restores it on
+        // button-release. Pause/resume mirror the playback state received from
+        // PopupPlaybackProgress without resetting position.
+        // Keep explicit GObject.Value wrappers so Clutter.Interval receives typed values.
         const initialValue = new GObject.Value();
         initialValue.init(GObject.TYPE_DOUBLE);
         initialValue.set_double(0);
@@ -59,7 +78,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
             () => {
                 if (this.playbackTransition.is_playing() && !this.isDisabled) {
                     this.playbackTransition.pause();
-                    this.resumeAfterDrag = true;
+                    this.shouldResumeAfterDrag = true;
                 }
                 return Clutter.EVENT_PROPAGATE;
             },
@@ -68,12 +87,12 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
                 const requestedPositionMilliseconds =
                     this.slider.value * this.playbackTransition.duration * this.playbackRate;
                 this.emit("seek-requested", Math.floor(requestedPositionMilliseconds * 1000));
-                if (this.resumeAfterDrag && this.get_stage() != null) {
+                if (this.shouldResumeAfterDrag && this.get_stage() !== null) {
                     this.ensurePlaybackTransitionAttached();
                     this.playbackTransition.advance(requestedPositionMilliseconds / this.playbackRate);
                     this.playbackTransition.start();
                 }
-                this.resumeAfterDrag = false;
+                this.shouldResumeAfterDrag = false;
                 return Clutter.EVENT_PROPAGATE;
             },
             "scroll-event",
@@ -144,7 +163,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
     }
 
     ensurePlaybackTransitionAttached() {
-        if (this.slider.get_transition?.("progress") == null)
+        if (this.slider.get_transition?.("progress") === null)
             this.slider.add_transition("progress", this.playbackTransition);
     }
 
@@ -153,7 +172,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
     }
 
     resumePlaybackTransition() {
-        if (!this.isDisabled && this.get_stage() != null && !this.playbackTransition.is_playing()) {
+        if (!this.isDisabled && this.get_stage() !== null && !this.playbackTransition.is_playing()) {
             this.ensurePlaybackTransitionAttached();
             this.playbackTransition.start();
         }
@@ -170,7 +189,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
             this.playbackTransition.set_duration(1);
             this.playbackTransition.stop();
             this.slider.value = 0;
-            this.resumeAfterDrag = false;
+            this.shouldResumeAfterDrag = false;
         }
     }
 
@@ -189,7 +208,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
 
 export default GObject.registerClass(
     {
-        GTypeName: "PopupPlaybackProgressSlider",
+        GTypeName: "MediaShellPopupPlaybackProgressSlider",
         Signals: {
             "seek-requested": {
                 param_types: [GObject.TYPE_INT64],

@@ -1,6 +1,15 @@
-// Produces deterministic normalized bar levels for the lightweight top bar visualizer.
+/**
+ * @file visualizer.js
+ * @module shared.utils.visualizer
+ *
+ * Produces bounded visualizer level arrays from runtime style settings.
+ *
+ * TopBarVisualizer uses this pure generator to create deterministic bar heights
+ * without allocating Shell actors during tests. The output is clamped so every
+ * visualizer style remains within the fixed top-bar drawing budget.
+ */
 import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
-import { VisualizerStyles } from "../enums/MediaShellEnums.js";
+import { VisualizerStyles } from "../enums/topBar.js";
 
 export const TOP_BAR_VISUALIZER_BAR_COUNT = 4;
 

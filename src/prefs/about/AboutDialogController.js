@@ -1,4 +1,14 @@
-// Adds the MediaShell About dialog to the preferences window header.
+/**
+ * @file AboutDialogController.js
+ * @module prefs.about.AboutDialogController
+ *
+ * Owns the About dialog button and Libadwaita about-window content.
+ *
+ * The controller connects the preferences header action to a lazily created
+ * AboutDialog containing project metadata, donation links, and credits. It owns
+ * the close signal so the transient dialog is released with the preferences
+ * window.
+ */
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
@@ -94,7 +104,7 @@ export default class AboutDialogController {
     }
 
     destroy() {
-        if (this.aboutButton && this.aboutButtonSignalId != null) {
+        if (this.aboutButton && this.aboutButtonSignalId !== null) {
             try {
                 this.aboutButton.disconnect(this.aboutButtonSignalId);
             } catch (error) {

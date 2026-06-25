@@ -1,3 +1,5 @@
+// Tests for: shared constants and pure utility modules
+// Covers: platform compatibility, formatting, MPRIS normalization, search, identity, and visualizer invariants
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -31,7 +33,7 @@ import {
   normalizeVisualizerSpeed,
   TOP_BAR_VISUALIZER_BAR_COUNT,
 } from "../src/shared/utils/visualizer.js";
-import { VisualizerStyles } from "../src/shared/enums/MediaShellEnums.js";
+import { VisualizerStyles } from "../src/shared/enums/topBar.js";
 
 test("platform policy is the exact supported baseline", () => {
   assert.deepEqual(SUPPORTED_GNOME_SHELL_VERSIONS, ["47", "48", "49", "50"]);
@@ -137,7 +139,7 @@ test("visualizer styles produce bounded fixed-size levels", () => {
 });
 
 test("MPRIS values are normalized to specification-safe defaults", async () => {
-  const { LoopStatus, PlaybackStatus } = await import("../src/shared/enums/MediaShellEnums.js");
+  const { LoopStatus, PlaybackStatus } = await import("../src/shared/enums/playback.js");
   const {
     MediaAppValidity,
     MPRIS_NO_TRACK_PATH,

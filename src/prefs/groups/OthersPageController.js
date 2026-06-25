@@ -1,10 +1,21 @@
-// Owns album-art cache maintenance, blocked-app preferences, and settings reset on the Others page.
+/**
+ * @file OthersPageController.js
+ * @module prefs.groups.OthersPageController
+ *
+ * Coordinates the preferences page for system integration and blocked apps.
+ *
+ * The controller owns rows that cannot be represented by a simple settings
+ * binding, including the album-art cache action, the blocked-app list, and the
+ * system media controls button row. It keeps those page-specific actions out of
+ * the global PreferencesController.
+ */
 import Adw from "gi://Adw";
 import GLib from "gi://GLib";
 import { gettext as _, ngettext } from "../PreferencesTranslations.js";
 
 import { migrateSettings } from "../../shared/settings/SettingsMigration.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 import AlbumArtCacheService from "../utils/AlbumArtCacheService.js";
 
 const logger = createLogger("OthersPageController");
@@ -18,7 +29,7 @@ export default class OthersPageController {
         this.ownedSignalConnections = [];
         this.albumArtCacheViewGeneration = 0;
         this.clearAlbumArtCachePromise = null;
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.openDialogs = new Set();
     }
 
@@ -45,6 +56,7 @@ export default class OthersPageController {
     }
 
     createResetSettingsRow() {
+        // Adw.ButtonRow requires Libadwaita 1.6, which is enforced by assertSupportedLibadwaita() in prefs.js
         this.resetSettingsRow = new Adw.ButtonRow({
             title: _("Reset all settings"),
             start_icon_name: "edit-undo-symbolic",
@@ -105,7 +117,7 @@ export default class OthersPageController {
         this.clearAlbumArtCacheButton.sensitive = false;
         const clearPromise = this.performAlbumArtCacheClear(albumArtCacheViewGeneration).finally(() => {
             if (this.clearAlbumArtCachePromise === clearPromise) this.clearAlbumArtCachePromise = null;
-            if (!this.destroyed) this.clearAlbumArtCacheButton.sensitive = true;
+            if (!this.isDestroyed) this.clearAlbumArtCacheButton.sensitive = true;
         });
         this.clearAlbumArtCachePromise = clearPromise;
         return clearPromise;
@@ -114,7 +126,7 @@ export default class OthersPageController {
     async performAlbumArtCacheClear(albumArtCacheViewGeneration) {
         try {
             await this.albumArtCacheService.clearAlbumArtCache();
-            if (this.destroyed || albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration) return;
+            if (this.isDestroyed || albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration) return;
             this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(0, 0);
             this.preferencesWindow.add_toast(
                 new Adw.Toast({
@@ -123,7 +135,7 @@ export default class OthersPageController {
                 }),
             );
         } catch (error) {
-            if (this.destroyed || albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration) return;
+            if (this.isDestroyed || albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration) return;
             logger.warn("Failed to clear the album-art cache", error);
             this.preferencesWindow.add_toast(
                 new Adw.Toast({
@@ -144,34 +156,28 @@ export default class OthersPageController {
         const albumArtCacheViewGeneration = ++this.albumArtCacheViewGeneration;
         try {
             const { coverCount, totalBytes } = await this.albumArtCacheService.getAlbumArtCacheStats();
-            if (!this.destroyed && albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
+            if (!this.isDestroyed && albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
                 this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(coverCount, totalBytes);
         } catch (error) {
-            if (!this.destroyed && albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
+            if (!this.isDestroyed && albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
                 logger.warn("Failed to calculate the album-art cache statistics", error);
         }
     }
 
     connectOwnedSignal(object, signal, callback) {
-        const signalId = object.connect(signal, callback);
-        this.ownedSignalConnections.push({ object, signalId });
+        connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
     }
 
     destroy() {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
-        this.destroyed = true;
+        this.isDestroyed = true;
         this.albumArtCacheViewGeneration++;
         for (const dialog of this.openDialogs) dialog.force_close();
         this.openDialogs.clear();
-        for (const { object, signalId } of this.ownedSignalConnections) {
-            try {
-                object.disconnect(signalId);
-            } catch (error) {
-                logger.debug("A preferences signal was already disconnected", error);
-            }
-        }
-        this.ownedSignalConnections.length = 0;
+        disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
+            logger.debug("A preferences signal was already disconnected", error);
+        });
         this.blockedAppsGroup?.destroy();
         this.albumArtCacheService.destroy();
         this.albumArtCacheService = null;

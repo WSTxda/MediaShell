@@ -1,24 +1,34 @@
-// Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
+/**
+ * @file PositionTracker.js
+ * @module shell.mpris.PositionTracker
+ *
+ * Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
+ *
+ * PlayerProxy delegates position state here so UI components can ask for a live
+ * estimate without polling DBus on every frame. The tracker anchors the last
+ * known position to GLib monotonic time and refreshes on seek or track changes.
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
-import { PlaybackStatus } from "../../shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("PositionTracker");
-
-function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
-}
 
 function normalizePositionMicroseconds(value) {
     const position = Number(value);
     return Number.isFinite(position) ? Math.max(0, position) : 0;
 }
 
+// DEVELOPER NOTE — Position interpolation:
+// MPRIS does not push live position updates. Track the last known Position
+// together with GLib.get_monotonic_time() and estimate the current value during
+// UI updates instead of polling D-Bus for every animation frame.
 export default class PositionTracker {
     constructor(propertiesProxy, operationCancellable = null) {
         this.propertiesProxy = propertiesProxy;
@@ -29,7 +39,7 @@ export default class PositionTracker {
         this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
         this.positionChangeListeners = new Map();
         this.nextPositionChangeListenerId = 1;
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.positionRefreshGeneration = 0;
         this.positionRefreshPromise = null;
     }
@@ -84,7 +94,7 @@ export default class PositionTracker {
     }
 
     refreshPosition(force = false) {
-        if (this.destroyed) return Promise.resolve(this.positionMicroseconds);
+        if (this.isDestroyed) return Promise.resolve(this.positionMicroseconds);
         if (this.positionRefreshPromise && !force) return this.positionRefreshPromise;
 
         const refreshGeneration = ++this.positionRefreshGeneration;
@@ -104,7 +114,7 @@ export default class PositionTracker {
             this.operationCancellable,
         );
 
-        if (this.destroyed || refreshGeneration !== this.positionRefreshGeneration) return this.positionMicroseconds;
+        if (this.isDestroyed || refreshGeneration !== this.positionRefreshGeneration) return this.positionMicroseconds;
 
         const value = result.get_child_value(0).get_variant();
         this.positionMicroseconds = normalizePositionMicroseconds(value.recursiveUnpack());
@@ -113,7 +123,7 @@ export default class PositionTracker {
     }
 
     onPositionChanged(callback) {
-        if (this.destroyed || typeof callback !== "function") return () => {};
+        if (this.isDestroyed || typeof callback !== "function") return () => {};
         const listenerId = this.nextPositionChangeListenerId++;
         this.positionChangeListeners.set(listenerId, callback);
         return () => this.positionChangeListeners.delete(listenerId);
@@ -130,7 +140,7 @@ export default class PositionTracker {
     }
 
     destroy() {
-        this.destroyed = true;
+        this.isDestroyed = true;
         this.positionRefreshGeneration++;
         this.positionChangeListeners.clear();
         this.positionRefreshPromise = null;

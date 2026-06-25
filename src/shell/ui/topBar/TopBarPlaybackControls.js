@@ -1,15 +1,25 @@
-// Owns the compact playback-control row shown in the top bar.
+/**
+ * @file TopBarPlaybackControls.js
+ * @module shell.ui.topBar.TopBarPlaybackControls
+ *
+ * Renders compact playback controls inside the top-bar button.
+ *
+ * TopBarButton owns this component and asks it to update button visibility and
+ * sensitivity from the active PlayerProxy. The renderer consumes shared
+ * PlaybackControls descriptors so popup and top-bar action names stay aligned.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
-import { PlaybackControlDefinitions } from "../PlaybackControlDefinitions.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
+import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
 import { createIcon, setIconName } from "../IconUtils.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
-    PlaybackControlDefinitions.PREVIOUS.name,
-    PlaybackControlDefinitions.PLAY.name,
-    PlaybackControlDefinitions.NEXT.name,
+    PlaybackControls.PREVIOUS.name,
+    PlaybackControls.PLAY.name,
+    PlaybackControls.NEXT.name,
 ]);
 
 export default class TopBarPlaybackControls {
@@ -19,13 +29,14 @@ export default class TopBarPlaybackControls {
         this.controlButtons = new Map();
     }
 
+    // widgetFlags controls which buttons need updating; no parent positioning needed
     render(widgetFlags) {
         this.ensureActor();
 
         if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS) {
             this.renderOptionalControl(
                 this.topBarButton.extensionController.showTopBarPreviousTrack,
-                PlaybackControlDefinitions.PREVIOUS,
+                PlaybackControls.PREVIOUS,
                 this.topBarButton.mediaApp.canGoPrevious && this.topBarButton.mediaApp.canControl,
                 () => this.topBarButton.mediaApp.previous(),
             );
@@ -34,7 +45,7 @@ export default class TopBarPlaybackControls {
         if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_NEXT) {
             this.renderOptionalControl(
                 this.topBarButton.extensionController.showTopBarNextTrack,
-                PlaybackControlDefinitions.NEXT,
+                PlaybackControls.NEXT,
                 this.topBarButton.mediaApp.canGoNext && this.topBarButton.mediaApp.canControl,
                 () => this.topBarButton.mediaApp.next(),
             );
@@ -63,22 +74,22 @@ export default class TopBarPlaybackControls {
 
     renderPlayPause() {
         if (!this.topBarButton.extensionController.showTopBarPlayPause) {
-            this.removePlaybackControlIcon(PlaybackControlDefinitions.PLAY);
+            this.removePlaybackControlIcon(PlaybackControls.PLAY);
             return;
         }
 
         const mediaApp = this.topBarButton.mediaApp;
         if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
             this.updatePlaybackControlIcon(
-                PlaybackControlDefinitions.PLAY,
+                PlaybackControls.PLAY,
                 mediaApp.canPlay && mediaApp.canControl,
                 () => mediaApp.play(),
             );
         } else if (mediaApp.canControl && !mediaApp.canPause) {
-            this.updatePlaybackControlIcon(PlaybackControlDefinitions.STOP, mediaApp.canControl, () => mediaApp.stop());
+            this.updatePlaybackControlIcon(PlaybackControls.STOP, mediaApp.canControl, () => mediaApp.stop());
         } else {
             this.updatePlaybackControlIcon(
-                PlaybackControlDefinitions.PAUSE,
+                PlaybackControls.PAUSE,
                 mediaApp.canPause && mediaApp.canControl,
                 () => mediaApp.pause(),
             );

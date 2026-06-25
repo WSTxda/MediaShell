@@ -1,4 +1,13 @@
-// Registers the shared GResource once in the long-lived preferences process.
+/**
+ * @file PreferencesResourceLoader.js
+ * @module prefs.resources.PreferencesResourceLoader
+ *
+ * Registers and unregisters compiled resources used by the preferences process.
+ *
+ * The loader keeps GtkBuilder templates, images, and other bundled assets
+ * available while the preferences window is open. It mirrors the Shell-side
+ * resource registry but is scoped to the GTK preferences process.
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 

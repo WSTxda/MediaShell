@@ -1,4 +1,13 @@
-// Declares the stable mapping between current GSettings keys and preference widget properties.
+/**
+ * @file PreferenceBindings.js
+ * @module prefs.bindings.PreferenceBindings
+ *
+ * Declares the mapping from preferences widgets to GSettings keys.
+ *
+ * Each entry names a GtkBuilder object ID, the setting key it controls, and the
+ * widget property used for binding. PreferenceBinder consumes this table as the
+ * source of truth for automatic settings synchronization.
+ */
 export const PREFERENCE_WIDGET_BINDINGS = Object.freeze([
     ["popup-width", "sp-popup-width", "value"],
     ["show-popup-album-art", "er-popup-album-art", "enable-expansion"],

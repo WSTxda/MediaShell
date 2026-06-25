@@ -1,8 +1,10 @@
+// Tests for: src/shared/settings/SettingsMigration.js
+// Covers: migration idempotency, legacy key copying, enum preservation, and schema version bumps
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { InputActions } from "../src/shared/enums/MediaShellEnums.js";
+import { InputActions } from "../src/shared/enums/input.js";
 import { migrateSettings, SETTINGS_SCHEMA_VERSION } from "../src/shared/settings/SettingsMigration.js";
 
 class MockSettings {

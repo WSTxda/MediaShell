@@ -1,4 +1,13 @@
-// Ensures custom GObject widget types are registered before Gtk.Builder loads templates.
+/**
+ * @file WidgetRegistry.js
+ * @module prefs.widgets.WidgetRegistry
+ *
+ * Registers the custom GObject preference widgets before GtkBuilder loads templates.
+ *
+ * PreferencesController calls this module once so template class names such as
+ * MediaShellBlockedAppsGroup resolve correctly in the UI definition. WidgetRegistry
+ * owns no widget instances; it only guarantees type registration.
+ */
 import GObject from "gi://GObject";
 
 import BlockedAppsGroup from "./BlockedAppsGroup.js";

@@ -1,15 +1,18 @@
-// Owns the active-app selector button and its immediate colored or symbolic icon updates.
+/**
+ * @file PopupAppSelectorButton.js
+ * @module shell.ui.popup.PopupAppSelectorButton
+ *
+ * Renders one selectable media-app row inside the popup app selector.
+ *
+ * PopupAppSelectorList creates one button per visible app and supplies the icon,
+ * title, active state, and pin state. The button owns only its actor structure;
+ * selection and pinning are handled by the list/controller above it.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import {
-    resolveMediaApp,
-    getMediaAppIcon,
-    getMediaAppName,
-    hasResolvedMediaAppIcon,
-    FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
 import { createIcon, setGIcon } from "../IconUtils.js";
 import { installPrimaryClickAction } from "../PointerActionUtils.js";
 
@@ -25,6 +28,7 @@ export default class PopupAppSelectorButton {
         this.renderKey = null;
         this.hasMultipleMediaApps = null;
         this.disconnectButtonClickAction = null;
+        this.mediaAppResolver = MediaAppResolver.getInstance();
     }
 
     get extensionController() {
@@ -62,11 +66,11 @@ export default class PopupAppSelectorButton {
         const coloredClass = this.extensionController.useColoredPopupAppIcon ? "colored-icon" : "symbolic-icon";
         const renderKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;
         if (renderKey !== this.renderKey) {
-            const app = resolveMediaApp(identity, desktopEntry, this.mediaApp.busName);
-            this.label.text = getMediaAppName(app, identity || _("Unknown app"));
-            setGIcon(this.icon, getMediaAppIcon(app), FALLBACK_MEDIA_APP_ICON_NAME);
+            const app = this.mediaAppResolver.resolveMediaApp(identity, desktopEntry, this.mediaApp.busName);
+            this.label.text = this.mediaAppResolver.getMediaAppName(app, identity || _("Unknown app"));
+            setGIcon(this.icon, this.mediaAppResolver.getMediaAppIcon(app), FALLBACK_MEDIA_APP_ICON_NAME);
             this.icon.set_style_class_name(`popup-menu-icon mediashell-popup-app-selector-icon ${coloredClass}`);
-            this.renderKey = app && hasResolvedMediaAppIcon(app) ? renderKey : null;
+            this.renderKey = app && this.mediaAppResolver.hasResolvedMediaAppIcon(app) ? renderKey : null;
         }
 
         if (!this.container.get_parent()) {

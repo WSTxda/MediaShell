@@ -1,4 +1,13 @@
-// Coordinates the active-app selector button with its lazily created app list.
+/**
+ * @file PopupAppSelectorController.js
+ * @module shell.ui.popup.PopupAppSelectorController
+ *
+ * Coordinates popup media-app selector visibility and selection events.
+ *
+ * PopupContent delegates selector state to this controller so the list can be
+ * rebuilt independently from album art, progress, and playback controls. It owns
+ * the selector list instance and forwards user choices to ExtensionController.
+ */
 import PopupAppSelectorButton from "./PopupAppSelectorButton.js";
 import PopupAppSelectorList from "./PopupAppSelectorList.js";
 

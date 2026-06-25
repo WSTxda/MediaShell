@@ -1,4 +1,13 @@
-// Registers the extension GResource in the Shell process and unregisters it on disable.
+/**
+ * @file ExtensionResourceRegistry.js
+ * @module shell.services.ExtensionResourceRegistry
+ *
+ * Registers compiled resources needed by the Shell runtime.
+ *
+ * ExtensionController uses this service to expose bundled icons, UI assets, and
+ * D-Bus introspection XML while the extension is enabled. The registry owns the
+ * Gio.Resource handle and unregisters it during disable.
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 

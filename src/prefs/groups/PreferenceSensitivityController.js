@@ -1,5 +1,15 @@
-// Keeps dependent preference controls sensitive only when their parent features are enabled.
+/**
+ * @file PreferenceSensitivityController.js
+ * @module prefs.groups.PreferenceSensitivityController
+ *
+ * Keeps dependent preferences sensitive only when their parent toggles allow them.
+ *
+ * This controller watches the small set of settings that enable or disable
+ * nested controls such as visualizer options and album-art rows. It owns no
+ * persistent values; it only mirrors current settings into widget sensitivity.
+ */
 import { createLogger } from "../../shared/utils/log.js";
+import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 
 const logger = createLogger("PreferenceSensitivityController");
 
@@ -55,19 +65,13 @@ export default class PreferenceSensitivityController {
     }
 
     connectOwnedSignal(object, signal, callback) {
-        const signalId = object.connect(signal, callback);
-        this.ownedSignalConnections.push({ object, signalId });
+        connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
     }
 
     destroy() {
-        for (const { object, signalId } of this.ownedSignalConnections) {
-            try {
-                object.disconnect(signalId);
-            } catch (error) {
-                logger.debug("A preference sensitivity signal was already disconnected", error);
-            }
-        }
-        this.ownedSignalConnections.length = 0;
+        disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
+            logger.debug("A preference sensitivity signal was already disconnected", error);
+        });
         this.builder = null;
         this.topBarTrackInformationRow = null;
         this.topBarScrollTrackInformationRow = null;

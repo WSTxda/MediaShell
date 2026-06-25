@@ -1,10 +1,14 @@
-// Owns the app icon actor shown in the top bar.
-import {
-    resolveMediaApp,
-    getMediaAppIcon,
-    hasResolvedMediaAppIcon,
-    FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+/**
+ * @file TopBarAppIcon.js
+ * @module shell.ui.topBar.TopBarAppIcon
+ *
+ * Displays the active media application's icon in the GNOME top bar.
+ *
+ * TopBarButton owns this component and supplies the resolved Shell app or themed
+ * fallback icon. The component keeps icon actor creation and updates separate
+ * from track text, visualizer, and playback control layout.
+ */
+import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
 import { createIcon, setGIcon } from "../IconUtils.js";
 
 export default class TopBarAppIcon {
@@ -13,6 +17,7 @@ export default class TopBarAppIcon {
         this.actor = null;
         this.iconKey = null;
         this.usesColoredIcon = null;
+        this.mediaAppResolver = MediaAppResolver.getInstance();
     }
 
     render(index, parentBox) {
@@ -28,11 +33,11 @@ export default class TopBarAppIcon {
         if (!this.actor || this.usesColoredIcon !== useColoredIcon) this.replaceIconActor(index, useColoredIcon);
 
         if (iconKey !== this.iconKey) {
-            const app = resolveMediaApp(identity, desktopEntry, this.topBarButton.mediaApp.busName);
-            setGIcon(this.actor, getMediaAppIcon(app), FALLBACK_MEDIA_APP_ICON_NAME);
+            const app = this.mediaAppResolver.resolveMediaApp(identity, desktopEntry, this.topBarButton.mediaApp.busName);
+            setGIcon(this.actor, this.mediaAppResolver.getMediaAppIcon(app), FALLBACK_MEDIA_APP_ICON_NAME);
             // Do not memoize a transient miss: Shell may associate a browser
             // window with its desktop app shortly after MPRIS appears.
-            this.iconKey = app && hasResolvedMediaAppIcon(app) ? iconKey : null;
+            this.iconKey = app && this.mediaAppResolver.hasResolvedMediaAppIcon(app) ? iconKey : null;
         }
 
         this.attach(index, parentBox);
@@ -75,6 +80,7 @@ export default class TopBarAppIcon {
         this.actor = null;
         this.iconKey = null;
         this.usesColoredIcon = null;
+        this.mediaAppResolver = MediaAppResolver.getInstance();
     }
 
     destroy() {

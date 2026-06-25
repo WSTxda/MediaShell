@@ -1,15 +1,18 @@
-// Owns the expandable popup app list, pinning actions, and outside-click dismissal.
+/**
+ * @file PopupAppSelectorList.js
+ * @module shell.ui.popup.PopupAppSelectorList
+ *
+ * Builds the popup list of available MPRIS media apps.
+ *
+ * The list owns row creation, active-row styling, pin controls, and reveal
+ * animation for the app selector. It receives app data from the controller and
+ * emits user intent without changing MediaAppRegistry directly.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import {
-    resolveMediaApp,
-    getMediaAppIcon,
-    getMediaAppName,
-    hasResolvedMediaAppIcon,
-    FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
 import { createIcon } from "../IconUtils.js";
 
 function actorContainsDescendant(actor, candidateDescendant) {
@@ -28,13 +31,13 @@ function actorContainsEventPoint(actor, event) {
     return eventX >= actorX && eventX <= actorX + actorWidth && eventY >= actorY && eventY <= actorY + actorHeight;
 }
 
-function resolveMediaAppRows(mediaApps) {
+function resolveMediaAppRows(mediaApps, mediaAppResolver) {
     return mediaApps.map((mediaApp) => {
-        const app = resolveMediaApp(mediaApp.identity, mediaApp.desktopEntry, mediaApp.busName);
+        const app = mediaAppResolver.resolveMediaApp(mediaApp.identity, mediaApp.desktopEntry, mediaApp.busName);
         return {
             mediaApp,
             app,
-            resolvedAppKey: app && hasResolvedMediaAppIcon(app) ? mediaApp.busName : null,
+            resolvedAppKey: app && mediaAppResolver.hasResolvedMediaAppIcon(app) ? mediaApp.busName : null,
         };
     });
 }
@@ -46,6 +49,7 @@ export default class PopupAppSelectorList {
         this.revealer = null;
         this.card = null;
         this.renderSignature = null;
+        this.mediaAppResolver = MediaAppResolver.getInstance();
     }
 
     get extensionController() {
@@ -77,7 +81,7 @@ export default class PopupAppSelectorList {
             styleClass: "mediashell-popup-app-selector-card",
         });
         this.syncAppSelectorListWidth();
-        const resolvedMediaAppRows = resolveMediaAppRows(mediaApps);
+        const resolvedMediaAppRows = resolveMediaAppRows(mediaApps, this.mediaAppResolver);
         this.card.add_child(this.buildMediaAppList(resolvedMediaAppRows));
         this.renderSignature = this.getRenderSignature(resolvedMediaAppRows);
         this.revealer.add_child(this.card);
@@ -114,7 +118,7 @@ export default class PopupAppSelectorList {
         if (!this.card) return;
 
         this.syncAppSelectorListWidth();
-        const resolvedMediaAppRows = resolveMediaAppRows(mediaApps);
+        const resolvedMediaAppRows = resolveMediaAppRows(mediaApps, this.mediaAppResolver);
         const renderSignature = this.getRenderSignature(resolvedMediaAppRows);
         if (renderSignature !== null && renderSignature === this.renderSignature) return;
 
@@ -164,8 +168,8 @@ export default class PopupAppSelectorList {
         const pinnedApp = resolvedMediaAppRows.find(({ mediaApp }) => mediaApp.isAppPinned())?.mediaApp ?? null;
 
         for (const { mediaApp, app } of resolvedMediaAppRows) {
-            const appName = getMediaAppName(app, mediaApp.identity || _("Unknown app"));
-            const appIcon = getMediaAppIcon(app);
+            const appName = this.mediaAppResolver.getMediaAppName(app, mediaApp.identity || _("Unknown app"));
+            const appIcon = this.mediaAppResolver.getMediaAppIcon(app);
             const isCurrent = this.popupContent.isSameMediaApp(mediaApp);
             const isAppPinned = mediaApp.isAppPinned();
             const canActivate = pinnedApp == null || isAppPinned;
@@ -176,7 +180,7 @@ export default class PopupAppSelectorList {
             });
             const appButton = new St.Button({
                 styleClass: "popup-menu-item mediashell-popup-app-selector-row",
-                opacity: canActivate ? 255 : 120,
+                opacity: canActivate ? 255 : 128,
                 reactive: canActivate,
                 trackHover: canActivate,
                 canFocus: canActivate,
@@ -215,7 +219,7 @@ export default class PopupAppSelectorList {
 
             const pinButton = new St.Button({
                 styleClass: "button mediashell-popup-app-selector-pin-button",
-                opacity: canActivate ? 255 : 120,
+                opacity: canActivate ? 255 : 128,
                 reactive: canActivate,
                 trackHover: canActivate,
                 canFocus: canActivate,

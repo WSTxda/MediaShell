@@ -1,23 +1,33 @@
-// Owns popup playback controls while preserving GNOME Quick Settings geometry.
+/**
+ * @file PopupPlaybackControls.js
+ * @module shell.ui.popup.PopupPlaybackControls
+ *
+ * Renders popup playback, shuffle, and repeat controls for the active media app.
+ *
+ * PopupContent delegates button creation and sensitivity updates to this class so
+ * transport-control state stays separate from progress and metadata widgets. The
+ * component consumes shared PlaybackControls descriptors for stable button names.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { LoopStatus, PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
-import { PlaybackControlDefinitions } from "../PlaybackControlDefinitions.js";
+import { LoopStatus, PlaybackStatus } from "../../../shared/enums/playback.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
+import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
 import { createIcon, setIconName } from "../IconUtils.js";
 
 function getPopupPlaybackControlIndex(controlName) {
     if (
-        controlName === PlaybackControlDefinitions.PREVIOUS.name ||
-        controlName === PlaybackControlDefinitions.LOOP_NONE.name
+        controlName === PlaybackControls.PREVIOUS.name ||
+        controlName === PlaybackControls.LOOP_NONE.name
     )
         return 0;
     if (
-        controlName === PlaybackControlDefinitions.PLAY.name ||
-        controlName === PlaybackControlDefinitions.SHUFFLE_ON.name
+        controlName === PlaybackControls.PLAY.name ||
+        controlName === PlaybackControls.SHUFFLE_ON.name
     )
         return 1;
-    if (controlName === PlaybackControlDefinitions.NEXT.name) return 2;
+    if (controlName === PlaybackControls.NEXT.name) return 2;
     return 0;
 }
 
@@ -37,6 +47,7 @@ export default class PopupPlaybackControls {
         return this.playbackControlsBox;
     }
 
+    // widgetFlags controls which buttons need updating; no parent positioning needed
     render(widgetFlags) {
         this.ensureActors();
         const mediaApp = this.mediaApp;
@@ -44,28 +55,28 @@ export default class PopupPlaybackControls {
         if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_LOOP) {
             const loopControlDefinition =
                 mediaApp.loopStatus === LoopStatus.NONE
-                    ? PlaybackControlDefinitions.LOOP_NONE
+                    ? PlaybackControls.LOOP_NONE
                     : mediaApp.loopStatus === LoopStatus.TRACK
-                      ? PlaybackControlDefinitions.LOOP_TRACK
-                      : PlaybackControlDefinitions.LOOP_PLAYLIST;
+                      ? PlaybackControls.LOOP_TRACK
+                      : PlaybackControls.LOOP_PLAYLIST;
             this.updatePlaybackControl(loopControlDefinition, mediaApp.canControl, () => mediaApp.toggleLoop());
         }
         if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_PREVIOUS) {
             this.updatePlaybackControl(
-                PlaybackControlDefinitions.PREVIOUS,
+                PlaybackControls.PREVIOUS,
                 mediaApp.canGoPrevious && mediaApp.canControl,
                 () => mediaApp.previous(),
             );
         }
         if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE) this.updatePlayPause(mediaApp);
         if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_NEXT) {
-            this.updatePlaybackControl(PlaybackControlDefinitions.NEXT, mediaApp.canGoNext && mediaApp.canControl, () =>
+            this.updatePlaybackControl(PlaybackControls.NEXT, mediaApp.canGoNext && mediaApp.canControl, () =>
                 mediaApp.next(),
             );
         }
         if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_SHUFFLE) {
             this.updatePlaybackControl(
-                mediaApp.shuffle ? PlaybackControlDefinitions.SHUFFLE_ON : PlaybackControlDefinitions.SHUFFLE_OFF,
+                mediaApp.shuffle ? PlaybackControls.SHUFFLE_ON : PlaybackControls.SHUFFLE_OFF,
                 mediaApp.canControl,
                 () => mediaApp.toggleShuffle(),
             );
@@ -98,13 +109,13 @@ export default class PopupPlaybackControls {
 
     updatePlayPause(mediaApp) {
         if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-            this.updatePlaybackControl(PlaybackControlDefinitions.PLAY, mediaApp.canPlay && mediaApp.canControl, () =>
+            this.updatePlaybackControl(PlaybackControls.PLAY, mediaApp.canPlay && mediaApp.canControl, () =>
                 mediaApp.play(),
             );
         } else if (mediaApp.canControl && !mediaApp.canPause) {
-            this.updatePlaybackControl(PlaybackControlDefinitions.STOP, mediaApp.canControl, () => mediaApp.stop());
+            this.updatePlaybackControl(PlaybackControls.STOP, mediaApp.canControl, () => mediaApp.stop());
         } else {
-            this.updatePlaybackControl(PlaybackControlDefinitions.PAUSE, mediaApp.canPause && mediaApp.canControl, () =>
+            this.updatePlaybackControl(PlaybackControls.PAUSE, mediaApp.canPause && mediaApp.canControl, () =>
                 mediaApp.pause(),
             );
         }
@@ -112,14 +123,14 @@ export default class PopupPlaybackControls {
 
     updatePlaybackControl(controlDefinition, isReactive, onClick) {
         const controlName = controlDefinition.name;
-        const isPrimaryTransport = controlName === PlaybackControlDefinitions.PLAY.name;
+        const isPrimaryTransport = controlName === PlaybackControls.PLAY.name;
         const isSecondary =
-            controlName === PlaybackControlDefinitions.LOOP_NONE.name ||
-            controlName === PlaybackControlDefinitions.SHUFFLE_ON.name;
+            controlName === PlaybackControls.LOOP_NONE.name ||
+            controlName === PlaybackControls.SHUFFLE_ON.name;
         const isActive =
-            controlDefinition === PlaybackControlDefinitions.LOOP_TRACK ||
-            controlDefinition === PlaybackControlDefinitions.LOOP_PLAYLIST ||
-            controlDefinition === PlaybackControlDefinitions.SHUFFLE_ON;
+            controlDefinition === PlaybackControls.LOOP_TRACK ||
+            controlDefinition === PlaybackControls.LOOP_PLAYLIST ||
+            controlDefinition === PlaybackControls.SHUFFLE_ON;
         const targetControlsBox = isSecondary ? this.secondaryPlaybackControlsBox : this.primaryPlaybackControlsBox;
 
         let control = this.controlButtons.get(controlName);

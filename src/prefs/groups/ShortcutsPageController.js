@@ -1,4 +1,15 @@
-// Owns keyboard-shortcut capture, validation, conflict handling, page-level reset, and read-only overview.
+/**
+ * @file ShortcutsPageController.js
+ * @module prefs.groups.ShortcutsPageController
+ *
+ * Drives the keyboard shortcut editor page in the preferences window.
+ *
+ * The controller validates accelerator input, writes accepted shortcuts to
+ * GSettings, and restores the previous value when the user cancels or enters an
+ * invalid shortcut. It is preferences-only and never registers global keybindings.
+ *
+ * @see src/shell/services/GlobalShortcutsService.js
+ */
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
@@ -6,9 +17,10 @@ import { gettext as _ } from "../PreferencesTranslations.js";
 
 import { INPUT_ACTION_DEFINITIONS, KEYBOARD_SHORTCUT_KEYS } from "../../shared/constants/inputActions.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 import { isValidAccelerator, isValidBinding } from "../utils/ShortcutValidation.js";
 
-const logger = createLogger("KeyboardShortcutsController");
+const logger = createLogger("ShortcutsPageController");
 const SECTION_ORDER = Object.freeze(["playback", "audio", "apps", "interface"]);
 
 function createActionCopy() {
@@ -41,7 +53,7 @@ function shortcutRowId(actionId) {
     return `ar-interactions-shortcut-${actionId}`;
 }
 
-export default class KeyboardShortcutsController {
+export default class ShortcutsPageController {
     constructor(settings, builder, preferencesWindow) {
         this.settings = settings;
         this.builder = builder;
@@ -53,7 +65,7 @@ export default class KeyboardShortcutsController {
         this.shortcutsOverviewDialog = null;
         this.overviewShortcutLabels = new Map();
         this.resetConfirmationDialog = null;
-        this.destroyed = false;
+        this.isDestroyed = false;
     }
 
     init() {
@@ -73,7 +85,7 @@ export default class KeyboardShortcutsController {
     }
 
     presentShortcutEditor(definition) {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
         this.dismissActiveShortcutEditor();
 
@@ -154,7 +166,7 @@ export default class KeyboardShortcutsController {
     }
 
     handleShortcutKeyPressed(session, keyval, keycode, state) {
-        if (this.destroyed || this.activeEditorSession !== session) return Gdk.EVENT_STOP;
+        if (this.isDestroyed || this.activeEditorSession !== session) return Gdk.EVENT_STOP;
 
         let mask = state & Gtk.accelerator_get_default_mod_mask();
         mask &= ~Gdk.ModifierType.LOCK_MASK;
@@ -181,7 +193,7 @@ export default class KeyboardShortcutsController {
     }
 
     saveShortcut(session) {
-        if (this.destroyed || this.activeEditorSession !== session) return;
+        if (this.isDestroyed || this.activeEditorSession !== session) return;
 
         const shortcut = session.shortcutLabel.accelerator;
         const conflictingDefinition = shortcut
@@ -206,7 +218,7 @@ export default class KeyboardShortcutsController {
     }
 
     presentShortcutsOverview() {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
         this.shortcutsOverviewDialog?.force_close();
         this.overviewShortcutLabels.clear();
@@ -255,7 +267,7 @@ export default class KeyboardShortcutsController {
     }
 
     presentResetShortcutsConfirmation(parent = this.preferencesWindow) {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
         this.resetConfirmationDialog?.force_close();
 
@@ -288,26 +300,20 @@ export default class KeyboardShortcutsController {
     }
 
     connectOwnedSignal(object, signal, callback) {
-        const signalId = object.connect(signal, callback);
-        this.ownedSignalConnections.push({ object, signalId });
+        connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
     }
 
     destroy() {
-        if (this.destroyed) return;
-        this.destroyed = true;
+        if (this.isDestroyed) return;
+        this.isDestroyed = true;
 
         this.dismissActiveShortcutEditor();
         this.shortcutsOverviewDialog?.force_close();
         this.resetConfirmationDialog?.force_close();
 
-        for (const { object, signalId } of this.ownedSignalConnections) {
-            try {
-                object.disconnect(signalId);
-            } catch (error) {
-                logger.debug("A keyboard shortcut signal was already disconnected", error);
-            }
-        }
-        this.ownedSignalConnections.length = 0;
+        disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
+            logger.debug("A keyboard shortcut signal was already disconnected", error);
+        });
         this.overviewShortcutLabels.clear();
         this.activeEditorSession = null;
         this.shortcutsOverviewDialog = null;

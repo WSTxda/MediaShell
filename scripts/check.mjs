@@ -80,7 +80,7 @@ function runCommand(label, command, args) {
     if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-// Verifies that maintained JavaScript modules parse with the repository Node.js baseline.
+// Syntax errors in maintained modules prevent GJS from loading the extension.
 async function checkSyntax() {
     const files = [
         ...(await collect("src", (path) => extname(path) === ".js")),
@@ -96,7 +96,7 @@ async function checkSyntax() {
     console.log(`JavaScript syntax passed for ${files.length} modules.`);
 }
 
-// Verifies relative imports, circular dependencies, and Shell/Preferences/Shared boundaries.
+// Missing imports, legacy `imports.ui` usage, or cross-boundary API leaks fail silently at runtime.
 async function checkImports() {
     const files = await collect("src", (path) => extname(path) === ".js");
     const absoluteFiles = new Set(files.map((file) => resolve(rootPath(file))));
@@ -169,27 +169,32 @@ async function checkImports() {
     console.log(`Import and process boundaries passed for ${files.length} source modules.`);
 }
 
-// Verifies compatibility declarations against their executable sources of truth.
+// Shell version mismatches and missing Libadwaita guards cause silent failures during install.
 async function checkCompatibility() {
     const metadata = JSON.parse(await read("src/metadata.json"));
     const packageJson = JSON.parse(await read("package.json"));
     const prefsEntry = await read("src/prefs.js");
+    const platformSource = await read("src/shared/constants/platform.js");
     const errors = [];
 
     if (JSON.stringify(metadata["shell-version"]) !== JSON.stringify(SUPPORTED_GNOME_SHELL_VERSIONS))
         errors.push("metadata.json shell-version differs from src/shared/constants/platform.js");
     if (metadata["version-name"] !== packageJson.version)
         errors.push("package.json version differs from metadata.json version-name");
-    if (!/import Adw from "gi:\/\/Adw"/.test(prefsEntry))
-        errors.push("src/prefs.js does not import Libadwaita");
+    if (!prefsEntry.includes("gi://Adw")) errors.push("src/prefs.js does not import Libadwaita");
+    // Confirms the Libadwaita version guard is present so the prefs window does not open on unsupported GTK releases.
     if (!/isVersionAtLeast/.test(prefsEntry) || !/assertSupportedLibadwaita\(\)/.test(prefsEntry))
         errors.push("src/prefs.js does not enforce the shared Libadwaita compatibility guard");
+    if (!/export function isVersionAtLeast\b/.test(platformSource))
+        errors.push("platform.js must export the shared Libadwaita version comparator");
+    if (!/from ["']\.\/shared\/constants\/platform\.js["']/.test(prefsEntry))
+        errors.push("src/prefs.js must import the Libadwaita guard from shared/constants/platform.js");
 
     fail("Compatibility validation", errors);
     console.log("Compatibility declarations match runtime guards.");
 }
 
-// Verifies review-sensitive API patterns and lifecycle rules in the maintained source tree.
+// Patterns that GNOME review flagged in past releases. Catches regressions before EGO submission.
 async function checkGnomeReviewRules() {
     const files = [
         ...(await collect("src", (path) => extname(path) === ".js" || path.endsWith("metadata.json"))),
@@ -212,7 +217,7 @@ async function checkGnomeReviewRules() {
     console.log("GNOME Shell compatibility and review rules passed.");
 }
 
-// Verifies MediaShell-specific release invariants that are intentionally project-owned.
+// Extension-specific invariants that build tooling cannot infer from public specs.
 async function checkMediaShellInvariants() {
     const metadata = JSON.parse(await read("src/metadata.json"));
     const errors = [];
@@ -226,7 +231,7 @@ async function checkMediaShellInvariants() {
     console.log("MediaShell project invariants passed.");
 }
 
-// Verifies release packaging configuration before the package is built.
+// Catches packaging misconfigurations before the build produces a broken archive.
 async function checkPackagingConfiguration() {
     const packageJson = JSON.parse(await read("package.json"));
     const resourceManifest = await read("assets/org.gnome.shell.extensions.mediashell.gresource.xml");
@@ -257,7 +262,7 @@ function parseSchemaVersionMaximum(schema) {
     return match ? Number(match[1]) : null;
 }
 
-// Verifies that runtime settings, Preferences bindings, shortcuts, and migrations target real schema keys.
+// A missing or mismatched schema key causes a GSettings error at extension load time.
 async function checkSettings() {
     const schema = await read("assets/org.gnome.shell.extensions.mediashell.gschema.xml");
     const schemaKeys = parseSchemaKeys(schema);
@@ -304,7 +309,7 @@ async function checkSettings() {
     console.log(`Settings validation passed for ${schemaKeys.size} schema keys.`);
 }
 
-// Verifies only structural package references that can cause builds or commands to fail.
+// Broken script paths and schema ID mismatches surface as cryptic failures during build or install.
 async function checkProjectReferences() {
     const packageJson = JSON.parse(await read("package.json"));
     const metadata = JSON.parse(await read("src/metadata.json"));
@@ -341,10 +346,9 @@ async function checkProjectReferences() {
     console.log("Project entry points and package script references are valid.");
 }
 
-// Verifies that developer scripts are discoverable and wired consistently.
+// Ensures all required pnpm scripts exist and reference the correct entry points.
 async function checkScriptInventory() {
     const packageJson = JSON.parse(await read("package.json"));
-    const scriptFiles = await collect("scripts", (path) => [".js", ".mjs", ".py", ".sh"].includes(extname(path)));
     const errors = [];
 
     const requiredPackageScripts = {
@@ -373,14 +377,14 @@ async function checkScriptInventory() {
         errors.push("build script must validate the generated extension package");
 
     fail("Script inventory validation", errors);
-    console.log(`Script inventory passed for ${scriptFiles.length} maintained scripts.`);
+    console.log("Script inventory and package scripts are valid.");
 }
 
 function stripLinkSuffix(target) {
     return target.split("#", 1)[0].split("?", 1)[0];
 }
 
-// Verifies documentation links, referenced paths, package commands, and duplicate headings.
+// Broken doc links and unknown pnpm commands break contributor onboarding silently.
 async function checkDocumentation() {
     const documentationFiles = [
         "README.md",

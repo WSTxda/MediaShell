@@ -1,4 +1,15 @@
-// Preferences entry point; creates one controller for each open preferences window.
+/**
+ * @file prefs.js
+ * @module prefs
+ *
+ * GNOME Shell entry point for the MediaShell preferences process.
+ *
+ * Registers the compiled preferences resources, initializes Libadwaita, and
+ * delegates window construction to PreferencesController. The file stays free of
+ * Shell runtime imports because preferences run in a separate GTK process.
+ *
+ * @see src/prefs/PreferencesController.js
+ */
 import Adw from "gi://Adw";
 import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 

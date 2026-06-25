@@ -1,10 +1,22 @@
-// Coordinates popup sections, deferred rendering while closed, and responsive width allocation.
+/**
+ * @file PopupContent.js
+ * @module shell.ui.popup.PopupContent
+ *
+ * Orchestrates every widget inside the MediaShell popup menu.
+ *
+ * PopupContent owns album art, track information, playback controls, progress,
+ * and app selector components for the currently active media app. It coalesces
+ * WidgetFlags into a single update cycle so bursts of MPRIS changes do not
+ * rebuild the popup redundantly.
+ */
 import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 import { POPUP_WIDTH } from "../../../shared/constants/settings.js";
-import { PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
+import { POPUP_CONTAINER_PADDING } from "../../constants/ui.js";
 import PopupAlbumArt from "./PopupAlbumArt.js";
 import PopupPlaybackControls from "./PopupPlaybackControls.js";
 import PopupAppSelectorController from "./PopupAppSelectorController.js";
@@ -12,7 +24,6 @@ import PopupTrackInformation from "./PopupTrackInformation.js";
 import PopupPlaybackProgress from "./PopupPlaybackProgress.js";
 
 const logger = createLogger("PopupContent");
-const POPUP_PARENT_PADDING = 16;
 
 export default class PopupContent {
     constructor(topBarButton) {
@@ -38,6 +49,7 @@ export default class PopupContent {
         );
         this.menuOpenSignalId = this.menu.connect("open-state-changed", (_menu, isOpen) => {
             if (isOpen) {
+                logger.debug("Popup opened for", this.mediaApp.busName);
                 let widgetFlags =
                     this.pendingWidgetFlags |
                     WidgetFlags.POPUP_APP_SELECTOR |
@@ -50,6 +62,7 @@ export default class PopupContent {
                 if (this.mediaApp.playbackStatus === PlaybackStatus.PLAYING) this.resume();
                 else this.pause();
             } else {
+                logger.debug("Popup closed");
                 this.appSelectorController.close();
                 this.albumArt.cancelAlbumArtLoad();
                 this.pause();
@@ -168,7 +181,7 @@ export default class PopupContent {
     }
 
     getPopupContentWidth() {
-        return this.getPopupOuterWidth() - POPUP_PARENT_PADDING * 2;
+        return this.getPopupOuterWidth() - POPUP_CONTAINER_PADDING * 2;
     }
 
     getAlbumArtWidth() {

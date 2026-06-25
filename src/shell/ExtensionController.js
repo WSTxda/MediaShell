@@ -1,18 +1,29 @@
-// Owns the complete Shell-side lifecycle and coordinates settings, MPRIS, services, and UI.
+/**
+ * @file ExtensionController.js
+ * @module shell.ExtensionController
+ *
+ * Coordinates the full MediaShell runtime lifecycle inside GNOME Shell.
+ *
+ * The controller owns settings, migrations, global shortcuts, MPRIS discovery,
+ * top-bar mounting, system media control patching, and service teardown. Async
+ * work is protected by lifecycleGeneration so stale callbacks from a previous
+ * enable cycle cannot mutate the current Shell state.
+ */
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import { InputActions, WidgetFlags } from "../shared/enums/MediaShellEnums.js";
+import { InputActions } from "../shared/enums/input.js";
+import { SettingsAction } from "../shared/enums/settings.js";
+import { WidgetFlags } from "../shared/enums/widget.js";
 import { migrateSettings, SETTINGS_SCHEMA_VERSION } from "../shared/settings/SettingsMigration.js";
 import { createLogger } from "../shared/utils/log.js";
 import MprisProxyFactory from "./mpris/MprisProxyFactory.js";
 import MediaAppRegistry from "./mpris/MediaAppRegistry.js";
-import KeyboardShortcutsController from "./services/KeyboardShortcutsController.js";
+import GlobalShortcutsService from "./services/GlobalShortcutsService.js";
 import SystemMediaControlsPatch from "./services/SystemMediaControlsPatch.js";
-import { shutdownAlbumArtLoader } from "./services/AlbumArtLoader.js";
-import { clearMediaAppResolverCaches } from "./services/MediaAppResolver.js";
+import AlbumArtLoader from "./services/AlbumArtLoader.js";
+import MediaAppResolver from "./services/MediaAppResolver.js";
 import ExtensionResourceRegistry from "./services/ExtensionResourceRegistry.js";
 import SettingsStore from "./settings/SettingsStore.js";
-import { SettingsAction } from "./settings/SettingsSpec.js";
 import TopBarButton from "./ui/topBar/TopBarButton.js";
 import { clearIconCache } from "./ui/IconUtils.js";
 
@@ -23,6 +34,11 @@ export default class ExtensionController {
         this.extensionInstance = extensionInstance;
         this.extensionPath = extensionInstance.path;
         this.enabled = false;
+        // DEVELOPER NOTE — Lifecycle generation guard:
+        // `lifecycleGeneration` is incremented on every enable() and destroy() call.
+        // Async callbacks capture the generation at dispatch time and compare on
+        // completion. If generations differ, the extension was toggled while the
+        // async operation was in flight and the stale result is discarded.
         this.lifecycleGeneration = 0;
         this.topBarButton = null;
         this.extensionResourceRegistry = new ExtensionResourceRegistry(this.extensionPath);
@@ -39,17 +55,17 @@ export default class ExtensionController {
         try {
             this.extensionResourceRegistry.register();
             this.settings = this.extensionInstance.getSettings();
-            if (migrateSettings(this.settings))
-                logger.debug("Settings migrated to schema version", SETTINGS_SCHEMA_VERSION);
+            const settingsWereMigrated = migrateSettings(this.settings);
+            logger.debug("Settings schema version", SETTINGS_SCHEMA_VERSION, "migrated", settingsWereMigrated);
             this.settingsStore = new SettingsStore(this.settings, this, (settingKey, settingValue, settingSpec) =>
                 this.handleSettingChange(settingKey, settingValue, settingSpec),
             );
 
             this.systemMediaControlsPatch.setSystemMediaControlsHidden(this.hideSystemMediaControls);
-            this.keyboardShortcutsController = new KeyboardShortcutsController(this.settings, (inputAction) =>
+            this.globalShortcutsService = new GlobalShortcutsService(this.settings, (inputAction) =>
                 this.executeInputAction(inputAction),
             );
-            this.keyboardShortcutsController.enable();
+            this.globalShortcutsService.enable();
 
             this.mprisProxyFactory = new MprisProxyFactory();
             await this.mprisProxyFactory.init();
@@ -116,6 +132,7 @@ export default class ExtensionController {
         }
 
         this.topBarButton = new TopBarButton(mediaApp, this);
+        // Panel slot name — must match the extension's registered status area identifier.
         Main.panel.addToStatusArea("MediaShell", this.topBarButton, this.topBarIndex, this.topBarPosition);
         logger.debug("Created top bar button for", mediaApp.busName);
     }
@@ -197,6 +214,7 @@ export default class ExtensionController {
         if (!topBarButton) return;
 
         try {
+            logger.debug("Destroying top bar button for", topBarButton.mediaApp?.busName ?? "unknown");
             topBarButton.destroy();
         } catch (error) {
             logger.error("Failed to destroy the top bar button cleanly", error);
@@ -218,23 +236,24 @@ export default class ExtensionController {
     destroy() {
         if (!this.enabled && !this.extensionResourceRegistry) return;
 
+        logger.debug("Extension disable started");
         this.enabled = false;
         this.lifecycleGeneration++;
 
         // Teardown is deliberately best-effort: one broken third-party media app
         // or Shell object must not prevent the remaining resources from being released.
-        this.destroyOwnedComponent("keyboardShortcutsController");
+        this.destroyOwnedComponent("globalShortcutsService");
         this.destroyTopBarButton();
         this.destroyOwnedComponent("mediaAppRegistry");
         this.destroyOwnedComponent("mprisProxyFactory");
-        shutdownAlbumArtLoader();
-        clearMediaAppResolverCaches();
+        AlbumArtLoader.getInstance().destroy();
+        MediaAppResolver.getInstance().clearCaches();
         clearIconCache();
         this.destroyOwnedComponent("systemMediaControlsPatch");
         this.destroyOwnedComponent("settingsStore");
         this.settings = null;
         this.destroyOwnedComponent("extensionResourceRegistry");
         this.extensionInstance = null;
-        logger.debug("Extension disabled");
+        logger.debug("Extension disable finished");
     }
 }

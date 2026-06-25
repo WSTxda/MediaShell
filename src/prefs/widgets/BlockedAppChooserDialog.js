@@ -1,4 +1,13 @@
-// Presents a one-shot searchable installed-app catalog with explicit selection and confirmation.
+/**
+ * @file BlockedAppChooserDialog.js
+ * @module prefs.widgets.BlockedAppChooserDialog
+ *
+ * Presents a searchable dialog for selecting installed apps to block.
+ *
+ * The dialog owns the temporary selection state, search filtering, and AppInfo
+ * monitor refresh source used while the chooser is open. It returns one selected
+ * desktop app to BlockedAppsGroup without writing settings itself.
+ */
 import Adw from "gi://Adw";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
@@ -27,8 +36,8 @@ class BlockedAppChooserDialog extends Adw.Dialog {
         this.selectionResolver = null;
         this.selectionPromise = null;
         this.appInfoMonitor = Gio.AppInfoMonitor.get();
-        this.appInfoMonitorSignalId = 0;
-        this.appsRefreshSourceId = 0;
+        this.appInfoMonitorSignalId = null;
+        this.appsRefreshSourceId = null;
         this.searchTokens = [];
         this.appIdByRow = new WeakMap();
         this.searchIndexByRow = new WeakMap();
@@ -164,10 +173,10 @@ class BlockedAppChooserDialog extends Adw.Dialog {
     }
 
     scheduleAppsRefresh() {
-        if (this.isClosed || this.appsRefreshSourceId) return;
+        if (this.isClosed || this.appsRefreshSourceId !== null) return;
 
         this.appsRefreshSourceId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this.appsRefreshSourceId = 0;
+            this.appsRefreshSourceId = null;
             if (!this.isClosed) this.populateApps();
             return GLib.SOURCE_REMOVE;
         });
@@ -223,13 +232,13 @@ class BlockedAppChooserDialog extends Adw.Dialog {
         this.isClosed = true;
 
         this.searchBar.set_key_capture_widget(null);
-        if (this.appsRefreshSourceId) {
+        if (this.appsRefreshSourceId !== null) {
             GLib.Source.remove(this.appsRefreshSourceId);
-            this.appsRefreshSourceId = 0;
+            this.appsRefreshSourceId = null;
         }
-        if (this.appInfoMonitorSignalId) {
+        if (this.appInfoMonitorSignalId !== null) {
             this.appInfoMonitor.disconnect(this.appInfoMonitorSignalId);
-            this.appInfoMonitorSignalId = 0;
+            this.appInfoMonitorSignalId = null;
         }
         this.appInfoMonitor = null;
         this.searchTokens = [];
@@ -249,4 +258,4 @@ class BlockedAppChooserDialog extends Adw.Dialog {
     }
 }
 
-export default GObject.registerClass({ GTypeName: "BlockedAppChooserDialog" }, BlockedAppChooserDialog);
+export default GObject.registerClass({ GTypeName: "MediaShellBlockedAppChooserDialog" }, BlockedAppChooserDialog);

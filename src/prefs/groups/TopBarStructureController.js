@@ -1,7 +1,17 @@
-// Synchronizes top bar structure controls with GSettings.
+/**
+ * @file TopBarStructureController.js
+ * @module prefs.groups.TopBarStructureController
+ *
+ * Coordinates custom preference widgets that edit the top-bar layout.
+ *
+ * The controller owns the element-order widget and the track-information content
+ * row, connecting their drag/drop and selection signals to GSettings. It keeps
+ * layout-specific preference behavior out of the generic binding table.
+ */
 import { TOP_BAR_ELEMENT_ORDER_DEFAULT } from "../../shared/constants/settings.js";
 import { normalizeOrderedValues } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 
 const logger = createLogger("TopBarStructureController");
 
@@ -56,19 +66,13 @@ export default class TopBarStructureController {
     }
 
     connectOwnedSignal(object, signal, callback) {
-        const signalId = object.connect(signal, callback);
-        this.ownedSignalConnections.push({ object, signalId });
+        connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
     }
 
     destroy() {
-        for (const { object, signalId } of this.ownedSignalConnections) {
-            try {
-                object.disconnect(signalId);
-            } catch (error) {
-                logger.debug("A top bar structure preference signal was already disconnected", error);
-            }
-        }
-        this.ownedSignalConnections.length = 0;
+        disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
+            logger.debug("A top bar structure preference signal was already disconnected", error);
+        });
         this.topBarElementOrderGroup = null;
         this.topBarTrackInformationContentRow = null;
         this.settings = null;

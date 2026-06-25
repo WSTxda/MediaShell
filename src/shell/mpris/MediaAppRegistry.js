@@ -1,27 +1,30 @@
-// Discovers MPRIS bus names, owns PlayerProxy instances, filters blocked apps, and selects the active media app.
+/**
+ * @file MediaAppRegistry.js
+ * @module shell.mpris.MediaAppRegistry
+ *
+ * Discovers MPRIS bus names, owns PlayerProxy instances, filters blocked apps, and selects the active media app.
+ *
+ * The registry watches NameOwnerChanged, creates proxies through MprisProxyFactory,
+ * applies blocked-app filtering, and schedules grace-period removals when an
+ * endpoint disappears. It is the source of truth for the active app shown by
+ * TopBarButton and PopupContent.
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { MPRIS_PREFIX } from "../../shared/constants/dbus.js";
-import { PlaybackStatus } from "../../shared/enums/MediaShellEnums.js";
+import { MEDIA_APP_DISAPPEARANCE_GRACE_MS } from "../../shared/constants/timing.js";
+import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { normalizeUniqueStrings } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
-import {
-    isMediaAppBlocked,
-    isShellAppStopped,
-    resolveLifecycleShellApp,
-} from "../services/MediaAppResolver.js";
+import MediaAppResolver from "../services/MediaAppResolver.js";
+import { isCancellationError } from "../utils/errors.js";
 import PlayerProxy from "./PlayerProxy.js";
 import { selectActiveMediaApp, selectNextMediaApp } from "./MediaAppSelectionPolicy.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("MediaAppRegistry");
-const MEDIA_APP_DISAPPEARANCE_GRACE_MILLISECONDS = 5000;
-
-function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
-}
 
 export default class MediaAppRegistry {
     constructor(mprisProxyFactory, callbacks = {}) {
@@ -37,17 +40,18 @@ export default class MediaAppRegistry {
         this.blockedAppIds = new Set();
         this.activeMediaApp = null;
         this.dbusProxy = null;
+        this.mediaAppResolver = MediaAppResolver.getInstance();
         this.nameOwnerChangedSignalId = null;
         this.dbusOwnerSignalId = null;
         this.operationCancellable = new Gio.Cancellable();
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.lifecycleGeneration = 0;
     }
 
     async init() {
         const lifecycleGeneration = ++this.lifecycleGeneration;
         const dbusProxy = await this.mprisProxyFactory.createBusProxy(this.operationCancellable);
-        if (this.destroyed || lifecycleGeneration !== this.lifecycleGeneration) return;
+        if (this.isDestroyed || lifecycleGeneration !== this.lifecycleGeneration) return;
         this.dbusProxy = dbusProxy;
 
         this.dbusOwnerSignalId = this.dbusProxy.connect("notify::g-name-owner", () => this.handleBusOwnerChanged());
@@ -72,7 +76,7 @@ export default class MediaAppRegistry {
     }
 
     handleBusOwnerChanged() {
-        if (this.destroyed || !this.dbusProxy) return;
+        if (this.isDestroyed || !this.dbusProxy) return;
 
         if (!this.dbusProxy.get_name_owner()) {
             for (const busName of this.mediaAppProxies.keys()) this.scheduleMediaAppRemoval(busName);
@@ -110,7 +114,7 @@ export default class MediaAppRegistry {
     }
 
     async discoverRunningMediaApps() {
-        if (!this.dbusProxy || this.destroyed) return;
+        if (!this.dbusProxy || this.isDestroyed) return;
 
         const listNamesResult = await this.dbusProxy.call(
             "ListNames",
@@ -143,7 +147,7 @@ export default class MediaAppRegistry {
     }
 
     async registerMediaApp(busName) {
-        if (this.destroyed || this.mediaAppProxies.has(busName) || this.pendingMediaAppProxies.has(busName)) return;
+        if (this.isDestroyed || this.mediaAppProxies.has(busName) || this.pendingMediaAppProxies.has(busName)) return;
 
         const lifecycleGeneration = this.lifecycleGeneration;
         const mediaAppProxy = new PlayerProxy(busName, this.mprisProxyFactory);
@@ -154,8 +158,8 @@ export default class MediaAppRegistry {
             const initialized = await mediaAppProxy.init();
             if (
                 !initialized ||
-                mediaAppProxy.destroyed ||
-                this.destroyed ||
+                mediaAppProxy.isDestroyed ||
+                this.isDestroyed ||
                 lifecycleGeneration !== this.lifecycleGeneration ||
                 this.pendingMediaAppProxies.get(busName) !== mediaAppProxy
             ) {
@@ -164,14 +168,14 @@ export default class MediaAppRegistry {
             }
 
             if (
-                isMediaAppBlocked(
+                this.mediaAppResolver.isMediaAppBlocked(
                     mediaAppProxy.identity,
                     mediaAppProxy.desktopEntry,
                     this.blockedAppIds,
                     mediaAppProxy.busName,
                 )
             ) {
-                logger.debug("Ignored blocked app", busName);
+                logger.debug("Blocked app filtered out:", busName);
                 mediaAppProxy.destroy();
                 return;
             }
@@ -184,13 +188,14 @@ export default class MediaAppRegistry {
             });
             const revalidateIdentity = () => {
                 if (
-                    isMediaAppBlocked(
+                    this.mediaAppResolver.isMediaAppBlocked(
                         mediaAppProxy.identity,
                         mediaAppProxy.desktopEntry,
                         this.blockedAppIds,
                         mediaAppProxy.busName,
                     )
                 ) {
+                    logger.debug("Blocked app filtered out:", mediaAppProxy.busName);
                     this.unregisterMediaApp(mediaAppProxy.busName);
                     return;
                 }
@@ -210,7 +215,7 @@ export default class MediaAppRegistry {
             if (!isCancellationError(error)) throw error;
         } finally {
             if (this.pendingMediaAppProxies.get(busName) === mediaAppProxy) this.pendingMediaAppProxies.delete(busName);
-            if (!adopted && !mediaAppProxy.destroyed) mediaAppProxy.destroy();
+            if (!adopted && !mediaAppProxy.isDestroyed) mediaAppProxy.destroy();
         }
     }
 
@@ -224,6 +229,7 @@ export default class MediaAppRegistry {
         if (!mediaApp || this.pendingRemovalSourceIds.has(busName)) return;
 
         this.pendingRemovalBusNames.add(busName);
+        logger.debug(`Scheduling removal of ${busName} in ${MEDIA_APP_DISAPPEARANCE_GRACE_MS}ms`);
 
         // D-Bus ownership is the lifecycle authority. Hide the ownerless
         // endpoint from the selector immediately, but retain the active proxy
@@ -236,11 +242,14 @@ export default class MediaAppRegistry {
         // excluded from lifecycle decisions.
         if (this.observeExactMediaAppShutdown(busName, mediaApp)) return;
 
-        const sourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, MEDIA_APP_DISAPPEARANCE_GRACE_MILLISECONDS, () => {
+        const sourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, MEDIA_APP_DISAPPEARANCE_GRACE_MS, () => {
             this.pendingRemovalSourceIds.delete(busName);
             const mediaApp = this.mediaAppProxies.get(busName);
             if (mediaApp?.hasBusOwner) this.reconcileMediaAppOwner(busName);
-            else this.unregisterMediaApp(busName);
+            else {
+                logger.debug("Removing", busName, "after grace period");
+                this.unregisterMediaApp(busName);
+            }
             return GLib.SOURCE_REMOVE;
         });
         this.pendingRemovalSourceIds.set(busName, sourceId);
@@ -248,9 +257,9 @@ export default class MediaAppRegistry {
     }
 
     observeExactMediaAppShutdown(busName, mediaApp) {
-        const shellApp = resolveLifecycleShellApp(mediaApp.desktopEntry);
+        const shellApp = this.mediaAppResolver.resolveLifecycleShellApp(mediaApp.desktopEntry);
         const removeIfStopped = () => {
-            if (!this.pendingRemovalBusNames.has(busName) || !isShellAppStopped(shellApp)) return false;
+            if (!this.pendingRemovalBusNames.has(busName) || !this.mediaAppResolver.isShellAppStopped(shellApp)) return false;
 
             logger.debug("Removed ownerless MPRIS app after its exact desktop app stopped", busName);
             this.unregisterMediaApp(busName);
@@ -341,7 +350,7 @@ export default class MediaAppRegistry {
 
     isRegisteredMediaApp(mediaApp) {
         return Boolean(
-            !this.destroyed &&
+            !this.isDestroyed &&
             mediaApp &&
             !mediaApp.isMediaAppInvalid &&
             !this.pendingRemovalBusNames.has(mediaApp.busName) &&
@@ -390,7 +399,7 @@ export default class MediaAppRegistry {
 
     unpinMediaApp(mediaApp) {
         if (
-            this.destroyed ||
+            this.isDestroyed ||
             !mediaApp ||
             this.mediaAppProxies.get(mediaApp.busName) !== mediaApp ||
             !mediaApp.isAppPinned()
@@ -445,14 +454,16 @@ export default class MediaAppRegistry {
 
         for (const mediaAppProxy of [...this.mediaAppProxies.values()]) {
             if (
-                isMediaAppBlocked(
+                this.mediaAppResolver.isMediaAppBlocked(
                     mediaAppProxy.identity,
                     mediaAppProxy.desktopEntry,
                     this.blockedAppIds,
                     mediaAppProxy.busName,
                 )
-            )
+            ) {
+                logger.debug("Blocked app filtered out:", mediaAppProxy.busName);
                 this.unregisterMediaApp(mediaAppProxy.busName);
+            }
         }
 
         try {
@@ -463,8 +474,8 @@ export default class MediaAppRegistry {
     }
 
     destroy() {
-        if (this.destroyed) return;
-        this.destroyed = true;
+        if (this.isDestroyed) return;
+        this.isDestroyed = true;
         this.lifecycleGeneration++;
 
         this.operationCancellable?.cancel();
@@ -498,6 +509,7 @@ export default class MediaAppRegistry {
         this.pendingMediaAppProxies.clear();
         this.activeMediaApp = null;
         this.dbusProxy = null;
+        this.mediaAppResolver = null;
         this.nameOwnerChangedSignalId = null;
         this.dbusOwnerSignalId = null;
         this.onMediaAppsChanged = null;

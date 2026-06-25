@@ -45,84 +45,84 @@ msgstr "Разработано"
 msgid "View all..."
 msgstr "Показать всех..."
 
-#: src/prefs/groups/KeyboardShortcutsController.js:16 assets/ui/prefs.ui:170
+#: src/prefs/groups/ShortcutsPageController.js:16 assets/ui/prefs.ui:170
 #: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
 msgid "Play / Pause"
 msgstr "Воспроизвести / Приостановить"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:17 assets/ui/prefs.ui:175
+#: src/prefs/groups/ShortcutsPageController.js:17 assets/ui/prefs.ui:175
 #: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
 msgid "Next Track"
 msgstr "Следующая композиция"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:18 assets/ui/prefs.ui:180
+#: src/prefs/groups/ShortcutsPageController.js:18 assets/ui/prefs.ui:180
 #: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
 msgid "Previous Track"
 msgstr "Предыдущая композиция"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:19 assets/ui/prefs.ui:474
+#: src/prefs/groups/ShortcutsPageController.js:19 assets/ui/prefs.ui:474
 #: assets/ui/prefs.ui:756
 msgid "Volume Up"
 msgstr "Увеличить громкость"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:20 assets/ui/prefs.ui:491
+#: src/prefs/groups/ShortcutsPageController.js:20 assets/ui/prefs.ui:491
 #: assets/ui/prefs.ui:757
 msgid "Volume Down"
 msgstr "Уменьшить громкость"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:21 assets/ui/prefs.ui:508
+#: src/prefs/groups/ShortcutsPageController.js:21 assets/ui/prefs.ui:508
 #: assets/ui/prefs.ui:758
 msgid "Repeat"
 msgstr "Повтор"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:22 assets/ui/prefs.ui:525
+#: src/prefs/groups/ShortcutsPageController.js:22 assets/ui/prefs.ui:525
 #: assets/ui/prefs.ui:759
 msgid "Shuffle"
 msgstr "Случайно"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:23 assets/ui/prefs.ui:4
+#: src/prefs/groups/ShortcutsPageController.js:23 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
 msgid "Popup"
 msgstr "Всплывающее меню"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:24 assets/ui/prefs.ui:559
+#: src/prefs/groups/ShortcutsPageController.js:24 assets/ui/prefs.ui:559
 #: assets/ui/prefs.ui:761
 msgid "Open App"
 msgstr "Открыть приложение"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:25 assets/ui/prefs.ui:576
+#: src/prefs/groups/ShortcutsPageController.js:25 assets/ui/prefs.ui:576
 #: assets/ui/prefs.ui:762
 msgid "Quit App"
 msgstr "Завершить приложение"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:26 assets/ui/prefs.ui:593
+#: src/prefs/groups/ShortcutsPageController.js:26 assets/ui/prefs.ui:593
 #: assets/ui/prefs.ui:763
 msgid "Preferences"
 msgstr "Параметры"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:27 assets/ui/prefs.ui:610
+#: src/prefs/groups/ShortcutsPageController.js:27 assets/ui/prefs.ui:610
 #: assets/ui/prefs.ui:764
 msgid "Next App"
 msgstr "Следующее приложение"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:33
+#: src/prefs/groups/ShortcutsPageController.js:33
 msgid "Playback"
 msgstr "Воспроизведение"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:34
+#: src/prefs/groups/ShortcutsPageController.js:34
 msgid "Audio"
 msgstr "Звук"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:35 assets/ui/prefs.ui:146
+#: src/prefs/groups/ShortcutsPageController.js:35 assets/ui/prefs.ui:146
 #: assets/ui/prefs.ui:349
 msgid "Apps"
 msgstr "Приложения"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:36
+#: src/prefs/groups/ShortcutsPageController.js:36
 msgid "Interface"
 msgstr "Интерфейс"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:99
+#: src/prefs/groups/ShortcutsPageController.js:99
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -132,43 +132,43 @@ msgstr ""
 "Нажмите Enter для сохранения.\n"
 "Нажмите Backspace, чтобы очистить сочетание клавиш."
 
-#: src/prefs/groups/KeyboardShortcutsController.js:106
+#: src/prefs/groups/ShortcutsPageController.js:106
 msgid "Press a shortcut"
 msgstr "Нажмите сочетание клавиш"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:197
+#: src/prefs/groups/ShortcutsPageController.js:197
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Сочетание уже используется для %s"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:215 assets/ui/prefs.ui:414
+#: src/prefs/groups/ShortcutsPageController.js:215 assets/ui/prefs.ui:414
 msgid "Keyboard Shortcuts"
 msgstr "Сочетания клавиш"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:235
+#: src/prefs/groups/ShortcutsPageController.js:235
 msgid "Not set"
 msgstr "Не задано"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:263
+#: src/prefs/groups/ShortcutsPageController.js:263
 msgid "Reset keyboard shortcuts?"
 msgstr "Сбросить сочетания клавиш?"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:264
+#: src/prefs/groups/ShortcutsPageController.js:264
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Все сочетания клавиш будут отключены."
 
-#: src/prefs/groups/KeyboardShortcutsController.js:267
+#: src/prefs/groups/ShortcutsPageController.js:267
 #: src/prefs/groups/OthersPageController.js:88
 #: src/prefs/widgets/BlockedAppChooserDialog.js:42
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:268
+#: src/prefs/groups/ShortcutsPageController.js:268
 #: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
 msgid "Reset"
 msgstr "Сбросить"
 
-#: src/prefs/groups/KeyboardShortcutsController.js:284
+#: src/prefs/groups/ShortcutsPageController.js:284
 msgid "Keyboard shortcuts reset"
 msgstr "Сочетания клавиш сброшены"
 

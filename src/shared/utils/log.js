@@ -1,6 +1,16 @@
-// Provides scoped, low-noise logging for both the Shell and preferences processes.
+/**
+ * @file log.js
+ * @module shared.utils.log
+ *
+ * Creates scoped loggers with once-only deduplication for noisy runtime paths.
+ *
+ * Each logger prefixes messages with a class or module scope and bounds its
+ * per-level once cache using LOG_ONCE_CACHE_LIMIT. Shell and preferences modules
+ * use this helper instead of direct console calls so logs stay consistent.
+ */
+import { LOG_ONCE_CACHE_LIMIT } from "../constants/limits.js";
+
 const PREFIX = "[MediaShell]";
-const ONCE_CACHE_LIMIT = 256;
 
 function write(method, scope, args) {
     const label = scope ? `${PREFIX}[${scope}]` : PREFIX;
@@ -12,7 +22,7 @@ function rememberOnce(keys, key) {
     if (keys.has(normalized)) return false;
 
     keys.add(normalized);
-    if (keys.size > ONCE_CACHE_LIMIT) keys.delete(keys.values().next().value);
+    if (keys.size > LOG_ONCE_CACHE_LIMIT) keys.delete(keys.values().next().value);
     return true;
 }
 

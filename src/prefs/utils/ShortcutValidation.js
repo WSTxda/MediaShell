@@ -1,4 +1,13 @@
-// Validates keyboard accelerators using the same constraints as GNOME preferences.
+/**
+ * @file ShortcutValidation.js
+ * @module prefs.utils.ShortcutValidation
+ *
+ * Validates keyboard accelerators entered in the preferences window.
+ *
+ * ShortcutsPageController uses this module to reject empty, malformed, or
+ * reserved accelerator strings before persisting them to GSettings. The utility
+ * keeps GTK accelerator parsing separate from controller state.
+ */
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 

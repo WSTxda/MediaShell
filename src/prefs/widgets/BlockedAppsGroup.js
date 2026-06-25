@@ -1,4 +1,13 @@
-// Renders and edits the persistent list of apps ignored during MPRIS discovery.
+/**
+ * @file BlockedAppsGroup.js
+ * @module prefs.widgets.BlockedAppsGroup
+ *
+ * Custom preferences group that displays and edits the blocked-app list.
+ *
+ * The widget owns the visible rows for blocked desktop IDs and opens
+ * BlockedAppChooserDialog when the user adds a new entry. It writes the final
+ * string list to GSettings through the settings object passed by its controller.
+ */
 import Adw from "gi://Adw";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
@@ -20,7 +29,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
         this.addButton = this._btn_add;
         this.chooseBlockedAppPromise = null;
         this.activeChooser = null;
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.addButton.connect("clicked", () => this.chooseAndAddBlockedApp());
     }
 
@@ -30,13 +39,13 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     }
 
     chooseAndAddBlockedApp() {
-        if (this.destroyed) return null;
+        if (this.isDestroyed) return null;
         if (this.chooseBlockedAppPromise) return this.chooseBlockedAppPromise;
 
         this.addButton.sensitive = false;
         const choosePromise = this.performChooseAndAddBlockedApp().finally(() => {
             if (this.chooseBlockedAppPromise === choosePromise) this.chooseBlockedAppPromise = null;
-            if (!this.destroyed) this.addButton.sensitive = true;
+            if (!this.isDestroyed) this.addButton.sensitive = true;
         });
         this.chooseBlockedAppPromise = choosePromise;
         return choosePromise;
@@ -48,13 +57,13 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
             this.activeChooser = blockedAppChooser;
             const appId = await blockedAppChooser.chooseAppId(this.get_root());
             if (this.activeChooser === blockedAppChooser) this.activeChooser = null;
-            if (this.destroyed || !appId || this.blockedAppIds.includes(appId)) return;
+            if (this.isDestroyed || !appId || this.blockedAppIds.includes(appId)) return;
 
             this.blockedAppIds = [appId, ...this.blockedAppIds];
             this.notify("blocked-app-ids");
             this.render();
         } catch (error) {
-            if (!this.destroyed) logger.warn("Failed to choose an app", error);
+            if (!this.isDestroyed) logger.warn("Failed to choose an app", error);
         } finally {
             this.activeChooser = null;
         }
@@ -121,8 +130,8 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     }
 
     destroy() {
-        if (this.destroyed) return;
-        this.destroyed = true;
+        if (this.isDestroyed) return;
+        this.isDestroyed = true;
         this.activeChooser?.force_close();
         this.activeChooser = null;
         this.chooseBlockedAppPromise = null;
@@ -134,7 +143,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
 
 export default GObject.registerClass(
     {
-        GTypeName: "BlockedAppsGroup",
+        GTypeName: "MediaShellBlockedAppsGroup",
         Template: "resource:///org/gnome/shell/extensions/mediashell/ui/blocked-apps.ui",
         InternalChildren: ["lb-blocked-apps", "btn-add"],
         Properties: {
