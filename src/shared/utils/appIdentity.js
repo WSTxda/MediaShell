@@ -1,4 +1,13 @@
-// Normalizes MPRIS identity hints into deterministic desktop-app lookup candidates.
+/**
+ * @file appIdentity.js
+ * @module shared.utils.appIdentity
+ *
+ * Normalizes MPRIS bus names, identities, and desktop-entry hints into app IDs.
+ *
+ * MediaAppResolver and installed-app search rely on these helpers to strip
+ * unstable browser/session suffixes and desktop-file extensions. The functions
+ * are pure so both Shell and preferences code can use the same matching rules.
+ */
 const DESKTOP_FILE_SUFFIX = ".desktop";
 const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 const EPHEMERAL_BUS_SEGMENT_PATTERN = /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;

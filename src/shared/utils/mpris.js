@@ -1,13 +1,20 @@
-// Normalizes untrusted MPRIS values without importing GI toolkits.
-import { LoopStatus, PlaybackStatus } from "../enums/MediaShellEnums.js";
+/**
+ * @file mpris.js
+ * @module shared.utils.mpris
+ *
+ * Normalizes untrusted MPRIS values into MediaShell-safe domain state.
+ *
+ * PlayerProxy feeds raw DBus payloads into these helpers before updating cached
+ * state. Compatibility re-exports keep constants and enums available from the
+ * historical import path until an intentional cleanup removes them.
+ */
+import { MPRIS_NO_TRACK_PATH } from "../constants/dbus.js";
+import { MediaAppValidity } from "../enums/app.js";
+import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
 
-export const MPRIS_NO_TRACK_PATH = "/org/mpris/MediaPlayer2/TrackList/NoTrack";
-
-export const MediaAppValidity = Object.freeze({
-    INVALID: "invalid",
-    VALID: "valid",
-    EMPTY_STOPPED_GRACE: "empty-stopped-grace",
-});
+// Compatibility re-exports for legacy imports; new code should import MPRIS_NO_TRACK_PATH from constants/dbus.js
+// and MediaAppValidity from enums/app.js directly
+export { MPRIS_NO_TRACK_PATH, MediaAppValidity };
 
 const PLAYBACK_STATUSES = new Set(Object.values(PlaybackStatus));
 const LOOP_STATUSES = new Set(Object.values(LoopStatus));

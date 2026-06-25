@@ -1,4 +1,13 @@
-// Implements drag-and-drop ordering and custom fields for top bar track information.
+/**
+ * @file TopBarTrackInformationContentRow.js
+ * @module prefs.widgets.TopBarTrackInformationContentRow
+ *
+ * Custom row for choosing which track-information fields appear in the top bar.
+ *
+ * The row owns the selectable content chips and drag/drop order used to produce
+ * the persisted list of title, artist, and album fields. It mirrors the runtime
+ * top-bar metadata model without importing Shell UI code.
+ */
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
@@ -6,7 +15,7 @@ import Graphene from "gi://Graphene";
 import Gtk from "gi://Gtk";
 import { gettext as _ } from "../PreferencesTranslations.js";
 
-import { TrackInformationFields } from "../../shared/enums/MediaShellEnums.js";
+import { TrackInformationFields } from "../../shared/enums/topBar.js";
 
 function createTranslatedFields() {
     return Object.freeze({
@@ -162,6 +171,7 @@ class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
         const paintable = new Gtk.WidgetPaintable({ widget: row });
         const snapshot = new Gtk.Snapshot();
         paintable.snapshot(snapshot, width, height);
+        // GSK texture rendering expects explicit Graphene.Rect bounds for the row snapshot
         const rect = new Graphene.Rect();
         rect.init(0, 0, width, height);
         return row.get_native().get_renderer().render_texture(snapshot.to_node(), rect);
@@ -170,7 +180,7 @@ class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
 
 export default GObject.registerClass(
     {
-        GTypeName: "TopBarTrackInformationContentRow",
+        GTypeName: "MediaShellTopBarTrackInformationContentRow",
         Template: "resource:///org/gnome/shell/extensions/mediashell/ui/top-bar-track-information-content-row.ui",
         InternalChildren: ["btn-add-field", "btn-add-text"],
         Properties: {

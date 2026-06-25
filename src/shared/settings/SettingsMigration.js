@@ -1,4 +1,13 @@
-// Migrates renamed preferences and retired enum values while preserving profile continuity.
+/**
+ * @file SettingsMigration.js
+ * @module shared.settings.SettingsMigration
+ *
+ * Migrates historical MediaShell settings to the current schema version.
+ *
+ * The migration runner copies legacy keys only when the destination does not
+ * already contain a user value, then advances the schema-version marker. Tests
+ * cover each historical boundary to guarantee idempotency and enum preservation.
+ */
 export const SETTINGS_SCHEMA_VERSION = 9;
 const SETTINGS_SCHEMA_VERSION_KEY = "settings-schema-version";
 

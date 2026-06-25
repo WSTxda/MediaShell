@@ -1,5 +1,14 @@
-// Owns popup playback progress and maps MPRIS length and position into a resilient UI state.
-import { PlaybackStatus } from "../../../shared/enums/MediaShellEnums.js";
+/**
+ * @file PopupPlaybackProgress.js
+ * @module shell.ui.popup.PopupPlaybackProgress
+ *
+ * Owns the popup progress section and live-stream replacement state.
+ *
+ * PopupContent delegates elapsed/duration labels and seekbar visibility to this
+ * component. It switches between the slider and LIVE indicator based on normalized
+ * MPRIS length and seekability while keeping seek handling in the slider child.
+ */
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import PopupPlaybackProgressSlider from "./PopupPlaybackProgressSlider.js";
 

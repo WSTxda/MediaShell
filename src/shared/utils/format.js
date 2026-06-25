@@ -1,4 +1,18 @@
-// Provides small allocation-conscious formatting and enum conversion helpers.
+/**
+ * @file format.js
+ * @module shared.utils.format
+ *
+ * Provides formatting and normalization helpers for primitive persisted values.
+ *
+ * Runtime widgets use duration formatting for progress labels, while settings
+ * and migration code use the list-normalization helpers to repair corrupted or
+ * duplicated values. No GI imports are used, which keeps these helpers testable in Node.
+ */
+export function finiteNumberOr(value, fallback, { minimum = -Infinity } = {}) {
+    const number = Number(value);
+    return Number.isFinite(number) && number >= minimum ? number : fallback;
+}
+
 export function enumValueByIndex(enumObject, index) {
     return Object.values(enumObject)[index];
 }

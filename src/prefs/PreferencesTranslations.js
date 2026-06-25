@@ -1,4 +1,13 @@
-// Provides initialized extension gettext helpers to preferences modules.
+/**
+ * @file PreferencesTranslations.js
+ * @module prefs.PreferencesTranslations
+ *
+ * Applies translatable labels and descriptions to the preferences UI.
+ *
+ * GtkBuilder files keep stable widget IDs while this module assigns translated
+ * strings at runtime. This centralizes preference copy so controllers can bind
+ * settings without duplicating user-facing text.
+ */
 let extensionGettext = null;
 let extensionNgettext = null;
 

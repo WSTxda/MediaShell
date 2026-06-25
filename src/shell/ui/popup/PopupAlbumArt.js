@@ -1,4 +1,13 @@
-// Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+/**
+ * @file PopupAlbumArt.js
+ * @module shell.ui.popup.PopupAlbumArt
+ *
+ * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ *
+ * PopupContent delegates cover art to this component so async file/network loads
+ * are isolated from the rest of the popup. The component cancels stale loads by
+ * generation, decodes images into Shell textures, and falls back to a themed icon.
+ */
 import Clutter from "gi://Clutter";
 import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
@@ -8,18 +17,15 @@ import St from "gi://St";
 import { IconNames } from "../../../shared/constants/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { loadAlbumArt, removeCachedAlbumArt } from "../../services/AlbumArtLoader.js";
+import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/ui.js";
+import AlbumArtLoader from "../../services/AlbumArtLoader.js";
+import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../IconUtils.js";
 
 Gio._promisify(GdkPixbuf.Pixbuf, "new_from_stream_at_scale_async", "new_from_stream_finish");
 Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 
 const logger = createLogger("PopupAlbumArt");
-const ALBUM_ART_OUTLINE_WIDTH = 1;
-
-function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
-}
 
 export default class PopupAlbumArt {
     constructor(popupContent) {
@@ -28,6 +34,7 @@ export default class PopupAlbumArt {
         this.albumArtLoadCancellable = null;
         this.loadedAlbumArtKey = null;
         this.loadingAlbumArtKey = null;
+        this.albumArtLoader = AlbumArtLoader.getInstance();
         this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([IconNames.MEDIA, IconNames.MISSING]);
     }
 
@@ -187,8 +194,10 @@ export default class PopupAlbumArt {
     async tryLoadAlbumArt(albumArtUri, loadCancellable, sourceName) {
         if (!albumArtUri) return null;
 
+        logger.debug("Loading album art", albumArtUri.slice(0, 60));
+
         try {
-            return await loadAlbumArt(albumArtUri, this.extensionController.cacheAlbumArt, loadCancellable);
+            return await this.albumArtLoader.loadAlbumArt(albumArtUri, this.extensionController.cacheAlbumArt, loadCancellable);
         } catch (error) {
             if (isCancellationError(error)) throw error;
             logger.debugOnce(
@@ -217,8 +226,8 @@ export default class PopupAlbumArt {
                 albumArtSource.albumArtUri,
                 error,
             );
-            await removeCachedAlbumArt(albumArtSource.albumArtUri, loadCancellable);
-            const refreshedSource = await loadAlbumArt(
+            await this.albumArtLoader.removeCachedAlbumArt(albumArtSource.albumArtUri, loadCancellable);
+            const refreshedSource = await this.albumArtLoader.loadAlbumArt(
                 albumArtSource.albumArtUri,
                 this.extensionController.cacheAlbumArt,
                 loadCancellable,
@@ -307,6 +316,7 @@ export default class PopupAlbumArt {
     }
 
     setAlbumArtFallback(width, radius, icon) {
+        logger.debug("Album art unavailable, using fallback icon", this.mediaApp?.busName);
         const imageSize = this.getImageSize(width);
         this.syncAlbumArtGeometry(width, radius);
         this.albumArtImage.content = null;
@@ -452,6 +462,7 @@ export default class PopupAlbumArt {
 
     destroy() {
         this.remove();
+        this.albumArtLoader = null;
         this.fallbackAlbumArtIcon = null;
         this.popupContent = null;
     }

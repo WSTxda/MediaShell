@@ -1,4 +1,13 @@
-// Provides GNOME Shell 47-50-safe pointer activation helpers for simple St actors.
+/**
+ * @file PointerActionUtils.js
+ * @module shell.ui.PointerActionUtils
+ *
+ * Installs Shell pointer gestures and button-release fallbacks for actor actions.
+ *
+ * TopBarPointerHandler uses this utility to translate click, double-click,
+ * touch, and scroll events into MediaShell input actions. The fallback path is
+ * kept local so top-bar UI code does not depend on one Clutter gesture API.
+ */
 import Clutter from "gi://Clutter";
 
 function safeRemoveAction(actor, action) {

@@ -1,64 +1,62 @@
-// Normalizes one MPRIS player into stable state, commands, signals, and lifecycle ownership.
+/**
+ * @file PlayerProxy.js
+ * @module shell.mpris.PlayerProxy
+ *
+ * Normalizes one MPRIS player into stable state, commands, and signals.
+ *
+ * Each proxy owns the DBus proxies, cached player properties, metadata
+ * stabilization, position tracking, and command forwarding for one bus name.
+ * The lifecycle is asynchronous because browser-backed MPRIS endpoints can
+ * publish a bus before their properties are ready.
+ *
+ * State machine:
+ *   [created]
+ *       │ init() called
+ *       ▼
+ *   [initializing] ── timeout ──► [invalid]
+ *       │ proxies ready + identity/metadata confirmed
+ *       ▼
+ *   [valid / empty-stopped-grace / invalid]
+ *       │ PropertiesChanged signal
+ *       ▼
+ *   [valid] ◄──── track appears ────── [empty-stopped-grace]
+ *       │ destroy() called
+ *       ▼
+ *   [destroyed]
+ *
+ * @see src/shell/mpris/PositionTracker.js
+ */
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { MPRIS_IFACE_NAME, MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
-import { LoopStatus, PlaybackStatus } from "../../shared/enums/MediaShellEnums.js";
+import {
+    MPRIS_IFACE_NAME,
+    MPRIS_PLAYER_IFACE_NAME,
+    PLAYER_PROPERTIES,
+    ROOT_PROPERTIES,
+} from "../../shared/constants/dbus.js";
+import { MediaAppValidity } from "../../shared/enums/app.js";
+import { LoopStatus, PlaybackStatus } from "../../shared/enums/playback.js";
+import {
+    DBUS_CALL_TIMEOUT_MS,
+    MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
+    MPRIS_INIT_POLL_INTERVAL_MS,
+    MPRIS_INIT_TIMEOUT_MS,
+} from "../../shared/constants/timing.js";
+import { finiteNumberOr } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
-    MediaAppValidity,
     metadataContainsTrack,
     normalizeLoopStatus,
     normalizePlaybackStatus,
     resolveMediaAppValidity,
 } from "../../shared/utils/mpris.js";
+import { isCancellationError } from "../utils/errors.js";
 import PositionTracker from "./PositionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("PlayerProxy");
-
-const INITIALIZATION_TIMEOUT_MILLISECONDS = 5000;
-const INITIALIZATION_POLL_MILLISECONDS = 750;
-const ESTABLISHED_MEDIA_APP_EMPTY_STATE_GRACE_MILLISECONDS = 5000;
-
-function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
-}
-
-const ROOT_PROPERTIES = [
-    "CanQuit",
-    "Fullscreen",
-    "CanSetFullscreen",
-    "CanRaise",
-    "HasTrackList",
-    "Identity",
-    "DesktopEntry",
-    "SupportedUriSchemes",
-    "SupportedMimeTypes",
-];
-
-const PLAYER_PROPERTIES = [
-    "PlaybackStatus",
-    "LoopStatus",
-    "Rate",
-    "Shuffle",
-    "Metadata",
-    "Volume",
-    "MinimumRate",
-    "MaximumRate",
-    "CanGoNext",
-    "CanGoPrevious",
-    "CanPlay",
-    "CanPause",
-    "CanSeek",
-    "CanControl",
-];
-
-function finiteNumberOr(value, fallback, { minimum = -Infinity } = {}) {
-    const number = Number(value);
-    return Number.isFinite(number) && number >= minimum ? number : fallback;
-}
 
 function getMetadataRevision(metadata) {
     const artist = Array.isArray(metadata?.["xesam:artist"])
@@ -85,7 +83,7 @@ export default class PlayerProxy {
         this.mprisProxyFactory = mprisProxyFactory;
         this.appPinned = false;
         this.isMediaAppInvalid = true;
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.propertyChangeListeners = new Map();
         this.nextPropertyChangeListenerId = 1;
         this.proxySignalConnections = [];
@@ -107,7 +105,7 @@ export default class PlayerProxy {
             this.mprisProxyFactory.createPropertiesProxy(this.busName, this.operationCancellable),
         ]);
 
-        if (this.destroyed) return false;
+        if (this.isDestroyed) return false;
 
         this.rootProxy = rootProxy;
         this.playerProxy = playerProxy;
@@ -209,13 +207,22 @@ export default class PlayerProxy {
     pollForInitialMetadata() {
         if (this.hasCurrentTrackMetadata || this.pollSourceId !== null) return;
 
-        let remaining = Math.ceil(INITIALIZATION_TIMEOUT_MILLISECONDS / INITIALIZATION_POLL_MILLISECONDS);
-        this.pollSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, INITIALIZATION_POLL_MILLISECONDS, () => {
-            if (this.destroyed || this.hasCurrentTrackMetadata || --remaining < 0) {
+        // DEVELOPER NOTE — Initialization polling:
+        // Some MPRIS players export their bus name before proxy properties are
+        // populated. Poll at a bounded interval until metadata appears or the
+        // timeout expires instead of trusting the initial DBus cache.
+        let pollCount = 0;
+        let remaining = Math.ceil(MPRIS_INIT_TIMEOUT_MS / MPRIS_INIT_POLL_INTERVAL_MS);
+        logger.debug("MPRIS initialization polling started for", this.busName);
+        this.pollSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, MPRIS_INIT_POLL_INTERVAL_MS, () => {
+            if (this.isDestroyed || this.hasCurrentTrackMetadata || --remaining < 0) {
+                if (this.hasCurrentTrackMetadata)
+                    logger.debug(`MPRIS proxy initialized after ${pollCount} polls for ${this.busName}`);
                 this.pollSourceId = null;
                 return GLib.SOURCE_REMOVE;
             }
 
+            pollCount++;
             this.refreshMetadata().catch((error) => {
                 if (!isCancellationError(error))
                     logger.debugOnce(`${this.busName}:metadata-poll`, "Metadata poll failed", this.busName, error);
@@ -225,7 +232,7 @@ export default class PlayerProxy {
     }
 
     refreshMetadata() {
-        if (this.destroyed || !this.propertiesProxy || !this.playerProxy)
+        if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy)
             return Promise.resolve(false);
         if (this.metadataRefreshPromise) return this.metadataRefreshPromise;
 
@@ -237,15 +244,15 @@ export default class PlayerProxy {
     }
 
     async readMetadata() {
-        if (this.destroyed || !this.propertiesProxy || !this.playerProxy) return false;
+        if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy) return false;
         const result = await this.propertiesProxy.call(
             "Get",
             new GLib.Variant("(ss)", [MPRIS_PLAYER_IFACE_NAME, "Metadata"]),
             Gio.DBusCallFlags.NONE,
-            1000,
+            DBUS_CALL_TIMEOUT_MS,
             this.operationCancellable,
         );
-        if (this.destroyed || !this.playerProxy) return false;
+        if (this.isDestroyed || !this.playerProxy) return false;
 
         const variant = result.get_child_value(0).get_variant();
         this.playerProxy.set_cached_property("Metadata", variant);
@@ -306,13 +313,14 @@ export default class PlayerProxy {
         // must not restart the timer indefinitely; real metadata or a non-stopped
         // playback state cancels it above.
         if (this.metadataInvalidationSourceId !== null) return;
+        logger.debug("Empty-stopped grace period started for", this.busName);
         this.metadataInvalidationSourceId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-            ESTABLISHED_MEDIA_APP_EMPTY_STATE_GRACE_MILLISECONDS,
+            MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
             () => {
                 this.metadataInvalidationSourceId = null;
                 if (
-                    !this.destroyed &&
+                    !this.isDestroyed &&
                     !this.hasCurrentTrackMetadata &&
                     this.playbackStatus === PlaybackStatus.STOPPED
                 )
@@ -330,6 +338,7 @@ export default class PlayerProxy {
 
     setMediaAppInvalid(isInvalid) {
         if (isInvalid === this.isMediaAppInvalid) return;
+        if (this.isMediaAppInvalid && !isInvalid) logger.debug("First valid track received for", this.busName);
         this.isMediaAppInvalid = isInvalid;
         this.emitPropertyChanged("IsMediaAppInvalid", isInvalid);
     }
@@ -483,76 +492,66 @@ export default class PlayerProxy {
         if (this.canSetFullscreen) this.setRootProperty("Fullscreen", new GLib.Variant("b", value));
     }
 
-    async setProperty(property, value) {
-        if (this.destroyed || !this.propertiesProxy || !this.canControl) return;
-        await this.propertiesProxy
-            .call(
-                "Set",
-                new GLib.Variant("(ssv)", [MPRIS_PLAYER_IFACE_NAME, property, value]),
-                Gio.DBusCallFlags.NONE,
-                1000,
-                this.operationCancellable,
-            )
+    /**
+     * Calls a D-Bus method on the given proxy, swallowing cancellation errors
+     * and logging genuine failures with a stable once-key.
+     *
+     * @param {Gio.DBusProxy} proxy - The proxy to call on.
+     * @param {string} method - The D-Bus method name.
+     * @param {GLib.Variant|null} parameters - Method parameters, or null for no-args calls.
+     * @param {string} logKey - Unique prefix for warnOnce deduplication.
+     * @param {string} logMessage - Human-readable failure message.
+     */
+    async #callProxy(proxy, method, parameters, logKey, logMessage) {
+        if (this.isDestroyed || !proxy) return;
+        await proxy
+            .call(method, parameters, Gio.DBusCallFlags.NONE, DBUS_CALL_TIMEOUT_MS, this.operationCancellable)
             .catch((error) => {
                 if (isCancellationError(error)) return;
-                logger.warnOnce(
-                    `set-property:${this.busName}:${property}`,
-                    `Failed to set MPRIS property ${property}`,
-                    this.busName,
-                    error,
-                );
+                logger.warnOnce(logKey, logMessage, this.busName, error);
             });
+    }
+
+    async setProperty(property, value) {
+        if (!this.canControl) return;
+        await this.#callProxy(
+            this.propertiesProxy,
+            "Set",
+            new GLib.Variant("(ssv)", [MPRIS_PLAYER_IFACE_NAME, property, value]),
+            `set-property:${this.busName}:${property}`,
+            `Failed to set MPRIS property ${property}`,
+        );
     }
 
     async setRootProperty(property, value) {
-        if (this.destroyed || !this.propertiesProxy) return;
-        await this.propertiesProxy
-            .call(
-                "Set",
-                new GLib.Variant("(ssv)", [MPRIS_IFACE_NAME, property, value]),
-                Gio.DBusCallFlags.NONE,
-                1000,
-                this.operationCancellable,
-            )
-            .catch((error) => {
-                if (isCancellationError(error)) return;
-                logger.warnOnce(
-                    `set-root-property:${this.busName}:${property}`,
-                    `Failed to set MPRIS root property ${property}`,
-                    this.busName,
-                    error,
-                );
-            });
+        await this.#callProxy(
+            this.propertiesProxy,
+            "Set",
+            new GLib.Variant("(ssv)", [MPRIS_IFACE_NAME, property, value]),
+            `set-root-property:${this.busName}:${property}`,
+            `Failed to set MPRIS root property ${property}`,
+        );
     }
 
     async callPlayer(method, parameters = null) {
-        if (this.destroyed || !this.playerProxy) return;
-        await this.playerProxy
-            .call(method, parameters, Gio.DBusCallFlags.NONE, 1000, this.operationCancellable)
-            .catch((error) => {
-                if (isCancellationError(error)) return;
-                logger.warnOnce(
-                    `player-call:${this.busName}:${method}`,
-                    `MPRIS ${method} failed`,
-                    this.busName,
-                    error,
-                );
-            });
+        if (!this.canControl) return;
+        await this.#callProxy(
+            this.playerProxy,
+            method,
+            parameters,
+            `player-call:${this.busName}:${method}`,
+            `MPRIS ${method} failed`,
+        );
     }
 
     async callRoot(method) {
-        if (this.destroyed || !this.rootProxy) return;
-        await this.rootProxy
-            .call(method, null, Gio.DBusCallFlags.NONE, 1000, this.operationCancellable)
-            .catch((error) => {
-                if (isCancellationError(error)) return;
-                logger.warnOnce(
-                    `root-call:${this.busName}:${method}`,
-                    `MPRIS ${method} failed`,
-                    this.busName,
-                    error,
-                );
-            });
+        await this.#callProxy(
+            this.rootProxy,
+            method,
+            null,
+            `root-call:${this.busName}:${method}`,
+            `MPRIS ${method} failed`,
+        );
     }
 
     next() {
@@ -608,7 +607,7 @@ export default class PlayerProxy {
     }
 
     onPropertyChanged(property, callback) {
-        if (this.destroyed) return 0;
+        if (this.isDestroyed) return 0;
         const listenerId = this.nextPropertyChangeListenerId++;
         let propertyChangeListeners = this.propertyChangeListeners.get(property);
         if (!propertyChangeListeners) {
@@ -644,8 +643,8 @@ export default class PlayerProxy {
     }
 
     destroy() {
-        if (this.destroyed) return;
-        this.destroyed = true;
+        if (this.isDestroyed) return;
+        this.isDestroyed = true;
 
         this.operationCancellable?.cancel();
         this.operationCancellable = null;

@@ -1,4 +1,13 @@
-// Normalizes human-facing search input so GTK row filtering is deterministic across locales and punctuation.
+/**
+ * @file search.js
+ * @module shared.utils.search
+ *
+ * Builds tolerant text indexes for application and preference search.
+ *
+ * InstalledAppCatalog uses these helpers to compare names, desktop IDs, and
+ * aliases without being sensitive to accents, punctuation, or case. Pure helpers
+ * keep search behavior testable outside GTK and GNOME Shell.
+ */
 export function normalizeSearchText(value) {
     return String(value ?? "")
         .normalize("NFKD")

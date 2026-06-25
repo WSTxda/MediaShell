@@ -1,3 +1,5 @@
+// Tests for: src/shared/utils/log.js
+// Covers: scoped logger output, once-only cache isolation per level, and LRU bounds
 import assert from "node:assert/strict";
 import test from "node:test";
 

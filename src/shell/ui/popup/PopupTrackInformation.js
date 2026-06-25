@@ -1,9 +1,18 @@
-// Builds popup track-information labels from the configured visibility settings.
+/**
+ * @file PopupTrackInformation.js
+ * @module shell.ui.popup.PopupTrackInformation
+ *
+ * Renders title, artist, and album metadata inside the popup.
+ *
+ * PopupContent delegates popup-specific metadata labels to this component so it
+ * can apply display fallbacks and visibility rules independently from top-bar
+ * scrolling text. The component reads only normalized PlayerProxy metadata.
+ */
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { PlaybackStatus } from "../../../shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { formatArtistNames } from "../../../shared/utils/metadata.js";
 import ScrollingLabel from "../../helpers/ScrollingLabel.js";
 

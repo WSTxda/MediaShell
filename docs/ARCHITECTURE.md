@@ -1,88 +1,129 @@
 # Architecture
 
-MediaShell separates GNOME Shell runtime code, Preferences code, toolkit-independent shared logic, and developer tooling. Source boundaries are enforced by `scripts/check.mjs`, while generated package contents are enforced by `scripts/check-package.mjs`.
+MediaShell is split into Shell runtime code, Preferences code, toolkit-independent shared logic, and development tooling. The installable extension package must contain only runtime files; docs, tests, screenshots, source catalogs, and repository-only assets stay outside the archive.
 
 ## Directory map
 
-- `src/extension.js`: GNOME Shell entry point
-- `src/shell/`: Shell runtime, MPRIS services, settings, and UI
-- `src/prefs.js`: Preferences entry point
-- `src/prefs/`: GTK and Libadwaita Preferences implementation
-- `src/shared/`: constants, enums, migrations, and pure utilities
-- `assets/`: GtkBuilder UI, GSettings schema, D-Bus XML, translations, and repository/store images
-- `scripts/`: validation, package inspection, and local GNOME development helpers
-- `tests/`: Node.js tests for shared and policy logic
+```text
+src/
+  extension.js                 Shell entry point
+  prefs.js                     Preferences entry point
+  stylesheet.css               Shell stylesheet
+  metadata.json                Extension manifest
+  shared/
+    constants/                 D-Bus, settings, timing, limits, icons, playback descriptors
+    enums/                     Domain enums by playback, top bar, widget, input, app, settings
+    settings/                  GSettings migrations
+    utils/                     Pure formatting, metadata, MPRIS, logging, search, identity helpers
+  shell/
+    constants/                 Shell-only UI measurements
+    ExtensionController.js     Shell lifecycle root
+    helpers/                   Shared Shell actors such as ScrollingLabel
+    mpris/                     MPRIS discovery, proxies, position tracking, selection policy
+    services/                  Shortcuts, resources, album art, app resolver, Shell patches
+    settings/                  Runtime settings specification and store
+    ui/                        Shell UI helpers, popup components, top bar components
+    utils/                     Shell-only helpers such as Gio cancellation classification
+  prefs/
+    PreferencesController.js   Preferences window lifecycle root
+    about/                     About dialog controller
+    bindings/                  Standard widget-to-setting bindings
+    groups/                    Page-level controllers
+    resources/                 GtkBuilder and GResource loading
+    utils/                     Preferences-only helpers
+    widgets/                   Custom Libadwaita/GTK widgets
+assets/                        UI templates, schemas, D-Bus XML, translations, repository images
+scripts/                       Validation, packaging, development helpers
+tests/                         Node tests for pure logic and policies
+```
 
-Runtime packaging must include only files required by GNOME Shell at install time. Screenshots, source translation catalogs, documentation, tests, and repository-only media must not be shipped in the `.shell-extension.zip`. The build pipeline validates this with `scripts/check-package.mjs` after `gnome-extensions pack` creates the archive.
+## Class inventory
 
-## Compatibility baseline
+### Shell layer
 
-The supported GNOME Shell versions are declared in `src/metadata.json` and `src/shared/constants/platform.js`. Review and validation treat those two files as the compatibility contract.
+- `ExtensionController`: owns enable/disable, settings, Shell services, MPRIS registry, and top bar mounting.
+- `GlobalShortcutsService`: registers and removes global media-action keybindings via `Main.wm`.
+- `MprisProxyFactory`: creates typed D-Bus proxies from bundled introspection XML.
+- `MediaAppRegistry`: discovers MPRIS bus names, owns `PlayerProxy` instances, filters blocked apps, and selects the active app.
+- `PlayerProxy`: normalizes one MPRIS endpoint into stable state, commands, and property notifications.
+- `PositionTracker`: estimates playback position from explicit reads, `Seeked`, and monotonic time.
+- `MediaAppSelectionPolicy`: pure priority logic for active and next-app selection.
+- `AlbumArtLoader`: singleton for local/remote album art and optional disk cache writes; `destroy()` aborts network work and cancels writes.
+- `MediaAppResolver`: singleton for mapping MPRIS identity hints to Shell/Gio app objects; `clearCaches()` releases stale app references.
+- `SystemMediaControlsPatch`: isolated, reversible patch for hiding GNOME's default media controls.
+- `shell/utils/errors`: Shell-only cancellation classification shared by async services and MPRIS code.
+- `TopBarButton`: top bar actor and popup owner.
+- `TopBarPointerHandler`: pointer gesture and scroll wiring for non-playback top bar regions.
+- `PopupContent`: popup container and coordinator for popup subcomponents.
 
-The project follows a sliding stable-window policy: when a new supported Shell version is added, the oldest unsupported compatibility branch should be removed with the same change. Prefer one code path that works across the supported window; use version branches only when they are isolated, documented by the owning component, and required by a real API difference.
+### Preferences layer
 
-## Process boundaries
+- `PreferencesController`: owns the preferences window, builder, binders, page controllers, and teardown.
+- `PreferenceBinder`: binds standard widgets declared in `PreferenceBindings` to GSettings.
+- `PreferenceSensitivityController`: keeps dependent rows sensitive or insensitive based on settings.
+- `TopBarStructureController`: coordinates top bar element ordering and track-information content widgets.
+- `ShortcutsPageController`: drives the keyboard shortcut UI page.
+- `OthersPageController`: owns blocked apps, reset actions, cache maintenance, and system-level rows.
+- `AboutDialogController`: adds and displays the About dialog.
+- `SignalConnections`: explicit signal ownership helper for preferences controllers.
+- `BlockedAppsGroup`, `BlockedAppChooserDialog`, `TopBarElementOrderGroup`, `TopBarTrackInformationContentRow`: custom GTK/libadwaita widgets registered with `MediaShell`-prefixed `GTypeName` values.
 
-### Shell runtime
+### Shared layer
 
-`ExtensionController` is the root owner for settings, MPRIS discovery, active media app selection, the Top Bar button, Popup content, Keyboard Shortcuts, Album Art loading, and the optional System media controls patch.
+- `shared/constants/*`: canonical static values for settings bounds, D-Bus names, timing, limits, icons, input actions, and playback descriptors.
+- `shared/enums/*`: domain enums grouped by feature area. Import specific domain files so runtime packages do not ship unreachable barrel modules.
+- `SettingsMigration`: idempotent legacy-key migrations and schema-version handling.
+- `shared/utils/*`: pure utility code with no GI or Shell imports.
 
-Shell modules may use GJS, Gio, GLib, GObject, St, Clutter, Shell, Meta, and GNOME Shell UI modules. They must not import GTK or Libadwaita.
+## Extension lifecycle
 
-### Preferences
+```text
+[disabled]
+    │ enable()
+    ▼
+[register resources]
+    │ read settings + migrate schema version
+    ▼
+[start services]
+    │ GlobalShortcutsService + SystemMediaControlsPatch
+    ▼
+[initialize MPRIS]
+    │ MprisProxyFactory.init() + MediaAppRegistry.init()
+    ▼
+[active]
+    │ active media app appears
+    ▼
+[mount TopBarButton]
+    │ settings/MPRIS updates drive focused widget updates
+    ▼
+[disable]
+    │ destroy in reverse dependency order
+    ▼
+[disabled]
+```
 
-`PreferencesController` owns resources, GSettings bindings, custom preference widgets, Blocked Apps, Album Art Cache maintenance, and the About dialog.
+`ExtensionController.lifecycleGeneration` guards async work. Every enable or destroy increments the generation; callbacks that complete with a stale generation discard their result instead of mutating current state.
 
-Preferences modules may use GTK, Libadwaita, Gio, and GLib. They must not import private GNOME Shell UI modules.
+## Widget update flow
 
-### Shared logic
+MPRIS endpoints often emit related property changes in bursts. `TopBarButton.requestWidgetUpdate()` ORs `WidgetFlags` into a pending field and schedules one `GLib.idle_add` callback. The idle callback renders the narrowest affected regions once after the current main-loop turn drains. `PopupContent` uses the same flag model. Individual bits map to renderable regions; compound flags such as `TOP_BAR`, `POPUP`, and `ALL` exist only for bulk resets.
 
-Shared modules contain data and pure logic that can run without a GNOME UI process. They must not import GJS GI modules or GNOME Shell resources.
+## MPRIS lifecycle and selection
 
-## Ownership and teardown
+`MediaAppRegistry` watches names under `org.mpris.MediaPlayer2.*`. D-Bus name ownership is the lifecycle authority. Desktop identity improves presentation, icon resolution, and blocklist checks, but presentation heuristics do not keep a vanished endpoint alive.
 
-Every component owns the signals, main-loop sources, cancellables, proxies, actors, and caches it creates. Cleanup must be idempotent and proceed in reverse dependency order.
-
-Asynchronous callbacks must confirm that the owner is alive and that the result still belongs to the active request, media app, or track before mutating state or UI.
-
-## MPRIS lifecycle
-
-`MediaAppRegistry` watches D-Bus names under `org.mpris.MediaPlayer2.*`. `MprisProxyFactory` creates proxies from the bundled introspection XML, and `PlayerProxy` normalizes remote values into a stable state surface.
-
-The D-Bus name owner is authoritative for lifecycle. Desktop metadata may improve app identity and icon resolution, but it must not keep a vanished MPRIS endpoint alive.
-
-Short owner changes may be coalesced to prevent browser-backed media sessions from flickering. Explicit teardown, blocklist changes, and confirmed owner loss must still remove stale state deterministically.
-
-## Selection and pinning
-
-`MediaAppSelectionPolicy` selects among registered media apps. A pin affects selection only while the associated endpoint remains registered; it is not persisted as an application preference.
-
-The Popup App selector displays active endpoints, changes the active selection, and exposes the runtime pin state. Application actions use the MPRIS `Raise` and `Quit` methods only when the endpoint advertises support.
+Owner loss is hidden from the selector immediately and retained for a bounded hand-off window so browser-backed media sessions do not flicker between adjacent endpoints. Active selection priority is: pinned app, playing app, current app, paused app, then first valid app. Pinning is runtime-only.
 
 ## Settings
 
-The GSettings schema is authoritative for keys and defaults. `SettingsSpec` maps Shell-facing keys to normalized controller state and focused update impacts. `PreferenceBindings` maps standard widgets, while custom controllers handle compound UI.
+The GSettings schema is the public contract for keys, defaults, enum IDs, and value ranges. `SettingsSpec` maps runtime keys to controller properties, typed transforms, update impacts, and imperative actions. `PreferenceBindings` handles standard widgets; page controllers handle compound UI.
 
-Migrations copy legacy user values only when the destination does not already have a user value. They must remain idempotent and preserve enum semantics.
+Migrations copy legacy user values only when the destination key has no explicit user value. They must be idempotent and preserve enum semantics.
 
-## UI updates
+## Process boundaries
+Shell code may use St, Clutter, Shell, Meta, and GNOME Shell UI modules. Preferences code may use GTK and Libadwaita. Shared code has no GI or Shell imports.
 
-Property changes should update the narrowest affected component. Rebuilding the complete Top Bar button is reserved for placement changes that cannot be reconciled in place.
-
-Actor creation, signal ownership, pointer gestures, and animation sources belong to the component that renders them. Hidden or unmapped visual components must stop timers and avoid background work.
-
-Top Bar pointer handling uses `Clutter.ClickGesture` when available and never uses removed `Clutter.ClickAction` or `Clutter.TapAction`. Older supported Shell versions use isolated event-signal fallbacks without reintroducing removed action classes.
-
-## Review-sensitive integration
-
-Preferences must not retain window-scoped controllers on the exported Preferences class. `PreferencesController` owns the window lifecycle, connects `close-request`, and releases binders, controllers, settings, builder, and window references during teardown.
-
-The EGO package must not ship compiled schemas, screenshots, `.po`/`.pot` source catalogs, tests, documentation, repository-only assets, or store raster exports. Store screenshots and icon exports are managed separately from the installable extension package. Source checks protect the build configuration, and package checks inspect the final archive.
-
-## Validation model
-
-Validation is split by artifact boundary because a package cannot be inspected before it exists: `scripts/check.mjs` validates the maintained source tree, `scripts/check-package.mjs` validates the generated `.shell-extension.zip`, and `shexli` is an external, EGO-oriented lint step that also targets the generated package. Shared constants for these scripts live in `scripts/project.mjs`. See [Development and validation](DEVELOPMENT.md) for the exact commands.
+Class names are PascalCase without a `MediaShell` prefix, except entry points. `GTypeName` strings always carry the `MediaShell` prefix. Constants are `SCREAMING_SNAKE_CASE`. Everything else follows the file name.
 
 ## Private GNOME Shell integration
-
 `SystemMediaControlsPatch` is the only intentional private Shell patch. It must remain isolated, capability-checked, reversible, and fail-open so GNOME's controls remain available if Shell internals change.

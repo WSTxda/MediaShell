@@ -2,7 +2,7 @@
 
 <interface domain="mediashell@wstxda.github.com">
   <requires lib="gtk" version="4.0"/>
-  <template class="TopBarElementOrderGroup" parent="AdwPreferencesGroup">
+  <template class="MediaShellTopBarElementOrderGroup" parent="AdwPreferencesGroup">
     <property name="title" translatable="yes">Element Order</property>
     <property name="description" translatable="yes">Drag to reorder elements inside the top bar button</property>
     <child>

@@ -1,7 +1,20 @@
-// Applies the declarative preferences bindings and owns every signal created for them.
+/**
+ * @file PreferenceBinder.js
+ * @module prefs.bindings.PreferenceBinder
+ *
+ * Binds GSettings keys to preference widgets declared in PreferenceBindings.
+ *
+ * The binder owns direct Gio.Settings bindings and the custom conversion hooks
+ * required by widgets that cannot use a simple property binding. It also tracks
+ * owned signal connections so preference teardown disconnects every callback in
+ * a deterministic order.
+ *
+ * @see src/prefs/bindings/PreferenceBindings.js
+ */
 import Gio from "gi://Gio";
 
 import { createLogger } from "../../shared/utils/log.js";
+import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 import { PREFERENCE_WIDGET_BINDINGS } from "./PreferenceBindings.js";
 
 const logger = createLogger("PreferenceBinder");
@@ -21,6 +34,7 @@ export default class PreferenceBinder {
     }
 
     bindPreferenceWidget(key, widgetId, property) {
+        // GSettings key: `key` from PREFERENCE_WIDGET_BINDINGS
         const widget = this.builder.get_object(widgetId);
         if (!widget) throw new Error(`Preferences widget not found: ${widgetId}`);
 
@@ -89,19 +103,13 @@ export default class PreferenceBinder {
     }
 
     connectOwnedSignal(object, signal, callback) {
-        const signalId = object.connect(signal, callback);
-        this.ownedSignalConnections.push({ object, signalId });
+        connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
     }
 
     destroy() {
-        for (const { object, signalId } of this.ownedSignalConnections) {
-            try {
-                object.disconnect(signalId);
-            } catch (error) {
-                logger.debug("A preferences signal was already disconnected", error);
-            }
-        }
-        this.ownedSignalConnections.length = 0;
+        disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
+            logger.debug("A preferences signal was already disconnected", error);
+        });
 
         for (const { widget, property } of this.nativeSettingsBindings) {
             try {

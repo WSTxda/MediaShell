@@ -1,4 +1,13 @@
-// Creates St.Icon actors with a themed fallback chain so missing icons never disappear silently.
+/**
+ * @file IconUtils.js
+ * @module shell.ui.IconUtils
+ *
+ * Creates and updates Shell icons using MediaShell's common St.Icon conventions.
+ *
+ * Top-bar and popup playback controls use this utility so icon creation, themed
+ * fallback handling, and GIcon updates remain consistent. It keeps raw St.Icon
+ * construction out of individual control renderers.
+ */
 import Gio from "gi://Gio";
 import St from "gi://St";
 

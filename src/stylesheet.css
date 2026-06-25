@@ -58,6 +58,11 @@
     padding-right: 6px;
 }
 
+
+.mediashell-top-bar-box {
+    spacing: 0;
+}
+
 .mediashell-top-bar-action-box > * {
     padding-left: 6px;
     padding-right: 6px;
@@ -111,7 +116,7 @@
  * component root below controls spacing.
  *
  * `.mediashell-popup-box` is the single source of truth for popup outer padding:
- * - horizontal padding: 16px, matched by POPUP_PARENT_PADDING in PopupContent.js;
+ * - horizontal padding: 16px, matched by POPUP_CONTAINER_PADDING in shell/constants/ui.js;
  * - top padding: 16px, matching Quick Settings density;
  * - bottom padding: 18px, a small optical balance for round controls.
  */

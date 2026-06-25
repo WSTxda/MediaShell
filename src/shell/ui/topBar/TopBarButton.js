@@ -1,21 +1,32 @@
-// Coordinates the top bar button, MPRIS listeners, popup ownership, and input gestures.
+/**
+ * @file TopBarButton.js
+ * @module shell.ui.topBar.TopBarButton
+ *
+ * Owns the MediaShell panel button, popup menu, and top-bar widget orchestration.
+ *
+ * ExtensionController mounts this actor into Main.panel and supplies active
+ * media-app state from MediaAppRegistry. The class coalesces WidgetFlags into
+ * idle updates and delegates pointer gestures to TopBarPointerHandler.
+ */
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import St from "gi://St";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 
-import { InputActions, TopBarElements, PlaybackStatus, WidgetFlags } from "../../../shared/enums/MediaShellEnums.js";
+import { APP_RESOLUTION_RETRY_DELAY_MS, APP_RESOLUTION_RETRY_MAX_ATTEMPTS } from "../../../shared/constants/timing.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import { TopBarElements } from "../../../shared/enums/topBar.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import PopupContent from "../popup/PopupContent.js";
 import TopBarPlaybackControls from "./TopBarPlaybackControls.js";
+import TopBarPointerHandler from "./TopBarPointerHandler.js";
 import TopBarAppIcon from "./TopBarAppIcon.js";
 import TopBarTrackInformation from "./TopBarTrackInformation.js";
 import TopBarVisualizer from "./TopBarVisualizer.js";
 
 const logger = createLogger("TopBarButton");
-const APP_RESOLUTION_RETRY_MILLISECONDS = 750;
-const APP_RESOLUTION_RETRY_ATTEMPTS = 4;
 const MEDIA_APP_WIDGET_FLAGS = WidgetFlags.TOP_BAR | WidgetFlags.POPUP;
 
 class TopBarButton extends PanelMenu.Button {
@@ -24,14 +35,12 @@ class TopBarButton extends PanelMenu.Button {
         this.mediaApp = mediaApp;
         this.extensionController = extensionController;
         this.mediaAppPropertyListenerIds = new Map();
-        this.primaryActivationTimeoutId = null;
         this.appResolutionRetrySourceId = null;
         this.appResolutionRetryAttemptsRemaining = 0;
         this.widgetUpdateSourceId = null;
         this.pendingWidgetFlags = 0;
         this.disconnectPositionChangeListener = null;
-        this.pointerActionCleanups = [];
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.topBarBox = null;
         this.topBarActionBoxBefore = null;
         this.topBarActionBoxAfter = null;
@@ -41,10 +50,11 @@ class TopBarButton extends PanelMenu.Button {
         this.topBarVisualizer = null;
         this.topBarPlaybackControls = new TopBarPlaybackControls(this);
         this.popupContent = new PopupContent(this);
+        this.pointerHandler = new TopBarPointerHandler(this);
         this.addMediaAppPropertyListeners();
         this.updateWidgets(WidgetFlags.ALL);
         this.scheduleAppResolutionRetry();
-        this.initializePointerActions();
+        this.pointerHandler.install();
         this.menu.box.add_style_class_name("mediashell-popup-container");
     }
 
@@ -71,10 +81,12 @@ class TopBarButton extends PanelMenu.Button {
         return Boolean(this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName);
     }
 
+    // DEVELOPER NOTE — Coalescing update pattern:
+    // MPRIS endpoints emit related properties in bursts (e.g. Metadata +
+    // PlaybackStatus on track change). Accumulate WidgetFlags and schedule one
+    // GLib.idle_add callback so the UI renders once after the main-loop turn.
     requestWidgetUpdate(widgetFlags) {
-        // MPRIS endpoints commonly emit related properties in one burst. Render
-        // their combined impact once after the current main-loop turn.
-        if (this.destroyed || !widgetFlags) return;
+        if (this.isDestroyed || !widgetFlags) return;
         this.pendingWidgetFlags |= widgetFlags;
         if (this.widgetUpdateSourceId !== null) return;
 
@@ -82,8 +94,9 @@ class TopBarButton extends PanelMenu.Button {
             this.widgetUpdateSourceId = null;
             const pendingWidgetFlags = this.pendingWidgetFlags;
             this.pendingWidgetFlags = 0;
-            if (!this.destroyed && pendingWidgetFlags) {
+            if (!this.isDestroyed && pendingWidgetFlags) {
                 try {
+                    logger.debug(`Updating widgets with flags: 0x${pendingWidgetFlags.toString(16)}`);
                     this.updateWidgets(pendingWidgetFlags);
                 } catch (error) {
                     logger.errorOnce("deferred-widget-update", "Deferred widget update failed", error);
@@ -102,7 +115,7 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     updateWidgets(widgetFlags) {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
         this.ensureTopBarLayout();
 
@@ -283,14 +296,14 @@ class TopBarButton extends PanelMenu.Button {
 
     scheduleAppResolutionRetry() {
         this.cancelAppResolutionRetry();
-        this.appResolutionRetryAttemptsRemaining = APP_RESOLUTION_RETRY_ATTEMPTS;
+        this.appResolutionRetryAttemptsRemaining = APP_RESOLUTION_RETRY_MAX_ATTEMPTS;
 
         const observedMediaApp = this.mediaApp;
         this.appResolutionRetrySourceId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-            APP_RESOLUTION_RETRY_MILLISECONDS,
+            APP_RESOLUTION_RETRY_DELAY_MS,
             () => {
-                if (this.destroyed || this.mediaApp !== observedMediaApp) {
+                if (this.isDestroyed || this.mediaApp !== observedMediaApp) {
                     this.appResolutionRetrySourceId = null;
                     this.appResolutionRetryAttemptsRemaining = 0;
                     return GLib.SOURCE_REMOVE;
@@ -305,6 +318,7 @@ class TopBarButton extends PanelMenu.Button {
                     return GLib.SOURCE_REMOVE;
                 }
 
+                logger.debug(`Retrying app identity resolution for ${observedMediaApp.busName} (attempt ${APP_RESOLUTION_RETRY_MAX_ATTEMPTS - this.appResolutionRetryAttemptsRemaining + 1}/${APP_RESOLUTION_RETRY_MAX_ATTEMPTS})`);
                 this.requestWidgetUpdate(WidgetFlags.TOP_BAR_APP_ICON | WidgetFlags.POPUP_APP_SELECTOR);
                 this.appResolutionRetryAttemptsRemaining--;
                 if (this.appResolutionRetryAttemptsRemaining <= 0) {
@@ -350,141 +364,8 @@ class TopBarButton extends PanelMenu.Button {
         this.mediaAppPropertyListenerIds.set(property, listenerId);
     }
 
-    initializePointerActions() {
-        this.ensureTopBarLayout();
-
-        if (this._clickGesture && typeof this._clickGesture.set_enabled === "function") {
-            this._clickGesture.set_enabled(false);
-        }
-
-        for (const actor of [this.topBarActionBoxBefore, this.topBarActionBoxAfter]) {
-            this.initializePointerActionsForActor(actor);
-        }
-    }
-
-    initializePointerActionsForActor(actor) {
-        if (typeof Clutter.ClickGesture !== "undefined") {
-            // GNOME 49 removed the legacy Clutter click/tap action classes, and GNOME 50
-            // moved PanelMenu.Button primary activation to ClickGesture.
-            // Install explicit gestures only on the non-playback area so
-            // transport controls can own their clicks without defensive hit tests.
-            this.addMouseButtonGesture(actor, Clutter.BUTTON_PRIMARY, () => this.handlePrimaryActivation());
-            this.addMouseButtonGesture(actor, Clutter.BUTTON_MIDDLE, () => {
-                const mouseAction = this.extensionController.mouseActionMiddle;
-                if (mouseAction !== InputActions.NONE) this.executeMouseAction(mouseAction);
-            });
-            this.addMouseButtonGesture(actor, Clutter.BUTTON_SECONDARY, () => {
-                const mouseAction = this.extensionController.mouseActionRight;
-                if (mouseAction !== InputActions.NONE) this.executeMouseAction(mouseAction);
-            });
-        } else {
-            this.addPointerSignal(actor, "button-press-event", (_, event) => {
-                const mouseButton = event.get_button();
-
-                if (mouseButton === Clutter.BUTTON_PRIMARY) {
-                    this.handlePrimaryActivation();
-                    return Clutter.EVENT_STOP;
-                }
-
-                let mouseAction;
-                if (mouseButton === Clutter.BUTTON_MIDDLE) {
-                    mouseAction = this.extensionController.mouseActionMiddle;
-                } else if (mouseButton === Clutter.BUTTON_SECONDARY) {
-                    mouseAction = this.extensionController.mouseActionRight;
-                }
-
-                if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
-
-                this.executeMouseAction(mouseAction);
-                return Clutter.EVENT_STOP;
-            });
-
-            this.addPointerSignal(actor, "touch-event", (_, event) => {
-                if (event.type() !== Clutter.EventType.TOUCH_BEGIN) return Clutter.EVENT_PROPAGATE;
-
-                this.handlePrimaryActivation();
-                return Clutter.EVENT_STOP;
-            });
-        }
-
-        this.addPointerSignal(actor, "scroll-event", (_, event) => {
-            const direction = event.get_scroll_direction();
-            let mouseAction = InputActions.NONE;
-            if (direction === Clutter.ScrollDirection.UP) {
-                mouseAction = this.extensionController.mouseActionScrollUp;
-            } else if (direction === Clutter.ScrollDirection.DOWN) {
-                mouseAction = this.extensionController.mouseActionScrollDown;
-            }
-
-            if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
-
-            this.executeMouseAction(mouseAction);
-            return Clutter.EVENT_STOP;
-        });
-    }
-
-    addPointerSignal(actor, signalName, callback) {
-        const signalId = actor.connect(signalName, callback);
-        this.pointerActionCleanups.push(() => {
-            try {
-                actor.disconnect(signalId);
-            } catch (error) {
-                logger.debug("Pointer signal was already disconnected", signalName, error);
-            }
-        });
-    }
-
-    addMouseButtonGesture(actor, mouseButton, callback) {
-        const gesture = new Clutter.ClickGesture();
-        if (typeof gesture.set_required_button === "function") {
-            gesture.set_required_button(mouseButton);
-        }
-        if (typeof gesture.set_recognize_on_press === "function") {
-            gesture.set_recognize_on_press(true);
-        }
-        const signalId = gesture.connect("recognize", callback);
-        actor.add_action(gesture);
-        this.pointerActionCleanups.push(() => {
-            try {
-                gesture.disconnect(signalId);
-            } catch (error) {
-                logger.debug("Pointer gesture signal was already disconnected", mouseButton, error);
-            }
-            try {
-                actor.remove_action(gesture);
-            } catch (error) {
-                logger.debug("Pointer gesture was already removed", mouseButton, error);
-            }
-        });
-    }
-
-    handlePrimaryActivation() {
-        // Primary activation delays the single-click/tap action only when a
-        // double-click/double-tap action is configured.
-        if (this.extensionController.mouseActionDouble === InputActions.NONE) {
-            this.executeMouseAction(this.extensionController.mouseActionLeft);
-            return;
-        }
-
-        if (this.primaryActivationTimeoutId === null) {
-            this.primaryActivationTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
-                this.primaryActivationTimeoutId = null;
-                this.executeMouseAction(this.extensionController.mouseActionLeft);
-                return GLib.SOURCE_REMOVE;
-            });
-        } else {
-            GLib.Source.remove(this.primaryActivationTimeoutId);
-            this.primaryActivationTimeoutId = null;
-            this.executeMouseAction(this.extensionController.mouseActionDouble);
-        }
-    }
-
-    executeMouseAction(mouseAction) {
-        this.extensionController.executeInputAction(mouseAction);
-    }
-
     destroy() {
-        if (this.destroyed) return;
+        if (this.isDestroyed) return;
 
         // PanelMenu.Button destroys its PopupMenu children as part of the actor
         // teardown. Clean MediaShell-owned menu items and signals first, while
@@ -495,17 +376,13 @@ class TopBarButton extends PanelMenu.Button {
     }
 
     destroyOwnedResources() {
-        if (this.destroyed) return;
-        this.destroyed = true;
+        if (this.isDestroyed) return;
+        this.isDestroyed = true;
         this.removeMediaAppPropertyListeners();
-        for (const cleanup of this.pointerActionCleanups.splice(0).reverse()) cleanup();
         this.cancelPendingWidgetUpdate();
         this.cancelAppResolutionRetry();
-        if (this.primaryActivationTimeoutId !== null) {
-            GLib.Source.remove(this.primaryActivationTimeoutId);
-            this.primaryActivationTimeoutId = null;
-        }
         for (const [name, component] of [
+            ["pointerHandler", this.pointerHandler],
             ["popupContent", this.popupContent],
             ["topBarPlaybackControls", this.topBarPlaybackControls],
             ["topBarVisualizer", this.topBarVisualizer],

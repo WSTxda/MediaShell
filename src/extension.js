@@ -1,4 +1,16 @@
-// GNOME Shell entry point; delegates all runtime ownership to ExtensionController.
+/**
+ * @file extension.js
+ * @module extension
+ *
+ * GNOME Shell entry point for the MediaShell runtime.
+ *
+ * Creates one MediaShellExtension instance per Shell lifecycle and delegates all
+ * runtime work to ExtensionController. The entry point intentionally owns no UI
+ * or DBus state itself so enable() and disable() stay small, auditable, and
+ * aligned with GNOME Shell extension lifecycle rules.
+ *
+ * @see src/shell/ExtensionController.js
+ */
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { createLogger } from "./shared/utils/log.js";

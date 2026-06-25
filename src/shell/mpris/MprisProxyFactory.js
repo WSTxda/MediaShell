@@ -1,4 +1,13 @@
-// Loads bundled D-Bus introspection for one extension lifecycle and creates typed MPRIS proxies.
+/**
+ * @file MprisProxyFactory.js
+ * @module shell.mpris.MprisProxyFactory
+ *
+ * Loads bundled D-Bus introspection and creates typed MPRIS proxies.
+ *
+ * The factory owns the parsed introspection cache for one extension lifecycle and
+ * creates root, player, properties, and bus-watch proxies with a shared
+ * cancellable. MediaAppRegistry depends on it for every MPRIS endpoint it tracks.
+ */
 import Gio from "gi://Gio";
 
 import {
@@ -10,15 +19,12 @@ import {
     MPRIS_PLAYER_IFACE_NAME,
 } from "../../shared/constants/dbus.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.File.prototype, "load_contents_async", "load_contents_finish");
 Gio._promisify(Gio.DBusProxy, "new", "new_finish");
 
 const logger = createLogger("MprisProxyFactory");
-
-function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
-}
 const MPRIS_INTROSPECTION_XML_URI = "resource:///org/gnome/shell/extensions/mediashell/dbus/mprisNode.xml";
 const DBUS_WATCH_INTROSPECTION_XML_URI = "resource:///org/gnome/shell/extensions/mediashell/dbus/watchNode.xml";
 async function readXmlResource(uri, cancellable) {
@@ -56,7 +62,7 @@ async function loadMprisIntrospectionData(cancellable) {
 
 export default class MprisProxyFactory {
     constructor() {
-        this.destroyed = false;
+        this.isDestroyed = false;
         this.initializationGeneration = 0;
         this.initializationCancellable = null;
         this.introspectionDataPromise = null;
@@ -72,14 +78,18 @@ export default class MprisProxyFactory {
 
         try {
             const introspectionData = await introspectionDataPromise;
-            if (this.destroyed || initializationGeneration !== this.initializationGeneration) return false;
+            if (this.isDestroyed || initializationGeneration !== this.initializationGeneration) return false;
 
+            // Introspection XML is loaded once per enable cycle rather than per proxy.
+            // Gio.DBusNodeInfo.new_for_xml() is synchronous but parses a non-trivial
+            // document; caching the result avoids repeated parsing for every MPRIS
+            // endpoint that appears on the bus, which can be several during session restore.
             Object.assign(this, introspectionData);
             return true;
         } catch (error) {
             if (
                 isCancellationError(error) &&
-                (this.destroyed || initializationGeneration !== this.initializationGeneration)
+                (this.isDestroyed || initializationGeneration !== this.initializationGeneration)
             )
                 return false;
             throw error;
@@ -143,7 +153,7 @@ export default class MprisProxyFactory {
     }
 
     destroy() {
-        this.destroyed = true;
+        this.isDestroyed = true;
         this.initializationGeneration++;
         this.initializationCancellable?.cancel();
         this.initializationCancellable = null;

@@ -1,4 +1,13 @@
-// Declares how every current GSettings key maps to controller state and UI update impact.
+/**
+ * @file SettingsSpec.js
+ * @module shell.settings.SettingsSpec
+ *
+ * Declares runtime metadata for every MediaShell GSettings key.
+ *
+ * SettingsStore uses the spec to validate key types, expose transformed values,
+ * and decide which runtime action a key change requires. The file contains spec
+ * factory helpers only; domain behavior belongs in controllers and services.
+ */
 import {
     POPUP_ALBUM_ART_CORNER_RADIUS,
     POPUP_WIDTH,
@@ -9,9 +18,17 @@ import {
     TOP_BAR_TRACK_INFORMATION_WIDTH,
     TOP_BAR_VISUALIZER_SPEED,
 } from "../../shared/constants/settings.js";
-import { TopBarPositions, InputActions, VisualizerStyles, WidgetFlags } from "../../shared/enums/MediaShellEnums.js";
+import { InputActions } from "../../shared/enums/input.js";
+import { SettingsAction } from "../../shared/enums/settings.js";
+import { TopBarPositions, VisualizerStyles } from "../../shared/enums/topBar.js";
+import { WidgetFlags } from "../../shared/enums/widget.js";
 import { enumValueByIndex, normalizeOrderedValues, normalizeUniqueStrings } from "../../shared/utils/format.js";
 
+// Compatibility re-export for legacy imports; new code should import SettingsAction from shared/enums/settings.js
+export { SettingsAction };
+
+// Spec factory helpers — not domain logic.
+// They keep SETTINGS_SPEC declarations compact while preserving typed runtime values.
 function createNumericConstraint({ MIN, MAX, DEFAULT }) {
     return (value) => Math.min(MAX, Math.max(MIN, Number.isFinite(value) ? value : DEFAULT));
 }
@@ -21,11 +38,6 @@ function createSecondsToMillisecondsTransform(bounds) {
     return (value) => constrainValue(value) * 1000;
 }
 
-export const SettingsAction = Object.freeze({
-    REBUILD_TOP_BAR_BUTTON: "rebuild-top-bar-button",
-    UPDATE_BLOCKED_APPS: "update-blocked-apps",
-    UPDATE_SYSTEM_MEDIA_CONTROLS: "update-system-media-controls",
-});
 
 export const SETTINGS_SPEC = Object.freeze({
     "top-bar-track-information-width": {

@@ -1,4 +1,13 @@
-// Provides defensive app metadata access and themed icon fallbacks for preferences.
+/**
+ * @file InstalledAppCatalog.js
+ * @module prefs.utils.InstalledAppCatalog
+ *
+ * Builds the searchable installed-application catalog used by blocked-app preferences.
+ *
+ * The catalog normalizes desktop IDs, names, and search aliases so the chooser
+ * can match applications despite punctuation, accents, or desktop-file suffixes.
+ * It is preferences-only and returns stable app metadata for BlockedAppsGroup.
+ */
 import Gio from "gi://Gio";
 
 import { IconNames } from "../../shared/constants/icons.js";

@@ -1,4 +1,13 @@
-// Implements drag-and-drop ordering for every optional element inside the top bar button.
+/**
+ * @file TopBarElementOrderGroup.js
+ * @module prefs.widgets.TopBarElementOrderGroup
+ *
+ * Custom preferences group for ordering top-bar elements with drag and drop.
+ *
+ * The widget owns the reorderable list rows and serializes their element IDs
+ * back to the top-bar order setting. It keeps row snapshots and drop targets
+ * local so TopBarStructureController only handles the resulting setting value.
+ */
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
@@ -86,6 +95,7 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
         const paintable = new Gtk.WidgetPaintable({ widget: row });
         const snapshot = new Gtk.Snapshot();
         paintable.snapshot(snapshot, width, height);
+        // GSK texture rendering expects explicit Graphene.Rect bounds for the row snapshot
         const rect = new Graphene.Rect();
         rect.init(0, 0, width, height);
         return row.get_native().get_renderer().render_texture(snapshot.to_node(), rect);
@@ -94,7 +104,7 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
 
 export default GObject.registerClass(
     {
-        GTypeName: "TopBarElementOrderGroup",
+        GTypeName: "MediaShellTopBarElementOrderGroup",
         Template: "resource:///org/gnome/shell/extensions/mediashell/ui/top-bar-element-order.ui",
         InternalChildren: [
             "lb-top-bar-element-order",

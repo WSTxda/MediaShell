@@ -338,7 +338,7 @@
           </object>
         </child>
         <child>
-          <object class="TopBarTrackInformationContentRow" id="er-top-bar-track-information-content">
+          <object class="MediaShellTopBarTrackInformationContentRow" id="er-top-bar-track-information-content">
             <property name="expanded">false</property>
           </object>
         </child>
@@ -403,7 +403,7 @@
       </object>
     </child>
     <child>
-      <object class="TopBarElementOrderGroup" id="gp-panel-top-bar-element-order"/>
+      <object class="MediaShellTopBarElementOrderGroup" id="gp-panel-top-bar-element-order"/>
     </child>
   </object>
   <object class="AdwPreferencesPage" id="page-interactions">
@@ -738,7 +738,7 @@
       </object>
     </child>
     <child>
-      <object class="BlockedAppsGroup" id="gp-others-blocked-apps"/>
+      <object class="MediaShellBlockedAppsGroup" id="gp-others-blocked-apps"/>
     </child>
     <child>
       <object class="AdwPreferencesGroup" id="gp-others-reset">

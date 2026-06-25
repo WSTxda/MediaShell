@@ -1,7 +1,9 @@
+// Tests for: src/shell/mpris/MediaAppSelectionPolicy.js
+// Covers: active app priority, pinned app precedence, and deterministic next-app cycling
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { PlaybackStatus } from "../src/shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../src/shared/enums/playback.js";
 import { selectActiveMediaApp, selectNextMediaApp } from "../src/shell/mpris/MediaAppSelectionPolicy.js";
 
 function mediaApp(busName, playbackStatus, { pinned = false, invalid = false } = {}) {

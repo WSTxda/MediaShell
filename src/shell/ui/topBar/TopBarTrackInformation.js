@@ -1,7 +1,17 @@
-// Owns the scrolling track-information label and its playback-aware animation state.
+/**
+ * @file TopBarTrackInformation.js
+ * @module shell.ui.topBar.TopBarTrackInformation
+ *
+ * Renders configurable track metadata inside the GNOME top bar.
+ *
+ * TopBarButton owns this component and passes the ordered metadata fields chosen
+ * in preferences. It uses ScrollingLabel for long text and keeps metadata-field
+ * assembly separate from the panel button layout.
+ */
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { TrackInformationFields, PlaybackStatus } from "../../../shared/enums/MediaShellEnums.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import { TrackInformationFields } from "../../../shared/enums/topBar.js";
 import { formatArtistNames } from "../../../shared/utils/metadata.js";
 import ScrollingLabel from "../../helpers/ScrollingLabel.js";
 

@@ -2,7 +2,7 @@
 
 <interface domain="mediashell@wstxda.github.com">
   <requires lib="gtk" version="4.0"/>
-  <template class="BlockedAppsGroup" parent="AdwPreferencesGroup">
+  <template class="MediaShellBlockedAppsGroup" parent="AdwPreferencesGroup">
     <property name="title" translatable="yes">Blocked Apps</property>
     <property name="description" translatable="yes">Block and hide apps so they are ignored by the extension</property>
     <property name="header-suffix">

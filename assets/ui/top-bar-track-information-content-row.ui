@@ -2,7 +2,7 @@
 
 <interface domain="mediashell@wstxda.github.com">
   <requires lib="gtk" version="4.0"/>
-  <template class="TopBarTrackInformationContentRow" parent="AdwExpanderRow">
+  <template class="MediaShellTopBarTrackInformationContentRow" parent="AdwExpanderRow">
     <property name="title" translatable="yes">Track Information Content</property>
     <property name="subtitle" translatable="yes">Choose and reorder the information shown in the top bar</property>
     <property name="expanded">false</property>
