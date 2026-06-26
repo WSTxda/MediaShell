@@ -12,7 +12,7 @@ A GNOME Shell extension that adds configurable MPRIS media controls to the top b
 MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and a switcher for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
 
 <details>
-  <summary>Screenshots</summary>
+  <summary><h3>Screenshots</h3></summary>
 
 ### Workspace
 
@@ -154,4 +154,3 @@ gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-
 
 **[Sakith B.](https://github.com/sakithb)**<br>
 For your work on the [Media Controls](https://github.com/sakithb/media-controls) extension.
-
