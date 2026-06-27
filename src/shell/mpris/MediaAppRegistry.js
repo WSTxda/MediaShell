@@ -422,18 +422,17 @@ export default class MediaAppRegistry {
         );
         let selected = selectActiveMediaApp(availableMediaApps, this.activeMediaApp?.busName ?? null);
 
-        // If a browser withdraws one MPRIS endpoint immediately before
-        // publishing its replacement, keep the active endpoint for the bounded
-        // hand-off period unless another endpoint is already playing. This
-        // avoids switching to a paused fallback app or destroying the top bar
-        // button between adjacent browser media sessions.
+        // Ownerless endpoints should leave the visible UI immediately. Keep
+        // the proxy only as an internal hand-off candidate; if a replacement
+        // owner appears during the grace period, reconcileMediaAppOwner() will
+        // make it visible again without retaining stale controls in the top bar.
         const activeMediaAppIsPending =
             this.activeMediaApp && this.pendingRemovalBusNames.has(this.activeMediaApp.busName);
         const replacementShouldTakeOver =
             selected &&
             !this.activeMediaApp?.isAppPinned() &&
             (selected.isAppPinned() || selected.playbackStatus === PlaybackStatus.PLAYING);
-        if (activeMediaAppIsPending && !replacementShouldTakeOver) selected = this.activeMediaApp;
+        if (activeMediaAppIsPending && !replacementShouldTakeOver) selected = null;
 
         if (selected?.busName === this.activeMediaApp?.busName) return;
 
