@@ -325,7 +325,7 @@ export default class PopupAlbumArt {
         this.albumArtImage.add_style_class_name("button");
         this.albumArtImage.add_style_class_name("mediashell-popup-album-art-fallback");
         setGIcon(this.albumArtImage, icon ?? this.fallbackAlbumArtIcon, IconNames.MEDIA);
-        this.albumArtImage.set_icon_size(Math.max(42, Math.round(imageSize * 0.34)));
+        this.albumArtImage.set_icon_size(Math.max(56, Math.round(imageSize * 0.48)));
     }
 
     attach() {
