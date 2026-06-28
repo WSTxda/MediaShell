@@ -8,6 +8,7 @@
  * without importing Shell runtime services. It operates only on files under the
  * configured MediaShell cache directory.
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
@@ -21,6 +22,9 @@ Gio._promisify(Gio.FileEnumerator.prototype, "close_async", "close_finish");
 
 const logger = createLogger("AlbumArtCacheService");
 
+/**
+ * Provides preferences-side maintenance for the album-art cache directory.
+ */
 export default class AlbumArtCacheService {
     constructor() {
         this.albumArtCacheOperationCancellable = new Gio.Cancellable();

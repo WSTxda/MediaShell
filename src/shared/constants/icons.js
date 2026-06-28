@@ -9,9 +9,14 @@
  * Only add entries here when an icon name is shared across modules.
  */
 
-// --- Shared fallback icons ---
-
-/** Symbolic icons used when concrete media, image, or app icons cannot be resolved */
+/**
+ * Symbolic fallback icons used when concrete media, image, or application icons
+ * cannot be resolved.
+ *
+ * The names come from the current icon theme and are intentionally generic so
+ * MediaShell can keep rendering even when an MPRIS app exposes incomplete identity
+ * or artwork metadata.
+ */
 export const IconNames = Object.freeze({
     MISSING: "image-missing-symbolic",
     MEDIA: "audio-x-generic-symbolic",

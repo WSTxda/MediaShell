@@ -9,11 +9,17 @@
  * preference controllers consume the same table so new actions remain consistent
  * across runtime execution and shortcut editing UI.
  */
+
 import { InputActions } from "../enums/input.js";
 
-// --- Input action definitions ---
-
-/** Action descriptors used for runtime dispatch and shortcut settings */
+/**
+ * Runtime action descriptors shared by keyboard shortcuts and pointer gestures.
+ *
+ * The `id` is a stable developer-facing identifier, `action` is the value sent
+ * to runtime dispatch, and `shortcutKey` points to the GSettings key that stores
+ * the optional global accelerator. Keep entries in the same order used by the
+ * preferences shortcut page.
+ */
 export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     Object.freeze({ id: "play-pause", action: InputActions.PLAY_PAUSE, shortcutKey: "shortcut-play-pause" }),
     Object.freeze({ id: "next-track", action: InputActions.NEXT_TRACK, shortcutKey: "shortcut-next-track" }),
@@ -41,5 +47,8 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     Object.freeze({ id: "next-app", action: InputActions.NEXT_APP, shortcutKey: "shortcut-next-app" }),
 ]);
 
-/** GSettings keys that store user-configurable global keyboard shortcuts */
+/** Shortcut GSettings keys derived from INPUT_ACTION_DEFINITIONS for reset and validation flows. */
 export const KEYBOARD_SHORTCUT_KEYS = Object.freeze(INPUT_ACTION_DEFINITIONS.map(({ shortcutKey }) => shortcutKey));
+
+/** Volume delta applied by volume input actions; 0.05 represents a 5% step. */
+export const VOLUME_STEP = 0.05;

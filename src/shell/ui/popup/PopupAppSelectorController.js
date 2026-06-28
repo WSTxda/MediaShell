@@ -5,12 +5,16 @@
  * Coordinates popup media-app selector visibility and selection events.
  *
  * PopupContent delegates selector state to this controller so the list can be
- * rebuilt independently from album art, progress, and playback controls. It owns
- * the selector list instance and forwards user choices to ExtensionController.
+ * rebuilt independently from album art, the Progress Bar, and playback controls.
+ * It owns the selector list instance and forwards user choices to ExtensionController.
  */
+
 import PopupAppSelectorButton from "./PopupAppSelectorButton.js";
 import PopupAppSelectorList from "./PopupAppSelectorList.js";
 
+/**
+ * Coordinates popup media-app selector visibility and selection events.
+ */
 export default class PopupAppSelectorController {
     constructor(popupContent) {
         this.popupContent = popupContent;

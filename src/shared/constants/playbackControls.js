@@ -10,9 +10,14 @@
  * icon or actor identity.
  */
 
-// --- Playback action descriptors ---
-
-/** Stable descriptors for every playback button state rendered by MediaShell */
+/**
+ * Stable descriptors for every playback-control state rendered by MediaShell.
+ *
+ * Descriptors are shared by the Top Bar and Popup, but each surface still owns
+ * its own actor layout and sensitivity rules. The `name` values intentionally
+ * collapse play, pause, and stop into one actor slot because only one primary
+ * transport state can be visible at a time.
+ */
 export const PlaybackControls = Object.freeze({
     LOOP_NONE: Object.freeze({
         name: "loop",

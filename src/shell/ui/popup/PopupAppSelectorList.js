@@ -8,12 +8,18 @@
  * animation for the app selector. It receives app data from the controller and
  * emits user intent without changing MediaAppRegistry directly.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
-import { createIcon } from "../IconUtils.js";
+import { ACTIVE_OPACITY, HIDDEN_OPACITY, INACTIVE_OPACITY } from "../../constants/actorState.js";
+import {
+    POPUP_APP_SELECTOR_REVEAL_DURATION_MS,
+    POPUP_APP_SELECTOR_ROW_ANIMATION_MS,
+} from "../../constants/popup.js";
+import { createIcon } from "../../utils/icons.js";
 
 function actorContainsDescendant(actor, candidateDescendant) {
     return (
@@ -42,6 +48,9 @@ function resolveMediaAppRows(mediaApps, mediaAppResolver) {
     });
 }
 
+/**
+ * Builds the popup list of available MPRIS media apps.
+ */
 export default class PopupAppSelectorList {
     constructor(popupContent, appSelectorButton) {
         this.popupContent = popupContent;
@@ -100,7 +109,7 @@ export default class PopupAppSelectorList {
         this.revealer.ease({
             height: naturalHeight,
             translation_y: 0,
-            duration: 180,
+            duration: POPUP_APP_SELECTOR_REVEAL_DURATION_MS,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 if (this.revealer) this.revealer.clipToAllocation = false;
@@ -180,7 +189,7 @@ export default class PopupAppSelectorList {
             });
             const appButton = new St.Button({
                 styleClass: "popup-menu-item mediashell-popup-app-selector-row",
-                opacity: canActivate ? 255 : 128,
+                opacity: canActivate ? ACTIVE_OPACITY : INACTIVE_OPACITY,
                 reactive: canActivate,
                 trackHover: canActivate,
                 canFocus: canActivate,
@@ -212,14 +221,14 @@ export default class PopupAppSelectorList {
                 createIcon({
                     iconName: "object-select-symbolic",
                     styleClass: "popup-menu-icon mediashell-popup-app-selector-check-icon",
-                    opacity: isCurrent ? 255 : 0,
+                    opacity: isCurrent ? ACTIVE_OPACITY : HIDDEN_OPACITY,
                     yAlign: Clutter.ActorAlign.CENTER,
                 }),
             );
 
             const pinButton = new St.Button({
                 styleClass: "button mediashell-popup-app-selector-pin-button",
-                opacity: canActivate ? 255 : 128,
+                opacity: canActivate ? ACTIVE_OPACITY : INACTIVE_OPACITY,
                 reactive: canActivate,
                 trackHover: canActivate,
                 canFocus: canActivate,
@@ -284,7 +293,7 @@ export default class PopupAppSelectorList {
         revealer.ease({
             height: 0,
             translation_y: -6,
-            duration: 140,
+            duration: POPUP_APP_SELECTOR_ROW_ANIMATION_MS,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => revealer.destroy(),
         });

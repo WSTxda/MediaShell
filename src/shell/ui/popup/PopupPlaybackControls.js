@@ -5,16 +5,19 @@
  * Renders popup playback, shuffle, and repeat controls for the active media app.
  *
  * PopupContent delegates button creation and sensitivity updates to this class so
- * transport-control state stays separate from progress and metadata widgets. The
- * component consumes shared PlaybackControls descriptors for stable button names.
+ * transport-control state stays separate from Progress Bar and metadata widgets.
+ * The component consumes shared PlaybackControls descriptors for stable button names.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { LoopStatus, PlaybackStatus } from "../../../shared/enums/playback.js";
-import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
-import { createIcon, setIconName } from "../IconUtils.js";
+import { LoopStatus } from "../../../shared/enums/playback.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
+import { resolvePlayPauseControl } from "../../../shared/utils/playbackControlState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../../constants/actorState.js";
+import { createIcon, setIconName } from "../../utils/icons.js";
 
 function getPopupPlaybackControlIndex(controlName) {
     if (
@@ -31,6 +34,9 @@ function getPopupPlaybackControlIndex(controlName) {
     return 0;
 }
 
+/**
+ * Renders popup playback, shuffle, and repeat controls for the active media app.
+ */
 export default class PopupPlaybackControls {
     constructor(popupContent) {
         this.popupContent = popupContent;
@@ -108,17 +114,8 @@ export default class PopupPlaybackControls {
     }
 
     updatePlayPause(mediaApp) {
-        if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-            this.updatePlaybackControl(PlaybackControls.PLAY, mediaApp.canPlay && mediaApp.canControl, () =>
-                mediaApp.play(),
-            );
-        } else if (mediaApp.canControl && !mediaApp.canPause) {
-            this.updatePlaybackControl(PlaybackControls.STOP, mediaApp.canControl, () => mediaApp.stop());
-        } else {
-            this.updatePlaybackControl(PlaybackControls.PAUSE, mediaApp.canPause && mediaApp.canControl, () =>
-                mediaApp.pause(),
-            );
-        }
+        const { control, isReactive, action } = resolvePlayPauseControl(mediaApp);
+        this.updatePlaybackControl(control, isReactive, action);
     }
 
     updatePlaybackControl(controlDefinition, isReactive, onClick) {
@@ -166,7 +163,7 @@ export default class PopupPlaybackControls {
         control.onClick = onClick;
         setIconName(control.icon, controlDefinition.iconName);
         control.button.trackHover = isReactive;
-        control.button.opacity = isReactive ? 255 : 160;
+        control.button.opacity = isReactive ? ACTIVE_OPACITY : INACTIVE_OPACITY;
         control.button.reactive = isReactive;
         control.button.canFocus = isReactive;
         control.button.checked = isActive;

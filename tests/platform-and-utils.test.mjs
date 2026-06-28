@@ -1,5 +1,14 @@
-// Tests for: shared constants and pure utility modules
-// Covers: platform compatibility, formatting, MPRIS normalization, search, identity, and visualizer invariants
+/**
+ * @file platform-and-utils.test.mjs
+ * @module tests.platformAndUtils
+ *
+ * Tests platform constants and pure utility helpers shared by runtime and preferences code.
+ *
+ * The suite guards GNOME version helpers, formatting utilities, search indexing,
+ * app identity normalization, visualizer generation, and shared UI-state constants
+ * without loading GNOME libraries.
+ */
+
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -33,7 +42,7 @@ import {
   normalizeVisualizerSpeed,
   TOP_BAR_VISUALIZER_BAR_COUNT,
 } from "../src/shared/utils/visualizer.js";
-import { VisualizerStyles } from "../src/shared/enums/topBar.js";
+import { VisualizerStyles } from "../src/shared/enums/visualizer.js";
 
 test("platform policy is the exact supported baseline", () => {
   assert.deepEqual(SUPPORTED_GNOME_SHELL_VERSIONS, ["47", "48", "49", "50"]);

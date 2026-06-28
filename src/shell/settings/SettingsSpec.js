@@ -8,6 +8,7 @@
  * and decide which runtime action a key change requires. The file contains spec
  * factory helpers only; domain behavior belongs in controllers and services.
  */
+
 import {
     POPUP_ALBUM_ART_CORNER_RADIUS,
     POPUP_WIDTH,
@@ -20,19 +21,34 @@ import {
 } from "../../shared/constants/settings.js";
 import { InputActions } from "../../shared/enums/input.js";
 import { SettingsAction } from "../../shared/enums/settings.js";
-import { TopBarPositions, VisualizerStyles } from "../../shared/enums/topBar.js";
+import { TopBarPositions } from "../../shared/enums/topBar.js";
+import { VisualizerStyles } from "../../shared/enums/visualizer.js";
 import { WidgetFlags } from "../../shared/enums/widget.js";
 import { enumValueByIndex, normalizeOrderedValues, normalizeUniqueStrings } from "../../shared/utils/format.js";
 
 // Compatibility re-export for legacy imports; new code should import SettingsAction from shared/enums/settings.js
 export { SettingsAction };
 
-// Spec factory helpers — not domain logic.
-// They keep SETTINGS_SPEC declarations compact while preserving typed runtime values.
+/**
+ * Creates a transform that clamps numeric settings to their supported bounds.
+ *
+ * SettingsStore calls these transforms after reading raw GSettings values. Keeping
+ * bounds in SettingsSpec prevents invalid schema or user-edited values from
+ * reaching UI components.
+ *
+ * @param {{MIN: number, MAX: number, DEFAULT: number}} bounds - Supported range and fallback.
+ * @returns {(value: unknown) => number} Numeric settings transform.
+ */
 function createNumericConstraint({ MIN, MAX, DEFAULT }) {
     return (value) => Math.min(MAX, Math.max(MIN, Number.isFinite(value) ? value : DEFAULT));
 }
 
+/**
+ * Creates a transform for settings stored in seconds but consumed in milliseconds.
+ *
+ * @param {{MIN: number, MAX: number, DEFAULT: number}} bounds - Supported seconds range.
+ * @returns {(value: unknown) => number} Millisecond settings transform.
+ */
 function createSecondsToMillisecondsTransform(bounds) {
     const constrainValue = createNumericConstraint(bounds);
     return (value) => constrainValue(value) * 1000;
@@ -93,18 +109,18 @@ export const SETTINGS_SPEC = Object.freeze({
     "show-popup-progress-bar": {
         property: "showPopupProgressBar",
         read: "get_boolean",
-        impact: WidgetFlags.POPUP_PLAYBACK_PROGRESS,
+        impact: WidgetFlags.POPUP_PROGRESS_BAR,
     },
     "show-popup-album-art": {
         property: "showPopupAlbumArt",
         read: "get_boolean",
-        impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION | WidgetFlags.POPUP_PLAYBACK_PROGRESS,
+        impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION | WidgetFlags.POPUP_PROGRESS_BAR,
     },
     "popup-width": {
         property: "popupWidth",
         read: "get_uint",
         transform: createNumericConstraint(POPUP_WIDTH),
-        impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION | WidgetFlags.POPUP_PLAYBACK_PROGRESS,
+        impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION | WidgetFlags.POPUP_PROGRESS_BAR,
     },
     "show-popup-track-information": {
         property: "showPopupTrackInformation",

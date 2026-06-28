@@ -10,6 +10,7 @@
  *
  * @see src/prefs/PreferencesController.js
  */
+
 import Adw from "gi://Adw";
 import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
@@ -30,6 +31,9 @@ function assertSupportedLibadwaita() {
     );
 }
 
+/**
+ * GNOME Shell entry point for the MediaShell preferences process.
+ */
 export default class MediaShellPreferences extends ExtensionPreferences {
     async fillPreferencesWindow(preferencesWindow) {
         assertSupportedLibadwaita();

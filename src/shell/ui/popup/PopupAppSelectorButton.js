@@ -8,14 +8,18 @@
  * title, active state, and pin state. The button owns only its actor structure;
  * selection and pinning are handled by the list/controller above it.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
-import { createIcon, setGIcon } from "../IconUtils.js";
-import { installPrimaryClickAction } from "../PointerActionUtils.js";
+import { createIcon, setGIcon } from "../../utils/icons.js";
+import { installPrimaryClickAction } from "../../utils/pointerActions.js";
 
+/**
+ * Renders one selectable media-app row inside the popup app selector.
+ */
 export default class PopupAppSelectorButton {
     constructor(popupContent, onActivate) {
         this.popupContent = popupContent;

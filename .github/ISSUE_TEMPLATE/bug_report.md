@@ -31,7 +31,7 @@ Describe the problem and the result you expected.
 - [ ] App selector
 - [ ] Track Information
 - [ ] Playback Controls
-- [ ] Playback Progress
+- [ ] Progress Bar
 - [ ] Volume actions
 - [ ] Album Art
 - [ ] Visualizer

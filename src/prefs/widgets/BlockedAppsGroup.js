@@ -8,6 +8,7 @@
  * BlockedAppChooserDialog when the user adds a new entry. It writes the final
  * string list to GSettings through the settings object passed by its controller.
  */
+
 import Adw from "gi://Adw";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
@@ -20,6 +21,9 @@ import BlockedAppChooserDialog from "./BlockedAppChooserDialog.js";
 
 const logger = createLogger("BlockedAppsGroup");
 
+/**
+ * Custom preferences group that displays and edits the blocked-app list.
+ */
 class BlockedAppsGroup extends Adw.PreferencesGroup {
     blockedAppIds = [];
 

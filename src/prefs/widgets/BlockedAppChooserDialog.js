@@ -8,7 +8,10 @@
  * monitor refresh source used while the chooser is open. It returns one selected
  * desktop app to BlockedAppsGroup without writing settings itself.
  */
+
 import Adw from "gi://Adw";
+
+import { LARGE_DIALOG_HEIGHT, LARGE_DIALOG_WIDTH, SEARCH_DELAY_MS } from "../constants/layout.js";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
@@ -22,13 +25,16 @@ import {
 } from "../../shared/utils/search.js";
 import { getAppIcon, getAppId, getAppName, listInstalledApps } from "../utils/InstalledAppCatalog.js";
 
+/**
+ * Presents a searchable dialog for selecting installed apps to block.
+ */
 class BlockedAppChooserDialog extends Adw.Dialog {
     _init(params = {}) {
         const { excludedAppIds = [], ...dialogParams } = params;
         super._init({
             title: _("Select an app to block"),
-            content_width: 480,
-            content_height: 600,
+            content_width: LARGE_DIALOG_WIDTH,
+            content_height: LARGE_DIALOG_HEIGHT,
             ...dialogParams,
         });
 
@@ -68,7 +74,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
 
         this.searchEntry = new Gtk.SearchEntry({
             placeholder_text: _("Search apps"),
-            search_delay: 150,
+            search_delay: SEARCH_DELAY_MS,
             hexpand: true,
         });
         this.searchBar = new Gtk.SearchBar({

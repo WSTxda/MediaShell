@@ -2,7 +2,7 @@
   "name": "mediashell",
   "version": "1.0.1",
   "private": true,
-  "description": "Configurable MPRIS media controls for the GNOME Shell top bar.",
+  "description": "A GNOME Shell extension that adds configurable MPRIS media controls to the top bar.",
   "type": "module",
   "packageManager": "pnpm@10.12.1",
   "engines": {
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "check": "node scripts/check.mjs",
-    "check:package": "node scripts/check-package.mjs",
+    "check:package": "node scripts/check.mjs --package",
     "check:shexli": "shexli dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
     "verify": "pnpm run build && pnpm run check:shexli",
     "test": "node --test",

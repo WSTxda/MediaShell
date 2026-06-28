@@ -1,5 +1,13 @@
-// Tests for: src/shared/utils/log.js
-// Covers: scoped logger output, once-only cache isolation per level, and LRU bounds
+/**
+ * @file logging.test.mjs
+ * @module tests.logging
+ *
+ * Tests the shared logger cache and scoped output behavior.
+ *
+ * The test keeps logging guarantees independent from GNOME Shell so noisy paths
+ * can rely on debugOnce() and bounded cache behavior during runtime updates.
+ */
+
 import assert from "node:assert/strict";
 import test from "node:test";
 

@@ -1,100 +1,118 @@
-# Development and validation
+# Development
 
-## Environment
-
-Use the Node.js and pnpm versions declared in `package.json`. The GNOME runtime baseline lives in `src/metadata.json` and `src/shared/constants/platform.js`.
-
-Development commands require GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource tools. `pnpm verify` also requires `shexli` in `PATH`.
+Use the Node.js and pnpm versions declared in `package.json`. GNOME work also needs GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource tools. Release verification expects `shexli` in `PATH`.
 
 ```bash
 pnpm install
 pnpm doctor
-```
-
-## Navigation
-
-- Shell runtime code lives in `src/shell/`.
-- Preferences code lives in `src/prefs/`.
-- Toolkit-independent constants, enums, migrations, and utilities live in `src/shared/`.
-- GtkBuilder templates, schemas, D-Bus XML, and translations live in `assets/`.
-- Tests for pure logic and policies live in `tests/`.
-
-Start from the owner. Shell changes usually begin at `ExtensionController`, `MediaAppRegistry`, `PlayerProxy`, `TopBarButton`, or `PopupContent`. Preferences changes usually begin at `PreferencesController`, `PreferenceBindings`, or the relevant page controller in `src/prefs/groups/`.
-
-## Commands
-
-```bash
 pnpm debug
-pnpm test
 pnpm check
 pnpm build
 pnpm verify
 ```
 
-`pnpm check` validates source syntax, import boundaries, compatibility declarations, GNOME review-sensitive patterns, project invariants, packaging configuration, settings references, documentation links, unit tests, resources, schemas, D-Bus contracts, translations, and script syntax.
+`pnpm check` runs source validation, unit tests, resource/schema/D-Bus checks, translation checks, and script syntax. `pnpm build` stages and packs the extension, then validates the generated archive. `pnpm verify` builds the package and runs `shexli`.
 
-`pnpm build` runs `pnpm check`, stages the runtime tree, compiles resources, creates the package, and runs `check-package` against `dist/builds/mediashell@wstxda.github.com.shell-extension.zip`. `pnpm verify` builds the package and runs `shexli`.
+## Where to start
 
-## Constants
+Start from the owner of the behavior.
 
-Use the narrowest constants module that owns the value:
+- Shell lifecycle and wiring: `src/shell/ExtensionController.js`.
+- MPRIS discovery and active app selection: `src/shell/mpris/MediaAppRegistry.js` and `src/shell/mpris/MediaAppSelectionPolicy.js`.
+- One MPRIS endpoint: `src/shell/mpris/PlayerProxy.js`.
+- Top bar UI: `src/shell/ui/topBar/TopBarButton.js` and the component beside the feature.
+- Popup UI: `src/shell/ui/popup/PopupContent.js` and the component beside the feature.
+- Preferences: `src/prefs/PreferencesController.js`, `src/prefs/bindings/PreferenceBindings.js`, or the relevant controller under `src/prefs/groups/`.
 
-- `src/shared/constants/timing.js`: timers, retry delays, polling intervals, grace periods, D-Bus call timeouts.
-- `src/shared/constants/limits.js`: cache capacities, payload sizes, request limits.
-- `src/shared/constants/settings.js`: user-facing settings bounds and defaults.
-- `src/shared/constants/dbus.js`: D-Bus names, paths, and canonical MPRIS property lists.
+Keep Shell, Preferences, and Shared code separated. Shared modules must remain toolkit-independent and testable without GNOME.
+
+## Naming
+
+Use project vocabulary consistently in code, logs, comments, documentation, and visible strings.
+
+- **Panel** configures extension placement in the GNOME Shell panel/top bar area.
+- **Top Bar** configures the compact top bar button.
+- **Popup** configures the menu opened from the top bar button.
+- Use **app selector** for active media-app selection. Use chooser terminology only for blocked-app dialogs.
+- Use **media app** for applications exposed in MediaShell UI. Use **player** only for MPRIS Player details, `PlayerProxy`, or protocol names.
+- Use **top bar button** for the clickable Shell actor.
+- Use **Progress Bar** for the user-facing popup setting and `PopupProgressBar` for runtime classes.
+
+GSettings keys, schema enum IDs, D-Bus names, CSS classes, and GTypeName strings are stable contracts.
+
+## Constants and enums
+
+Use the narrowest module that owns the value:
+
+- `src/shared/constants/timing.js`: timers, polling, retry intervals, grace periods, D-Bus timeouts.
+- `src/shared/constants/limits.js`: cache capacities, payload sizes, and bounded request values.
+- `src/shared/constants/settings.js`: user-facing settings defaults, ranges, and reset scopes.
+- `src/shared/constants/dbus.js`: D-Bus names, paths, interfaces, and canonical MPRIS property lists.
 - `src/shared/constants/inputActions.js`: input action descriptors and shortcut keys.
-- `src/shared/constants/playbackControls.js`: transport-control descriptors shared by top bar and popup.
-- `src/shell/constants/ui.js`: Shell-only layout measurements.
+- `src/shared/constants/playbackControls.js`: transport-control descriptors shared by Top Bar and Popup.
+- `src/shell/constants/actorState.js`: shared Shell actor opacity states.
+- `src/shell/constants/popup.js`: popup-only layout and animation values.
+- `src/shell/constants/visualizer.js`: visualizer layout, timing, and state values.
+- `src/prefs/constants/layout.js`: preferences-only dialog and widget layout values created from JavaScript.
 
-Do not create a local magic number for a tunable domain value; trivial literals may remain inline when clearer.
+Extract a value when it is a shared contract, belongs to a tunable domain, or is likely to drift. Keep trivial one-off literals inline when that is clearer.
 
-## Enums and widget flags
-
-Add new domain enums to the closest file under `src/shared/enums/` and import that domain file directly from consumers. Avoid runtime barrel enum modules because EGO checks every JavaScript file for reachability from `extension.js` or `prefs.js`.
-
-For a new UI component update flag, add an individual bit to `WidgetFlags` in `src/shared/enums/widget.js`, update the relevant compound flag, then consume the bit in `TopBarButton.updateWidgets()` or `PopupContent.updateWidgets()`.
+Add enums to the closest domain file under `src/shared/enums/`. Avoid runtime barrel modules because extension review checks JavaScript reachability from `extension.js` and `prefs.js`.
 
 ## Settings
 
 1. Add the key or enum to `assets/org.gnome.shell.extensions.mediashell.gschema.xml`.
 2. Add runtime mapping to `src/shell/settings/SettingsSpec.js` when Shell code consumes it.
-3. Add a standard binding in `src/prefs/bindings/PreferenceBindings.js`, or wire a page controller when the UI is compound.
+3. Add a standard binding in `src/prefs/bindings/PreferenceBindings.js`, or use a page controller for compound UI.
 4. Add transforms only when the runtime shape differs from the raw schema value.
 5. Add a migration in `src/shared/settings/SettingsMigration.js` only when a legacy value must be preserved.
-6. Update visible text/translations when strings change, then run `pnpm check`.
+6. Update visible text, translations, tests, and documentation when the user-facing contract changes.
 
-GSettings key names, enum IDs, and GTypeName strings are public contracts; never reuse them for new semantics.
+Never reuse an existing key, enum ID, or GTypeName for different semantics.
 
-## Preference page controllers
+## Preferences controllers
 
-Create page-level controllers under `src/prefs/groups/`, use a class name matching the file name, and call `createLogger()` with the same class name. Instantiate and destroy them from `PreferencesController`. Use `SignalConnections.js` when the controller manually owns signals from several source objects or needs explicit disconnect order.
+Create page-level controllers under `src/prefs/groups/` when a preference needs coordination beyond a simple binding. Use a class name matching the file name and call `createLogger()` with the same scope.
 
-## Logging
+Use `SignalConnections.js` when the controller owns signals from several source objects or requires explicit disconnect order. Use direct object lifetime helpers only when the source and owner lifetimes are tightly coupled.
 
-Use `createLogger("ClassName")` with a scope that exactly matches the class name in the same file.
+## Code comments and logs
 
-- `debug`: internal state transitions, cache hits/misses, lifecycle details, and recoverable background work.
+Every JavaScript module must start with a compact JSDoc header containing `@file`, `@module`, a short responsibility summary, and one purpose paragraph. The header complements the contributor documentation: it should say what the module owns and why it exists, not restate every export.
+
+Use inline comments only for lifecycle, signal ownership, async teardown, MPRIS/D-Bus edge cases, GNOME compatibility, private Shell API boundaries, or non-obvious UI behavior. Avoid comments that merely repeat the next line of code.
+
+Use `createLogger("ClassName")` with a scope that matches the owning class or module. Logs should help diagnose failures and state transitions, not narrate ordinary render flow.
+
+- `debug`: lifecycle details, cache decisions, media-app selection, and recoverable background work.
 - `warn`: recoverable failures that affect a feature or require fallback behavior.
-- `error`: unrecoverable component failures or teardown failures that may leave a feature broken.
-
-## Conservative choices
-
-- Compatibility re-exports remain in modules that previously exported moved enums or constants. Remove them only as a deliberate module API change.
-- Preferences controllers use `SignalConnections.js` when they own signals from several source objects or need explicit disconnect order. Use `connectObject()` only for local GObject instances with direct owner lifetime.
-- Clutter intervals keep explicit `GObject.Value` wrappers where typed interval values avoid implicit binding conversion differences across supported Shell releases.
-- Gio cancellation checks live in `src/shell/utils/errors.js`; do not reintroduce local `isCancellationError()` helpers.
-- Visual constants should be unified only when states are semantically equivalent, not just numerically similar.
+- `error`: component failures or teardown failures that may leave a feature broken.
 
 ## Translations
 
-Visible JavaScript strings use gettext. GtkBuilder strings use `translatable="yes"`. After changing visible text, run `pnpm run translations` and `pnpm check`; preserve placeholders and plural forms.
+Visible JavaScript strings use gettext. GtkBuilder strings use `translatable="yes"`. After changing visible text, run:
+
+```bash
+pnpm run translations
+pnpm check
+```
+
+Preserve placeholders, plural forms, source references, and translator comments. Do not erase a translation just because an English string was renamed; preserve it when the meaning is still correct, and leave it empty only when it needs native review.
 
 ## Live testing
 
-Automated validation does not exercise GNOME Shell actor lifecycle, compositor behavior, private Shell APIs, or real third-party MPRIS implementations. Test in proportion to the risk of the change.
+Automated checks do not exercise compositor behavior, Shell actor lifetime, private Shell APIs, or real third-party MPRIS implementations. Test in proportion to risk.
 
-For playback and lifecycle changes, cover one native media app and one browser-backed session, multiple simultaneous endpoints, app exit, owner replacement, popup reopening, top bar updates, extension reload, rapid play/pause, tab changes, page navigation, short-form media feeds, seeking, volume actions, and only the controls the endpoint advertises.
+For playback and lifecycle changes, cover:
+
+- one native media app and one browser-backed session;
+- multiple simultaneous endpoints;
+- app exit and owner replacement;
+- popup reopening and top bar updates;
+- extension reload;
+- rapid play/pause and capability changes;
+- tab changes, page navigation, and short-form media feeds;
+- seeking and volume actions when supported by the endpoint.
 
 ## Debugging
 
@@ -106,4 +124,12 @@ Record the Shell release, media app, MPRIS bus name, relevant settings, reproduc
 
 ## Release
 
-Before publishing: run `pnpm check`, `pnpm build`, and `pnpm verify`. Start from a clean tree. Update release metadata, refresh translations if visible strings changed, perform the live tests required by the changed subsystems, and publish the package from `dist/builds/`.
+Start from a clean tree:
+
+```bash
+pnpm check
+pnpm build
+pnpm verify
+```
+
+Install the package from `dist/builds/`, run live tests for the changed subsystems, and publish only the validated `.shell-extension.zip`.

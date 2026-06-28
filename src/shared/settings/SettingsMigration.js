@@ -8,6 +8,7 @@
  * already contain a user value, then advances the schema-version marker. Tests
  * cover each historical boundary to guarantee idempotency and enum preservation.
  */
+
 export const SETTINGS_SCHEMA_VERSION = 9;
 const SETTINGS_SCHEMA_VERSION_KEY = "settings-schema-version";
 
@@ -84,10 +85,31 @@ const RETIRED_INPUT_ACTIONS = Object.freeze({
     15: 8, // SHOW_POPUP -> TOGGLE_POPUP
 });
 
+/**
+ * Returns whether a key already has a user value.
+ *
+ * Migrations copy legacy values only when the destination key is still untouched,
+ * preserving explicit user choices made after an upgrade.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ * @param {string} key - GSettings key name.
+ * @returns {boolean} True when a user value exists.
+ */
 function hasUserValue(settings, key) {
     return settings.get_user_value(key) !== null;
 }
 
+/**
+ * Copies one legacy setting into its current key when safe.
+ *
+ * The helper preserves destination values that were already set by the user. The
+ * legacy element-order key is translated from historical names to current top-bar
+ * element IDs while being copied.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ * @param {string} sourceKey - Legacy key to read.
+ * @param {string} destinationKey - Current key to write.
+ */
 function copyUserSetting(settings, sourceKey, destinationKey) {
     if (!hasUserValue(settings, sourceKey) || hasUserValue(settings, destinationKey)) return;
 
@@ -100,12 +122,27 @@ function copyUserSetting(settings, sourceKey, destinationKey) {
     settings.set_value(destinationKey, settings.get_value(sourceKey));
 }
 
+/**
+ * Applies a map of legacy key names to current key names.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ * @param {Record<string, string>} migrations - Source-to-destination key map.
+ */
 function migrateSettingKeys(settings, migrations) {
     for (const [sourceKey, destinationKey] of Object.entries(migrations)) {
         copyUserSetting(settings, sourceKey, destinationKey);
     }
 }
 
+/**
+ * Inserts the visualizer into existing top-bar element order settings.
+ *
+ * Older installations did not know about the visualizer element. The migration
+ * places it before playback controls when possible so existing layouts keep their
+ * general identity/control ordering.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ */
 function migrateTopBarVisualizerOrder(settings) {
     const key = "top-bar-element-order";
     const elementOrder = settings.get_strv(key);
@@ -121,6 +158,12 @@ function migrateTopBarVisualizerOrder(settings) {
     settings.set_strv(key, nextElementOrder);
 }
 
+/**
+ * Rewrites historical input-action enum values to their current actions.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ * @param {Record<number, number>} migrations - Old-to-new enum value map.
+ */
 function migrateInputActions(settings, migrations) {
     for (const key of INPUT_ACTION_KEYS) {
         const currentValue = settings.get_enum(key);
@@ -129,6 +172,16 @@ function migrateInputActions(settings, migrations) {
     }
 }
 
+/**
+ * Runs all pending settings migrations exactly once.
+ *
+ * The schema-version key records the last completed migration boundary. Each
+ * branch is intentionally cumulative so users can upgrade from any historical
+ * version directly to the current schema.
+ *
+ * @param {Gio.Settings} settings - Extension settings object.
+ * @returns {boolean} True when at least one migration was applied.
+ */
 export function migrateSettings(settings) {
     const version = settings.get_uint(SETTINGS_SCHEMA_VERSION_KEY);
     if (version >= SETTINGS_SCHEMA_VERSION) return false;

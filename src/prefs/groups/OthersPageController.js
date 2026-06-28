@@ -6,10 +6,13 @@
  *
  * The controller owns rows that cannot be represented by a simple settings
  * binding, including the album-art cache action, the blocked-app list, and the
- * system media controls button row. It keeps those page-specific actions out of
- * the global PreferencesController.
+ * system media controls button row. Page-specific maintenance and confirmation
+ * flows stay out of the global PreferencesController.
  */
+
 import Adw from "gi://Adw";
+
+import { TOAST_TIMEOUT_SECONDS } from "../constants/layout.js";
 import GLib from "gi://GLib";
 import { gettext as _, ngettext } from "../PreferencesTranslations.js";
 
@@ -20,6 +23,9 @@ import AlbumArtCacheService from "../utils/AlbumArtCacheService.js";
 
 const logger = createLogger("OthersPageController");
 
+/**
+ * Coordinates the preferences page for system integration and blocked apps.
+ */
 export default class OthersPageController {
     constructor(settings, builder, preferencesWindow) {
         this.settings = settings;
@@ -81,7 +87,7 @@ export default class OthersPageController {
         this.preferencesWindow.add_toast(
             new Adw.Toast({
                 title: _("Settings reset"),
-                timeout: 3,
+                timeout: TOAST_TIMEOUT_SECONDS,
             }),
         );
     }
@@ -131,7 +137,7 @@ export default class OthersPageController {
             this.preferencesWindow.add_toast(
                 new Adw.Toast({
                     title: _("Album art cache cleared"),
-                    timeout: 3,
+                    timeout: TOAST_TIMEOUT_SECONDS,
                 }),
             );
         } catch (error) {
@@ -140,7 +146,7 @@ export default class OthersPageController {
             this.preferencesWindow.add_toast(
                 new Adw.Toast({
                     title: _("Could not clear the album art cache"),
-                    timeout: 3,
+                    timeout: TOAST_TIMEOUT_SECONDS,
                 }),
             );
             this.updateAlbumArtCacheStatsSubtitle();

@@ -1,19 +1,23 @@
 /**
  * @file ScrollingLabel.js
- * @module shell.helpers.ScrollingLabel
+ * @module shell.ui.ScrollingLabel
  *
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
  *
- * TopBarTrackInformation uses this helper for long track metadata in constrained
- * panel space. The actor owns its Clutter transition, pause timers, and fade
+ * TopBarTrackInformation uses this actor for long track metadata in constrained
+ * top-bar space. The actor owns its Clutter transition, pause timers, and fade
  * adjustment so callers only need to set text and playback pause state.
  */
+
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+/**
+ * Provides a Shell actor that scrolls overflowing text while preserving read position.
+ */
 class ScrollingLabel extends St.ScrollView {
     label;
     labelBox;
@@ -28,7 +32,7 @@ class ScrollingLabel extends St.ScrollView {
     scrollTransition;
     scrollSpeed;
 
-    // DEVELOPER NOTE — Scrolling animation state machine:
+    // Scrolling animation state:
     // States: idle → scrolling → pause → scrolling (loop) | paused externally.
     // GLib sources schedule pauses between transition cycles, while pauseScrolling()
     // suspends movement without resetting the current scroll offset.

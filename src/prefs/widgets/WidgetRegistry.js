@@ -8,6 +8,7 @@
  * MediaShellBlockedAppsGroup resolve correctly in the UI definition. WidgetRegistry
  * owns no widget instances; it only guarantees type registration.
  */
+
 import GObject from "gi://GObject";
 
 import BlockedAppsGroup from "./BlockedAppsGroup.js";

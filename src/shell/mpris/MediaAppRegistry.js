@@ -9,11 +9,12 @@
  * endpoint disappears. It is the source of truth for the active app shown by
  * TopBarButton and PopupContent.
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { MPRIS_PREFIX } from "../../shared/constants/dbus.js";
-import { MEDIA_APP_DISAPPEARANCE_GRACE_MS } from "../../shared/constants/timing.js";
+import { DBUS_LIST_NAMES_TIMEOUT_MS, MEDIA_APP_DISAPPEARANCE_GRACE_MS } from "../../shared/constants/timing.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { normalizeUniqueStrings } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
@@ -26,6 +27,9 @@ Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("MediaAppRegistry");
 
+/**
+ * Discovers MPRIS bus names, owns PlayerProxy instances, filters blocked apps, and selects the active media app.
+ */
 export default class MediaAppRegistry {
     constructor(mprisProxyFactory, callbacks = {}) {
         this.mprisProxyFactory = mprisProxyFactory;
@@ -120,7 +124,7 @@ export default class MediaAppRegistry {
             "ListNames",
             null,
             Gio.DBusCallFlags.NONE,
-            2000,
+            DBUS_LIST_NAMES_TIMEOUT_MS,
             this.operationCancellable,
         );
         const [busNames] = listNamesResult.deepUnpack();

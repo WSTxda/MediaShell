@@ -8,6 +8,7 @@
  * creates root, player, properties, and bus-watch proxies with a shared
  * cancellable. MediaAppRegistry depends on it for every MPRIS endpoint it tracks.
  */
+
 import Gio from "gi://Gio";
 
 import {
@@ -60,6 +61,9 @@ async function loadMprisIntrospectionData(cancellable) {
     return introspectionData;
 }
 
+/**
+ * Loads bundled D-Bus introspection and creates typed MPRIS proxies.
+ */
 export default class MprisProxyFactory {
     constructor() {
         this.isDestroyed = false;

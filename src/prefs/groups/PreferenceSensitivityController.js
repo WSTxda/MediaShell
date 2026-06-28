@@ -8,11 +8,15 @@
  * nested controls such as visualizer options and album-art rows. It owns no
  * persistent values; it only mirrors current settings into widget sensitivity.
  */
+
 import { createLogger } from "../../shared/utils/log.js";
 import { connectOwnedSignal, disconnectOwnedSignals } from "../utils/SignalConnections.js";
 
 const logger = createLogger("PreferenceSensitivityController");
 
+/**
+ * Keeps dependent preferences sensitive only when their parent toggles allow them.
+ */
 export default class PreferenceSensitivityController {
     constructor(builder) {
         this.builder = builder;

@@ -5,9 +5,10 @@
  * Coordinates custom preference widgets that edit the top-bar layout.
  *
  * The controller owns the element-order widget and the track-information content
- * row, connecting their drag/drop and selection signals to GSettings. It keeps
- * layout-specific preference behavior out of the generic binding table.
+ * row, connecting their drag/drop and selection signals to GSettings. Ordered
+ * list coordination stays here instead of entering the generic binding table.
  */
+
 import { TOP_BAR_ELEMENT_ORDER_DEFAULT } from "../../shared/constants/settings.js";
 import { normalizeOrderedValues } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
@@ -19,6 +20,9 @@ function arraysEqual(first, second) {
     return first.length === second.length && first.every((value, index) => value === second[index]);
 }
 
+/**
+ * Coordinates custom preference widgets that edit the top-bar layout.
+ */
 export default class TopBarStructureController {
     constructor(settings, builder) {
         this.settings = settings;

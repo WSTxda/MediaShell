@@ -1,5 +1,14 @@
-// Tests for: src/shared/settings/SettingsMigration.js
-// Covers: migration idempotency, legacy key copying, enum preservation, and schema version bumps
+/**
+ * @file settings-migration.test.mjs
+ * @module tests.settingsMigration
+ *
+ * Tests historical GSettings migrations with a memory-backed settings object.
+ *
+ * The suite verifies idempotency, legacy key preservation, enum migration, and
+ * schema-version advancement so users can upgrade from older MediaShell builds
+ * without losing preferences.
+ */
+
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";

@@ -12,6 +12,7 @@
  *
  * @see src/shell/ui/popup/PopupAlbumArt.js
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Soup from "gi://Soup";
@@ -63,6 +64,9 @@ function parseAlbumArtUri(albumArtUri) {
     }
 }
 
+/**
+ * Loads local or remote album art without blocking popup rendering.
+ */
 export default class AlbumArtLoader {
     static #instance = null;
 

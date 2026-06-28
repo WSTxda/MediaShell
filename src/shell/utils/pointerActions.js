@@ -1,6 +1,6 @@
 /**
- * @file PointerActionUtils.js
- * @module shell.ui.PointerActionUtils
+ * @file pointerActions.js
+ * @module shell.utils.pointerActions
  *
  * Installs Shell pointer gestures and button-release fallbacks for actor actions.
  *
@@ -8,6 +8,7 @@
  * touch, and scroll events into MediaShell input actions. The fallback path is
  * kept local so top-bar UI code does not depend on one Clutter gesture API.
  */
+
 import Clutter from "gi://Clutter";
 
 function safeRemoveAction(actor, action) {

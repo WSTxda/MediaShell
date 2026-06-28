@@ -1,38 +1,44 @@
 /**
- * @file PopupPlaybackProgressSlider.js
- * @module shell.ui.popup.PopupPlaybackProgressSlider
+ * @file PopupProgressBarSlider.js
+ * @module shell.ui.popup.PopupProgressBarSlider
  *
- * Provides the popup seek slider and animated playback progress value.
+ * Provides the popup seek slider and animated progress value.
  *
- * PopupPlaybackProgress owns this slider and passes active media-app state into
- * it. The slider owns drag state, resume-after-drag behavior, and the Clutter
+ * PopupProgressBar owns this slider and passes active media-app state into it.
+ * The slider owns drag state, resume-after-drag behavior, and the Clutter
  * interval used to animate progress while playback continues.
  */
+
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import St from "gi://St";
+
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { formatDurationMilliseconds } from "../../../shared/utils/format.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../../constants/actorState.js";
 
-class PopupPlaybackProgressSlider extends St.BoxLayout {
+/**
+ * Provides the popup seek slider and animated progress bar value.
+ */
+class PopupProgressBarSlider extends St.BoxLayout {
     constructor() {
-        super({ orientation: Clutter.Orientation.VERTICAL, styleClass: "mediashell-popup-playback-progress" });
+        super({ orientation: Clutter.Orientation.VERTICAL, styleClass: "mediashell-popup-progress-bar" });
         this.playbackRate = 1;
         this.shouldResumeAfterDrag = false;
         this.isDisabled = true;
         this.lastRenderedElapsedSecond = -1;
 
         this.slider = new Slider.Slider(0);
-        this.timeLabelsBox = new St.BoxLayout({ styleClass: "mediashell-popup-playback-progress-time" });
+        this.timeLabelsBox = new St.BoxLayout({ styleClass: "mediashell-popup-progress-bar-time" });
         this.elapsedLabel = new St.Label({
-            styleClass: "mediashell-popup-playback-progress-time-label",
+            styleClass: "mediashell-popup-progress-bar-time-label",
             text: "00:00",
             xExpand: true,
             xAlign: Clutter.ActorAlign.START,
         });
         this.trackDurationLabel = new St.Label({
-            styleClass: "mediashell-popup-playback-progress-time-label",
+            styleClass: "mediashell-popup-progress-bar-time-label",
             text: "00:00",
             xExpand: true,
             xAlign: Clutter.ActorAlign.END,
@@ -46,7 +52,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
         //
         // Dragging disables the transition (isDisabled = true) and restores it on
         // button-release. Pause/resume mirror the playback state received from
-        // PopupPlaybackProgress without resetting position.
+        // PopupProgressBar without resetting position.
         // Keep explicit GObject.Value wrappers so Clutter.Interval receives typed values.
         const initialValue = new GObject.Value();
         initialValue.init(GObject.TYPE_DOUBLE);
@@ -116,7 +122,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
         this.timeLabelsBox.width = width;
     }
 
-    updatePlaybackProgress(positionMicroseconds, durationMicroseconds, playbackRate) {
+    updateProgressBar(positionMicroseconds, durationMicroseconds, playbackRate) {
         this.playbackRate = this.normalizePlaybackRate(playbackRate);
         this.setTrackDuration(durationMicroseconds);
         this.setPlaybackPosition(positionMicroseconds);
@@ -181,7 +187,7 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
     setProgressDisabled(isDisabled) {
         this.isDisabled = isDisabled;
         this.slider.reactive = !isDisabled;
-        this.opacity = isDisabled ? 128 : 255;
+        this.opacity = isDisabled ? INACTIVE_OPACITY : ACTIVE_OPACITY;
         if (isDisabled) {
             this.trackDurationLabel.text = "00:00";
             this.lastRenderedElapsedSecond = -1;
@@ -208,12 +214,12 @@ class PopupPlaybackProgressSlider extends St.BoxLayout {
 
 export default GObject.registerClass(
     {
-        GTypeName: "MediaShellPopupPlaybackProgressSlider",
+        GTypeName: "MediaShellPopupProgressBarSlider",
         Signals: {
             "seek-requested": {
                 param_types: [GObject.TYPE_INT64],
             },
         },
     },
-    PopupPlaybackProgressSlider,
+    PopupProgressBarSlider,
 );
