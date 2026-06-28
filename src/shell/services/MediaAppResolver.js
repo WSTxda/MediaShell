@@ -17,6 +17,7 @@ import Gio from "gi://Gio";
 import Shell from "gi://Shell";
 
 import { IconNames } from "../../shared/constants/icons.js";
+import { resolveBrowserIdentityCandidate } from "../../shared/utils/browserIdentity.js";
 import { APP_RESOLVER_CACHE_LIMIT } from "../../shared/constants/limits.js";
 import {
     buildAppLookupHints,
@@ -98,6 +99,102 @@ function getNormalizedAppIdentityValues(app) {
     ]
         .map(normalizeAppIdentity)
         .filter(Boolean);
+}
+
+
+function createMediaIdentityDescriptor(identity, desktopEntry, busName) {
+    return { identity, desktopEntry, busName };
+}
+
+/**
+ * Reads installed-app metadata into the pure descriptor used by browser/PWA scoring.
+ *
+ * Shell.App and Gio.AppInfo expose overlapping but not identical accessors. The
+ * resolver keeps the read side here and passes only strings to shared identity
+ * helpers so browser matching remains testable outside GNOME Shell.
+ *
+ * @param {Shell.App|Gio.AppInfo|null} app - Shell or desktop app object.
+ * @returns {object} Descriptor accepted by shared browser identity helpers.
+ */
+function readDesktopAppDescriptor(app) {
+    const appInfo = getAppInfoSafely(app) ?? app ?? null;
+    return {
+        desktopId: readAppStringSafely(() => app?.get_id?.() || appInfo?.get_id?.()),
+        name: readAppStringSafely(() => app?.get_name?.() || appInfo?.get_name?.()),
+        displayName: readAppStringSafely(() => app?.get_display_name?.() || appInfo?.get_display_name?.()),
+        executable: readAppStringSafely(() => app?.get_executable?.() || appInfo?.get_executable?.()),
+        startupWmClass: readAppStringSafely(() => app?.get_startup_wm_class?.() || appInfo?.get_startup_wm_class?.()),
+        commandline: readAppStringSafely(() => app?.get_commandline?.() || appInfo?.get_commandline?.()),
+    };
+}
+
+/**
+ * Resolves a media app against scored browser/PWA candidates.
+ *
+ * The shared scorer returns a match only for strong evidence such as a desktop ID
+ * or StartupWMClass containing the PWA app ID. Weak browser-name matches are
+ * ignored so ordinary browser media keeps the existing resolver fallback path.
+ *
+ * @param {object} mediaIdentity - MPRIS identity, desktop entry, and bus name.
+ * @param {{app: Shell.App|Gio.AppInfo}[]} entries - Installed app candidates.
+ * @returns {Shell.App|Gio.AppInfo|null} Strongly matched app, if any.
+ */
+function resolveBrowserIdentityApp(mediaIdentity, entries) {
+    const descriptorEntries = entries
+        .map((entry) => ({ ...entry, descriptor: readDesktopAppDescriptor(entry.app) }))
+        .filter((entry) => entry.descriptor.desktopId);
+    const match = resolveBrowserIdentityCandidate(
+        mediaIdentity,
+        descriptorEntries.map((entry) => entry.descriptor),
+    );
+    if (!match) return null;
+
+    const entry = descriptorEntries.find((candidate) => candidate.descriptor === match.descriptor) ?? null;
+    if (!entry) return null;
+
+    logger.debug(
+        "Resolved browser/PWA media app identity",
+        match.descriptor.desktopId,
+        `reason=${match.reason}`,
+    );
+    return entry.app;
+}
+
+/**
+ * Finds a Shell.App for browser/PWA media before fuzzy name matching runs.
+ *
+ * Running Shell apps are preferred because they are already tied to windows. If
+ * the PWA exists only as a desktop entry, the resolver maps the strong Gio.AppInfo
+ * match back through Shell.AppSystem so the rest of MediaShell still receives a
+ * normal Shell.App object.
+ */
+function findShellAppByBrowserIdentity(appSystem, runningApps, identity, desktopEntry, busName) {
+    const mediaIdentity = createMediaIdentityDescriptor(identity, desktopEntry, busName);
+    const runningMatch = resolveBrowserIdentityApp(
+        mediaIdentity,
+        runningApps.map((app) => ({ app })),
+    );
+    if (runningMatch) return runningMatch;
+
+    const appInfoMatch = resolveBrowserIdentityApp(
+        mediaIdentity,
+        Gio.AppInfo.get_all().map((app) => ({ app })),
+    );
+    const appId = readAppStringSafely(() => appInfoMatch?.get_id?.());
+    return appId ? appSystem.lookup_app(appId) : null;
+}
+
+/**
+ * Finds Gio.AppInfo for browser/PWA media when Shell.App resolution misses.
+ *
+ * This preserves icons and display names for desktop entries that are known to
+ * Gio but not currently associated with a running Shell.App.
+ */
+function findAppInfoByBrowserIdentity(identity, desktopEntry, busName) {
+    return resolveBrowserIdentityApp(
+        createMediaIdentityDescriptor(identity, desktopEntry, busName),
+        Gio.AppInfo.get_all().map((app) => ({ app })),
+    );
 }
 
 function appMatchesIdentityCandidates(app, normalizedCandidates) {
@@ -201,6 +298,15 @@ export default class MediaAppResolver {
 
             const normalizedCandidates = buildNormalizedAppIdentityCandidates(identity, desktopEntry, busName);
             const runningApps = appSystem.get_running();
+            const browserIdentityApp = findShellAppByBrowserIdentity(
+                appSystem,
+                runningApps,
+                identity,
+                desktopEntry,
+                busName,
+            );
+            if (browserIdentityApp) return storeBoundedCacheValue(this.#shellAppCache, appCacheKey, browserIdentityApp);
+
             const runningApp = findRunningShellApp(runningApps, normalizedCandidates);
             if (runningApp) return storeBoundedCacheValue(this.#shellAppCache, appCacheKey, runningApp);
 
@@ -247,6 +353,9 @@ export default class MediaAppResolver {
             }
 
             const candidateAppIdSet = new Set(appIdCandidates);
+            const browserIdentityApp = findAppInfoByBrowserIdentity(identity, desktopEntry, busName);
+            if (browserIdentityApp) return storeBoundedCacheValue(this.#appInfoCache, appCacheKey, browserIdentityApp);
+
             const normalizedCandidates = buildNormalizedAppIdentityCandidates(identity, desktopEntry, busName);
             for (const app of Gio.AppInfo.get_all()) {
                 const appId = readAppStringSafely(() => app.get_id());

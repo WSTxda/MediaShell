@@ -9,6 +9,8 @@
  * are pure so both Shell and preferences code can use the same matching rules.
  */
 
+import { extractChromiumPwaAppIds } from "./browserIdentity.js";
+
 const DESKTOP_FILE_SUFFIX = ".desktop";
 const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 const EPHEMERAL_BUS_SEGMENT_PATTERN = /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;
@@ -64,6 +66,13 @@ function addLookupHint(hints, value) {
     hints.add(normalizedValue.replaceAll(" ", ""));
 }
 
+function addBrowserIdentityHints(hints, ...values) {
+    for (const appId of extractChromiumPwaAppIds(values)) {
+        addLookupHint(hints, appId);
+        addLookupHint(hints, `crx_${appId}`);
+    }
+}
+
 function addBusNameHints(hints, busName) {
     const normalizedBusName = normalizeInput(busName);
     if (!normalizedBusName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
@@ -99,6 +108,7 @@ export function buildAppLookupHints(identity, desktopEntry, busName = "") {
     addLookupHint(hints, desktopEntry);
     addLookupHint(hints, identity);
     addBusNameHints(hints, busName);
+    addBrowserIdentityHints(hints, desktopEntry, identity, busName);
     return [...hints];
 }
 

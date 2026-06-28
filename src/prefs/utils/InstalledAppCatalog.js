@@ -12,11 +12,21 @@
 import Gio from "gi://Gio";
 
 import { IconNames } from "../../shared/constants/icons.js";
+import { buildBrowserIdentityAliases } from "../../shared/utils/browserIdentity.js";
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("InstalledAppCatalog");
 const FALLBACK_NAMES = Object.freeze([IconNames.APP, IconNames.MISSING]);
 const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names(FALLBACK_NAMES);
+
+function readAppStringSafely(app, getterName, logKey) {
+    try {
+        return String(app?.[getterName]?.() ?? "");
+    } catch (error) {
+        logger.debugOnce(logKey, "App metadata was unavailable while building the installed-app catalog", error);
+        return "";
+    }
+}
 
 /**
  * Safely reads a Gio.AppInfo desktop ID.
@@ -76,6 +86,43 @@ export function getAppIcon(app) {
         logger.debugOnce("app-icon", "App icon metadata was unavailable; using the fallback", error);
         return FALLBACK_APP_ICON;
     }
+}
+
+
+/**
+ * Builds pure desktop-app metadata used by identity and search helpers.
+ *
+ * The descriptor intentionally contains only strings so shared browser/PWA
+ * resolution can score installed apps without importing Gio, GTK, or Shell.
+ * Missing fields are treated as empty strings because AppInfo implementations
+ * differ across desktop files and package formats.
+ *
+ * @param {Gio.AppInfo|null|undefined} app - Application info object.
+ * @returns {{desktopId: string, name: string, displayName: string, executable: string, startupWmClass: string, commandline: string}} Pure descriptor.
+ */
+export function getAppDescriptor(app) {
+    return {
+        desktopId: getAppId(app),
+        name: readAppStringSafely(app, "get_name", "app-descriptor-name"),
+        displayName: readAppStringSafely(app, "get_display_name", "app-descriptor-display-name"),
+        executable: readAppStringSafely(app, "get_executable", "app-descriptor-executable"),
+        startupWmClass: readAppStringSafely(app, "get_startup_wm_class", "app-descriptor-wm-class"),
+        commandline: readAppStringSafely(app, "get_commandline", "app-descriptor-commandline"),
+    };
+}
+
+/**
+ * Builds additional search aliases for browser/PWA desktop entries.
+ *
+ * These aliases are not shown in the UI. They only let the blocked-app chooser
+ * find PWA launchers by the same app ID evidence used by runtime identity
+ * resolution.
+ *
+ * @param {Gio.AppInfo|null|undefined} app - Application info object.
+ * @returns {string[]} Search aliases derived from browser/PWA metadata.
+ */
+export function getAppSearchAliases(app) {
+    return buildBrowserIdentityAliases(getAppDescriptor(app));
 }
 
 /**

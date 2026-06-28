@@ -92,13 +92,13 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 ## Requirements
 
 * **GNOME Shell** 47–50
-* An **MPRIS** compatible media app or browser session like Spotify, VLC, Firefox, Vinyl, etc.
+* An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
 
 > [!IMPORTANT]
 > Available controls depend on the features provided by each media app through MPRIS. Seeking, shuffle, repeat, volume, artwork, and application actions may not be supported by every app.
 
 > [!NOTE]
-> Browser media sessions are managed by the browser and website. Sessions may be created, replaced, or removed as tabs and playback sources change.
+> Browsers decide how each website appears to GNOME. MediaShell follows what the browser reports, so web players can appear, change, or disappear when you switch tabs, navigate pages, or move playback between websites.
 
 ## Download
 

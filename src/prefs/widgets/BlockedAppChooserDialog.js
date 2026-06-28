@@ -23,7 +23,7 @@ import {
     matchesSearchTokens,
     tokenizeSearchQuery,
 } from "../../shared/utils/search.js";
-import { getAppIcon, getAppId, getAppName, listInstalledApps } from "../utils/InstalledAppCatalog.js";
+import { getAppIcon, getAppId, getAppName, getAppSearchAliases, listInstalledApps } from "../utils/InstalledAppCatalog.js";
 
 /**
  * Presents a searchable dialog for selecting installed apps to block.
@@ -167,7 +167,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
                 }),
             );
             this.appIdByRow.set(row, appId);
-            this.searchIndexByRow.set(row, buildSearchIndex([appName, appId]));
+            this.searchIndexByRow.set(row, buildSearchIndex([appName, appId, ...getAppSearchAliases(app)]));
             this.listBox.append(row);
             if (appId === selectedAppId) selectedRow = row;
         }
