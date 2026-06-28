@@ -11,6 +11,7 @@
  *
  * @see src/shell/ExtensionController.js
  */
+
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { createLogger } from "./shared/utils/log.js";
@@ -18,6 +19,9 @@ import ExtensionController from "./shell/ExtensionController.js";
 
 const logger = createLogger("MediaShellExtension");
 
+/**
+ * GNOME Shell entry point for the MediaShell runtime.
+ */
 export default class MediaShellExtension extends Extension {
     enable() {
         this.extensionController = new ExtensionController(this);

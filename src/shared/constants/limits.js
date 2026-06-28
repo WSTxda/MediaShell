@@ -12,19 +12,19 @@
 
 // --- Cache capacities ---
 
-/** Maximum number of distinct log-once keys retained before oldest is evicted (LRU) */
+/** Maximum number of distinct log-once keys retained before the oldest entry is evicted. */
 export const LOG_ONCE_CACHE_LIMIT = 256;
 
-/** Maximum number of resolved app identity entries in the Shell resolver LRU cache */
+/** Maximum number of resolved media-app identity entries retained by MediaAppResolver. */
 export const APP_RESOLVER_CACHE_LIMIT = 128;
 
 // --- Album art I/O limits ---
 
-/** Maximum accepted album art file/stream size in bytes (16 MB) */
+/** Maximum accepted album art file or response size in bytes; currently 16 MB. */
 export const ALBUM_ART_MAX_BYTES = 16 * 1024 * 1024;
 
-/** Read chunk size for streaming album art data */
+/** Chunk size used while streaming album art from a local file or remote response. */
 export const ALBUM_ART_READ_CHUNK_BYTES = 64 * 1024;
 
-/** HTTP request timeout for remote album art fetches, in seconds */
+/** HTTP timeout for remote album-art requests, in seconds. */
 export const ALBUM_ART_REQUEST_TIMEOUT_SECONDS = 15;

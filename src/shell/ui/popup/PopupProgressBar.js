@@ -1,21 +1,25 @@
 /**
- * @file PopupPlaybackProgress.js
- * @module shell.ui.popup.PopupPlaybackProgress
+ * @file PopupProgressBar.js
+ * @module shell.ui.popup.PopupProgressBar
  *
- * Owns the popup progress section and live-stream replacement state.
+ * Owns the popup Progress Bar section.
  *
- * PopupContent delegates elapsed/duration labels and seekbar visibility to this
- * component. It switches between the slider and LIVE indicator based on normalized
- * MPRIS length and seekability while keeping seek handling in the slider child.
+ * PopupContent delegates elapsed/duration labels, slider visibility, and seek
+ * requests to this component. The class keeps progress-specific UI updates away
+ * from album art, track information, and playback control rendering.
  */
+
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import PopupPlaybackProgressSlider from "./PopupPlaybackProgressSlider.js";
+import PopupProgressBarSlider from "./PopupProgressBarSlider.js";
 
-const logger = createLogger("PopupPlaybackProgress");
+const logger = createLogger("PopupProgressBar");
 const MAX_REASONABLE_TRACK_DURATION_MICROSECONDS = 24 * 60 * 60 * 1000 * 1000;
 
-export default class PopupPlaybackProgress {
+/**
+ * Owns the popup Progress Bar section.
+ */
+export default class PopupProgressBar {
     constructor(popupContent) {
         this.popupContent = popupContent;
         this.positionRenderGeneration = 0;
@@ -34,7 +38,7 @@ export default class PopupPlaybackProgress {
         return this.popupContent.playbackControls.actor;
     }
     get actor() {
-        return this.playbackProgressSlider;
+        return this.progressBarSlider;
     }
 
     getPopupContentWidth() {
@@ -43,18 +47,18 @@ export default class PopupPlaybackProgress {
 
     remove() {
         this.positionRenderGeneration++;
-        if (!this.playbackProgressSlider) return;
-        this.playbackProgressSlider.get_parent()?.remove_child(this.playbackProgressSlider);
-        this.playbackProgressSlider.destroy();
-        this.playbackProgressSlider = null;
+        if (!this.progressBarSlider) return;
+        this.progressBarSlider.get_parent()?.remove_child(this.progressBarSlider);
+        this.progressBarSlider.destroy();
+        this.progressBarSlider = null;
     }
 
     setPlaybackRate(playbackRate) {
-        this.playbackProgressSlider?.setPlaybackRate(playbackRate);
+        this.progressBarSlider?.setPlaybackRate(playbackRate);
     }
 
     setPlaybackPosition(positionMicroseconds) {
-        this.playbackProgressSlider?.setPlaybackPosition(positionMicroseconds);
+        this.progressBarSlider?.setPlaybackPosition(positionMicroseconds);
     }
 
     async render() {
@@ -65,15 +69,15 @@ export default class PopupPlaybackProgress {
         const playbackRate = mediaApp.rate;
         const width = this.getPopupContentWidth();
 
-        if (this.playbackProgressSlider == null) {
-            this.playbackProgressSlider = new PopupPlaybackProgressSlider();
-            this.playbackProgressSlider.connect("seek-requested", (_, positionMicroseconds) => {
+        if (this.progressBarSlider == null) {
+            this.progressBarSlider = new PopupProgressBarSlider();
+            this.progressBarSlider.connect("seek-requested", (_, positionMicroseconds) => {
                 const currentMediaApp = this.mediaApp;
                 currentMediaApp.setPosition(currentMediaApp.metadata["mpris:trackid"], positionMicroseconds);
             });
         }
 
-        this.playbackProgressSlider.setLayoutWidth(width);
+        this.progressBarSlider.setLayoutWidth(width);
         this.renderPlaybackPosition(
             mediaApp.estimatedPositionMicroseconds,
             trackDurationMicroseconds,
@@ -113,38 +117,38 @@ export default class PopupPlaybackProgress {
             trackDurationMicroseconds < MAX_REASONABLE_TRACK_DURATION_MICROSECONDS;
         const hasValidPosition = Number.isFinite(positionMicroseconds) && positionMicroseconds >= 0;
         if (!hasValidLength || !hasValidPosition) {
-            this.playbackProgressSlider.setProgressDisabled(true);
+            this.progressBarSlider.setProgressDisabled(true);
             return;
         }
 
-        this.playbackProgressSlider.setProgressDisabled(false);
-        this.playbackProgressSlider.updatePlaybackProgress(
+        this.progressBarSlider.setProgressDisabled(false);
+        this.progressBarSlider.updateProgressBar(
             Math.min(positionMicroseconds, trackDurationMicroseconds),
             trackDurationMicroseconds,
             playbackRate,
         );
-        if (playbackStatus === PlaybackStatus.PLAYING) this.playbackProgressSlider.resumePlaybackTransition();
-        else this.playbackProgressSlider.pausePlaybackTransition();
+        if (playbackStatus === PlaybackStatus.PLAYING) this.progressBarSlider.resumePlaybackTransition();
+        else this.progressBarSlider.pausePlaybackTransition();
     }
 
     attach() {
-        if (this.playbackProgressSlider.get_parent() != null) return;
+        if (this.progressBarSlider.get_parent() != null) return;
 
         if (this.trackInformationActor?.get_parent() === this.popupItem) {
-            this.popupItem.insert_child_above(this.playbackProgressSlider, this.trackInformationActor);
+            this.popupItem.insert_child_above(this.progressBarSlider, this.trackInformationActor);
         } else if (this.playbackControlsActor?.get_parent() === this.popupItem) {
-            this.popupItem.insert_child_below(this.playbackProgressSlider, this.playbackControlsActor);
+            this.popupItem.insert_child_below(this.progressBarSlider, this.playbackControlsActor);
         } else {
-            this.popupItem.add_child(this.playbackProgressSlider);
+            this.popupItem.add_child(this.progressBarSlider);
         }
     }
 
     pause() {
-        this.playbackProgressSlider?.pausePlaybackTransition();
+        this.progressBarSlider?.pausePlaybackTransition();
     }
 
     resume() {
-        this.playbackProgressSlider?.resumePlaybackTransition();
+        this.progressBarSlider?.resumePlaybackTransition();
     }
 
     destroy() {

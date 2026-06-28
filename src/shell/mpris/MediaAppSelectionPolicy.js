@@ -5,19 +5,23 @@
  * Selects active and next media apps from registered MPRIS proxies.
  *
  * The pure policy prioritizes pinned, playing, current, paused, then first valid
- * apps, and exposes deterministic cycling for popup/app-switch actions. Keeping
- * this logic pure lets unit tests cover player selection without DBus or Shell UI.
+ * apps, and exposes deterministic cycling for popup app-selector actions. Keeping
+ * this logic pure lets unit tests cover media-app selection without D-Bus or Shell UI.
  */
+
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 
-// Active app selection priority:
-//   1. Pinned app — if still in the registry
-//   2. Playing app — first app with PlaybackStatus.PLAYING
-//   3. Last active app — the app that was active before the registry changed
-//   4. Paused app — first app that is not stopped
-//   5. First valid app — fallback when nothing else matches
-//
-// Pinning survives MPRIS reconnects but not extension reload.
+/**
+ * Selects the active media app from registered valid endpoints.
+ *
+ * Priority order is pinned app, currently playing app, previous active app,
+ * paused app, then the first valid app. Pinning survives MPRIS reconnects but
+ * not extension reload because pins live only in the runtime registry.
+ *
+ * @param {object[]} mediaApps - Registered media app proxies.
+ * @param {string|null} currentBusName - Bus name that was active before reconciliation.
+ * @returns {object|null} Selected media app, or null when none are visible.
+ */
 export function selectActiveMediaApp(mediaApps, currentBusName = null) {
     const validMediaApps = mediaApps.filter((mediaApp) => !mediaApp.isMediaAppInvalid);
     if (validMediaApps.length === 0) return null;
@@ -35,6 +39,13 @@ export function selectActiveMediaApp(mediaApps, currentBusName = null) {
     return paused ?? validMediaApps[0];
 }
 
+/**
+ * Selects the next media app for app-selector and shortcut cycling.
+ *
+ * @param {object[]} mediaApps - Ordered visible media apps.
+ * @param {object|null} currentMediaApp - Current media app proxy.
+ * @returns {object|null} Next media app, or null when cycling is not possible.
+ */
 export function selectNextMediaApp(mediaApps, currentMediaApp = null) {
     if (mediaApps.length <= 1) return null;
 

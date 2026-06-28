@@ -2,12 +2,13 @@
  * @file TopBarButton.js
  * @module shell.ui.topBar.TopBarButton
  *
- * Owns the MediaShell panel button, popup menu, and top-bar widget orchestration.
+ * Owns the MediaShell top bar button, popup, and top-bar widget orchestration.
  *
  * ExtensionController mounts this actor into Main.panel and supplies active
  * media-app state from MediaAppRegistry. The class coalesces WidgetFlags into
  * idle updates and delegates pointer gestures to TopBarPointerHandler.
  */
+
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
@@ -29,6 +30,9 @@ import TopBarVisualizer from "./TopBarVisualizer.js";
 const logger = createLogger("TopBarButton");
 const MEDIA_APP_WIDGET_FLAGS = WidgetFlags.TOP_BAR | WidgetFlags.POPUP;
 
+/**
+ * Owns the MediaShell top bar button, popup menu, and top-bar widget orchestration.
+ */
 class TopBarButton extends PanelMenu.Button {
     constructor(mediaApp, extensionController) {
         super(0.5, "MediaShell", false);
@@ -81,7 +85,7 @@ class TopBarButton extends PanelMenu.Button {
         return Boolean(this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName);
     }
 
-    // DEVELOPER NOTE — Coalescing update pattern:
+    // Update coalescing:
     // MPRIS endpoints emit related properties in bursts (e.g. Metadata +
     // PlaybackStatus on track change). Accumulate WidgetFlags and schedule one
     // GLib.idle_add callback so the UI renders once after the main-loop turn.
@@ -235,7 +239,7 @@ class TopBarButton extends PanelMenu.Button {
                 WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
                     WidgetFlags.TOP_BAR_VISUALIZER |
                     WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE |
-                    WidgetFlags.POPUP_PLAYBACK_PROGRESS,
+                    WidgetFlags.POPUP_PROGRESS_BAR,
             );
             if (this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
                 this.topBarTrackInformation.pause();
@@ -252,7 +256,7 @@ class TopBarButton extends PanelMenu.Button {
             this.requestWidgetUpdate(WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE | WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE);
         });
         this.addMediaAppPropertyListener("CanSeek", () => {
-            this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_PROGRESS);
+            this.requestWidgetUpdate(WidgetFlags.POPUP_PROGRESS_BAR);
         });
         this.addMediaAppPropertyListener("CanGoNext", () => {
             this.requestWidgetUpdate(WidgetFlags.TOP_BAR_PLAYBACK_NEXT | WidgetFlags.POPUP_PLAYBACK_NEXT);
@@ -286,7 +290,7 @@ class TopBarButton extends PanelMenu.Button {
         let widgetFlags = WidgetFlags.TOP_BAR_TRACK_INFORMATION;
         if (this.menu?.isOpen) {
             widgetFlags |= WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION;
-            if (this.extensionController.showPopupProgressBar) widgetFlags |= WidgetFlags.POPUP_PLAYBACK_PROGRESS;
+            if (this.extensionController.showPopupProgressBar) widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
         }
         // requestWidgetUpdate() already coalesces the MPRIS burst at the next idle
         // turn. A second 100 ms timer only delayed visible metadata and retained

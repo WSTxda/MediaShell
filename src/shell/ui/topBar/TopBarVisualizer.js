@@ -8,26 +8,31 @@
  * setting and playback state allow it. The component owns its actor-bound
  * timeline so animation stops cleanly when the actor is destroyed.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { VisualizerStyles } from "../../../shared/enums/topBar.js";
+import { VisualizerStyles } from "../../../shared/enums/visualizer.js";
 import {
     getVisualizerBarLevels,
     normalizeVisualizerSpeed,
     TOP_BAR_VISUALIZER_BAR_COUNT,
 } from "../../../shared/utils/visualizer.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../../constants/actorState.js";
+import {
+    VISUALIZER_BAR_HEIGHT,
+    VISUALIZER_BAR_WIDTH,
+    VISUALIZER_HEIGHT,
+    VISUALIZER_IDLE_LEVEL,
+    VISUALIZER_TIMELINE_DURATION_MS,
+} from "../../constants/visualizer.js";
 
-const VISUALIZER_HEIGHT = 16;
-const BAR_WIDTH = 2;
-const BAR_HEIGHT = 14;
 const FRAME_INTERVAL_MILLISECONDS = Math.round(1000 / 30);
-const TIMELINE_DURATION_MILLISECONDS = 1000;
-const IDLE_LEVEL = 0.22;
-const PLAYING_OPACITY = 255;
-const IDLE_OPACITY = 140;
 
+/**
+ * Draws the optional top-bar visualizer for the active playing media app.
+ */
 export default class TopBarVisualizer {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;
@@ -40,7 +45,7 @@ export default class TopBarVisualizer {
         this.playing = false;
         this.animationElapsedSeconds = 0;
         this.frameAccumulatorMilliseconds = 0;
-        this.frameLevels = new Array(TOP_BAR_VISUALIZER_BAR_COUNT).fill(IDLE_LEVEL);
+        this.frameLevels = new Array(TOP_BAR_VISUALIZER_BAR_COUNT).fill(VISUALIZER_IDLE_LEVEL);
     }
 
     render(index, parentBox) {
@@ -58,7 +63,7 @@ export default class TopBarVisualizer {
             styleClass: "mediashell-top-bar-visualizer",
             orientation: Clutter.Orientation.HORIZONTAL,
             height: VISUALIZER_HEIGHT,
-            opacity: IDLE_OPACITY,
+            opacity: INACTIVE_OPACITY,
             yAlign: Clutter.ActorAlign.CENTER,
             reactive: false,
         });
@@ -66,8 +71,8 @@ export default class TopBarVisualizer {
         this.bars = Array.from({ length: TOP_BAR_VISUALIZER_BAR_COUNT }, () => {
             const bar = new St.Widget({
                 styleClass: "mediashell-top-bar-visualizer-bar",
-                width: BAR_WIDTH,
-                height: BAR_HEIGHT,
+                width: VISUALIZER_BAR_WIDTH,
+                height: VISUALIZER_BAR_HEIGHT,
                 yAlign: Clutter.ActorAlign.CENTER,
                 reactive: false,
             });
@@ -75,7 +80,7 @@ export default class TopBarVisualizer {
             return bar;
         });
 
-        this.timeline = Clutter.Timeline.new_for_actor(this.actor, TIMELINE_DURATION_MILLISECONDS);
+        this.timeline = Clutter.Timeline.new_for_actor(this.actor, VISUALIZER_TIMELINE_DURATION_MS);
         this.timeline.set_repeat_count(-1);
         this.timelineFrameSignalId = this.timeline.connect("new-frame", (timeline) => this.handleTimelineFrame(timeline));
 
@@ -107,7 +112,7 @@ export default class TopBarVisualizer {
         const normalizedPlaying = Boolean(playing);
         if (this.playing === normalizedPlaying) return;
         this.playing = normalizedPlaying;
-        if (this.actor) this.actor.opacity = this.playing ? PLAYING_OPACITY : IDLE_OPACITY;
+        if (this.actor) this.actor.opacity = this.playing ? ACTIVE_OPACITY : INACTIVE_OPACITY;
         this.resetAnimationClock();
         this.syncAnimation();
         this.updateFrame();
@@ -171,7 +176,7 @@ export default class TopBarVisualizer {
                 this.frameLevels,
             );
         } else {
-            this.frameLevels?.fill(IDLE_LEVEL);
+            this.frameLevels?.fill(VISUALIZER_IDLE_LEVEL);
         }
 
         for (let index = 0; index < this.bars.length; index++) {
@@ -210,7 +215,7 @@ export default class TopBarVisualizer {
         this.bars = [];
         this.playing = false;
         this.resetAnimationClock();
-        this.frameLevels?.fill(IDLE_LEVEL);
+        this.frameLevels?.fill(VISUALIZER_IDLE_LEVEL);
     }
 
     destroy() {

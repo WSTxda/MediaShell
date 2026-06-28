@@ -9,8 +9,10 @@
  * work is protected by lifecycleGeneration so stale callbacks from a previous
  * enable cycle cannot mutate the current Shell state.
  */
+
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
+import { VOLUME_STEP } from "../shared/constants/inputActions.js";
 import { InputActions } from "../shared/enums/input.js";
 import { SettingsAction } from "../shared/enums/settings.js";
 import { WidgetFlags } from "../shared/enums/widget.js";
@@ -25,16 +27,19 @@ import MediaAppResolver from "./services/MediaAppResolver.js";
 import ExtensionResourceRegistry from "./services/ExtensionResourceRegistry.js";
 import SettingsStore from "./settings/SettingsStore.js";
 import TopBarButton from "./ui/topBar/TopBarButton.js";
-import { clearIconCache } from "./ui/IconUtils.js";
+import { clearIconCache } from "./utils/icons.js";
 
 const logger = createLogger("ExtensionController");
 
+/**
+ * Coordinates the full MediaShell runtime lifecycle inside GNOME Shell.
+ */
 export default class ExtensionController {
     constructor(extensionInstance) {
         this.extensionInstance = extensionInstance;
         this.extensionPath = extensionInstance.path;
         this.enabled = false;
-        // DEVELOPER NOTE — Lifecycle generation guard:
+        // Lifecycle generation guard:
         // `lifecycleGeneration` is incremented on every enable() and destroy() call.
         // Async callbacks capture the generation at dispatch time and compare on
         // completion. If generations differ, the extension was toggled while the
@@ -173,10 +178,10 @@ export default class ExtensionController {
                 mediaApp?.previous();
                 break;
             case InputActions.VOLUME_UP:
-                if (mediaApp) mediaApp.volume = Math.min(mediaApp.volume + 0.05, 1);
+                if (mediaApp) mediaApp.volume = Math.min(mediaApp.volume + VOLUME_STEP, 1);
                 break;
             case InputActions.VOLUME_DOWN:
-                if (mediaApp) mediaApp.volume = Math.max(mediaApp.volume - 0.05, 0);
+                if (mediaApp) mediaApp.volume = Math.max(mediaApp.volume - VOLUME_STEP, 0);
                 break;
             case InputActions.TOGGLE_LOOP:
                 mediaApp?.toggleLoop();

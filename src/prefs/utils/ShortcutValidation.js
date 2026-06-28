@@ -8,9 +8,16 @@
  * reserved accelerator strings before persisting them to GSettings. The utility
  * keeps GTK accelerator parsing separate from controller state.
  */
+
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 
+/**
+ * Plain navigation and mode-switch keyvals that should not be accepted as custom shortcuts.
+ *
+ * These are either reserved by GTK/Shell navigation, too easy to trigger
+ * accidentally, or not meaningful as global media controls.
+ */
 const FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
     Gdk.KEY_Left,
@@ -26,10 +33,33 @@ const FORBIDDEN_KEYVALS = [
     Gdk.KEY_Mode_switch,
 ];
 
+/**
+ * Returns whether a keyval/mask pair can be represented as a GTK accelerator.
+ *
+ * Tab is accepted with a modifier even though Gtk.accelerator_valid() rejects it
+ * directly, because GNOME commonly allows modified Tab shortcuts while still
+ * rejecting bare Tab navigation.
+ *
+ * @param {number} mask - Modifier mask for the accelerator.
+ * @param {number} keyval - GDK key value.
+ * @returns {boolean} True when the pair can be saved as an accelerator string.
+ */
 export function isValidAccelerator(mask, keyval) {
     return Gtk.accelerator_valid(keyval, mask) || (keyval === Gdk.KEY_Tab && mask !== 0);
 }
 
+/**
+ * Returns whether a captured key event should be accepted by the shortcut editor.
+ *
+ * The shortcut editor permits most modified shortcuts but rejects bare keys,
+ * navigation keys, and Shift-only printable characters. That preserves GNOME
+ * text/navigation behavior while still allowing international keyboard layouts.
+ *
+ * @param {number} mask - Modifier mask from the key event.
+ * @param {number} keycode - Hardware keycode from the key event.
+ * @param {number} keyval - GDK key value from the key event.
+ * @returns {boolean} True when the event can become a MediaShell shortcut.
+ */
 export function isValidBinding(mask, keycode, keyval) {
     if (mask === 0) return false;
 

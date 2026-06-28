@@ -8,6 +8,7 @@
  * D-Bus introspection XML while the extension is enabled. The registry owns the
  * Gio.Resource handle and unregisters it during disable.
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
@@ -15,6 +16,9 @@ import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("ExtensionResourceRegistry");
 
+/**
+ * Registers compiled resources needed by the Shell runtime.
+ */
 export default class ExtensionResourceRegistry {
     constructor(extensionPath) {
         this.extensionPath = extensionPath;

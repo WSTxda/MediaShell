@@ -5,13 +5,14 @@
  * Resolves MPRIS identity hints to installed desktop applications.
  *
  * The service owns bounded Shell.App and Gio.AppInfo caches so repeated track
- * changes do not force desktop database scans. It keeps misses uncached because
+ * changes do not force desktop database scans. Misses are deliberately left uncached because
  * browser media endpoints can appear before Shell has associated them with a
  * desktop app. ExtensionController clears the singleton on disable to release
  * stale Shell.App references.
  *
  * @see src/shared/utils/appIdentity.js
  */
+
 import Gio from "gi://Gio";
 import Shell from "gi://Shell";
 
@@ -170,6 +171,9 @@ function readMediaAppIcon(app) {
     return getAppInfoSafely(app)?.get_icon?.() ?? null;
 }
 
+/**
+ * Resolves MPRIS identity hints to installed desktop applications.
+ */
 export default class MediaAppResolver {
     static #instance = null;
 
@@ -263,7 +267,7 @@ export default class MediaAppResolver {
 
     // Lifecycle decisions intentionally accept only the exact MPRIS DesktopEntry.
     // Identity, bus-name, WM-class, running-app and search heuristics are suitable
-    // for presentation, but are not strong enough evidence to destroy a player.
+    // for presentation, but are not strong enough evidence to destroy a media app.
     resolveLifecycleShellApp(desktopEntry) {
         const desktopFileBasename = stripDesktopFileSuffix(desktopEntry);
         if (!desktopFileBasename) return null;

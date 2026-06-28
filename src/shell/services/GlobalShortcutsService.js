@@ -8,6 +8,7 @@
  * removes all registered bindings on destroy. It reads shortcut keys from
  * SettingsStore but leaves action execution to ExtensionController.
  */
+
 import Meta from "gi://Meta";
 import Shell from "gi://Shell";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
@@ -18,6 +19,9 @@ import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("GlobalShortcutsService");
 
+/**
+ * Registers and removes global media-action keybindings via GNOME Shell.
+ */
 export default class GlobalShortcutsService {
     constructor(settings, onInputAction) {
         this.settings = settings;

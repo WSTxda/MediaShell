@@ -1,7 +1,7 @@
 {
   "uuid": "mediashell@wstxda.github.com",
   "name": "MediaShell",
-  "description": "Configurable MPRIS media controls for the GNOME Shell top bar.",
+  "description": "A GNOME Shell extension that adds configurable MPRIS media controls to the top bar.",
   "url": "https://github.com/WSTxda/MediaShell",
   "settings-schema": "org.gnome.shell.extensions.mediashell",
   "gettext-domain": "mediashell@wstxda.github.com",

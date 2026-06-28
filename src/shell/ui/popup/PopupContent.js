@@ -2,13 +2,14 @@
  * @file PopupContent.js
  * @module shell.ui.popup.PopupContent
  *
- * Orchestrates every widget inside the MediaShell popup menu.
+ * Orchestrates every widget inside the MediaShell popup.
  *
- * PopupContent owns album art, track information, playback controls, progress,
- * and app selector components for the currently active media app. It coalesces
- * WidgetFlags into a single update cycle so bursts of MPRIS changes do not
- * rebuild the popup redundantly.
+ * PopupContent owns album art, track information, playback controls, the Progress
+ * Bar, and app selector components for the currently active media app. It
+ * coalesces WidgetFlags into a single update cycle so bursts of MPRIS changes do
+ * not rebuild the popup redundantly.
  */
+
 import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
@@ -16,15 +17,18 @@ import { POPUP_WIDTH } from "../../../shared/constants/settings.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { POPUP_CONTAINER_PADDING } from "../../constants/ui.js";
+import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
 import PopupAlbumArt from "./PopupAlbumArt.js";
 import PopupPlaybackControls from "./PopupPlaybackControls.js";
 import PopupAppSelectorController from "./PopupAppSelectorController.js";
 import PopupTrackInformation from "./PopupTrackInformation.js";
-import PopupPlaybackProgress from "./PopupPlaybackProgress.js";
+import PopupProgressBar from "./PopupProgressBar.js";
 
 const logger = createLogger("PopupContent");
 
+/**
+ * Orchestrates every widget inside the MediaShell popup menu.
+ */
 export default class PopupContent {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;
@@ -40,7 +44,7 @@ export default class PopupContent {
         this.appSelectorController = new PopupAppSelectorController(this);
         this.albumArt = new PopupAlbumArt(this);
         this.trackInformation = new PopupTrackInformation(this);
-        this.playbackProgress = new PopupPlaybackProgress(this);
+        this.progressBar = new PopupProgressBar(this);
         this.playbackControls = new PopupPlaybackControls(this);
 
         this.menu.addMenuItem(this.popupItem);
@@ -56,7 +60,7 @@ export default class PopupContent {
                     WidgetFlags.POPUP_ALBUM_ART |
                     WidgetFlags.POPUP_TRACK_INFORMATION |
                     WidgetFlags.POPUP_PLAYBACK_CONTROLS;
-                if (this.extensionController.showPopupProgressBar) widgetFlags |= WidgetFlags.POPUP_PLAYBACK_PROGRESS;
+                if (this.extensionController.showPopupProgressBar) widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
                 this.pendingWidgetFlags = 0;
                 this.updateWidgets(widgetFlags, true);
                 if (this.mediaApp.playbackStatus === PlaybackStatus.PLAYING) this.resume();
@@ -122,10 +126,10 @@ export default class PopupContent {
             });
         }
 
-        if (popupFlags & WidgetFlags.POPUP_PLAYBACK_PROGRESS) {
-            this.runWidgetUpdate("playback progress", () => {
-                if (this.extensionController.showPopupProgressBar) return this.playbackProgress.render();
-                this.playbackProgress.remove();
+        if (popupFlags & WidgetFlags.POPUP_PROGRESS_BAR) {
+            this.runWidgetUpdate("progress bar", () => {
+                if (this.extensionController.showPopupProgressBar) return this.progressBar.render();
+                this.progressBar.remove();
                 return null;
             });
         }
@@ -150,20 +154,20 @@ export default class PopupContent {
 
     pause() {
         this.trackInformation.pause();
-        this.playbackProgress.pause();
+        this.progressBar.pause();
     }
 
     resume() {
         this.trackInformation.resume();
-        this.playbackProgress.resume();
+        this.progressBar.resume();
     }
 
     setPlaybackRate(playbackRate) {
-        this.playbackProgress.setPlaybackRate(playbackRate);
+        this.progressBar.setPlaybackRate(playbackRate);
     }
 
     setPlaybackPosition(positionMicroseconds) {
-        this.playbackProgress.setPlaybackPosition(positionMicroseconds);
+        this.progressBar.setPlaybackPosition(positionMicroseconds);
     }
 
     buildFixedWidthStyle(width) {
@@ -220,7 +224,7 @@ export default class PopupContent {
         this.popupItemCapturedEventId = null;
 
         for (const property of [
-            "playbackProgress",
+            "progressBar",
             "trackInformation",
             "playbackControls",
             "albumArt",

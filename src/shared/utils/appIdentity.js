@@ -8,6 +8,7 @@
  * unstable browser/session suffixes and desktop-file extensions. The functions
  * are pure so both Shell and preferences code can use the same matching rules.
  */
+
 const DESKTOP_FILE_SUFFIX = ".desktop";
 const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 const EPHEMERAL_BUS_SEGMENT_PATTERN = /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;
@@ -16,6 +17,12 @@ function normalizeInput(value) {
     return String(value ?? "").trim();
 }
 
+/**
+ * Removes a `.desktop` suffix without changing the rest of the identifier.
+ *
+ * @param {unknown} value - Raw desktop entry or app ID.
+ * @returns {string} Identifier without a desktop-file suffix.
+ */
 export function stripDesktopFileSuffix(value) {
     const normalizedValue = normalizeInput(value);
     return normalizedValue.toLowerCase().endsWith(DESKTOP_FILE_SUFFIX)
@@ -23,6 +30,16 @@ export function stripDesktopFileSuffix(value) {
         : normalizedValue;
 }
 
+/**
+ * Converts an app identity into a search-friendly comparable form.
+ *
+ * Accents, punctuation, case, and desktop-file suffixes are normalized so MPRIS
+ * identities, desktop entries, and installed-app names can be matched with the
+ * same rules.
+ *
+ * @param {unknown} value - Raw app identity text.
+ * @returns {string} Normalized lookup text.
+ */
 export function normalizeAppIdentity(value) {
     return stripDesktopFileSuffix(value)
         .normalize("NFKD")
@@ -64,6 +81,19 @@ function addBusNameHints(hints, busName) {
     if (ephemeralSegmentIndex > 0) addLookupHint(hints, segments.slice(0, ephemeralSegmentIndex).join("."));
 }
 
+/**
+ * Builds all lookup hints MediaShell can derive for one media app.
+ *
+ * The result combines desktop-entry, identity, and bus-name candidates. Browser
+ * sessions often append tab/window/process suffixes to the MPRIS bus; those are
+ * reduced to stable prefixes so the Shell app resolver can still find the owning
+ * desktop app.
+ *
+ * @param {unknown} identity - MPRIS Identity value.
+ * @param {unknown} desktopEntry - MPRIS DesktopEntry value.
+ * @param {string} busName - Full MPRIS bus name.
+ * @returns {string[]} Unique raw and normalized lookup hints.
+ */
 export function buildAppLookupHints(identity, desktopEntry, busName = "") {
     const hints = new Set();
     addLookupHint(hints, desktopEntry);
@@ -72,6 +102,14 @@ export function buildAppLookupHints(identity, desktopEntry, busName = "") {
     return [...hints];
 }
 
+/**
+ * Builds desktop-app ID candidates from media-app identity metadata.
+ *
+ * @param {unknown} identity - MPRIS Identity value.
+ * @param {unknown} desktopEntry - MPRIS DesktopEntry value.
+ * @param {string} busName - Full MPRIS bus name.
+ * @returns {string[]} Candidate desktop IDs with and without `.desktop` suffixes.
+ */
 export function buildDesktopAppIdCandidates(identity, desktopEntry, busName = "") {
     const appIds = new Set();
     for (const hint of buildAppLookupHints(identity, desktopEntry, busName)) {
@@ -83,6 +121,14 @@ export function buildDesktopAppIdCandidates(identity, desktopEntry, busName = ""
     return [...appIds];
 }
 
+/**
+ * Builds normalized identity candidates for fuzzy installed-app matching.
+ *
+ * @param {unknown} identity - MPRIS Identity value.
+ * @param {unknown} desktopEntry - MPRIS DesktopEntry value.
+ * @param {string} busName - Full MPRIS bus name.
+ * @returns {string[]} Normalized comparable identity values.
+ */
 export function buildNormalizedAppIdentityCandidates(identity, desktopEntry, busName = "") {
     const identities = new Set();
     for (const hint of buildAppLookupHints(identity, desktopEntry, busName)) {

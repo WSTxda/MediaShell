@@ -6,16 +6,21 @@
  *
  * PopupContent delegates popup-specific metadata labels to this component so it
  * can apply display fallbacks and visibility rules independently from top-bar
- * scrolling text. The component reads only normalized PlayerProxy metadata.
+ * scrolling text. The component reads normalized PlayerProxy metadata through
+ * shared helpers instead of reimplementing field parsing.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { formatArtistNames } from "../../../shared/utils/metadata.js";
-import ScrollingLabel from "../../helpers/ScrollingLabel.js";
+import { readTrackInformation } from "../../../shared/utils/metadata.js";
+import ScrollingLabel from "../ScrollingLabel.js";
 
+/**
+ * Renders title, artist, and album metadata inside the popup.
+ */
 export default class PopupTrackInformation {
     constructor(popupContent) {
         this.popupContent = popupContent;
@@ -31,8 +36,8 @@ export default class PopupTrackInformation {
     get popupItem() {
         return this.popupContent.popupItem;
     }
-    get playbackProgressActor() {
-        return this.popupContent.playbackProgress.actor;
+    get progressBarActor() {
+        return this.popupContent.progressBar.actor;
     }
     get playbackControlsActor() {
         return this.popupContent.playbackControls.actor;
@@ -64,9 +69,10 @@ export default class PopupTrackInformation {
     render() {
         const metadata = this.mediaApp.metadata;
         const width = this.getTrackInformationWidth();
-        const title = metadata["xesam:title"] ?? "";
-        const artist = formatArtistNames(metadata["xesam:artist"], _("Unknown artist"));
-        const album = metadata["xesam:album"] || _("Unknown album");
+        const { title, artist, album } = readTrackInformation(metadata, {
+            unknownArtist: _("Unknown artist"),
+            unknownAlbum: _("Unknown album"),
+        });
         const renderKey = [
             title,
             artist,
@@ -164,8 +170,8 @@ export default class PopupTrackInformation {
     attach() {
         if (!this.trackInformationBox || this.trackInformationBox.get_children().length === 0 || this.trackInformationBox.get_parent()) return;
 
-        if (this.playbackProgressActor?.get_parent() === this.popupItem) {
-            this.popupItem.insert_child_below(this.trackInformationBox, this.playbackProgressActor);
+        if (this.progressBarActor?.get_parent() === this.popupItem) {
+            this.popupItem.insert_child_below(this.trackInformationBox, this.progressBarActor);
         } else if (this.playbackControlsActor?.get_parent() === this.popupItem) {
             this.popupItem.insert_child_below(this.trackInformationBox, this.playbackControlsActor);
         } else {

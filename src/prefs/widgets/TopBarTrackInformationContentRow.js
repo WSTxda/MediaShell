@@ -8,6 +8,7 @@
  * the persisted list of title, artist, and album fields. It mirrors the runtime
  * top-bar metadata model without importing Shell UI code.
  */
+
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
@@ -15,7 +16,7 @@ import Graphene from "gi://Graphene";
 import Gtk from "gi://Gtk";
 import { gettext as _ } from "../PreferencesTranslations.js";
 
-import { TrackInformationFields } from "../../shared/enums/topBar.js";
+import { TrackInformationFields } from "../../shared/enums/trackInformation.js";
 
 function createTranslatedFields() {
     return Object.freeze({
@@ -27,6 +28,9 @@ function createTranslatedFields() {
     });
 }
 
+/**
+ * Custom row for choosing which track-information fields appear in the top bar.
+ */
 class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
     contentItems = [];
 

@@ -1,5 +1,13 @@
-// Tests for: src/shell/mpris/MediaAppSelectionPolicy.js
-// Covers: active app priority, pinned app precedence, and deterministic next-app cycling
+/**
+ * @file media-app-selection.test.mjs
+ * @module tests.mediaAppSelection
+ *
+ * Tests deterministic active media-app selection and cycling policy.
+ *
+ * The policy is pure by design, so pinned, playing, paused, and fallback ordering
+ * can be verified without D-Bus, PlayerProxy instances, or Shell UI actors.
+ */
+
 import assert from "node:assert/strict";
 import test from "node:test";
 

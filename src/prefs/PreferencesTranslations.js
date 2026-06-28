@@ -8,6 +8,7 @@
  * strings at runtime. This centralizes preference copy so controllers can bind
  * settings without duplicating user-facing text.
  */
+
 let extensionGettext = null;
 let extensionNgettext = null;
 

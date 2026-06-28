@@ -9,6 +9,7 @@
  * the close signal so the transient dialog is released with the preferences
  * window.
  */
+
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
@@ -24,6 +25,9 @@ const ISSUE_URL = "https://github.com/WSTxda/MediaShell/issues";
 const MEDIA_CONTROLS_CONTRIBUTORS_URL =
     "https://github.com/sakithb/media-controls/graphs/contributors?all=1";
 
+/**
+ * Owns the About dialog button and Libadwaita about-window content.
+ */
 export default class AboutDialogController {
     constructor(preferencesInstance, preferencesWindow) {
         this.preferencesInstance = preferencesInstance;
@@ -83,7 +87,7 @@ export default class AboutDialogController {
             developer_name: "WSTxda",
             version: String(metadataVersion ?? fallbackVersion ?? ""),
             comments: _(
-                "MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top bar. It provides configurable track information, playback controls, album art, playback progress, app switching, and input actions without replacing GNOME's media stack.",
+                "MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.",
             ),
             issue_url: ISSUE_URL,
             copyright: "Copyright (c) 2026 WSTxda",

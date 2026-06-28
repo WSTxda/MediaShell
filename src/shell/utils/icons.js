@@ -1,13 +1,14 @@
 /**
- * @file IconUtils.js
- * @module shell.ui.IconUtils
+ * @file icons.js
+ * @module shell.utils.icons
  *
  * Creates and updates Shell icons using MediaShell's common St.Icon conventions.
  *
  * Top-bar and popup playback controls use this utility so icon creation, themed
- * fallback handling, and GIcon updates remain consistent. It keeps raw St.Icon
- * construction out of individual control renderers.
+ * fallback handling, and GIcon updates remain consistent. Individual control renderers can update icons without constructing raw St.Icon
+ * objects themselves.
  */
+
 import Gio from "gi://Gio";
 import St from "gi://St";
 

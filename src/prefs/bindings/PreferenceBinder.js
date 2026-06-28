@@ -11,6 +11,7 @@
  *
  * @see src/prefs/bindings/PreferenceBindings.js
  */
+
 import Gio from "gi://Gio";
 
 import { createLogger } from "../../shared/utils/log.js";
@@ -19,6 +20,9 @@ import { PREFERENCE_WIDGET_BINDINGS } from "./PreferenceBindings.js";
 
 const logger = createLogger("PreferenceBinder");
 
+/**
+ * Binds GSettings keys to preference widgets declared in PreferenceBindings.
+ */
 export default class PreferenceBinder {
     constructor(settings, builder) {
         this.settings = settings;

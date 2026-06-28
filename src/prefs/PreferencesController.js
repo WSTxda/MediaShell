@@ -9,6 +9,7 @@
  * the single preferences-side coordinator, so page controllers can stay focused
  * on their own settings groups.
  */
+
 import Gtk from "gi://Gtk";
 
 import { migrateSettings, SETTINGS_SCHEMA_VERSION } from "../shared/settings/SettingsMigration.js";
@@ -24,6 +25,9 @@ import { registerPreferencesResources } from "./resources/PreferencesResourceLoa
 const logger = createLogger("PreferencesController");
 const PREFERENCE_PAGE_IDS = ["page-popup", "page-top-bar", "page-panel", "page-interactions", "page-others"];
 
+/**
+ * Builds and owns the full Libadwaita preferences window.
+ */
 export default class PreferencesController {
     constructor(preferencesInstance, preferencesWindow) {
         this.preferencesInstance = preferencesInstance;

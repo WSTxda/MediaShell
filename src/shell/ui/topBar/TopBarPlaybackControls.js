@@ -8,13 +8,15 @@
  * sensitivity from the active PlayerProxy. The renderer consumes shared
  * PlaybackControls descriptors so popup and top-bar action names stay aligned.
  */
+
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
-import { createIcon, setIconName } from "../IconUtils.js";
+import { WidgetFlags } from "../../../shared/enums/widget.js";
+import { resolvePlayPauseControl } from "../../../shared/utils/playbackControlState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../../constants/actorState.js";
+import { createIcon, setIconName } from "../../utils/icons.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
     PlaybackControls.PREVIOUS.name,
@@ -22,6 +24,9 @@ const PLAYBACK_CONTROL_ORDER = Object.freeze([
     PlaybackControls.NEXT.name,
 ]);
 
+/**
+ * Renders compact playback controls inside the top-bar button.
+ */
 export default class TopBarPlaybackControls {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;
@@ -78,22 +83,8 @@ export default class TopBarPlaybackControls {
             return;
         }
 
-        const mediaApp = this.topBarButton.mediaApp;
-        if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-            this.updatePlaybackControlIcon(
-                PlaybackControls.PLAY,
-                mediaApp.canPlay && mediaApp.canControl,
-                () => mediaApp.play(),
-            );
-        } else if (mediaApp.canControl && !mediaApp.canPause) {
-            this.updatePlaybackControlIcon(PlaybackControls.STOP, mediaApp.canControl, () => mediaApp.stop());
-        } else {
-            this.updatePlaybackControlIcon(
-                PlaybackControls.PAUSE,
-                mediaApp.canPause && mediaApp.canControl,
-                () => mediaApp.pause(),
-            );
-        }
+        const { control, isReactive, action } = resolvePlayPauseControl(this.topBarButton.mediaApp);
+        this.updatePlaybackControlIcon(control, isReactive, action);
     }
 
     updatePlaybackControlIcon(controlDefinition, isReactive, onClick) {
@@ -118,7 +109,7 @@ export default class TopBarPlaybackControls {
 
         control.onClick = onClick;
         setIconName(control.icon, controlDefinition.iconName);
-        control.button.opacity = isReactive ? 255 : 160;
+        control.button.opacity = isReactive ? ACTIVE_OPACITY : INACTIVE_OPACITY;
         control.button.reactive = isReactive;
     }
 

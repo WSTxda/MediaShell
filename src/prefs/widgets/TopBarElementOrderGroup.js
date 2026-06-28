@@ -5,15 +5,20 @@
  * Custom preferences group for ordering top-bar elements with drag and drop.
  *
  * The widget owns the reorderable list rows and serializes their element IDs
- * back to the top-bar order setting. It keeps row snapshots and drop targets
- * local so TopBarStructureController only handles the resulting setting value.
+ * back to the top-bar order setting. Row snapshots and drop targets stay local
+ * to the widget, leaving TopBarStructureController responsible only for the
+ * resulting setting value.
  */
+
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
 import Graphene from "gi://Graphene";
 import Gtk from "gi://Gtk";
 
+/**
+ * Custom preferences group for ordering top-bar elements with drag and drop.
+ */
 class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     elementOrder = [];
 

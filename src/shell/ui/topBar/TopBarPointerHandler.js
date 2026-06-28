@@ -12,6 +12,7 @@
  *
  * @see src/shell/ui/topBar/TopBarButton.js
  */
+
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 
@@ -20,6 +21,9 @@ import { createLogger } from "../../../shared/utils/log.js";
 
 const logger = createLogger("TopBarPointerHandler");
 
+/**
+ * Installs pointer gestures for the non-playback regions of the top bar button.
+ */
 export default class TopBarPointerHandler {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;

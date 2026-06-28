@@ -8,9 +8,13 @@
  * fallback icon. The component keeps icon actor creation and updates separate
  * from track text, visualizer, and playback control layout.
  */
-import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
-import { createIcon, setGIcon } from "../IconUtils.js";
 
+import MediaAppResolver, { FALLBACK_MEDIA_APP_ICON_NAME } from "../../services/MediaAppResolver.js";
+import { createIcon, setGIcon } from "../../utils/icons.js";
+
+/**
+ * Displays the active media application's icon in the GNOME top bar.
+ */
 export default class TopBarAppIcon {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;

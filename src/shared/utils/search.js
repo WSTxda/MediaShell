@@ -8,6 +8,7 @@
  * aliases without being sensitive to accents, punctuation, or case. Pure helpers
  * keep search behavior testable outside GTK and GNOME Shell.
  */
+
 export function normalizeSearchText(value) {
     return String(value ?? "")
         .normalize("NFKD")

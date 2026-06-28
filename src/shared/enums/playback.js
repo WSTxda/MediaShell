@@ -8,6 +8,7 @@
  * them. Top-bar and popup controls use the normalized states to decide button
  * sensitivity, play/pause icons, and repeat-mode toggles.
  */
+
 export const PlaybackStatus = Object.freeze({
     PLAYING: "Playing",
     PAUSED: "Paused",

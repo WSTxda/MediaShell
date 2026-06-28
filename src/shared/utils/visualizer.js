@@ -8,19 +8,40 @@
  * without allocating Shell actors during tests. The output is clamped so every
  * visualizer style remains within the fixed top-bar drawing budget.
  */
-import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
-import { VisualizerStyles } from "../enums/topBar.js";
 
+import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
+import { VisualizerStyles } from "../enums/visualizer.js";
+
+/** Number of bars rendered by the top-bar visualizer. */
 export const TOP_BAR_VISUALIZER_BAR_COUNT = 4;
 
 const PULSE_SPEEDS = Object.freeze([1.15, 1.7, 1.35, 1.9]);
 
+/**
+ * Clamps user-configured visualizer speed to the supported settings range.
+ *
+ * @param {unknown} speed - Raw speed value from settings or tests.
+ * @returns {number} Valid visualizer speed.
+ */
 export function normalizeVisualizerSpeed(speed) {
     const numericSpeed = Number(speed);
     if (!Number.isFinite(numericSpeed)) return TOP_BAR_VISUALIZER_SPEED.DEFAULT;
     return Math.min(TOP_BAR_VISUALIZER_SPEED.MAX, Math.max(TOP_BAR_VISUALIZER_SPEED.MIN, numericSpeed));
 }
 
+/**
+ * Generates normalized visualizer bar levels for the requested style and time.
+ *
+ * The function mutates `outputLevels` when a correctly sized array is supplied,
+ * which lets TopBarVisualizer reuse one array per frame and avoid animation-time
+ * allocations in the Shell process.
+ *
+ * @param {number} style - VisualizerStyles value.
+ * @param {number} elapsedSeconds - Animation clock in seconds.
+ * @param {number} speed - User-configured visualizer speed.
+ * @param {number[]|null} outputLevels - Optional reusable output array.
+ * @returns {number[]} Four values clamped to the supported visualizer level range.
+ */
 export function getVisualizerBarLevels(
     style,
     elapsedSeconds,

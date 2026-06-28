@@ -5,16 +5,20 @@
  * Renders configurable track metadata inside the GNOME top bar.
  *
  * TopBarButton owns this component and passes the ordered metadata fields chosen
- * in preferences. It uses ScrollingLabel for long text and keeps metadata-field
- * assembly separate from the panel button layout.
+ * in preferences. It uses ScrollingLabel for long text and shared metadata
+ * helpers for field assembly, keeping compact top-bar layout separate from
+ * metadata normalization.
  */
+
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { TrackInformationFields } from "../../../shared/enums/topBar.js";
-import { formatArtistNames } from "../../../shared/utils/metadata.js";
-import ScrollingLabel from "../../helpers/ScrollingLabel.js";
+import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
+import ScrollingLabel from "../ScrollingLabel.js";
 
+/**
+ * Renders configurable track metadata inside the GNOME top bar.
+ */
 export default class TopBarTrackInformation {
     constructor(topBarButton) {
         this.topBarButton = topBarButton;
@@ -65,24 +69,14 @@ export default class TopBarTrackInformation {
     }
 
     buildTrackInformationText() {
-        const metadata = this.topBarButton.mediaApp.metadata;
-        const informationElements = [];
-        for (const informationElement of this.topBarButton.extensionController.topBarTrackInformationContent) {
-            if (TrackInformationFields[informationElement] === TrackInformationFields.TITLE) {
-                informationElements.push(metadata["xesam:title"] ?? "");
-            } else if (TrackInformationFields[informationElement] === TrackInformationFields.ARTIST) {
-                informationElements.push(formatArtistNames(metadata["xesam:artist"], _("Unknown artist")));
-            } else if (TrackInformationFields[informationElement] === TrackInformationFields.ALBUM) {
-                informationElements.push(metadata["xesam:album"] || _("Unknown album"));
-            } else if (TrackInformationFields[informationElement] === TrackInformationFields.DISC_NUMBER) {
-                informationElements.push(metadata["xesam:discNumber"]);
-            } else if (TrackInformationFields[informationElement] === TrackInformationFields.TRACK_NUMBER) {
-                informationElements.push(metadata["xesam:trackNumber"]);
-            } else {
-                informationElements.push(informationElement);
-            }
-        }
-        return informationElements.join(" ").replace(/[\r\n]+/g, " ");
+        return buildTrackInformationText(
+            this.topBarButton.mediaApp.metadata,
+            this.topBarButton.extensionController.topBarTrackInformationContent,
+            {
+                unknownArtist: _("Unknown artist"),
+                unknownAlbum: _("Unknown album"),
+            },
+        );
     }
 
     pause() {

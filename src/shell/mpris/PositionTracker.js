@@ -8,10 +8,12 @@
  * estimate without polling DBus on every frame. The tracker anchors the last
  * known position to GLib monotonic time and refreshes on seek or track changes.
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
+import { DBUS_CALL_TIMEOUT_MS } from "../../shared/constants/timing.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
@@ -25,10 +27,13 @@ function normalizePositionMicroseconds(value) {
     return Number.isFinite(position) ? Math.max(0, position) : 0;
 }
 
-// DEVELOPER NOTE — Position interpolation:
+// Position interpolation:
 // MPRIS does not push live position updates. Track the last known Position
 // together with GLib.get_monotonic_time() and estimate the current value during
 // UI updates instead of polling D-Bus for every animation frame.
+/**
+ * Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
+ */
 export default class PositionTracker {
     constructor(propertiesProxy, operationCancellable = null) {
         this.propertiesProxy = propertiesProxy;
@@ -110,7 +115,7 @@ export default class PositionTracker {
             "Get",
             new GLib.Variant("(ss)", [MPRIS_PLAYER_IFACE_NAME, "Position"]),
             Gio.DBusCallFlags.NONE,
-            1000,
+            DBUS_CALL_TIMEOUT_MS,
             this.operationCancellable,
         );
 

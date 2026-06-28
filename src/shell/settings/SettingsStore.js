@@ -8,11 +8,15 @@
  * touching raw schema keys directly. The store owns subscription callbacks and
  * logs setting changes before notifying runtime consumers.
  */
+
 import { createLogger } from "../../shared/utils/log.js";
 import { SETTINGS_SPEC } from "./SettingsSpec.js";
 
 const logger = createLogger("SettingsStore");
 
+/**
+ * Wraps Gio.Settings with typed accessors and change-impact dispatch.
+ */
 export default class SettingsStore {
     constructor(settings, settingsTarget, onSettingChanged) {
         this.settings = settings;

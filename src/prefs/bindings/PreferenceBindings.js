@@ -8,6 +8,7 @@
  * widget property used for binding. PreferenceBinder consumes this table as the
  * source of truth for automatic settings synchronization.
  */
+
 export const PREFERENCE_WIDGET_BINDINGS = Object.freeze([
     ["popup-width", "sp-popup-width", "value"],
     ["show-popup-album-art", "er-popup-album-art", "enable-expansion"],

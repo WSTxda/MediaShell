@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-21 23:19-0300\n"
+"POT-Creation-Date: 2026-06-28 17:39-0300\n"
 "PO-Revision-Date: 2026-06-13 21:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,113 +16,173 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/prefs/about/AboutDialogController.js:36
+#: src/prefs/about/AboutDialogController.js:50
 msgid "About MediaShell"
 msgstr "Acerca de MediaShell"
 
-#: src/prefs/about/AboutDialogController.js:76
+#: src/prefs/about/AboutDialogController.js:90
 msgid ""
-"MediaShell integrates MPRIS-compatible media apps into the GNOME Shell top "
-"bar. It provides configurable track information, playback controls, album "
-"art, playback progress, app switching, and input actions without replacing "
-"GNOME's media stack."
+"MediaShell is a GNOME Shell extension that adds media controls to your top "
+"bar. Click the icon to open a popup featuring album art, playback controls, "
+"and an app selector for any app currently playing media. The top bar widget "
+"and popup use the GNOME Shell UI toolkit, and preferences are built with "
+"GTK4 and Libadwaita to match the rest of the desktop."
 msgstr ""
-"MediaShell integra las aplicaciones multimedia compatibles con MPRIS en la "
-"barra superior de GNOME Shell. Proporciona información configurable de la "
-"pista, controles de reproducción, carátula del álbum, progreso de "
-"reproducción, cambio de aplicaciones y acciones de entrada sin reemplazar la "
-"infraestructura multimedia de GNOME."
+"MediaShell es una extensión de GNOME Shell que añade controles multimedia a "
+"la barra superior. Haz clic en el icono para abrir una ventana emergente con "
+"carátula del álbum, controles de reproducción y un selector de aplicaciones "
+"para cualquier aplicación que esté reproduciendo multimedia. El widget de la "
+"barra superior y la ventana emergente usan el kit de herramientas de "
+"interfaz de GNOME Shell, y las preferencias están creadas con GTK4 y "
+"Libadwaita para integrarse con el resto del escritorio."
 
-#: src/prefs/about/AboutDialogController.js:84
+#: src/prefs/about/AboutDialogController.js:98
 msgid "Donate"
 msgstr "Donar"
 
-#: src/prefs/about/AboutDialogController.js:85
+#: src/prefs/about/AboutDialogController.js:99
 msgid "Developed by"
 msgstr "Desarrollado por"
 
-#: src/prefs/about/AboutDialogController.js:91
+#: src/prefs/about/AboutDialogController.js:105
 msgid "View all..."
 msgstr "Ver todos..."
 
-#: src/prefs/groups/ShortcutsPageController.js:16 assets/ui/prefs.ui:170
+#: src/prefs/groups/OthersPageController.js:67
+msgid "Reset all settings"
+msgstr "Restablecer toda la configuración"
+
+#: src/prefs/groups/OthersPageController.js:77
+msgid "Reset all settings?"
+msgstr "¿Restablecer toda la configuración?"
+
+#: src/prefs/groups/OthersPageController.js:78
+msgid "Every MediaShell preference will return to its default value."
+msgstr ""
+"Todas las preferencias de MediaShell volverán a sus valores predeterminados."
+
+#: src/prefs/groups/OthersPageController.js:79
+#: src/prefs/groups/ShortcutsPageController.js:286 assets/ui/prefs.ui:745
+msgid "Reset"
+msgstr "Restablecer"
+
+#: src/prefs/groups/OthersPageController.js:89
+msgid "Settings reset"
+msgstr "Configuración restablecida"
+
+#: src/prefs/groups/OthersPageController.js:97
+msgid "Clear the album art cache?"
+msgstr "¿Vaciar la caché de carátulas de álbum?"
+
+#: src/prefs/groups/OthersPageController.js:98
+msgid "Cached images will be downloaded again when needed."
+msgstr ""
+"Las imágenes almacenadas en caché se descargarán de nuevo cuando sea "
+"necesario."
+
+#: src/prefs/groups/OthersPageController.js:99 assets/ui/prefs.ui:720
+msgid "Clear Cache"
+msgstr "Vaciar antememoria"
+
+#: src/prefs/groups/OthersPageController.js:106
+#: src/prefs/groups/ShortcutsPageController.js:285
+#: src/prefs/widgets/BlockedAppChooserDialog.js:57
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/prefs/groups/OthersPageController.js:139
+msgid "Album art cache cleared"
+msgstr "Caché de carátulas de álbum vaciada"
+
+#: src/prefs/groups/OthersPageController.js:148
+msgid "Could not clear the album art cache"
+msgstr "No se pudo vaciar la caché de carátulas de álbum"
+
+#: src/prefs/groups/OthersPageController.js:157
+#, javascript-format
+msgid "%d cover — %s"
+msgid_plural "%d covers — %s"
+msgstr[0] "%d carátula — %s"
+msgstr[1] "%d carátulas — %s"
+
+#: src/prefs/groups/ShortcutsPageController.js:31 assets/ui/prefs.ui:170
 #: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
 msgid "Play / Pause"
 msgstr "Reproducir / Pausar"
 
-#: src/prefs/groups/ShortcutsPageController.js:17 assets/ui/prefs.ui:175
+#: src/prefs/groups/ShortcutsPageController.js:32 assets/ui/prefs.ui:175
 #: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
 msgid "Next Track"
 msgstr "Pista siguiente"
 
-#: src/prefs/groups/ShortcutsPageController.js:18 assets/ui/prefs.ui:180
+#: src/prefs/groups/ShortcutsPageController.js:33 assets/ui/prefs.ui:180
 #: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
 msgid "Previous Track"
 msgstr "Pista anterior"
 
-#: src/prefs/groups/ShortcutsPageController.js:19 assets/ui/prefs.ui:474
+#: src/prefs/groups/ShortcutsPageController.js:34 assets/ui/prefs.ui:474
 #: assets/ui/prefs.ui:756
 msgid "Volume Up"
 msgstr "Subir volumen"
 
-#: src/prefs/groups/ShortcutsPageController.js:20 assets/ui/prefs.ui:491
+#: src/prefs/groups/ShortcutsPageController.js:35 assets/ui/prefs.ui:491
 #: assets/ui/prefs.ui:757
 msgid "Volume Down"
 msgstr "Bajar volumen"
 
-#: src/prefs/groups/ShortcutsPageController.js:21 assets/ui/prefs.ui:508
+#: src/prefs/groups/ShortcutsPageController.js:36 assets/ui/prefs.ui:508
 #: assets/ui/prefs.ui:758
 msgid "Repeat"
 msgstr "Repetición"
 
-#: src/prefs/groups/ShortcutsPageController.js:22 assets/ui/prefs.ui:525
+#: src/prefs/groups/ShortcutsPageController.js:37 assets/ui/prefs.ui:525
 #: assets/ui/prefs.ui:759
 msgid "Shuffle"
 msgstr "Aleatorio"
 
-#: src/prefs/groups/ShortcutsPageController.js:23 assets/ui/prefs.ui:4
+#: src/prefs/groups/ShortcutsPageController.js:38 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
 msgid "Popup"
 msgstr "Ventana emergente"
 
-#: src/prefs/groups/ShortcutsPageController.js:24 assets/ui/prefs.ui:559
+#: src/prefs/groups/ShortcutsPageController.js:39 assets/ui/prefs.ui:559
 #: assets/ui/prefs.ui:761
 msgid "Open App"
 msgstr "Abrir aplicación"
 
-#: src/prefs/groups/ShortcutsPageController.js:25 assets/ui/prefs.ui:576
+#: src/prefs/groups/ShortcutsPageController.js:40 assets/ui/prefs.ui:576
 #: assets/ui/prefs.ui:762
 msgid "Quit App"
 msgstr "Cerrar aplicación"
 
-#: src/prefs/groups/ShortcutsPageController.js:26 assets/ui/prefs.ui:593
+#: src/prefs/groups/ShortcutsPageController.js:41 assets/ui/prefs.ui:593
 #: assets/ui/prefs.ui:763
 msgid "Preferences"
 msgstr "Preferencias"
 
-#: src/prefs/groups/ShortcutsPageController.js:27 assets/ui/prefs.ui:610
+#: src/prefs/groups/ShortcutsPageController.js:42 assets/ui/prefs.ui:610
 #: assets/ui/prefs.ui:764
 msgid "Next App"
 msgstr "Siguiente aplicación"
 
-#: src/prefs/groups/ShortcutsPageController.js:33
+#: src/prefs/groups/ShortcutsPageController.js:48
 msgid "Playback"
 msgstr "Reproducción"
 
-#: src/prefs/groups/ShortcutsPageController.js:34
+#: src/prefs/groups/ShortcutsPageController.js:49
 msgid "Audio"
 msgstr "Audio"
 
-#: src/prefs/groups/ShortcutsPageController.js:35 assets/ui/prefs.ui:146
+#: src/prefs/groups/ShortcutsPageController.js:50 assets/ui/prefs.ui:146
 #: assets/ui/prefs.ui:349
 msgid "Apps"
 msgstr "Aplicaciones"
 
-#: src/prefs/groups/ShortcutsPageController.js:36
+#: src/prefs/groups/ShortcutsPageController.js:51
 msgid "Interface"
 msgstr "Interfaz"
 
-#: src/prefs/groups/ShortcutsPageController.js:99
+#: src/prefs/groups/ShortcutsPageController.js:117
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -132,157 +192,100 @@ msgstr ""
 "Pulse Intro para guardar.\n"
 "Pulse Retroceso para borrar el atajo."
 
-#: src/prefs/groups/ShortcutsPageController.js:106
+#: src/prefs/groups/ShortcutsPageController.js:124
 msgid "Press a shortcut"
 msgstr "Pulse un atajo"
 
-#: src/prefs/groups/ShortcutsPageController.js:197
+#: src/prefs/groups/ShortcutsPageController.js:215
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "El atajo ya lo usa %s"
 
-#: src/prefs/groups/ShortcutsPageController.js:215 assets/ui/prefs.ui:414
+#: src/prefs/groups/ShortcutsPageController.js:233 assets/ui/prefs.ui:414
 msgid "Keyboard Shortcuts"
 msgstr "Atajos de teclado"
 
-#: src/prefs/groups/ShortcutsPageController.js:235
+#: src/prefs/groups/ShortcutsPageController.js:253
 msgid "Not set"
 msgstr "Sin definir"
 
-#: src/prefs/groups/ShortcutsPageController.js:263
+#: src/prefs/groups/ShortcutsPageController.js:281
 msgid "Reset keyboard shortcuts?"
 msgstr "¿Restablecer los atajos de teclado?"
 
-#: src/prefs/groups/ShortcutsPageController.js:264
+#: src/prefs/groups/ShortcutsPageController.js:282
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Se desactivarán todos los atajos de teclado."
 
-#: src/prefs/groups/ShortcutsPageController.js:267
-#: src/prefs/groups/OthersPageController.js:88
-#: src/prefs/widgets/BlockedAppChooserDialog.js:42
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: src/prefs/groups/ShortcutsPageController.js:268
-#: src/prefs/groups/OthersPageController.js:61 assets/ui/prefs.ui:745
-msgid "Reset"
-msgstr "Restablecer"
-
-#: src/prefs/groups/ShortcutsPageController.js:284
+#: src/prefs/groups/ShortcutsPageController.js:302
 msgid "Keyboard shortcuts reset"
 msgstr "Atajos de teclado restablecidos"
 
-#: src/prefs/groups/OthersPageController.js:49
-msgid "Reset all settings"
-msgstr "Restablecer toda la configuración"
-
-#: src/prefs/groups/OthersPageController.js:59
-msgid "Reset all settings?"
-msgstr "¿Restablecer toda la configuración?"
-
-#: src/prefs/groups/OthersPageController.js:60
-msgid "Every MediaShell preference will return to its default value."
-msgstr ""
-"Todas las preferencias de MediaShell volverán a sus valores predeterminados."
-
-#: src/prefs/groups/OthersPageController.js:71
-msgid "Settings reset"
-msgstr "Configuración restablecida"
-
-#: src/prefs/groups/OthersPageController.js:79
-msgid "Clear the album art cache?"
-msgstr "¿Vaciar la caché de carátulas de álbum?"
-
-#: src/prefs/groups/OthersPageController.js:80
-msgid "Cached images will be downloaded again when needed."
-msgstr ""
-"Las imágenes almacenadas en caché se descargarán de nuevo cuando sea "
-"necesario."
-
-#: src/prefs/groups/OthersPageController.js:81 assets/ui/prefs.ui:720
-msgid "Clear Cache"
-msgstr "Vaciar antememoria"
-
-#: src/prefs/groups/OthersPageController.js:121
-msgid "Album art cache cleared"
-msgstr "Caché de carátulas de álbum vaciada"
-
-#: src/prefs/groups/OthersPageController.js:130
-msgid "Could not clear the album art cache"
-msgstr "No se pudo vaciar la caché de carátulas de álbum"
-
-#: src/prefs/groups/OthersPageController.js:139
-#, javascript-format
-msgid "%d cover — %s"
-msgid_plural "%d covers — %s"
-msgstr[0] "%d carátula — %s"
-msgstr[1] "%d carátulas — %s"
-
-#: src/prefs/widgets/BlockedAppChooserDialog.js:20
+#: src/prefs/widgets/BlockedAppChooserDialog.js:35
 msgid "Select an app to block"
 msgstr "Seleccionar una aplicación para bloquear"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:45
-#: src/prefs/widgets/BlockedAppChooserDialog.js:61
+#: src/prefs/widgets/BlockedAppChooserDialog.js:60
+#: src/prefs/widgets/BlockedAppChooserDialog.js:76
 msgid "Search apps"
 msgstr "Buscar aplicaciones"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:48
+#: src/prefs/widgets/BlockedAppChooserDialog.js:63
 msgid "Select"
 msgstr "Seleccionar"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:81
+#: src/prefs/widgets/BlockedAppChooserDialog.js:96
 msgid "No apps found"
 msgstr "No se encontraron aplicaciones"
 
-#: src/prefs/widgets/BlockedAppsGroup.js:80
+#: src/prefs/widgets/BlockedAppsGroup.js:93
 msgid "No apps are blocked"
 msgstr "No hay aplicaciones bloqueadas"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:13
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:23
 msgid "Artist"
 msgstr "Artista"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:14
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:24
 msgid "Title"
 msgstr "Título"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:15
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:25
 msgid "Album"
 msgstr "Álbum"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:16
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:26
 msgid "Disc"
 msgstr "Disco"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:17
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:27
 msgid "Track"
 msgstr "Pista"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:53
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:66
 msgid "No track information fields added"
 msgstr "No se han añadido campos de información de la pista"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:70
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:83
 msgid "Custom text"
 msgstr "Texto personalizado"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:94
+#: src/prefs/widgets/TopBarTrackInformationContentRow.js:107
 msgid "Remove"
 msgstr "Quitar"
 
-#: src/shell/ui/popup/PopupAppSelectorList.js:167
-#: src/shell/ui/popup/PopupAppSelectorButton.js:66
+#: src/shell/ui/popup/PopupAppSelectorButton.js:74
+#: src/shell/ui/popup/PopupAppSelectorList.js:180
 msgid "Unknown app"
 msgstr "Aplicación desconocida"
 
-#: src/shell/ui/popup/PopupTrackInformation.js:59
-#: src/shell/ui/topBar/TopBarTrackInformation.js:64
+#: src/shell/ui/popup/PopupTrackInformation.js:73
+#: src/shell/ui/topBar/TopBarTrackInformation.js:76
 msgid "Unknown artist"
 msgstr "Artista desconocido"
 
-#: src/shell/ui/popup/PopupTrackInformation.js:60
-#: src/shell/ui/topBar/TopBarTrackInformation.js:66
+#: src/shell/ui/popup/PopupTrackInformation.js:74
+#: src/shell/ui/topBar/TopBarTrackInformation.js:77
 msgid "Unknown album"
 msgstr "Álbum desconocido"
 
@@ -490,7 +493,7 @@ msgstr "Panel"
 
 #: assets/ui/prefs.ui:372
 msgid "Extension Placement"
-msgstr "Extensión"
+msgstr "Ubicación de la extensión"
 
 #: assets/ui/prefs.ui:373
 msgid "Choose where the extension appears in the top bar"

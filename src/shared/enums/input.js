@@ -8,6 +8,7 @@
  * pointer gestures fire. The numeric values are also covered by migration tests
  * because historical enum nicks must preserve their semantic meaning.
  */
+
 export const InputActions = Object.freeze({
     NONE: 0,
     PLAY_PAUSE: 1,

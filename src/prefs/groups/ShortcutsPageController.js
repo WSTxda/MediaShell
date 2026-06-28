@@ -10,7 +10,10 @@
  *
  * @see src/shell/services/GlobalShortcutsService.js
  */
+
 import Adw from "gi://Adw";
+
+import { LARGE_DIALOG_HEIGHT, LARGE_DIALOG_WIDTH, SHORTCUT_DIALOG_WIDTH, TOAST_TIMEOUT_SECONDS } from "../constants/layout.js";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 import { gettext as _ } from "../PreferencesTranslations.js";
@@ -53,6 +56,9 @@ function shortcutRowId(actionId) {
     return `ar-interactions-shortcut-${actionId}`;
 }
 
+/**
+ * Drives the keyboard shortcut editor page in the preferences window.
+ */
 export default class ShortcutsPageController {
     constructor(settings, builder, preferencesWindow) {
         this.settings = settings;
@@ -91,7 +97,7 @@ export default class ShortcutsPageController {
 
         const dialog = new Adw.Dialog({
             title: this.actionCopy[definition.id].title,
-            content_width: 360,
+            content_width: SHORTCUT_DIALOG_WIDTH,
             content_height: 240,
         });
         const toolbarView = new Adw.ToolbarView();
@@ -207,7 +213,7 @@ export default class ShortcutsPageController {
             this.preferencesWindow.add_toast(
                 new Adw.Toast({
                     title: _("Shortcut already used by %s").format(this.actionCopy[conflictingDefinition.id].title),
-                    timeout: 3,
+                    timeout: TOAST_TIMEOUT_SECONDS,
                 }),
             );
             return;
@@ -225,8 +231,8 @@ export default class ShortcutsPageController {
 
         const dialog = new Adw.Dialog({
             title: _("Keyboard Shortcuts"),
-            content_width: 480,
-            content_height: 600,
+            content_width: LARGE_DIALOG_WIDTH,
+            content_height: LARGE_DIALOG_HEIGHT,
         });
         const toolbarView = new Adw.ToolbarView();
         toolbarView.add_top_bar(new Adw.HeaderBar());
@@ -294,7 +300,7 @@ export default class ShortcutsPageController {
         this.preferencesWindow.add_toast(
             new Adw.Toast({
                 title: _("Keyboard shortcuts reset"),
-                timeout: 3,
+                timeout: TOAST_TIMEOUT_SECONDS,
             }),
         );
     }

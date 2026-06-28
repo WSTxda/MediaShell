@@ -26,6 +26,7 @@
  *
  * @see src/shell/mpris/PositionTracker.js
  */
+
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
@@ -77,6 +78,9 @@ function getMetadataRevision(metadata) {
         .join("\u0001");
 }
 
+/**
+ * Normalizes one MPRIS player into stable state, commands, and signals.
+ */
 export default class PlayerProxy {
     constructor(busName, mprisProxyFactory) {
         this.busName = busName;
@@ -207,7 +211,7 @@ export default class PlayerProxy {
     pollForInitialMetadata() {
         if (this.hasCurrentTrackMetadata || this.pollSourceId !== null) return;
 
-        // DEVELOPER NOTE — Initialization polling:
+        // Initialization polling:
         // Some MPRIS players export their bus name before proxy properties are
         // populated. Poll at a bounded interval until metadata appears or the
         // timeout expires instead of trusting the initial DBus cache.
@@ -493,14 +497,19 @@ export default class PlayerProxy {
     }
 
     /**
-     * Calls a D-Bus method on the given proxy, swallowing cancellation errors
-     * and logging genuine failures with a stable once-key.
+     * Calls a D-Bus method on the given proxy, drops cancellation errors, and logs genuine failures.
      *
-     * @param {Gio.DBusProxy} proxy - The proxy to call on.
-     * @param {string} method - The D-Bus method name.
+     * PlayerProxy uses this helper for both root and Player-interface calls so
+     * disable-time cancellations stay silent while real MPRIS/D-Bus failures are
+     * logged once per stable key. The helper also centralizes the call timeout and
+     * operation cancellable used by all outbound proxy calls.
+     *
+     * @param {Gio.DBusProxy|null} proxy - Proxy that owns the method call.
+     * @param {string} method - D-Bus method name.
      * @param {GLib.Variant|null} parameters - Method parameters, or null for no-args calls.
-     * @param {string} logKey - Unique prefix for warnOnce deduplication.
-     * @param {string} logMessage - Human-readable failure message.
+     * @param {string} logKey - Stable key for warning deduplication.
+     * @param {string} logMessage - Human-readable warning prefix.
+     * @returns {Promise<void>} Resolves after the call succeeds, is cancelled, or is logged.
      */
     async #callProxy(proxy, method, parameters, logKey, logMessage) {
         if (this.isDestroyed || !proxy) return;
@@ -661,7 +670,7 @@ export default class PlayerProxy {
                 else proxy.disconnect(signalId);
             } catch (error) {
                 // The remote owner may already have disappeared.
-                logger.debug("A player signal was already disconnected", this.busName, error);
+                logger.debug("An MPRIS signal was already disconnected", this.busName, error);
             }
         }
         this.proxySignalConnections.length = 0;

@@ -8,6 +8,7 @@
  * are isolated from the rest of the popup. The component cancels stale loads by
  * generation, decodes images into Shell textures, and falls back to a themed icon.
  */
+
 import Clutter from "gi://Clutter";
 import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
@@ -17,16 +18,19 @@ import St from "gi://St";
 import { IconNames } from "../../../shared/constants/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/ui.js";
+import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/popup.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
 import { isCancellationError } from "../../utils/errors.js";
-import { createIcon, setGIcon } from "../IconUtils.js";
+import { createIcon, setGIcon } from "../../utils/icons.js";
 
 Gio._promisify(GdkPixbuf.Pixbuf, "new_from_stream_at_scale_async", "new_from_stream_finish");
 Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 
 const logger = createLogger("PopupAlbumArt");
 
+/**
+ * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ */
 export default class PopupAlbumArt {
     constructor(popupContent) {
         this.popupContent = popupContent;

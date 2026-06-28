@@ -8,6 +8,7 @@
  * ExtensionController uses them to decide whether to rebuild UI, patch system
  * media controls, refresh blocked apps, or update shortcuts.
  */
+
 export const SettingsAction = Object.freeze({
     REBUILD_TOP_BAR_BUTTON: "rebuild-top-bar-button",
     UPDATE_BLOCKED_APPS: "update-blocked-apps",

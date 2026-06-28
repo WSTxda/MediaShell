@@ -8,7 +8,7 @@ assignees: ""
 
 ## Proposal
 
-Describe the requested behavior using the canonical MediaShell terms when applicable: App selector, Track Information, Playback Controls, Playback Progress, Album Art, Visualizer, Mouse Actions, Keyboard Shortcuts, Blocked Apps, or System media controls.
+Describe the requested behavior using the canonical MediaShell terms when applicable: App selector, Track Information, Playback Controls, Progress Bar, Album Art, Visualizer, Mouse Actions, Keyboard Shortcuts, Blocked Apps, or System media controls.
 
 ## Motivation
 

@@ -8,6 +8,7 @@
  * per-level once cache using LOG_ONCE_CACHE_LIMIT. Shell and preferences modules
  * use this helper instead of direct console calls so logs stay consistent.
  */
+
 import { LOG_ONCE_CACHE_LIMIT } from "../constants/limits.js";
 
 const PREFIX = "[MediaShell]";
