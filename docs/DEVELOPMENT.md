@@ -19,6 +19,7 @@ Start from the owner of the behavior.
 
 - Shell lifecycle and wiring: `src/shell/ExtensionController.js`.
 - MPRIS discovery and active app selection: `src/shell/mpris/MediaAppRegistry.js` and `src/shell/mpris/MediaAppSelectionPolicy.js`.
+- Media-app, browser, and PWA identity: `src/shared/utils/appIdentity.js`, `src/shared/utils/browserIdentity.js`, and `src/shell/services/MediaAppResolver.js`.
 - One MPRIS endpoint: `src/shell/mpris/PlayerProxy.js`.
 - Top bar UI: `src/shell/ui/topBar/TopBarButton.js` and the component beside the feature.
 - Popup UI: `src/shell/ui/popup/PopupContent.js` and the component beside the feature.
@@ -81,6 +82,8 @@ Use `SignalConnections.js` when the controller owns signals from several source 
 Every JavaScript module must start with a compact JSDoc header containing `@file`, `@module`, a short responsibility summary, and one purpose paragraph. The header complements the contributor documentation: it should say what the module owns and why it exists, not restate every export.
 
 Use inline comments only for lifecycle, signal ownership, async teardown, MPRIS/D-Bus edge cases, GNOME compatibility, private Shell API boundaries, or non-obvious UI behavior. Avoid comments that merely repeat the next line of code.
+
+Browser/PWA resolution must stay evidence-based. Prefer installed desktop-entry metadata, StartupWMClass, and MPRIS/runtime hints over hardcoded browser lists; fall back to the existing identity path when confidence is low. This feature should improve names, icons, blocklist matching, and focus targets without changing the App Selector, Top Bar, Popup layout, settings, or visible strings.
 
 Use `createLogger("ClassName")` with a scope that matches the owning class or module. Logs should help diagnose failures and state transitions, not narrate ordinary render flow.
 

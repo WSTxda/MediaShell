@@ -22,7 +22,7 @@ tests/                         Node tests for pure logic and policies
 
 ### `src/shared/`
 
-`shared` must remain independent from GNOME runtime APIs. It contains constants, enums, settings migrations, formatting, metadata normalization, MPRIS helpers, logging, app identity, search, playback-control decisions, and visualizer math.
+`shared` must remain independent from GNOME runtime APIs. It contains constants, enums, settings migrations, formatting, metadata normalization, MPRIS helpers, logging, app identity, browser/PWA identity scoring, search, playback-control decisions, and visualizer math.
 
 Use this layer for pure logic that can be tested with Node and reused by Shell and Preferences code without importing St, Clutter, Shell, Meta, GTK, Adw, or Gdk.
 
@@ -95,7 +95,9 @@ Do not use Panel, Top Bar, and Popup interchangeably. Panel is placement. Top Ba
 
 ## MPRIS lifecycle and selection
 
-`MediaAppRegistry` watches names under `org.mpris.MediaPlayer2.*`. D-Bus name ownership is the lifecycle authority. Desktop identity improves display names, icons, and blocked-app checks, but presentation heuristics must not keep a vanished endpoint alive.
+`MediaAppRegistry` watches names under `org.mpris.MediaPlayer2.*`. D-Bus name ownership is the lifecycle authority. Desktop identity improves display names, icons, blocked-app checks, and browser/PWA resolution, but presentation heuristics must not keep a vanished endpoint alive.
+
+Browser/PWA identity is evidence-based. MediaShell may use desktop IDs, `StartupWMClass`, command lines, and MPRIS/runtime hints to recognize a web app launcher, but it must fall back to the normal media-app identity path when those fields are missing or contradictory. This keeps browser handling useful without turning package-specific quirks into lifecycle authority.
 
 `PlayerProxy` normalizes one MPRIS endpoint into stable state, commands, metadata, capabilities, and property notifications. `PositionTracker` estimates position from explicit reads, `Seeked`, and monotonic time so the UI does not poll D-Bus every frame.
 
