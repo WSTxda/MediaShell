@@ -34,13 +34,13 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 <table>
   <tr>
     <td align="center"><strong>Popup</strong></td>
-    <td align="center"><strong>Top Bar</strong></td>
+    <td align="center"><strong>Top bar</strong></td>
     <td align="center"><strong>Panel</strong></td>
   </tr>
   <tr>
-    <td><img src="assets/images/screenshots/settings_popup.png" alt="MediaShell Popup settings" width="100%"></td>
-    <td><img src="assets/images/screenshots/settings_top_bar.png" alt="MediaShell Top Bar settings" width="100%"></td>
-    <td><img src="assets/images/screenshots/settings_panel.png" alt="MediaShell Panel settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_popup.png" alt="MediaShell popup settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_top_bar.png" alt="MediaShell top bar settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_panel.png" alt="MediaShell panel settings" width="100%"></td>
   </tr>
 </table>
 
@@ -51,9 +51,9 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
     <td align="center"><strong>About</strong></td>
   </tr>
   <tr>
-    <td><img src="assets/images/screenshots/settings_interactions.png" alt="MediaShell Interactions settings" width="100%"></td>
-    <td><img src="assets/images/screenshots/settings_others.png" alt="MediaShell Others settings" width="100%"></td>
-    <td><img src="assets/images/screenshots/settings_about.png" alt="MediaShell About dialog" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_interactions.png" alt="MediaShell interactions settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_others.png" alt="MediaShell others settings" width="100%"></td>
+    <td><img src="assets/images/screenshots/settings_about.png" alt="MediaShell about dialog" width="100%"></td>
   </tr>
 </table>
 
@@ -63,36 +63,36 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 
 #### Fits into GNOME
 
-* The top bar and popup use the GNOME Shell UI toolkit and follow the same design as Quick Settings.
-* Preferences are built with GTK4 and Libadwaita, adhering to the GNOME Human Interface Guidelines.
+- The top bar and popup use the GNOME Shell UI toolkit and follow the same design as Quick Settings.
+- Preferences are built with GTK4 and Libadwaita, adhering to the GNOME Human Interface Guidelines.
 
 #### App selector
 
-* The App selector in the Popup switches between any active media app.
-* The pin feature keeps a media app selected while it is playing, but this selection does not save across shell restarts.
-* You can raise or quit an app's window if its MPRIS implementation supports it.
-* Block apps that you don't want MediaShell to detect, without affecting their MPRIS service.
+- The app selector in the popup switches between any active media app.
+- The pin feature keeps a media app selected while it is playing, but this selection does not save across shell restarts.
+- You can raise or quit an app's window if its MPRIS implementation supports it.
+- Block apps that you don't want MediaShell to detect, without affecting their MPRIS service.
 
 #### Album art
 
-* Supports local and remote artwork with a configurable corner radius.
-* Optional disk cache for faster loads, adjustable from settings.
+- Supports local and remote artwork with a configurable corner radius.
+- Optional disk cache for faster loads, adjustable from settings.
 
 #### Mouse and keyboard
 
-* Left, middle, and right click actions as well as scroll actions on the Top Bar button.
-* Global keyboard shortcuts for playback, volume, app selection, raising or quitting, opening the Popup, and accessing settings.
+- Left, middle, and right click actions as well as scroll actions on the top bar button.
+- Global keyboard shortcuts for playback, volume, app selection, raising or quitting, opening the popup, and accessing settings.
 
 #### Layout
 
-* Choose where the button is placed in the Top Bar.
-* Configure Track Information, Playback Controls, and the optional Top Bar Visualizer in a stable element order.
-* Hide the built-in GNOME Shell media controls from the notification list and use MediaShell instead.
+- Choose where the button is placed in the top bar.
+- Configure track information, playback controls, and the optional top bar visualizer in a stable element order.
+- Use Hide GNOME Shell media controls to remove the built-in controls from the notification list and use MediaShell instead.
 
 ## Requirements
 
-* **GNOME Shell** 47–50
-* An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
+- **GNOME Shell** 47–50
+- An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
 
 > [!IMPORTANT]
 > Available controls depend on the features provided by each media app through MPRIS. Seeking, shuffle, repeat, volume, artwork, and application actions may not be supported by every app.
@@ -141,9 +141,9 @@ gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-
 
 ### Documentation
 
-* [Contributing](CONTRIBUTING.md)
-* [Architecture](docs/ARCHITECTURE.md)
-* [Development](docs/DEVELOPMENT.md)
+- [Contributing](CONTRIBUTING.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Development](docs/DEVELOPMENT.md)
 
 ### Donate
 

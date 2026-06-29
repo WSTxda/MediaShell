@@ -20,12 +20,16 @@ const FALLBACK_NAMES = Object.freeze([IconNames.APP, IconNames.MISSING]);
 const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names(FALLBACK_NAMES);
 
 function readAppStringSafely(app, getterName, logKey) {
-    try {
-        return String(app?.[getterName]?.() ?? "");
-    } catch (error) {
-        logger.debugOnce(logKey, "App metadata was unavailable while building the installed-app catalog", error);
-        return "";
-    }
+  try {
+    return String(app?.[getterName]?.() ?? "");
+  } catch (error) {
+    logger.debugOnce(
+      logKey,
+      "App metadata was unavailable while building the installed-app catalog",
+      error,
+    );
+    return "";
+  }
 }
 
 /**
@@ -39,12 +43,12 @@ function readAppStringSafely(app, getterName, logKey) {
  * @returns {string} Desktop ID or an empty string.
  */
 export function getAppId(app) {
-    try {
-        return app?.get_id?.() || "";
-    } catch (error) {
-        logger.debugOnce("app-id", "App ID metadata was unavailable", error);
-        return "";
-    }
+  try {
+    return app?.get_id?.() || "";
+  } catch (error) {
+    logger.debugOnce("app-id", "App ID metadata was unavailable", error);
+    return "";
+  }
 }
 
 /**
@@ -58,12 +62,17 @@ export function getAppId(app) {
  * @returns {string} Best available application label.
  */
 export function getAppName(app, fallback = "") {
-    try {
-        return app?.get_display_name?.() || app?.get_name?.() || getAppId(app) || fallback;
-    } catch (error) {
-        logger.debugOnce("app-name", "App name metadata was unavailable", error);
-        return fallback;
-    }
+  try {
+    return (
+      app?.get_display_name?.() ||
+      app?.get_name?.() ||
+      getAppId(app) ||
+      fallback
+    );
+  } catch (error) {
+    logger.debugOnce("app-name", "App name metadata was unavailable", error);
+    return fallback;
+  }
 }
 
 /**
@@ -77,17 +86,20 @@ export function getAppName(app, fallback = "") {
  * @returns {Gio.Icon} App icon or a themed fallback.
  */
 export function getAppIcon(app) {
-    try {
-        // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
-        // its names can discard implementation details used by GTK to resolve
-        // desktop-file icons and caused every chooser row to hit the fallback.
-        return app?.get_icon?.() ?? FALLBACK_APP_ICON;
-    } catch (error) {
-        logger.debugOnce("app-icon", "App icon metadata was unavailable; using the fallback", error);
-        return FALLBACK_APP_ICON;
-    }
+  try {
+    // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
+    // its names can discard implementation details used by GTK to resolve
+    // desktop-file icons and caused every chooser row to hit the fallback.
+    return app?.get_icon?.() ?? FALLBACK_APP_ICON;
+  } catch (error) {
+    logger.debugOnce(
+      "app-icon",
+      "App icon metadata was unavailable; using the fallback",
+      error,
+    );
+    return FALLBACK_APP_ICON;
+  }
 }
-
 
 /**
  * Builds pure desktop-app metadata used by identity and search helpers.
@@ -101,14 +113,30 @@ export function getAppIcon(app) {
  * @returns {{desktopId: string, name: string, displayName: string, executable: string, startupWmClass: string, commandline: string}} Pure descriptor.
  */
 export function getAppDescriptor(app) {
-    return {
-        desktopId: getAppId(app),
-        name: readAppStringSafely(app, "get_name", "app-descriptor-name"),
-        displayName: readAppStringSafely(app, "get_display_name", "app-descriptor-display-name"),
-        executable: readAppStringSafely(app, "get_executable", "app-descriptor-executable"),
-        startupWmClass: readAppStringSafely(app, "get_startup_wm_class", "app-descriptor-wm-class"),
-        commandline: readAppStringSafely(app, "get_commandline", "app-descriptor-commandline"),
-    };
+  return {
+    desktopId: getAppId(app),
+    name: readAppStringSafely(app, "get_name", "app-descriptor-name"),
+    displayName: readAppStringSafely(
+      app,
+      "get_display_name",
+      "app-descriptor-display-name",
+    ),
+    executable: readAppStringSafely(
+      app,
+      "get_executable",
+      "app-descriptor-executable",
+    ),
+    startupWmClass: readAppStringSafely(
+      app,
+      "get_startup_wm_class",
+      "app-descriptor-wm-class",
+    ),
+    commandline: readAppStringSafely(
+      app,
+      "get_commandline",
+      "app-descriptor-commandline",
+    ),
+  };
 }
 
 /**
@@ -122,7 +150,7 @@ export function getAppDescriptor(app) {
  * @returns {string[]} Search aliases derived from browser/PWA metadata.
  */
 export function getAppSearchAliases(app) {
-    return buildBrowserIdentityAliases(getAppDescriptor(app));
+  return buildBrowserIdentityAliases(getAppDescriptor(app));
 }
 
 /**
@@ -135,16 +163,16 @@ export function getAppSearchAliases(app) {
  * @returns {Gio.AppInfo[]} Installed applications with stable IDs.
  */
 export function listInstalledApps() {
-    try {
-        const appsById = new Map();
-        for (const app of Gio.AppInfo.get_all()) {
-            const appId = getAppId(app);
-            if (!appId || appsById.has(appId)) continue;
-            appsById.set(appId, app);
-        }
-        return [...appsById.values()];
-    } catch (error) {
-        logger.warn("Installed apps could not be enumerated", error);
-        return [];
+  try {
+    const appsById = new Map();
+    for (const app of Gio.AppInfo.get_all()) {
+      const appId = getAppId(app);
+      if (!appId || appsById.has(appId)) continue;
+      appsById.set(appId, app);
     }
+    return [...appsById.values()];
+  } catch (error) {
+    logger.warn("Installed apps could not be enumerated", error);
+    return [];
+  }
 }

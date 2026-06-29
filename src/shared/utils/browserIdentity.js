@@ -17,31 +17,34 @@
  */
 
 const CHROMIUM_PWA_APP_ID_PATTERN = /^[a-p]{32}$/;
-const CHROMIUM_PWA_TOKEN_PATTERN = /(?:^|[._-])(?:crx_)?([a-p]{32})(?=$|[._-])/gi;
+const CHROMIUM_PWA_TOKEN_PATTERN =
+  /(?:^|[._-])(?:crx_)?([a-p]{32})(?=$|[._-])/gi;
 const EXACT_CHROMIUM_PWA_TOKEN_PATTERN = /^(?:crx_)?([a-p]{32})$/i;
 const STRONG_BROWSER_IDENTITY_SCORE = 900;
 
 function normalizeText(value) {
-    return String(value ?? "")
-        .normalize("NFKD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
+  return String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function normalizeComparable(value) {
-    return normalizeText(value)
-        .replace(/\.desktop$/i, "")
-        .replace(/[^a-z0-9]+/g, " ")
-        .trim()
-        .replace(/\s+/g, " ");
+  return normalizeText(value)
+    .replace(/\.desktop$/i, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 function normalizeCompact(value) {
-    return normalizeText(value).replace(/\.desktop$/i, "").replace(/[^a-z0-9]+/g, "");
+  return normalizeText(value)
+    .replace(/\.desktop$/i, "")
+    .replace(/[^a-z0-9]+/g, "");
 }
 
 function addUnique(values, value) {
-    if (value) values.add(value);
+  if (value) values.add(value);
 }
 
 /**
@@ -55,7 +58,7 @@ function addUnique(values, value) {
  * @returns {boolean} Whether the value is an exact PWA app ID.
  */
 export function isChromiumPwaAppId(value) {
-    return CHROMIUM_PWA_APP_ID_PATTERN.test(String(value ?? "").toLowerCase());
+  return CHROMIUM_PWA_APP_ID_PATTERN.test(String(value ?? "").toLowerCase());
 }
 
 /**
@@ -70,22 +73,23 @@ export function isChromiumPwaAppId(value) {
  * @returns {string[]} Unique lowercase PWA app IDs in discovery order.
  */
 export function extractChromiumPwaAppIds(...values) {
-    const appIds = new Set();
+  const appIds = new Set();
 
-    for (const value of values.flat()) {
-        const text = String(value ?? "").toLowerCase();
-        if (!text) continue;
+  for (const value of values.flat()) {
+    const text = String(value ?? "").toLowerCase();
+    if (!text) continue;
 
-        const exactMatch = text.match(EXACT_CHROMIUM_PWA_TOKEN_PATTERN);
-        if (exactMatch) {
-            appIds.add(exactMatch[1]);
-            continue;
-        }
-
-        for (const match of text.matchAll(CHROMIUM_PWA_TOKEN_PATTERN)) appIds.add(match[1]);
+    const exactMatch = text.match(EXACT_CHROMIUM_PWA_TOKEN_PATTERN);
+    if (exactMatch) {
+      appIds.add(exactMatch[1]);
+      continue;
     }
 
-    return [...appIds];
+    for (const match of text.matchAll(CHROMIUM_PWA_TOKEN_PATTERN))
+      appIds.add(match[1]);
+  }
+
+  return [...appIds];
 }
 
 /**
@@ -105,22 +109,22 @@ export function extractChromiumPwaAppIds(...values) {
  * @returns {string[]} Search aliases derived from browser/PWA metadata.
  */
 export function buildBrowserIdentityAliases(descriptor = {}) {
-    const aliases = new Set();
-    const values = [
-        descriptor.desktopId,
-        descriptor.name,
-        descriptor.displayName,
-        descriptor.executable,
-        descriptor.startupWmClass,
-        descriptor.commandline,
-    ];
+  const aliases = new Set();
+  const values = [
+    descriptor.desktopId,
+    descriptor.name,
+    descriptor.displayName,
+    descriptor.executable,
+    descriptor.startupWmClass,
+    descriptor.commandline,
+  ];
 
-    for (const appId of extractChromiumPwaAppIds(values)) {
-        addUnique(aliases, appId);
-        addUnique(aliases, `crx_${appId}`);
-    }
+  for (const appId of extractChromiumPwaAppIds(values)) {
+    addUnique(aliases, appId);
+    addUnique(aliases, `crx_${appId}`);
+  }
 
-    return [...aliases];
+  return [...aliases];
 }
 
 /**
@@ -139,45 +143,56 @@ export function buildBrowserIdentityAliases(descriptor = {}) {
  * @param {object} descriptor - Installed app descriptor.
  * @returns {{score: number, reason: string, appId: string}} Match score and explanation.
  */
-export function scoreBrowserIdentityCandidate(mediaIdentity = {}, descriptor = {}) {
-    const mediaValues = [
-        mediaIdentity.identity,
-        mediaIdentity.desktopEntry,
-        mediaIdentity.busName,
-        ...(mediaIdentity.extraHints ?? []),
+export function scoreBrowserIdentityCandidate(
+  mediaIdentity = {},
+  descriptor = {},
+) {
+  const mediaValues = [
+    mediaIdentity.identity,
+    mediaIdentity.desktopEntry,
+    mediaIdentity.busName,
+    ...(mediaIdentity.extraHints ?? []),
+  ];
+  const appIds = extractChromiumPwaAppIds(mediaValues);
+  if (appIds.length === 0)
+    return { score: 0, reason: "no-pwa-app-id", appId: "" };
+
+  const descriptorValues = {
+    desktopId: normalizeText(descriptor.desktopId),
+    startupWmClass: normalizeText(descriptor.startupWmClass),
+    commandline: normalizeText(descriptor.commandline),
+    executable: normalizeText(descriptor.executable),
+    name: normalizeComparable(descriptor.name),
+    displayName: normalizeComparable(descriptor.displayName),
+  };
+  const descriptorCompactName = normalizeCompact(
+    `${descriptor.name ?? ""} ${descriptor.displayName ?? ""}`,
+  );
+
+  let best = { score: 0, reason: "no-match", appId: appIds[0] ?? "" };
+  for (const appId of appIds) {
+    const candidates = [
+      { field: "desktopId", score: 1000, value: descriptorValues.desktopId },
+      {
+        field: "startupWmClass",
+        score: 950,
+        value: descriptorValues.startupWmClass,
+      },
+      { field: "commandline", score: 700, value: descriptorValues.commandline },
+      { field: "executable", score: 450, value: descriptorValues.executable },
     ];
-    const appIds = extractChromiumPwaAppIds(mediaValues);
-    if (appIds.length === 0) return { score: 0, reason: "no-pwa-app-id", appId: "" };
 
-    const descriptorValues = {
-        desktopId: normalizeText(descriptor.desktopId),
-        startupWmClass: normalizeText(descriptor.startupWmClass),
-        commandline: normalizeText(descriptor.commandline),
-        executable: normalizeText(descriptor.executable),
-        name: normalizeComparable(descriptor.name),
-        displayName: normalizeComparable(descriptor.displayName),
-    };
-    const descriptorCompactName = normalizeCompact(`${descriptor.name ?? ""} ${descriptor.displayName ?? ""}`);
-
-    let best = { score: 0, reason: "no-match", appId: appIds[0] ?? "" };
-    for (const appId of appIds) {
-        const candidates = [
-            { field: "desktopId", score: 1000, value: descriptorValues.desktopId },
-            { field: "startupWmClass", score: 950, value: descriptorValues.startupWmClass },
-            { field: "commandline", score: 700, value: descriptorValues.commandline },
-            { field: "executable", score: 450, value: descriptorValues.executable },
-        ];
-
-        for (const candidate of candidates) {
-            if (!candidate.value.includes(appId)) continue;
-            if (candidate.score > best.score) best = { score: candidate.score, reason: candidate.field, appId };
-        }
-
-        if (descriptorCompactName.includes(appId) && 250 > best.score)
-            best = { score: 250, reason: "name", appId };
+    for (const candidate of candidates) {
+      if (!candidate.value.includes(appId)) continue;
+      if (candidate.score > best.score)
+        best = { score: candidate.score, reason: candidate.field, appId };
     }
 
-    return best;
+    if (descriptorCompactName.includes(appId) && 250 > best.score)
+      best = { score: 250, reason: "name", appId };
+  }
+
+  return best;
 }
 
 /**
@@ -193,14 +208,19 @@ export function scoreBrowserIdentityCandidate(mediaIdentity = {}, descriptor = {
  * @returns {{descriptor: object, score: number, reason: string, appId: string}|null} Best strong match.
  */
 export function resolveBrowserIdentityCandidate(mediaIdentity, descriptors) {
-    let best = null;
+  let best = null;
 
-    for (const descriptor of descriptors ?? []) {
-        const result = scoreBrowserIdentityCandidate(mediaIdentity, descriptor);
-        if (result.score <= 0) continue;
-        if (!best || result.score > best.score)
-            best = { descriptor, score: result.score, reason: result.reason, appId: result.appId };
-    }
+  for (const descriptor of descriptors ?? []) {
+    const result = scoreBrowserIdentityCandidate(mediaIdentity, descriptor);
+    if (result.score <= 0) continue;
+    if (!best || result.score > best.score)
+      best = {
+        descriptor,
+        score: result.score,
+        reason: result.reason,
+        appId: result.appId,
+      };
+  }
 
-    return best && best.score >= STRONG_BROWSER_IDENTITY_SCORE ? best : null;
+  return best && best.score >= STRONG_BROWSER_IDENTITY_SCORE ? best : null;
 }

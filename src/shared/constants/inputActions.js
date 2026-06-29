@@ -21,34 +21,72 @@ import { InputActions } from "../enums/input.js";
  * preferences shortcut page.
  */
 export const INPUT_ACTION_DEFINITIONS = Object.freeze([
-    Object.freeze({ id: "play-pause", action: InputActions.PLAY_PAUSE, shortcutKey: "shortcut-play-pause" }),
-    Object.freeze({ id: "next-track", action: InputActions.NEXT_TRACK, shortcutKey: "shortcut-next-track" }),
-    Object.freeze({
-        id: "previous-track",
-        action: InputActions.PREVIOUS_TRACK,
-        shortcutKey: "shortcut-previous-track",
-    }),
-    Object.freeze({ id: "volume-up", action: InputActions.VOLUME_UP, shortcutKey: "shortcut-volume-up" }),
-    Object.freeze({ id: "volume-down", action: InputActions.VOLUME_DOWN, shortcutKey: "shortcut-volume-down" }),
-    Object.freeze({ id: "toggle-loop", action: InputActions.TOGGLE_LOOP, shortcutKey: "shortcut-toggle-loop" }),
-    Object.freeze({
-        id: "toggle-shuffle",
-        action: InputActions.TOGGLE_SHUFFLE,
-        shortcutKey: "shortcut-toggle-shuffle",
-    }),
-    Object.freeze({ id: "toggle-popup", action: InputActions.TOGGLE_POPUP, shortcutKey: "shortcut-toggle-popup" }),
-    Object.freeze({ id: "raise-app", action: InputActions.RAISE_APP, shortcutKey: "shortcut-raise-app" }),
-    Object.freeze({ id: "quit-app", action: InputActions.QUIT_APP, shortcutKey: "shortcut-quit-app" }),
-    Object.freeze({
-        id: "open-preferences",
-        action: InputActions.OPEN_PREFERENCES,
-        shortcutKey: "shortcut-open-preferences",
-    }),
-    Object.freeze({ id: "next-app", action: InputActions.NEXT_APP, shortcutKey: "shortcut-next-app" }),
+  Object.freeze({
+    id: "play-pause",
+    action: InputActions.PLAY_PAUSE,
+    shortcutKey: "interactions-shortcut-play-pause",
+  }),
+  Object.freeze({
+    id: "next-track",
+    action: InputActions.NEXT_TRACK,
+    shortcutKey: "interactions-shortcut-next-track",
+  }),
+  Object.freeze({
+    id: "previous-track",
+    action: InputActions.PREVIOUS_TRACK,
+    shortcutKey: "interactions-shortcut-previous-track",
+  }),
+  Object.freeze({
+    id: "volume-up",
+    action: InputActions.VOLUME_UP,
+    shortcutKey: "interactions-shortcut-volume-up",
+  }),
+  Object.freeze({
+    id: "volume-down",
+    action: InputActions.VOLUME_DOWN,
+    shortcutKey: "interactions-shortcut-volume-down",
+  }),
+  Object.freeze({
+    id: "toggle-loop",
+    action: InputActions.TOGGLE_LOOP,
+    shortcutKey: "interactions-shortcut-toggle-loop",
+  }),
+  Object.freeze({
+    id: "toggle-shuffle",
+    action: InputActions.TOGGLE_SHUFFLE,
+    shortcutKey: "interactions-shortcut-toggle-shuffle",
+  }),
+  Object.freeze({
+    id: "toggle-popup",
+    action: InputActions.TOGGLE_POPUP,
+    shortcutKey: "interactions-shortcut-toggle-popup",
+  }),
+  Object.freeze({
+    id: "raise-app",
+    action: InputActions.RAISE_APP,
+    shortcutKey: "interactions-shortcut-raise-app",
+  }),
+  Object.freeze({
+    id: "quit-app",
+    action: InputActions.QUIT_APP,
+    shortcutKey: "interactions-shortcut-quit-app",
+  }),
+  Object.freeze({
+    id: "open-preferences",
+    action: InputActions.OPEN_PREFERENCES,
+    shortcutKey: "interactions-shortcut-open-preferences",
+  }),
+  Object.freeze({
+    id: "next-app",
+    action: InputActions.NEXT_APP,
+    shortcutKey: "interactions-shortcut-next-app",
+  }),
 ]);
 
 /** Shortcut GSettings keys derived from INPUT_ACTION_DEFINITIONS for reset and validation flows. */
-export const KEYBOARD_SHORTCUT_KEYS = Object.freeze(INPUT_ACTION_DEFINITIONS.map(({ shortcutKey }) => shortcutKey));
+export const KEYBOARD_SHORTCUT_KEYS = Object.freeze(
+  INPUT_ACTION_DEFINITIONS.map(({ shortcutKey }) => shortcutKey),
+);
 
 /** Volume delta applied by volume input actions; 0.05 represents a 5% step. */
 export const VOLUME_STEP = 0.05;

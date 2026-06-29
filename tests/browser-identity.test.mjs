@@ -27,11 +27,27 @@ const SPOTIFY_PWA_ID = "hnpfjngllnobngcgfapefoaidbinmjnm";
 test("browser PWA identity matching stays generic and conservative", () => {
   assert.equal(isChromiumPwaAppId(YOUTUBE_MUSIC_ID), true);
   assert.equal(isChromiumPwaAppId(`${YOUTUBE_MUSIC_ID}x`), false);
-  assert.deepEqual(extractChromiumPwaAppIds(`crx_${YOUTUBE_MUSIC_ID}`), [YOUTUBE_MUSIC_ID]);
-  assert.deepEqual(extractChromiumPwaAppIds(`helium-${YOUTUBE_MUSIC_ID}-Default`), [YOUTUBE_MUSIC_ID]);
-  assert.deepEqual(extractChromiumPwaAppIds(`com.example.Browser-${YOUTUBE_MUSIC_ID}-Profile_2.desktop`), [YOUTUBE_MUSIC_ID]);
-  assert.deepEqual(extractChromiumPwaAppIds("brave-browser", "Google Chrome", "spotify"), []);
-  assert.deepEqual(extractChromiumPwaAppIds("crx_zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"), []);
+  assert.deepEqual(extractChromiumPwaAppIds(`crx_${YOUTUBE_MUSIC_ID}`), [
+    YOUTUBE_MUSIC_ID,
+  ]);
+  assert.deepEqual(
+    extractChromiumPwaAppIds(`helium-${YOUTUBE_MUSIC_ID}-Default`),
+    [YOUTUBE_MUSIC_ID],
+  );
+  assert.deepEqual(
+    extractChromiumPwaAppIds(
+      `com.example.Browser-${YOUTUBE_MUSIC_ID}-Profile_2.desktop`,
+    ),
+    [YOUTUBE_MUSIC_ID],
+  );
+  assert.deepEqual(
+    extractChromiumPwaAppIds("brave-browser", "Google Chrome", "spotify"),
+    [],
+  );
+  assert.deepEqual(
+    extractChromiumPwaAppIds("crx_zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"),
+    [],
+  );
 
   const aliases = buildBrowserIdentityAliases({
     desktopId: `helium-${YOUTUBE_MUSIC_ID}-Default.desktop`,
@@ -79,10 +95,16 @@ test("browser PWA identity matching stays generic and conservative", () => {
 
   const match = resolveBrowserIdentityCandidate(spotifyIdentity, [
     { desktopId: "com.google.Chrome.desktop", displayName: "Google Chrome" },
-    { desktopId: `chromium-${SPOTIFY_PWA_ID}-Default.desktop`, displayName: "Spotify" },
+    {
+      desktopId: `chromium-${SPOTIFY_PWA_ID}-Default.desktop`,
+      displayName: "Spotify",
+    },
   ]);
 
-  assert.equal(match?.descriptor.desktopId, `chromium-${SPOTIFY_PWA_ID}-Default.desktop`);
+  assert.equal(
+    match?.descriptor.desktopId,
+    `chromium-${SPOTIFY_PWA_ID}-Default.desktop`,
+  );
   assert.equal(match?.reason, "desktopId");
 
   const hints = buildAppLookupHints(

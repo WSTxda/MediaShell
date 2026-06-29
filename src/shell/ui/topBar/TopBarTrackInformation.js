@@ -6,7 +6,7 @@
  *
  * TopBarButton owns this component and passes the ordered metadata fields chosen
  * in preferences. It uses ScrollingLabel for long text and shared metadata
- * helpers for field assembly, keeping compact top-bar layout separate from
+ * helpers for field assembly, keeping compact top bar layout separate from
  * metadata normalization.
  */
 
@@ -20,83 +20,92 @@ import ScrollingLabel from "../ScrollingLabel.js";
  * Renders configurable track metadata inside the GNOME top bar.
  */
 export default class TopBarTrackInformation {
-    constructor(topBarButton) {
-        this.topBarButton = topBarButton;
-        this.actor = null;
-        this.renderKey = null;
+  constructor(topBarButton) {
+    this.topBarButton = topBarButton;
+    this.actor = null;
+    this.renderKey = null;
+  }
+
+  render(index, parentBox) {
+    const text = this.buildTrackInformationText();
+    const renderKey = [
+      text,
+      this.topBarButton.extensionController.topBarTrackInformationWidth,
+      this.topBarButton.extensionController.topBarTrackInformationWidthLock,
+      this.topBarButton.extensionController.topBarTrackInformationScrollEnabled,
+      this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
+      this.topBarButton.extensionController
+        .topBarTrackInformationScrollPauseMilliseconds,
+    ].join("\u0001");
+
+    if (this.actor && renderKey === this.renderKey) {
+      this.attach(index, parentBox);
+      return;
     }
 
-    render(index, parentBox) {
-        const text = this.buildTrackInformationText();
-        const renderKey = [
-            text,
-            this.topBarButton.extensionController.topBarTrackInformationWidth,
-            this.topBarButton.extensionController.isTopBarTrackInformationWidthLocked,
-            this.topBarButton.extensionController.topBarScrollTrackInformation,
-            this.topBarButton.extensionController.topBarScrollSpeed,
-            this.topBarButton.extensionController.topBarScrollPauseMilliseconds,
-        ].join("\u0001");
+    const label = new ScrollingLabel({
+      text,
+      width: this.topBarButton.extensionController.topBarTrackInformationWidth,
+      isFixedWidth:
+        this.topBarButton.extensionController.topBarTrackInformationWidthLock,
+      isScrolling:
+        this.topBarButton.extensionController
+          .topBarTrackInformationScrollEnabled,
+      isPaused:
+        this.topBarButton.mediaApp.playbackStatus !== PlaybackStatus.PLAYING,
+      scrollSpeed:
+        this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
+      scrollPauseMilliseconds:
+        this.topBarButton.extensionController
+          .topBarTrackInformationScrollPauseMilliseconds,
+    });
 
-        if (this.actor && renderKey === this.renderKey) {
-            this.attach(index, parentBox);
-            return;
-        }
+    const oldLabel = this.actor;
+    this.actor = label;
+    this.renderKey = renderKey;
+    this.attach(index, parentBox);
+    oldLabel?.destroy();
+  }
 
-        const label = new ScrollingLabel({
-            text,
-            width: this.topBarButton.extensionController.topBarTrackInformationWidth,
-            isFixedWidth: this.topBarButton.extensionController.isTopBarTrackInformationWidthLocked,
-            isScrolling: this.topBarButton.extensionController.topBarScrollTrackInformation,
-            isPaused: this.topBarButton.mediaApp.playbackStatus !== PlaybackStatus.PLAYING,
-            scrollSpeed: this.topBarButton.extensionController.topBarScrollSpeed,
-            scrollPauseMilliseconds: this.topBarButton.extensionController.topBarScrollPauseMilliseconds,
-        });
+  attach(index, parentBox) {
+    const parent = this.actor.get_parent();
+    const currentIndex =
+      parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
+    if (currentIndex === index) return;
 
-        const oldLabel = this.actor;
-        this.actor = label;
-        this.renderKey = renderKey;
-        this.attach(index, parentBox);
-        oldLabel?.destroy();
-    }
+    parent?.remove_child(this.actor);
+    parentBox.insert_child_at_index(this.actor, index);
+  }
 
-    attach(index, parentBox) {
-        const parent = this.actor.get_parent();
-        const currentIndex = parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
-        if (currentIndex === index) return;
+  buildTrackInformationText() {
+    return buildTrackInformationText(
+      this.topBarButton.mediaApp.metadata,
+      this.topBarButton.extensionController.topBarTrackInformationContent,
+      {
+        unknownArtist: _("Unknown artist"),
+        unknownAlbum: _("Unknown album"),
+      },
+    );
+  }
 
-        parent?.remove_child(this.actor);
-        parentBox.insert_child_at_index(this.actor, index);
-    }
+  pause() {
+    this.actor?.pauseScrolling();
+  }
 
-    buildTrackInformationText() {
-        return buildTrackInformationText(
-            this.topBarButton.mediaApp.metadata,
-            this.topBarButton.extensionController.topBarTrackInformationContent,
-            {
-                unknownArtist: _("Unknown artist"),
-                unknownAlbum: _("Unknown album"),
-            },
-        );
-    }
+  resume() {
+    this.actor?.resumeScrolling();
+  }
 
-    pause() {
-        this.actor?.pauseScrolling();
-    }
+  remove() {
+    if (!this.actor) return;
+    this.actor.get_parent()?.remove_child(this.actor);
+    this.actor.destroy();
+    this.actor = null;
+    this.renderKey = null;
+  }
 
-    resume() {
-        this.actor?.resumeScrolling();
-    }
-
-    remove() {
-        if (!this.actor) return;
-        this.actor.get_parent()?.remove_child(this.actor);
-        this.actor.destroy();
-        this.actor = null;
-        this.renderKey = null;
-    }
-
-    destroy() {
-        this.remove();
-        this.topBarButton = null;
-    }
+  destroy() {
+    this.remove();
+    this.topBarButton = null;
+  }
 }

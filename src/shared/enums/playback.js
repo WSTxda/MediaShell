@@ -10,13 +10,13 @@
  */
 
 export const PlaybackStatus = Object.freeze({
-    PLAYING: "Playing",
-    PAUSED: "Paused",
-    STOPPED: "Stopped",
+  PLAYING: "Playing",
+  PAUSED: "Paused",
+  STOPPED: "Stopped",
 });
 
 export const LoopStatus = Object.freeze({
-    NONE: "None",
-    TRACK: "Track",
-    PLAYLIST: "Playlist",
+  NONE: "None",
+  TRACK: "Track",
+  PLAYLIST: "Playlist",
 });

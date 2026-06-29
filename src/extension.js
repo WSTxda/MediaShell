@@ -23,18 +23,22 @@ const logger = createLogger("MediaShellExtension");
  * GNOME Shell entry point for the MediaShell runtime.
  */
 export default class MediaShellExtension extends Extension {
-    enable() {
-        this.extensionController = new ExtensionController(this);
-        this.extensionController.enable().catch((error) => logger.error("Unhandled extension startup failure", error));
-    }
+  enable() {
+    this.extensionController = new ExtensionController(this);
+    this.extensionController
+      .enable()
+      .catch((error) =>
+        logger.error("Unhandled extension startup failure", error),
+      );
+  }
 
-    disable() {
-        const extensionController = this.extensionController;
-        this.extensionController = null;
-        try {
-            extensionController?.destroy();
-        } catch (error) {
-            logger.error("Unhandled extension teardown failure", error);
-        }
+  disable() {
+    const extensionController = this.extensionController;
+    this.extensionController = null;
+    try {
+      extensionController?.destroy();
+    } catch (error) {
+      logger.error("Unhandled extension teardown failure", error);
     }
+  }
 }

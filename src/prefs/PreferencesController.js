@@ -12,99 +12,119 @@
 
 import Gtk from "gi://Gtk";
 
-import { migrateSettings, SETTINGS_SCHEMA_VERSION } from "../shared/settings/SettingsMigration.js";
 import { createLogger } from "../shared/utils/log.js";
 import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
-import ShortcutsPageController from "./groups/ShortcutsPageController.js";
-import TopBarStructureController from "./groups/TopBarStructureController.js";
+import InteractionsPageController from "./groups/InteractionsPageController.js";
+import TopBarLayoutController from "./groups/TopBarLayoutController.js";
 import OthersPageController from "./groups/OthersPageController.js";
 import PreferenceSensitivityController from "./groups/PreferenceSensitivityController.js";
 import { registerPreferencesResources } from "./resources/PreferencesResourceLoader.js";
 
 const logger = createLogger("PreferencesController");
-const PREFERENCE_PAGE_IDS = ["page-popup", "page-top-bar", "page-panel", "page-interactions", "page-others"];
+const PREFERENCE_PAGE_IDS = [
+  "page-popup",
+  "page-top-bar",
+  "page-panel",
+  "page-interactions",
+  "page-others",
+];
 
 /**
  * Builds and owns the full Libadwaita preferences window.
  */
 export default class PreferencesController {
-    constructor(preferencesInstance, preferencesWindow) {
-        this.preferencesInstance = preferencesInstance;
-        this.preferencesWindow = preferencesWindow;
-        this.isDestroyed = false;
-        this.closeSignalId = null;
-        this.ownedControllers = [];
+  constructor(preferencesInstance, preferencesWindow) {
+    this.preferencesInstance = preferencesInstance;
+    this.preferencesWindow = preferencesWindow;
+    this.isDestroyed = false;
+    this.closeSignalId = null;
+    this.ownedControllers = [];
+  }
+
+  async init() {
+    registerPreferencesResources(this.preferencesInstance.path);
+    const { ensurePreferenceWidgetsRegistered } =
+      await import("./widgets/WidgetRegistry.js");
+    if (this.isDestroyed) return;
+    ensurePreferenceWidgetsRegistered();
+
+    this.settings = this.preferencesInstance.getSettings();
+    this.builder = Gtk.Builder.new_from_resource(
+      "/org/gnome/shell/extensions/mediashell/ui/prefs.ui",
+    );
+
+    for (const pageId of PREFERENCE_PAGE_IDS) {
+      const page = this.builder.get_object(pageId);
+      if (!page) throw new Error(`Preferences page not found: ${pageId}`);
+      this.preferencesWindow.add(page);
     }
 
-    async init() {
-        registerPreferencesResources(this.preferencesInstance.path);
-        const { ensurePreferenceWidgetsRegistered } = await import("./widgets/WidgetRegistry.js");
-        if (this.isDestroyed) return;
-        ensurePreferenceWidgetsRegistered();
+    this.preferenceBinder = new PreferenceBinder(this.settings, this.builder);
+    this.preferenceBinder.bindAllPreferences();
 
-        this.settings = this.preferencesInstance.getSettings();
-        if (migrateSettings(this.settings))
-            logger.debug("Settings migrated to schema version", SETTINGS_SCHEMA_VERSION);
-        this.builder = Gtk.Builder.new_from_resource("/org/gnome/shell/extensions/mediashell/ui/prefs.ui");
+    this.ownedControllers = [
+      new PreferenceSensitivityController(this.builder),
+      new TopBarLayoutController(this.settings, this.builder),
+      new InteractionsPageController(
+        this.settings,
+        this.builder,
+        this.preferencesWindow,
+      ),
+      new OthersPageController(
+        this.settings,
+        this.builder,
+        this.preferencesWindow,
+      ),
+      new AboutDialogController(
+        this.preferencesInstance,
+        this.preferencesWindow,
+      ),
+    ];
+    for (const controller of this.ownedControllers) controller.init();
 
-        for (const pageId of PREFERENCE_PAGE_IDS) {
-            const page = this.builder.get_object(pageId);
-            if (!page) throw new Error(`Preferences page not found: ${pageId}`);
-            this.preferencesWindow.add(page);
-        }
+    this.closeSignalId = this.preferencesWindow.connect("close-request", () => {
+      this.destroy();
+      return false;
+    });
+    logger.debug("Preferences window initialized");
+  }
 
-        this.preferenceBinder = new PreferenceBinder(this.settings, this.builder);
-        this.preferenceBinder.bindAllPreferences();
+  destroy() {
+    if (this.isDestroyed) return;
+    this.isDestroyed = true;
 
-        this.ownedControllers = [
-            new PreferenceSensitivityController(this.builder),
-            new TopBarStructureController(this.settings, this.builder),
-            new ShortcutsPageController(this.settings, this.builder, this.preferencesWindow),
-            new OthersPageController(this.settings, this.builder, this.preferencesWindow),
-            new AboutDialogController(this.preferencesInstance, this.preferencesWindow),
-        ];
-        for (const controller of this.ownedControllers) controller.init();
-
-        this.closeSignalId = this.preferencesWindow.connect("close-request", () => {
-            this.destroy();
-            return false;
-        });
-        logger.debug("Preferences window initialized");
+    if (this.preferencesWindow && this.closeSignalId !== null) {
+      try {
+        this.preferencesWindow.disconnect(this.closeSignalId);
+      } catch (error) {
+        logger.debug(
+          "Preferences close signal was already disconnected",
+          error,
+        );
+      }
     }
+    this.closeSignalId = null;
 
-    destroy() {
-        if (this.isDestroyed) return;
-        this.isDestroyed = true;
-
-        if (this.preferencesWindow && this.closeSignalId !== null) {
-            try {
-                this.preferencesWindow.disconnect(this.closeSignalId);
-            } catch (error) {
-                logger.debug("Preferences close signal was already disconnected", error);
-            }
-        }
-        this.closeSignalId = null;
-
-        for (const controller of this.ownedControllers.reverse()) {
-            try {
-                controller.destroy();
-            } catch (error) {
-                logger.warn("A preferences controller failed during teardown", error);
-            }
-        }
-        this.ownedControllers.length = 0;
-
-        try {
-            this.preferenceBinder?.destroy();
-        } catch (error) {
-            logger.warn("Preference binder failed during teardown", error);
-        }
-        this.preferenceBinder = null;
-        this.settings = null;
-        this.builder = null;
-        this.preferencesWindow = null;
-        this.preferencesInstance = null;
-        logger.debug("Preferences window destroyed");
+    for (const controller of this.ownedControllers.reverse()) {
+      try {
+        controller.destroy();
+      } catch (error) {
+        logger.warn("A preferences controller failed during teardown", error);
+      }
     }
+    this.ownedControllers.length = 0;
+
+    try {
+      this.preferenceBinder?.destroy();
+    } catch (error) {
+      logger.warn("Preference binder failed during teardown", error);
+    }
+    this.preferenceBinder = null;
+    this.settings = null;
+    this.builder = null;
+    this.preferencesWindow = null;
+    this.preferencesInstance = null;
+    logger.debug("Preferences window destroyed");
+  }
 }

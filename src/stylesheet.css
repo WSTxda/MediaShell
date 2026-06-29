@@ -2,7 +2,7 @@
  * MediaShell Shell stylesheet.
  *
  * Sections mirror the runtime UI tree: shared utilities, top bar, popup root,
- * app selector, album art, track information, Progress Bar, and playback controls.
+ * app selector, album art, track information, progress bar, and playback controls.
  * Keep horizontal alignment rules centralized in component roots; JS computes
  * fixed widths from matching constants in src/shell/constants/.
  */
@@ -31,8 +31,8 @@
     padding: 0;
 }
 
-/* Top Bar ------------------------------------------------------------
- * Top Bar actions live on the non-playback action boxes. Playback controls are
+/* Top bar ------------------------------------------------------------
+ * Top bar actions live on the non-playback action boxes. Playback controls are
  * separate interactive actors so their clicks never trigger the button gestures.
  */
 .panel-button {
@@ -117,7 +117,7 @@
     margin-bottom: 0;
 }
 
-/* Popup — App Selector trigger --------------------------------------
+/* Popup — App selector trigger --------------------------------------
  * The pill keeps its stock Quick Settings shape. It is centered and does not
  * participate in the full-width parent-padding grid.
  */
@@ -157,7 +157,7 @@
     font-size: 100%;
 }
 
-/* Popup — App Selector list -----------------------------------------
+/* Popup — App selector list -----------------------------------------
  * Full-width component: the card starts and ends at the parent padding, exactly
  * like the slider and labels. The card owns only internal organization padding.
  *
@@ -249,7 +249,7 @@
     icon-size: 14px;
 }
 
-/* Popup — Album Art --------------------------------------------------
+/* Popup — Album art --------------------------------------------------
  * Full-width component: the actor code sizes album art to the parent content
  * width. It responds to popup-width independently from the fixed controls row.
  */
@@ -268,7 +268,7 @@
     padding: 0;
 }
 
-/* Popup — Track Information -----------------------------------------
+/* Popup — Track information -----------------------------------------
  * Full-width component: labels are sized by JS to the parent content width and
  * should not define horizontal padding here. Use spacing/font rules only.
  */
@@ -289,7 +289,7 @@
     font-size: 90%;
 }
 
-/* Popup — Progress Bar -----------------------------------------------
+/* Popup — Progress bar -----------------------------------------------
  * Full-width component: slider and time row share the parent content width.
  * The elapsed time aligns to the left edge; duration aligns to the right edge.
  */
@@ -306,8 +306,8 @@
     font-feature-settings: "tnum";
 }
 
-/* Popup — Playback Controls -----------------------------------------
- * Fixed stock controls row. Popup-width changes should not stretch the gaps
+/* Popup — Playback controls -----------------------------------------
+ * Fixed stock controls row. Popup width changes should not stretch the gaps
  * between previous/play/next; the row stays centered like secondary controls.
  */
 .mediashell-popup-playback-controls {

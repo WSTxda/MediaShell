@@ -21,7 +21,6 @@ POT = LOCALE_DIR / "mediashell@wstxda.github.com.pot"
 REQUIRE_NATIVE_TOOLS = os.environ.get("MEDIASHELL_REQUIRE_NATIVE_TOOLS") == "1"
 PLACEHOLDER_RE = re.compile(r"%(?:\d+\$)?[A-Za-z]|\{[A-Za-z_][A-Za-z0-9_]*\}")
 
-
 @dataclass
 class CatalogEntry:
     msgid: str
@@ -351,8 +350,20 @@ def check_translations() -> None:
 
     for po_path in sorted(LOCALE_DIR.glob("*.po")):
         entries = parse_catalog(po_path)
-        errors.extend(validate_catalog_header(po_path, entries, po_path.stem))
+        language = po_path.stem
+        errors.extend(validate_catalog_header(po_path, entries, language))
         errors.extend(validate_source_references(po_path, entries))
+
+        raw_catalog = po_path.read_text(encoding="utf-8")
+        if "#, fuzzy" in raw_catalog:
+            errors.append(f"{po_path.name}: fuzzy translations must be resolved before release")
+        if re.search(r"^#~", raw_catalog, re.MULTILINE):
+            errors.append(f"{po_path.name}: obsolete translations must be removed before release")
+
+        missing_messages = sorted((set(pot_entries) - {""}) - (set(entries) - {""}))
+        if missing_messages:
+            errors.append(f"{po_path.name}: missing template messages: {missing_messages}")
+
 
         for msgid, entry in entries.items():
             if not msgid or msgid not in pot_entries:

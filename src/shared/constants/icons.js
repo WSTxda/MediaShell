@@ -18,7 +18,7 @@
  * or artwork metadata.
  */
 export const IconNames = Object.freeze({
-    MISSING: "image-missing-symbolic",
-    MEDIA: "audio-x-generic-symbolic",
-    APP: "application-x-executable-symbolic",
+  MISSING: "image-missing-symbolic",
+  MEDIA: "audio-x-generic-symbolic",
+  APP: "application-x-executable-symbolic",
 });

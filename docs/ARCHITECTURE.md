@@ -1,6 +1,6 @@
 # Architecture
 
-MediaShell is organized around process boundaries and UI surfaces. Shell code owns actors, MPRIS, and GNOME Shell integration. Preferences code owns GTK4/Libadwaita UI. Shared code owns toolkit-independent constants, enums, migrations, and pure helpers.
+MediaShell is organized around process boundaries and UI surfaces. Shell code owns actors, MPRIS, and GNOME Shell integration. Preferences code owns GTK4/Libadwaita UI. Shared code owns toolkit-independent constants, enums, settings helpers, and pure helpers.
 
 The installable package contains only runtime files. Repository docs, tests, screenshots, source catalogs, and development-only assets stay outside the extension archive.
 
@@ -12,7 +12,7 @@ src/
   prefs.js                     Preferences entry point
   stylesheet.css               Shell stylesheet
   metadata.json                Extension manifest
-  shared/                      Toolkit-independent constants, enums, migrations, helpers
+  shared/                      Toolkit-independent constants, enums, settings helpers
   shell/                       GNOME Shell runtime code
   prefs/                       GTK4/Libadwaita preferences code
 assets/                        GtkBuilder UI, schemas, D-Bus XML, translations, images
@@ -22,7 +22,7 @@ tests/                         Node tests for pure logic and policies
 
 ### `src/shared/`
 
-`shared` must remain independent from GNOME runtime APIs. It contains constants, enums, settings migrations, formatting, metadata normalization, MPRIS helpers, logging, app identity, browser/PWA identity scoring, search, playback-control decisions, and visualizer math.
+`shared` must remain independent from GNOME runtime APIs. It contains constants, enums, formatting, track information normalization, MPRIS helpers, logging, app identity, browser/PWA identity scoring, search, playback-control decisions, and visualizer math.
 
 Use this layer for pure logic that can be tested with Node and reused by Shell and Preferences code without importing St, Clutter, Shell, Meta, GTK, Adw, or Gdk.
 
@@ -32,12 +32,12 @@ Use this layer for pure logic that can be tested with Node and reused by Shell a
 
 Important owners:
 
-- `ExtensionController`: enable/disable lifecycle, settings, migrations, services, MPRIS registry, and top bar mounting.
+- `ExtensionController`: enable/disable lifecycle, settings, services, MPRIS registry, and top bar mounting.
 - `mpris/`: D-Bus discovery, `PlayerProxy`, position tracking, proxy creation, and active media-app selection.
-- `services/`: album art, app resolution, global shortcuts, resources, and isolated Shell patches.
+- `services/`: album art, app resolution, global shortcuts, resources, and isolated GNOME Shell patches.
 - `settings/`: runtime settings specification and store.
 - `ui/topBar/`: compact top bar button, app icon, track information, playback controls, pointer actions, and visualizer.
-- `ui/popup/`: popup container, app selector, album art, track information, Progress Bar, and playback controls.
+- `ui/popup/`: popup container, app selector, album art, track information, progress bar, and playback controls.
 - `utils/`: Shell-only helpers such as icon creation, pointer actions, and cancellation classification.
 
 ### `src/prefs/`
@@ -57,12 +57,12 @@ Important owners:
 MediaShell has separate configuration surfaces:
 
 - **Panel** controls where the extension appears in the GNOME Shell panel/top bar area: position, index, and element order.
-- **Top Bar** controls the compact top bar button: app icon, track information, playback controls, and visualizer.
-- **Popup** controls the menu opened by the top bar button: app selector, album art, track information, Progress Bar, and playback controls.
+- **Top bar** controls the compact top bar button: app icon, track information, playback controls, and visualizer.
+- **Popup** controls the menu opened by the top bar button: app selector, album art, track information, progress bar, and playback controls.
 - **Interactions** controls mouse actions and keyboard shortcuts.
-- **Others** contains blocked apps, cache maintenance, reset actions, and system media controls.
+- **Others** contains blocked apps, cache maintenance, reset actions, and the Hide GNOME Shell media controls option.
 
-Do not use Panel, Top Bar, and Popup interchangeably. Panel is placement. Top Bar is the visible button. Popup is the menu opened from that button.
+Do not use Panel, Top bar, and Popup interchangeably. Panel is placement. Top bar is the visible button. Popup is the menu opened from that button.
 
 ## Runtime lifecycle
 
@@ -71,7 +71,7 @@ Do not use Panel, Top Bar, and Popup interchangeably. Panel is placement. Top Ba
     │ enable()
     ▼
 [register resources]
-    │ read settings + migrate schema version
+    │ read settings
     ▼
 [start services]
     │ shortcuts + Shell patches
@@ -107,16 +107,16 @@ Active selection priority is: pinned media app, playing media app, current media
 
 MPRIS endpoints often emit related property changes in bursts. `TopBarButton.requestWidgetUpdate()` and `PopupContent.requestWidgetUpdate()` collect `WidgetFlags` and reconcile affected regions together. Individual flags represent renderable regions; compound flags exist only for bulk resets.
 
-Top Bar and Popup share pure decisions where useful, not actors. Track information shares metadata normalization. Playback controls share play/pause/stop resolution. Rendering, layout, and lifecycle remain surface-specific.
+Top bar and popup share pure decisions where useful, not actors. Track information shares metadata normalization. Playback controls share play/pause/stop resolution. Rendering, layout, and lifecycle remain surface-specific.
 
 ## Settings and contracts
 
-The GSettings schema is the public contract for keys, defaults, enum IDs, and value ranges. `SettingsSpec` maps raw schema values into runtime values only when Shell code consumes them. Migrations are idempotent and preserve legacy user values only when the destination key has no explicit value.
+The GSettings schema is the public contract for keys, defaults, enum IDs, and value ranges. `SettingsSpec` maps raw schema values into runtime values only when Shell code consumes them. Add a migration layer only for shipped schema upgrades that need one, and keep migrations idempotent and explicit.
 
-Stable contracts include GSettings key names, schema enum IDs, D-Bus names, GTypeName strings, CSS classes, and migration source keys. Do not reuse them for new semantics.
+Stable contracts include GSettings key names, schema enum IDs, D-Bus names, GTypeName strings, and CSS classes. Do not reuse them for new semantics.
 
 Module headers document local ownership. Use them to identify what a file owns before changing its imports, lifecycle, or public contracts. Broader cross-module flow belongs in this document; local maintenance context belongs beside the code.
 
 ## Private Shell API boundary
 
-`SystemMediaControlsPatch` is the only intentional private GNOME Shell patch. It must remain isolated, capability-checked, reversible, and fail-open. Other code should integrate through public Shell, Gio, GLib, St, Clutter, settings, or MPRIS APIs.
+`GnomeShellMediaControlsPatch` is the only intentional private GNOME Shell patch. It must remain isolated, capability-checked, reversible, and fail-open. Other code should integrate through public Shell, Gio, GLib, St, Clutter, settings, or MPRIS APIs.
