@@ -65,7 +65,7 @@ JavaScript strings must use gettext helpers. GtkBuilder strings must use `transl
 ## Scope and review notes
 
 - Keep Shell runtime, Preferences, and Shared changes in their owning layers.
-- Use project vocabulary consistently: Panel, Top Bar, Popup, app selector, track information, playback controls, Progress Bar, visualizer, and media app.
+- Use project vocabulary consistently: Panel, top bar, popup, app selector, track information, playback controls, progress bar, visualizer, and media app.
 - Use `player` only for MPRIS Player details, `PlayerProxy`, or protocol names.
 - Keep the compact `@file` / `@module` header accurate when creating or moving JavaScript modules.
 - Add inline comments when they explain lifecycle, signal ownership, teardown, MPRIS edge cases, compatibility, or non-obvious UI behavior.

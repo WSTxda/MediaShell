@@ -6,8 +6,8 @@
  *
  * Controllers use this helper when they connect several source objects and need
  * teardown order to stay visible in destroy(). It replaces duplicated
- * connect/disconnect arrays while keeping ownership more explicit than a broad
- * connectObject() migration.
+ * connect/disconnect arrays while keeping ownership more explicit than broad
+ * object-lifetime signal helpers.
  */
 
 /**
@@ -22,9 +22,14 @@
  * @param {string} signal - Signal name to connect.
  * @param {Function} callback - Signal callback.
  */
-export function connectOwnedSignal(ownedSignalConnections, object, signal, callback) {
-    const signalId = object.connect(signal, callback);
-    ownedSignalConnections.push({ object, signalId });
+export function connectOwnedSignal(
+  ownedSignalConnections,
+  object,
+  signal,
+  callback,
+) {
+  const signalId = object.connect(signal, callback);
+  ownedSignalConnections.push({ object, signalId });
 }
 
 /**
@@ -37,13 +42,16 @@ export function connectOwnedSignal(ownedSignalConnections, object, signal, callb
  * @param {Array<{object: object, signalId: number}>} ownedSignalConnections - Mutable ownership list.
  * @param {(error: unknown) => void} logDisconnectedSignal - Failure logger.
  */
-export function disconnectOwnedSignals(ownedSignalConnections, logDisconnectedSignal) {
-    for (const { object, signalId } of ownedSignalConnections) {
-        try {
-            object.disconnect(signalId);
-        } catch (error) {
-            logDisconnectedSignal(error);
-        }
+export function disconnectOwnedSignals(
+  ownedSignalConnections,
+  logDisconnectedSignal,
+) {
+  for (const { object, signalId } of ownedSignalConnections) {
+    try {
+      object.disconnect(signalId);
+    } catch (error) {
+      logDisconnectedSignal(error);
     }
-    ownedSignalConnections.length = 0;
+  }
+  ownedSignalConnections.length = 0;
 }

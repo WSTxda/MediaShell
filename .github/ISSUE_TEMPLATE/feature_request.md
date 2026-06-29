@@ -8,7 +8,7 @@ assignees: ""
 
 ## Proposal
 
-Describe the requested behavior using the canonical MediaShell terms when applicable: App selector, Track Information, Playback Controls, Progress Bar, Album Art, Visualizer, Mouse Actions, Keyboard Shortcuts, Blocked Apps, or System media controls.
+Describe the requested behavior using the canonical MediaShell terms when applicable: app selector, track information, playback controls, progress bar, album art, visualizer, mouse actions, keyboard shortcuts, blocked apps, or the Hide GNOME Shell media controls option.
 
 ## Motivation
 
@@ -20,7 +20,7 @@ Describe how the feature should behave, including defaults, settings, and intera
 
 ## Compatibility and lifecycle
 
-Note any expected MPRIS, D-Bus, GNOME Shell, performance, accessibility, or migration implications.
+Note any expected MPRIS, D-Bus, GNOME Shell, performance, accessibility, or settings implications.
 
 ## Alternatives
 

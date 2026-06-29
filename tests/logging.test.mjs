@@ -49,7 +49,8 @@ test("logger scopes messages and bounds once-only keys per level", () => {
 
     const evictionLogger = createLogger("EvictionTest");
     const before = calls.length;
-    for (let index = 0; index <= 256; index++) evictionLogger.debugOnce(`key-${index}`, index);
+    for (let index = 0; index <= 256; index++)
+      evictionLogger.debugOnce(`key-${index}`, index);
     evictionLogger.debugOnce("key-0", "evicted");
     assert.equal(calls.length - before, 258);
   } finally {

@@ -29,11 +29,14 @@ let registeredResource = null;
  * @returns {Gio.Resource} Registered preferences resource.
  */
 export function registerPreferencesResources(extensionPath) {
-    if (registeredResource) return registeredResource;
+  if (registeredResource) return registeredResource;
 
-    const resourcePath = GLib.build_filenamev([extensionPath, "org.gnome.shell.extensions.mediashell.gresource"]);
-    registeredResource = Gio.resource_load(resourcePath);
-    Gio.resources_register(registeredResource);
-    logger.debug("Registered preference resources");
-    return registeredResource;
+  const resourcePath = GLib.build_filenamev([
+    extensionPath,
+    "org.gnome.shell.extensions.mediashell.gresource",
+  ]);
+  registeredResource = Gio.resource_load(resourcePath);
+  Gio.resources_register(registeredResource);
+  logger.debug("Registered preference resources");
+  return registeredResource;
 }

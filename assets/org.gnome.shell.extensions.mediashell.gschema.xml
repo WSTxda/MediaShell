@@ -1,323 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <enum id="org.gnome.shell.extensions.mediashell.input-actions">
-    <value nick="NONE" value="0" />
-    <value nick="PLAY_PAUSE" value="1" />
-    <value nick="NEXT_TRACK" value="2" />
-    <value nick="PREVIOUS_TRACK" value="3" />
-    <value nick="VOLUME_UP" value="4" />
-    <value nick="VOLUME_DOWN" value="5" />
-    <value nick="TOGGLE_LOOP" value="6" />
-    <value nick="TOGGLE_SHUFFLE" value="7" />
-    <value nick="TOGGLE_POPUP" value="8" />
-    <value nick="RAISE_APP" value="9" />
-    <value nick="QUIT_APP" value="10" />
-    <value nick="OPEN_PREFERENCES" value="11" />
-    <value nick="NEXT_APP" value="12" />
 
-    <!-- Migration-only values keep existing profiles readable until version 6 runs. -->
-    <value nick="PLAY" value="13" />
-    <value nick="PAUSE" value="14" />
-    <value nick="SHOW_POPUP" value="15" />
-    <value nick="QUIT_PLAYER" value="16" />
-    <value nick="RAISE_PLAYER" value="17" />
+  <enum id="org.gnome.shell.extensions.mediashell.input-actions">
+    <value nick="NONE"             value="0"  />
+    <value nick="PLAY_PAUSE"       value="1"  />
+    <value nick="NEXT_TRACK"       value="2"  />
+    <value nick="PREVIOUS_TRACK"   value="3"  />
+    <value nick="VOLUME_UP"        value="4"  />
+    <value nick="VOLUME_DOWN"      value="5"  />
+    <value nick="TOGGLE_LOOP"      value="6"  />
+    <value nick="TOGGLE_SHUFFLE"   value="7"  />
+    <value nick="TOGGLE_POPUP"     value="8"  />
+    <value nick="RAISE_APP"        value="9"  />
+    <value nick="QUIT_APP"         value="10" />
+    <value nick="OPEN_PREFERENCES" value="11" />
+    <value nick="NEXT_APP"         value="12" />
   </enum>
 
-  <enum id="org.gnome.shell.extensions.mediashell.top-bar-positions">
-    <value nick="Left" value="0" />
+  <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
+    <value nick="Left"   value="0" />
     <value nick="Center" value="1" />
-    <value nick="Right" value="2" />
+    <value nick="Right"  value="2" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.visualizer-styles">
-    <value nick="WAVE" value="0" />
+    <value nick="WAVE"  value="0" />
     <value nick="PULSE" value="1" />
   </enum>
 
-  <schema id="org.gnome.shell.extensions.mediashell" path="/org/gnome/shell/extensions/mediashell/">
-    <!-- Internal -->
-    <key name="settings-schema-version" type="u">
-      <range min="0" max="9" />
-      <default>0</default>
-    </key>
+  <schema id="org.gnome.shell.extensions.mediashell"
+          path="/org/gnome/shell/extensions/mediashell/">
 
     <!-- Popup -->
     <key name="popup-width" type="u">
       <range min="250" max="500" />
       <default>250</default>
     </key>
-    <key name="show-popup-album-art" type="b">
+    <key name="popup-album-art-show" type="b">
       <default>true</default>
     </key>
     <key name="popup-album-art-corner-radius" type="u">
       <range min="0" max="50" />
       <default>20</default>
     </key>
-    <key name="show-popup-track-information" type="b">
+    <key name="popup-track-information-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-popup-title" type="b">
+    <key name="popup-track-information-title-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-popup-artist" type="b">
+    <key name="popup-track-information-artist-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-popup-album" type="b">
+    <key name="popup-track-information-album-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-popup-progress-bar" type="b">
+    <key name="popup-progress-bar-show" type="b">
       <default>true</default>
     </key>
-    <key name="popup-scroll-track-information" type="b">
+    <key name="popup-track-information-scroll-enabled" type="b">
       <default>false</default>
     </key>
-    <key name="popup-scroll-speed" type="u">
+    <key name="popup-track-information-scroll-speed" type="u">
       <range min="1" max="10" />
       <default>4</default>
     </key>
-    <key name="popup-scroll-pause-time" type="u">
+    <key name="popup-track-information-scroll-pause-time" type="u">
       <range min="0" max="10" />
       <default>0</default>
     </key>
-    <key name="use-colored-popup-app-icon" type="b">
+    <key name="popup-app-icon-use-color" type="b">
       <default>true</default>
     </key>
 
-    <!-- Top Bar -->
-    <key name="show-top-bar-track-information" type="b">
+    <!-- Top bar -->
+    <key name="top-bar-track-information-show" type="b">
       <default>true</default>
-    </key>
-    <key name="show-top-bar-visualizer" type="b">
-      <default>false</default>
-    </key>
-    <key name="top-bar-visualizer-style" enum="org.gnome.shell.extensions.mediashell.visualizer-styles">
-      <default>'WAVE'</default>
-    </key>
-    <key name="top-bar-visualizer-speed" type="u">
-      <range min="1" max="8" />
-      <default>4</default>
     </key>
     <key name="top-bar-track-information-width" type="u">
       <range min="0" max="1000" />
       <default>200</default>
     </key>
-    <key name="lock-top-bar-track-information-width" type="b">
+    <key name="top-bar-track-information-width-lock" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-scroll-track-information" type="b">
+    <key name="top-bar-track-information-scroll-enabled" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-scroll-speed" type="u">
+    <key name="top-bar-track-information-scroll-speed" type="u">
       <range min="1" max="10" />
       <default>4</default>
     </key>
-    <key name="top-bar-scroll-pause-time" type="u">
+    <key name="top-bar-track-information-scroll-pause-time" type="u">
       <range min="0" max="10" />
       <default>0</default>
     </key>
     <key name="top-bar-track-information-content" type="as">
       <default>['TITLE', '•', 'ARTIST']</default>
     </key>
-    <key name="show-top-bar-app-icon" type="b">
+    <key name="top-bar-app-icon-show" type="b">
       <default>true</default>
     </key>
-    <key name="use-colored-top-bar-app-icon" type="b">
+    <key name="top-bar-app-icon-use-color" type="b">
       <default>false</default>
     </key>
-    <key name="show-top-bar-playback-controls" type="b">
+    <key name="top-bar-visualizer-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="top-bar-visualizer-style"
+         enum="org.gnome.shell.extensions.mediashell.visualizer-styles">
+      <default>'WAVE'</default>
+    </key>
+    <key name="top-bar-visualizer-speed" type="u">
+      <range min="1" max="8" />
+      <default>4</default>
+    </key>
+    <key name="top-bar-playback-controls-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-top-bar-play-pause" type="b">
+    <key name="top-bar-playback-controls-play-pause-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-top-bar-next-track" type="b">
+    <key name="top-bar-playback-controls-next-track-show" type="b">
       <default>true</default>
     </key>
-    <key name="show-top-bar-previous-track" type="b">
+    <key name="top-bar-playback-controls-previous-track-show" type="b">
       <default>true</default>
-    </key>
-
-    <!-- Panel -->
-    <key name="top-bar-position" enum="org.gnome.shell.extensions.mediashell.top-bar-positions">
-      <default>'Center'</default>
-    </key>
-    <key name="top-bar-index" type="u">
-      <range min="0" max="100" />
-      <default>0</default>
     </key>
     <key name="top-bar-element-order" type="as">
       <default>['APP_ICON', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
     </key>
 
-    <!-- Interactions -->
-    <key name="shortcut-play-pause" type="as">
-      <default><![CDATA[['']]]></default>
+    <!-- Panel -->
+    <key name="panel-position"
+         enum="org.gnome.shell.extensions.mediashell.panel-positions">
+      <default>'Center'</default>
     </key>
-    <key name="shortcut-next-track" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-previous-track" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-volume-up" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-volume-down" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-toggle-loop" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-toggle-shuffle" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-toggle-popup" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-raise-app" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-quit-app" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-open-preferences" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="shortcut-next-app" type="as">
-      <default><![CDATA[['']]]></default>
+    <key name="panel-index" type="u">
+      <range min="0" max="100" />
+      <default>0</default>
     </key>
 
-    <!-- Version 5 key retained for one-way migration to shortcut-toggle-popup. -->
-    <key name="shortcut-show-popup" type="as">
+    <!-- Interactions -->
+    <key name="interactions-shortcut-play-pause" type="as">
       <default><![CDATA[['']]]></default>
     </key>
-    <key name="mouse-action-left" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-shortcut-next-track" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-previous-track" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-volume-up" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-volume-down" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-toggle-loop" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-toggle-shuffle" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-toggle-popup" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-raise-app" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-quit-app" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-open-preferences" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-next-app" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-mouse-action-left"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'TOGGLE_POPUP'</default>
     </key>
-    <key name="mouse-action-middle" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-mouse-action-middle"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'OPEN_PREFERENCES'</default>
     </key>
-    <key name="mouse-action-right" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-mouse-action-right"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'RAISE_APP'</default>
     </key>
-    <key name="mouse-action-double" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-mouse-action-double"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'NONE'</default>
     </key>
-    <key name="mouse-action-scroll-up" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-mouse-action-scroll-up"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'VOLUME_UP'</default>
     </key>
-    <key name="mouse-action-scroll-down" enum="org.gnome.shell.extensions.mediashell.input-actions">
+    <key name="interactions-mouse-action-scroll-down"
+         enum="org.gnome.shell.extensions.mediashell.input-actions">
       <default>'VOLUME_DOWN'</default>
     </key>
 
     <!-- Others -->
-    <key name="hide-system-media-controls" type="b">
+    <key name="gnome-shell-hide-media-controls" type="b">
       <default>true</default>
     </key>
-    <key name="cache-album-art" type="b">
+    <key name="album-art-cache-enabled" type="b">
       <default>true</default>
     </key>
     <key name="blocked-apps" type="as">
       <default>[]</default>
     </key>
 
-    <!-- Keys retained from the previous naming pass for one-way migration. -->
-    <key name="top-bar-track-information-lock-width" type="b">
-      <default>false</default>
-    </key>
-    <key name="top-bar-colored-app-icon" type="b">
-      <default>false</default>
-    </key>
-    <key name="popup-colored-app-icon" type="b">
-      <default>true</default>
-    </key>
-    <key name="top-bar-elements-order" type="as">
-      <default>['APP_ICON', 'TRACK_INFORMATION', 'PLAYBACK_CONTROLS']</default>
-    </key>
-    <key name="extension-position" enum="org.gnome.shell.extensions.mediashell.top-bar-positions">
-      <default>'Center'</default>
-    </key>
-    <key name="extension-index" type="u">
-      <range min="0" max="100" />
-      <default>0</default>
-    </key>
-
-    <!-- Legacy keys retained for one-way migration and downgrade compatibility. -->
-    <key name="label-width" type="u">
-      <range min="0" max="1000" />
-      <default>200</default>
-    </key>
-    <key name="fixed-label-width" type="b">
-      <default>false</default>
-    </key>
-    <key name="scroll-labels" type="b">
-      <default>false</default>
-    </key>
-    <key name="scroll-speed" type="u">
-      <range min="1" max="10" />
-      <default>4</default>
-    </key>
-    <key name="scroll-pause-time" type="u">
-      <range min="0" max="10" />
-      <default>0</default>
-    </key>
-    <key name="popup-scroll-labels" type="b">
-      <default>false</default>
-    </key>
-    <key name="hide-media-notification" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-track-slider" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-popup-cover-art" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-label" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-player-icon" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-control-icons" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-control-icons-play" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-control-icons-next" type="b">
-      <default>true</default>
-    </key>
-    <key name="show-control-icons-previous" type="b">
-      <default>true</default>
-    </key>
-    <key name="colored-player-icon" type="b">
-      <default>false</default>
-    </key>
-    <key name="colored-player-icon-menu" type="b">
-      <default>true</default>
-    </key>
-    <key name="cover-art-radius" type="u">
-      <range min="0" max="50" />
-      <default>20</default>
-    </key>
-    <key name="elements-order" type="as">
-      <default>['ICON', 'LABEL', 'CONTROLS']</default>
-    </key>
-    <key name="labels-order" type="as">
-      <default>['TITLE', '•', 'ARTIST']</default>
-    </key>
-    <key name="cache-art" type="b">
-      <default>true</default>
-    </key>
-    <key name="blacklisted-players" type="as">
-      <default>[]</default>
-    </key>
-    <key name="toggle-popup-shortcut" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="mediacontrols-show-popup-menu" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
   </schema>
 </schemalist>

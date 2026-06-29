@@ -22,5 +22,5 @@ import Gio from "gi://Gio";
  * @returns {boolean} True when the error represents Gio.IOErrorEnum.CANCELLED.
  */
 export function isCancellationError(error) {
-    return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
+  return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
 }

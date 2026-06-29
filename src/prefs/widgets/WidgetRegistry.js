@@ -16,7 +16,7 @@ import TopBarTrackInformationContentRow from "./TopBarTrackInformationContentRow
 import TopBarElementOrderGroup from "./TopBarElementOrderGroup.js";
 
 export function ensurePreferenceWidgetsRegistered() {
-    GObject.type_ensure(BlockedAppsGroup.$gtype);
-    GObject.type_ensure(TopBarTrackInformationContentRow.$gtype);
-    GObject.type_ensure(TopBarElementOrderGroup.$gtype);
+  GObject.type_ensure(BlockedAppsGroup.$gtype);
+  GObject.type_ensure(TopBarTrackInformationContentRow.$gtype);
+  GObject.type_ensure(TopBarElementOrderGroup.$gtype);
 }

@@ -26,19 +26,19 @@ Describe the problem and the result you expected.
 
 ## Affected component
 
-- [ ] Top Bar
+- [ ] Top bar
 - [ ] Popup
 - [ ] App selector
-- [ ] Track Information
-- [ ] Playback Controls
-- [ ] Progress Bar
+- [ ] Track information
+- [ ] Playback controls
+- [ ] Progress bar
 - [ ] Volume actions
-- [ ] Album Art
+- [ ] Album art
 - [ ] Visualizer
-- [ ] Mouse Actions
-- [ ] Keyboard Shortcuts
-- [ ] Blocked Apps
-- [ ] System media controls
+- [ ] Mouse actions
+- [ ] Keyboard shortcuts
+- [ ] Blocked apps
+- [ ] Hide GNOME Shell media controls
 - [ ] Preferences
 - [ ] Other
 

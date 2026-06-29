@@ -11,7 +11,7 @@
  */
 
 export const MediaAppValidity = Object.freeze({
-    INVALID: "invalid",
-    VALID: "valid",
-    EMPTY_STOPPED_GRACE: "empty-stopped-grace",
+  INVALID: "invalid",
+  VALID: "valid",
+  EMPTY_STOPPED_GRACE: "empty-stopped-grace",
 });

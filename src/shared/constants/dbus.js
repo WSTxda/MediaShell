@@ -48,15 +48,15 @@ export const MPRIS_NO_TRACK_PATH = "/org/mpris/MediaPlayer2/TrackList/NoTrack";
  * actually consumes them.
  */
 export const ROOT_PROPERTIES = Object.freeze([
-    "CanQuit",
-    "Fullscreen",
-    "CanSetFullscreen",
-    "CanRaise",
-    "HasTrackList",
-    "Identity",
-    "DesktopEntry",
-    "SupportedUriSchemes",
-    "SupportedMimeTypes",
+  "CanQuit",
+  "Fullscreen",
+  "CanSetFullscreen",
+  "CanRaise",
+  "HasTrackList",
+  "Identity",
+  "DesktopEntry",
+  "SupportedUriSchemes",
+  "SupportedMimeTypes",
 ]);
 
 /**
@@ -67,18 +67,18 @@ export const ROOT_PROPERTIES = Object.freeze([
  * and avoids hydrating properties the extension does not use.
  */
 export const PLAYER_PROPERTIES = Object.freeze([
-    "PlaybackStatus",
-    "LoopStatus",
-    "Rate",
-    "Shuffle",
-    "Metadata",
-    "Volume",
-    "MinimumRate",
-    "MaximumRate",
-    "CanGoNext",
-    "CanGoPrevious",
-    "CanPlay",
-    "CanPause",
-    "CanSeek",
-    "CanControl",
+  "PlaybackStatus",
+  "LoopStatus",
+  "Rate",
+  "Shuffle",
+  "Metadata",
+  "Volume",
+  "MinimumRate",
+  "MaximumRate",
+  "CanGoNext",
+  "CanGoPrevious",
+  "CanPlay",
+  "CanPause",
+  "CanSeek",
+  "CanControl",
 ]);

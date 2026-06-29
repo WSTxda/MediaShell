@@ -2,14 +2,14 @@
  * @file visualizer.js
  * @module shell.constants.visualizer
  *
- * Defines Shell actor geometry, timing, and opacity policy for the top-bar visualizer.
+ * Defines Shell actor geometry, timing, and opacity policy for the top bar visualizer.
  *
  * TopBarVisualizer keeps animation state local, while this file stores the fixed
  * drawing budget and frame timing that must stay consistent when visualizer
  * styles or speed settings change.
  */
 
-/** Fixed visualizer actor height used in the compact top-bar button. */
+/** Fixed visualizer actor height used in the compact top bar button. */
 export const VISUALIZER_HEIGHT = 16;
 
 /** Width of each visualizer bar actor. */

@@ -32,12 +32,12 @@ Keep Shell, Preferences, and Shared code separated. Shared modules must remain t
 Use project vocabulary consistently in code, logs, comments, documentation, and visible strings.
 
 - **Panel** configures extension placement in the GNOME Shell panel/top bar area.
-- **Top Bar** configures the compact top bar button.
+- **Top bar** configures the compact top bar button.
 - **Popup** configures the menu opened from the top bar button.
 - Use **app selector** for active media-app selection. Use chooser terminology only for blocked-app dialogs.
 - Use **media app** for applications exposed in MediaShell UI. Use **player** only for MPRIS Player details, `PlayerProxy`, or protocol names.
 - Use **top bar button** for the clickable Shell actor.
-- Use **Progress Bar** for the user-facing popup setting and `PopupProgressBar` for runtime classes.
+- Use **progress bar** in user-facing text and `PopupProgressBar` for runtime classes.
 
 GSettings keys, schema enum IDs, D-Bus names, CSS classes, and GTypeName strings are stable contracts.
 
@@ -47,10 +47,10 @@ Use the narrowest module that owns the value:
 
 - `src/shared/constants/timing.js`: timers, polling, retry intervals, grace periods, D-Bus timeouts.
 - `src/shared/constants/limits.js`: cache capacities, payload sizes, and bounded request values.
-- `src/shared/constants/settings.js`: user-facing settings defaults, ranges, and reset scopes.
+- `src/shared/constants/settings.js`: settings defaults, ranges, and reset scopes.
 - `src/shared/constants/dbus.js`: D-Bus names, paths, interfaces, and canonical MPRIS property lists.
 - `src/shared/constants/inputActions.js`: input action descriptors and shortcut keys.
-- `src/shared/constants/playbackControls.js`: transport-control descriptors shared by Top Bar and Popup.
+- `src/shared/constants/playbackControls.js`: transport-control descriptors shared by top bar and popup.
 - `src/shell/constants/actorState.js`: shared Shell actor opacity states.
 - `src/shell/constants/popup.js`: popup-only layout and animation values.
 - `src/shell/constants/visualizer.js`: visualizer layout, timing, and state values.
@@ -66,8 +66,7 @@ Add enums to the closest domain file under `src/shared/enums/`. Avoid runtime ba
 2. Add runtime mapping to `src/shell/settings/SettingsSpec.js` when Shell code consumes it.
 3. Add a standard binding in `src/prefs/bindings/PreferenceBindings.js`, or use a page controller for compound UI.
 4. Add transforms only when the runtime shape differs from the raw schema value.
-5. Add a migration in `src/shared/settings/SettingsMigration.js` only when a legacy value must be preserved.
-6. Update visible text, translations, tests, and documentation when the user-facing contract changes.
+5. Update visible text, translations, tests, and documentation when the user-facing contract changes.
 
 Never reuse an existing key, enum ID, or GTypeName for different semantics.
 
@@ -83,7 +82,7 @@ Every JavaScript module must start with a compact JSDoc header containing `@file
 
 Use inline comments only for lifecycle, signal ownership, async teardown, MPRIS/D-Bus edge cases, GNOME compatibility, private Shell API boundaries, or non-obvious UI behavior. Avoid comments that merely repeat the next line of code.
 
-Browser/PWA resolution must stay evidence-based. Prefer installed desktop-entry metadata, StartupWMClass, and MPRIS/runtime hints over hardcoded browser lists; fall back to the existing identity path when confidence is low. This feature should improve names, icons, blocklist matching, and focus targets without changing the App Selector, Top Bar, Popup layout, settings, or visible strings.
+Browser/PWA resolution must stay evidence-based. Prefer installed desktop-entry metadata, StartupWMClass, and MPRIS/runtime hints over hardcoded browser lists; fall back to the existing identity path when confidence is low. This feature should improve names, icons, blocklist matching, and focus targets without changing the app selector, top bar, popup layout, settings, or visible strings.
 
 Use `createLogger("ClassName")` with a scope that matches the owning class or module. Logs should help diagnose failures and state transitions, not narrate ordinary render flow.
 

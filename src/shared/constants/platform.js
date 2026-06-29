@@ -10,12 +10,17 @@
  */
 
 /** GNOME Shell major versions declared as supported by MediaShell. */
-export const SUPPORTED_GNOME_SHELL_VERSIONS = Object.freeze(["47", "48", "49", "50"]);
+export const SUPPORTED_GNOME_SHELL_VERSIONS = Object.freeze([
+  "47",
+  "48",
+  "49",
+  "50",
+]);
 
 /** Minimum Libadwaita version required by preferences widgets. */
 export const MINIMUM_LIBADWAITA_VERSION = Object.freeze({
-    major: 1,
-    minor: 6,
+  major: 1,
+  minor: 6,
 });
 
 /**
@@ -30,6 +35,12 @@ export const MINIMUM_LIBADWAITA_VERSION = Object.freeze({
  * @param {{major: number, minor: number}} minimum - Required version boundary.
  * @returns {boolean} True when the runtime version is at least the boundary.
  */
-export function isVersionAtLeast(major, minor, minimum = MINIMUM_LIBADWAITA_VERSION) {
-    return major > minimum.major || (major === minimum.major && minor >= minimum.minor);
+export function isVersionAtLeast(
+  major,
+  minor,
+  minimum = MINIMUM_LIBADWAITA_VERSION,
+) {
+  return (
+    major > minimum.major || (major === minimum.major && minor >= minimum.minor)
+  );
 }

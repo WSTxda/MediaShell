@@ -3,7 +3,7 @@
 <interface domain="mediashell@wstxda.github.com">
   <requires lib="gtk" version="4.0"/>
   <template class="MediaShellTopBarElementOrderGroup" parent="AdwPreferencesGroup">
-    <property name="title" translatable="yes">Element Order</property>
+    <property name="title" translatable="yes">Element order</property>
     <property name="description" translatable="yes">Drag to reorder elements inside the top bar button</property>
     <child>
       <object class="GtkListBox" id="lb-top-bar-element-order">
@@ -13,7 +13,7 @@
         <property name="selection-mode">3</property>
         <child>
           <object class="AdwActionRow" id="row-app-icon">
-            <property name="title" translatable="yes">App Icon</property>
+            <property name="title" translatable="yes">App icon</property>
             <property name="activatable">true</property>
             <child type="suffix">
               <object class="GtkImage">
@@ -24,7 +24,7 @@
         </child>
         <child>
           <object class="AdwActionRow" id="row-track-information">
-            <property name="title" translatable="yes">Track Information</property>
+            <property name="title" translatable="yes">Track information</property>
             <property name="activatable">true</property>
             <child type="suffix">
               <object class="GtkImage">
@@ -46,7 +46,7 @@
         </child>
         <child>
           <object class="AdwActionRow" id="row-playback-controls">
-            <property name="title" translatable="yes">Playback Controls</property>
+            <property name="title" translatable="yes">Playback controls</property>
             <property name="activatable">true</property>
             <child type="suffix">
               <object class="GtkImage">
