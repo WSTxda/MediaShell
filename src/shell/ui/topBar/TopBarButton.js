@@ -326,10 +326,15 @@ class TopBarButton extends PanelMenu.Button {
       );
     });
     this.addMediaAppPropertyListener("Shuffle", () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_SHUFFLE);
+      this.requestWidgetUpdate(
+        WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE |
+          WidgetFlags.POPUP_PLAYBACK_SHUFFLE,
+      );
     });
     this.addMediaAppPropertyListener("LoopStatus", () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_LOOP);
+      this.requestWidgetUpdate(
+        WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_LOOP,
+      );
     });
     this.addMediaAppPropertyListener("IsPinned", () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_APP_SELECTOR);

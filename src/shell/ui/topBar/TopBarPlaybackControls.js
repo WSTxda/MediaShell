@@ -13,6 +13,7 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
+import { LoopStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { resolvePlayPauseControl } from "../../../shared/utils/playbackControlState.js";
 import {
@@ -22,10 +23,18 @@ import {
 import { createIcon, setIconName } from "../../utils/icons.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
+  PlaybackControls.LOOP_NONE.name,
   PlaybackControls.PREVIOUS.name,
   PlaybackControls.PLAY.name,
   PlaybackControls.NEXT.name,
+  PlaybackControls.SHUFFLE_ON.name,
 ]);
+
+function getPlaybackControlIconOpacity(isReactive, isStateControl, isActive) {
+  if (!isReactive) return INACTIVE_OPACITY;
+  if (isStateControl && !isActive) return INACTIVE_OPACITY;
+  return ACTIVE_OPACITY;
+}
 
 /**
  * Renders compact playback controls inside the top bar button.
@@ -41,6 +50,7 @@ export default class TopBarPlaybackControls {
   render(widgetFlags) {
     this.ensureActor();
 
+    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_REPEAT) this.renderRepeat();
     if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS) {
       this.renderOptionalControl(
         this.topBarButton.extensionController
@@ -63,6 +73,8 @@ export default class TopBarPlaybackControls {
         () => this.topBarButton.mediaApp.next(),
       );
     }
+    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE)
+      this.renderShuffle();
 
     // Partial MPRIS updates must never use the configured absolute index of
     // one control in isolation. Reconcile the complete visible row once so
@@ -86,6 +98,30 @@ export default class TopBarPlaybackControls {
     else this.removePlaybackControlIcon(controlDefinition);
   }
 
+  renderRepeat() {
+    if (
+      !this.topBarButton.extensionController.topBarPlaybackControlsRepeatShow
+    ) {
+      this.removePlaybackControlIcon(PlaybackControls.LOOP_NONE);
+      return;
+    }
+
+    const mediaApp = this.topBarButton.mediaApp;
+    const controlDefinition =
+      mediaApp.loopStatus === LoopStatus.NONE
+        ? PlaybackControls.LOOP_NONE
+        : mediaApp.loopStatus === LoopStatus.TRACK
+          ? PlaybackControls.LOOP_TRACK
+          : PlaybackControls.LOOP_PLAYLIST;
+    const isActive = controlDefinition !== PlaybackControls.LOOP_NONE;
+    this.updatePlaybackControlIcon(
+      controlDefinition,
+      mediaApp.canControl,
+      () => mediaApp.toggleLoop(),
+      isActive,
+    );
+  }
+
   renderPlayPause() {
     if (
       !this.topBarButton.extensionController.topBarPlaybackControlsPlayPauseShow
@@ -100,9 +136,36 @@ export default class TopBarPlaybackControls {
     this.updatePlaybackControlIcon(control, isReactive, action);
   }
 
-  updatePlaybackControlIcon(controlDefinition, isReactive, onClick) {
+  renderShuffle() {
+    if (
+      !this.topBarButton.extensionController.topBarPlaybackControlsShuffleShow
+    ) {
+      this.removePlaybackControlIcon(PlaybackControls.SHUFFLE_ON);
+      return;
+    }
+
+    const mediaApp = this.topBarButton.mediaApp;
+    this.updatePlaybackControlIcon(
+      mediaApp.shuffle
+        ? PlaybackControls.SHUFFLE_ON
+        : PlaybackControls.SHUFFLE_OFF,
+      mediaApp.canControl,
+      () => mediaApp.toggleShuffle(),
+      mediaApp.shuffle,
+    );
+  }
+
+  updatePlaybackControlIcon(
+    controlDefinition,
+    isReactive,
+    onClick,
+    isActive = false,
+  ) {
     let control = this.controlButtons.get(controlDefinition.name);
     if (!control) {
+      const isStateControl =
+        controlDefinition.name === PlaybackControls.LOOP_NONE.name ||
+        controlDefinition.name === PlaybackControls.SHUFFLE_ON.name;
       const button = new St.Button({
         name: controlDefinition.name,
         styleClass: "mediashell-top-bar-control-button",
@@ -110,6 +173,7 @@ export default class TopBarPlaybackControls {
         yAlign: Clutter.ActorAlign.CENTER,
         canFocus: false,
         trackHover: false,
+        toggleMode: isStateControl,
       });
       const icon = createIcon({
         styleClass:
@@ -123,8 +187,14 @@ export default class TopBarPlaybackControls {
 
     control.onClick = onClick;
     setIconName(control.icon, controlDefinition.iconName);
-    control.button.opacity = isReactive ? ACTIVE_OPACITY : INACTIVE_OPACITY;
+    control.button.opacity = ACTIVE_OPACITY;
     control.button.reactive = isReactive;
+    control.button.checked = isActive;
+    control.icon.opacity = getPlaybackControlIconOpacity(
+      isReactive,
+      control.button.toggleMode,
+      isActive,
+    );
   }
 
   reconcileOrder() {

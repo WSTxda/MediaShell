@@ -78,6 +78,16 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "enable-expansion",
   ],
   [
+    "top-bar-playback-controls-repeat-show",
+    "sr-top-bar-playback-controls-repeat-show",
+    "active",
+  ],
+  [
+    "top-bar-playback-controls-previous-track-show",
+    "sr-top-bar-playback-controls-previous-track-show",
+    "active",
+  ],
+  [
     "top-bar-playback-controls-play-pause-show",
     "sr-top-bar-playback-controls-play-pause-show",
     "active",
@@ -88,8 +98,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "active",
   ],
   [
-    "top-bar-playback-controls-previous-track-show",
-    "sr-top-bar-playback-controls-previous-track-show",
+    "top-bar-playback-controls-shuffle-show",
+    "sr-top-bar-playback-controls-shuffle-show",
     "active",
   ],
   ["top-bar-app-icon-show", "er-top-bar-app-icon", "enable-expansion"],

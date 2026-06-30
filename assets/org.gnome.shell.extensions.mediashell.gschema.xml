@@ -112,14 +112,20 @@
     <key name="top-bar-playback-controls-show" type="b">
       <default>true</default>
     </key>
+    <key name="top-bar-playback-controls-repeat-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="top-bar-playback-controls-previous-track-show" type="b">
+      <default>true</default>
+    </key>
     <key name="top-bar-playback-controls-play-pause-show" type="b">
       <default>true</default>
     </key>
     <key name="top-bar-playback-controls-next-track-show" type="b">
       <default>true</default>
     </key>
-    <key name="top-bar-playback-controls-previous-track-show" type="b">
-      <default>true</default>
+    <key name="top-bar-playback-controls-shuffle-show" type="b">
+      <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
       <default>['APP_ICON', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>

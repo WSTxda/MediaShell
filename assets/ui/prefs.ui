@@ -158,18 +158,53 @@
             <property name="subtitle" translatable="yes">Show playback controls in the top bar</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-play-pause-show">
-                <property name="title" translatable="yes">Play / pause</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-next-track-show">
-                <property name="title" translatable="yes">Next track</property>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-repeat-show">
+                <property name="title" translatable="yes">Repeat</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playlist-repeat-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-previous-track-show">
                 <property name="title" translatable="yes">Previous track</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-skip-backward-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-play-pause-show">
+                <property name="title" translatable="yes">Play / pause</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playback-pause-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-next-track-show">
+                <property name="title" translatable="yes">Next track</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-skip-forward-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-shuffle-show">
+                <property name="title" translatable="yes">Shuffle</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
@@ -417,7 +452,7 @@
                 <property name="title" translatable="yes">Play / pause</property>
                 <child type="prefix">
                   <object class="GtkImage">
-                    <property name="icon-name">media-playback-start-symbolic</property>
+                    <property name="icon-name">media-playback-pause-symbolic</property>
                   </object>
                 </child>
                 <child type="suffix">

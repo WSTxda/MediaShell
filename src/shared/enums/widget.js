@@ -15,8 +15,6 @@ export const WidgetFlags = Object.freeze({
   TOP_BAR_PLAYBACK_PREVIOUS: 1 << 2,
   TOP_BAR_PLAYBACK_PLAY_PAUSE: 1 << 3,
   TOP_BAR_PLAYBACK_NEXT: 1 << 4,
-  TOP_BAR_PLAYBACK_CONTROLS: (1 << 2) | (1 << 3) | (1 << 4),
-  TOP_BAR: (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 15),
   TOP_BAR_ELEMENT_ORDER: 1 << 5,
   POPUP_APP_SELECTOR: 1 << 6,
   POPUP_ALBUM_ART: 1 << 7,
@@ -28,6 +26,19 @@ export const WidgetFlags = Object.freeze({
   POPUP_PLAYBACK_NEXT: 1 << 13,
   POPUP_PLAYBACK_SHUFFLE: 1 << 14,
   TOP_BAR_VISUALIZER: 1 << 15,
+  TOP_BAR_PLAYBACK_REPEAT: 1 << 16,
+  TOP_BAR_PLAYBACK_SHUFFLE: 1 << 17,
+  TOP_BAR_PLAYBACK_CONTROLS:
+    (1 << 2) | (1 << 3) | (1 << 4) | (1 << 16) | (1 << 17),
+  TOP_BAR:
+    (1 << 0) |
+    (1 << 1) |
+    (1 << 2) |
+    (1 << 3) |
+    (1 << 4) |
+    (1 << 15) |
+    (1 << 16) |
+    (1 << 17),
   POPUP_PLAYBACK_CONTROLS:
     (1 << 10) | (1 << 11) | (1 << 12) | (1 << 13) | (1 << 14),
   POPUP:
@@ -40,5 +51,5 @@ export const WidgetFlags = Object.freeze({
     (1 << 12) |
     (1 << 13) |
     (1 << 14),
-  ALL: ~(-1 << 16),
+  ALL: ~(-1 << 18),
 });

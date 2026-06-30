@@ -210,6 +210,16 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS,
   },
+  "top-bar-playback-controls-repeat-show": {
+    property: "topBarPlaybackControlsRepeatShow",
+    read: "get_boolean",
+    impact: WidgetFlags.TOP_BAR_PLAYBACK_REPEAT,
+  },
+  "top-bar-playback-controls-previous-track-show": {
+    property: "topBarPlaybackControlsPreviousTrackShow",
+    read: "get_boolean",
+    impact: WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS,
+  },
   "top-bar-playback-controls-play-pause-show": {
     property: "topBarPlaybackControlsPlayPauseShow",
     read: "get_boolean",
@@ -220,10 +230,10 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_NEXT,
   },
-  "top-bar-playback-controls-previous-track-show": {
-    property: "topBarPlaybackControlsPreviousTrackShow",
+  "top-bar-playback-controls-shuffle-show": {
+    property: "topBarPlaybackControlsShuffleShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS,
+    impact: WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE,
   },
   "top-bar-element-order": {
     property: "topBarElementOrder",
