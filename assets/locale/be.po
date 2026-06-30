@@ -1,12 +1,9 @@
-# MediaShell translations.
-# Copyright (C) 2026 MediaShell contributors
-# This file is distributed under the same license as MediaShell.
-#
+# MediaShell translations
 msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-29 20:26-0300\n"
+"POT-Creation-Date: 2026-06-29 22:20-0300\n"
 "PO-Revision-Date: 2026-06-13 21:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,63 +46,63 @@ msgstr "Распрацавана"
 msgid "View all..."
 msgstr "Паказаць усіх..."
 
-#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:170
-#: assets/ui/prefs.ui:423 assets/ui/prefs.ui:753
+#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
+#: assets/ui/prefs.ui:417 assets/ui/prefs.ui:747
 msgid "Play / pause"
 msgstr "Прайграць / Паўза"
 
-#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:175
-#: assets/ui/prefs.ui:440 assets/ui/prefs.ui:754
+#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:167
+#: assets/ui/prefs.ui:434 assets/ui/prefs.ui:748
 msgid "Next track"
 msgstr "Наступны трэк"
 
-#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:180
-#: assets/ui/prefs.ui:457 assets/ui/prefs.ui:755
+#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:172
+#: assets/ui/prefs.ui:451 assets/ui/prefs.ui:749
 msgid "Previous track"
 msgstr "Папярэдні трэк"
 
-#: src/prefs/groups/InteractionsPageController.js:56 assets/ui/prefs.ui:474
-#: assets/ui/prefs.ui:756
+#: src/prefs/groups/InteractionsPageController.js:56 assets/ui/prefs.ui:468
+#: assets/ui/prefs.ui:750
 msgid "Volume up"
 msgstr "Павялічыць гучнасць"
 
-#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:491
-#: assets/ui/prefs.ui:757
+#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:485
+#: assets/ui/prefs.ui:751
 msgid "Volume down"
 msgstr "Паменшыць гучнасць"
 
-#: src/prefs/groups/InteractionsPageController.js:58 assets/ui/prefs.ui:508
-#: assets/ui/prefs.ui:758
+#: src/prefs/groups/InteractionsPageController.js:58 assets/ui/prefs.ui:502
+#: assets/ui/prefs.ui:752
 msgid "Repeat"
 msgstr "Паўтор"
 
-#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:525
-#: assets/ui/prefs.ui:759
+#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:519
+#: assets/ui/prefs.ui:753
 msgid "Shuffle"
 msgstr "Выпадкова"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:542 assets/ui/prefs.ui:760
+#: assets/ui/prefs.ui:536 assets/ui/prefs.ui:754
 msgid "Popup"
 msgstr "Усплывальнае меню"
 
-#: src/prefs/groups/InteractionsPageController.js:64 assets/ui/prefs.ui:559
-#: assets/ui/prefs.ui:761
+#: src/prefs/groups/InteractionsPageController.js:64 assets/ui/prefs.ui:553
+#: assets/ui/prefs.ui:755
 msgid "Open app"
 msgstr "Адкрыць праграму"
 
-#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:576
-#: assets/ui/prefs.ui:762
+#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:570
+#: assets/ui/prefs.ui:756
 msgid "Quit app"
 msgstr "Завяршыць праграму"
 
-#: src/prefs/groups/InteractionsPageController.js:67 assets/ui/prefs.ui:593
-#: assets/ui/prefs.ui:763
+#: src/prefs/groups/InteractionsPageController.js:67 assets/ui/prefs.ui:587
+#: assets/ui/prefs.ui:757
 msgid "Preferences"
 msgstr "Налады"
 
-#: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:610
-#: assets/ui/prefs.ui:764
+#: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:604
+#: assets/ui/prefs.ui:758
 msgid "Next app"
 msgstr "Наступная праграма"
 
@@ -117,8 +114,8 @@ msgstr "Прайграванне"
 msgid "Audio"
 msgstr "Аўдыя"
 
-#: src/prefs/groups/InteractionsPageController.js:78 assets/ui/prefs.ui:146
-#: assets/ui/prefs.ui:349
+#: src/prefs/groups/InteractionsPageController.js:78 assets/ui/prefs.ui:138
+#: assets/ui/prefs.ui:343
 msgid "Apps"
 msgstr "Праграмы"
 
@@ -145,7 +142,7 @@ msgstr "Націсніце клавіятурнае спалучэнне"
 msgid "Shortcut already used by %s"
 msgstr "Спалучэнне ўжо выкарыстоўваецца для %s"
 
-#: src/prefs/groups/InteractionsPageController.js:287 assets/ui/prefs.ui:414
+#: src/prefs/groups/InteractionsPageController.js:287 assets/ui/prefs.ui:408
 msgid "Keyboard shortcuts"
 msgstr "Спалучэнні клавіш"
 
@@ -168,7 +165,7 @@ msgid "Cancel"
 msgstr "Скасаваць"
 
 #: src/prefs/groups/InteractionsPageController.js:343
-#: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:745
+#: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:739
 msgid "Reset"
 msgstr "Скінуць"
 
@@ -200,7 +197,7 @@ msgstr "Ачысціць кэш вокладак альбомаў?"
 msgid "Cached images will be downloaded again when needed."
 msgstr "Кэшаваныя выявы будуць спампаваны паўторна пры неабходнасці."
 
-#: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:720
+#: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:714
 msgid "Clear cache"
 msgstr "Ачысціць кэш"
 
@@ -219,6 +216,10 @@ msgid_plural "%d covers — %s"
 msgstr[0] "%d вокладка — %s"
 msgstr[1] "%d вокладкі — %s"
 msgstr[2] "%d вокладак — %s"
+
+#: src/prefs/groups/TrackInformationContentController.js:59
+msgid "by"
+msgstr "ад"
 
 #: src/prefs/widgets/BlockedAppChooserDialog.js:44
 msgid "Select an app to block"
@@ -241,35 +242,51 @@ msgstr "Праграмы не знойдзены"
 msgid "No apps are blocked"
 msgstr "Няма заблакіраваных праграм"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:23
-msgid "Artist"
-msgstr "Выканаўца"
-
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:24
+#: src/prefs/widgets/TrackInformationContentRow.js:23
 msgid "Title"
 msgstr "Назва"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:25
+#: src/prefs/widgets/TrackInformationContentRow.js:24
+msgid "Artist"
+msgstr "Выканаўца"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:25
 msgid "Album"
 msgstr "Альбом"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:26
+#: src/prefs/widgets/TrackInformationContentRow.js:26
+msgid "Album artist"
+msgstr "Выканаўца альбома"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:27
+msgid "Genre"
+msgstr "Жанр"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:28
+msgid "Year"
+msgstr "Год"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:29
+msgid "Composer"
+msgstr "Кампазітар"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:30
 msgid "Disc"
 msgstr "Дыск"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:27
+#: src/prefs/widgets/TrackInformationContentRow.js:31
 msgid "Track"
 msgstr "Трэк"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:68
+#: src/prefs/widgets/TrackInformationContentRow.js:79
 msgid "No track information fields added"
 msgstr "Палі звестак аб трэку не дададзены"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:88
+#: src/prefs/widgets/TrackInformationContentRow.js:99
 msgid "Custom text"
 msgstr "Уласны тэкст"
 
-#: src/prefs/widgets/TopBarTrackInformationContentRow.js:112
+#: src/prefs/widgets/TrackInformationContentRow.js:123
 msgid "Remove"
 msgstr "Выдаліць"
 
@@ -277,16 +294,6 @@ msgstr "Выдаліць"
 #: src/shell/ui/popup/PopupAppSelectorList.js:218
 msgid "Unknown app"
 msgstr "Невядомая праграма"
-
-#: src/shell/ui/popup/PopupTrackInformation.js:73
-#: src/shell/ui/topBar/TopBarTrackInformation.js:85
-msgid "Unknown artist"
-msgstr "Невядомы выканаўца"
-
-#: src/shell/ui/popup/PopupTrackInformation.js:74
-#: src/shell/ui/topBar/TopBarTrackInformation.js:86
-msgid "Unknown album"
-msgstr "Невядомы альбом"
 
 #: assets/ui/blocked-apps.ui:6
 msgid "Blocked apps"
@@ -300,11 +307,11 @@ msgstr "Блакіруйце і хавайце праграмы, каб пашы
 msgid "Add"
 msgstr "Дадаць"
 
-#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:161
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
 msgstr "Размяшчэнне"
 
-#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:257
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:249
 msgid "Width"
 msgstr "Шырыня"
 
@@ -320,7 +327,7 @@ msgstr "Паласа прагрэсу"
 msgid "Show the current playback position"
 msgstr "Паказваць бягучую пазіцыю прайгравання"
 
-#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:248
+#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:240
 msgid "Metadata"
 msgstr "Метаданыя"
 
@@ -340,7 +347,7 @@ msgstr "Радыус вуглоў"
 msgid "0 disables rounded corners"
 msgstr "0 адключае закругленне вуглоў"
 
-#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:252
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:244
 #: assets/ui/top-bar-element-order.ui:27
 msgid "Track information"
 msgstr "Звесткі аб трэку"
@@ -349,32 +356,20 @@ msgstr "Звесткі аб трэку"
 msgid "Show track information in the popup"
 msgstr "Паказваць звесткі аб трэку ва ўсплывальным меню"
 
-#: assets/ui/prefs.ui:64
-msgid "Show title"
-msgstr "Паказваць назву"
-
-#: assets/ui/prefs.ui:69
-msgid "Show artist"
-msgstr "Паказваць выканаўцу"
-
-#: assets/ui/prefs.ui:74
-msgid "Show album"
-msgstr "Паказваць альбом"
-
-#: assets/ui/prefs.ui:79 assets/ui/prefs.ui:277
+#: assets/ui/prefs.ui:64 assets/ui/prefs.ui:269
 msgid "Scroll track information"
 msgstr "Пракручваць звесткі аб трэку"
 
-#: assets/ui/prefs.ui:80
+#: assets/ui/prefs.ui:65
 msgid "Scroll overflowing track information in the popup"
 msgstr ""
 "Пракручваць звесткі аб трэку, калі яны не змяшчаюцца ва ўсплывальным меню"
 
-#: assets/ui/prefs.ui:84 assets/ui/prefs.ui:282
+#: assets/ui/prefs.ui:69 assets/ui/prefs.ui:274
 msgid "Scrolling performance"
 msgstr "Прадукцыйнасць пракруткі"
 
-#: assets/ui/prefs.ui:91 assets/ui/prefs.ui:289
+#: assets/ui/prefs.ui:76 assets/ui/prefs.ui:281
 msgid ""
 "Continuous text scrolling may increase CPU and GPU usage, and animation may "
 "be less smooth on very low-end hardware."
@@ -382,55 +377,65 @@ msgstr ""
 "Бесперапынная пракрутка тэксту можа павялічыць выкарыстанне CPU і GPU, а на "
 "вельмі слабым абсталяванні анімацыя можа быць менш плаўнай."
 
-#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:312
+#: assets/ui/prefs.ui:99 assets/ui/prefs.ui:304
 msgid "Scroll speed"
 msgstr "Хуткасць пракруткі"
 
-#: assets/ui/prefs.ui:115 assets/ui/prefs.ui:313
+#: assets/ui/prefs.ui:100 assets/ui/prefs.ui:305
 msgid "Higher values scroll faster"
 msgstr "Пры большых значэннях пракрутка адбываецца хутчэй"
 
-#: assets/ui/prefs.ui:128 assets/ui/prefs.ui:326
+#: assets/ui/prefs.ui:113 assets/ui/prefs.ui:318
 msgid "Scroll pause"
 msgstr "Паўза пракруткі"
 
-#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:327
+#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:319
 msgid "Seconds before scrolling starts again"
 msgstr "Секунды чакання да пачатку або перазапуску пракруткі"
 
-#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:358
+#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:334
+msgid "Track information content"
+msgstr "Змесціва звестак аб трэку"
+
+#: assets/ui/prefs.ui:130
+msgid "Choose and reorder track information shown in the popup"
+msgstr ""
+"Выберыце і пераўпарадкуйце звесткі аб трэку, якія паказваюцца ва "
+"ўсплывальным акне"
+
+#: assets/ui/prefs.ui:141 assets/ui/prefs.ui:352
 msgid "Colored app icon"
 msgstr "Каляровы значок праграмы"
 
-#: assets/ui/prefs.ui:150
+#: assets/ui/prefs.ui:142
 msgid "Use the media app's full-color icon in the popup"
 msgstr "Выкарыстоўваць поўнакаляровы значок медыяпраграмы ва ўсплывальным меню"
 
-#: assets/ui/prefs.ui:157
+#: assets/ui/prefs.ui:149
 msgid "Top bar"
 msgstr "Верхняя панэль"
 
-#: assets/ui/prefs.ui:165 assets/ui/top-bar-element-order.ui:49
+#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
 msgid "Playback controls"
 msgstr "Элементы кіравання прайграваннем"
 
-#: assets/ui/prefs.ui:166
+#: assets/ui/prefs.ui:158
 msgid "Show playback controls in the top bar"
 msgstr "Паказваць элементы кіравання прайграваннем на верхняй панэлі"
 
-#: assets/ui/prefs.ui:187 assets/ui/top-bar-element-order.ui:38
+#: assets/ui/prefs.ui:179 assets/ui/top-bar-element-order.ui:38
 msgid "Visualizer"
 msgstr "Візуалізатар"
 
-#: assets/ui/prefs.ui:188
+#: assets/ui/prefs.ui:180
 msgid "Show the animated playback indicator in the top bar"
 msgstr "Паказваць анімаваны індыкатар прайгравання на верхняй панэлі"
 
-#: assets/ui/prefs.ui:194
+#: assets/ui/prefs.ui:186
 msgid "Visualizer performance"
 msgstr "Прадукцыйнасць візуалізатара"
 
-#: assets/ui/prefs.ui:201
+#: assets/ui/prefs.ui:193
 msgid ""
 "The visualizer redraws continuously while media is playing. This may "
 "increase CPU and GPU usage, and animation may be less smooth on very low-end "
@@ -440,212 +445,217 @@ msgstr ""
 "можа павялічыць выкарыстанне CPU і GPU, а анімацыя можа быць менш плаўнай на "
 "вельмі слабым абсталяванні."
 
-#: assets/ui/prefs.ui:217
+#: assets/ui/prefs.ui:209
 msgid "Style"
 msgstr "Стыль"
 
-#: assets/ui/prefs.ui:221
+#: assets/ui/prefs.ui:213
 msgid "Wave"
 msgstr "Хваля"
 
-#: assets/ui/prefs.ui:222
+#: assets/ui/prefs.ui:214
 msgid "Pulse"
 msgstr "Пульсацыя"
 
-#: assets/ui/prefs.ui:230
+#: assets/ui/prefs.ui:222
 msgid "Animation speed"
 msgstr "Хуткасць анімацыі"
 
-#: assets/ui/prefs.ui:231
+#: assets/ui/prefs.ui:223
 msgid "Higher values animate faster"
 msgstr "Больш высокія значэнні паскараюць анімацыю"
 
-#: assets/ui/prefs.ui:253
+#: assets/ui/prefs.ui:245
 msgid "Show track information in the top bar"
 msgstr "Паказваць звесткі аб трэку на верхняй панэлі"
 
-#: assets/ui/prefs.ui:258
+#: assets/ui/prefs.ui:250
 msgid "Maximum width in pixels; 0 uses available space"
 msgstr "Максімальная шырыня ў пікселях; 0 выкарыстоўвае ўсю даступную прастору"
 
-#: assets/ui/prefs.ui:271
+#: assets/ui/prefs.ui:263
 msgid "Lock width"
 msgstr "Зафіксаваць шырыню"
 
-#: assets/ui/prefs.ui:272
+#: assets/ui/prefs.ui:264
 msgid "Keep the configured width for short text"
 msgstr "Захоўваць зададзеную шырыню, калі змесціва карацейшае"
 
-#: assets/ui/prefs.ui:278
+#: assets/ui/prefs.ui:270
 msgid "Scroll overflowing track information in the top bar"
 msgstr "Пракручваць звесткі аб трэку, калі яны не змяшчаюцца на верхняй панэлі"
 
-#: assets/ui/prefs.ui:353 assets/ui/top-bar-element-order.ui:16
+#: assets/ui/prefs.ui:335
+msgid "Choose and reorder track information shown in the top bar"
+msgstr ""
+"Выбраць і ўпарадкаваць звесткі аб трэку, якія паказваюцца на верхняй панэлі"
+
+#: assets/ui/prefs.ui:347 assets/ui/top-bar-element-order.ui:16
 msgid "App icon"
 msgstr "Значок праграмы"
 
-#: assets/ui/prefs.ui:354
+#: assets/ui/prefs.ui:348
 msgid "Show the app icon in the top bar"
 msgstr "Паказваць значок праграмы на верхняй панэлі"
 
-#: assets/ui/prefs.ui:359
+#: assets/ui/prefs.ui:353
 msgid "Use the media app's full-color icon in the top bar"
 msgstr "Выкарыстоўваць поўнакаляровы значок медыяпраграмы на верхняй панэлі"
 
-#: assets/ui/prefs.ui:368
+#: assets/ui/prefs.ui:362
 msgid "Panel"
 msgstr "Панэль"
 
-#: assets/ui/prefs.ui:372
+#: assets/ui/prefs.ui:366
 msgid "Extension placement"
 msgstr "Размяшчэнне пашырэння"
 
-#: assets/ui/prefs.ui:373
+#: assets/ui/prefs.ui:367
 msgid "Choose where the extension appears in the top bar"
 msgstr "Выберыце, дзе пашырэнне будзе паказвацца на верхняй панэлі"
 
-#: assets/ui/prefs.ui:376
+#: assets/ui/prefs.ui:370
 msgid "Position"
 msgstr "Пазіцыя"
 
-#: assets/ui/prefs.ui:377
+#: assets/ui/prefs.ui:371
 msgid "Section where the extension appears in the top bar"
 msgstr "Раздзел верхняй панэлі, дзе паказваецца пашырэнне"
 
-#: assets/ui/prefs.ui:381
+#: assets/ui/prefs.ui:375
 msgid "Left"
 msgstr "Злева"
 
-#: assets/ui/prefs.ui:382
+#: assets/ui/prefs.ui:376
 msgid "Center"
 msgstr "Па цэнтры"
 
-#: assets/ui/prefs.ui:383
+#: assets/ui/prefs.ui:377
 msgid "Right"
 msgstr "Справа"
 
-#: assets/ui/prefs.ui:391
+#: assets/ui/prefs.ui:385
 msgid "Index"
 msgstr "Індэкс"
 
-#: assets/ui/prefs.ui:392
+#: assets/ui/prefs.ui:386
 msgid "Order among items in the same top bar section"
 msgstr "Парадак сярод элементаў у той жа вобласці верхняй панэлі"
 
-#: assets/ui/prefs.ui:410
+#: assets/ui/prefs.ui:404
 msgid "Interactions"
 msgstr "Узаемадзеянні"
 
-#: assets/ui/prefs.ui:415
+#: assets/ui/prefs.ui:409
 msgid "Assign global keyboard shortcuts to media actions"
 msgstr "Прызначце глабальныя спалучэнні клавіш для медыя-дзеянняў"
 
-#: assets/ui/prefs.ui:418
+#: assets/ui/prefs.ui:412
 msgid "Shortcut assignments"
 msgstr "Прызначэнні спалучэнняў клавіш"
 
-#: assets/ui/prefs.ui:419
+#: assets/ui/prefs.ui:413
 msgid "Configure each keyboard action"
 msgstr "Наладзіць кожнае дзеянне клавіятуры"
 
-#: assets/ui/prefs.ui:431 assets/ui/prefs.ui:448 assets/ui/prefs.ui:465
-#: assets/ui/prefs.ui:482 assets/ui/prefs.ui:499 assets/ui/prefs.ui:516
-#: assets/ui/prefs.ui:533 assets/ui/prefs.ui:550 assets/ui/prefs.ui:567
-#: assets/ui/prefs.ui:584 assets/ui/prefs.ui:601 assets/ui/prefs.ui:618
+#: assets/ui/prefs.ui:425 assets/ui/prefs.ui:442 assets/ui/prefs.ui:459
+#: assets/ui/prefs.ui:476 assets/ui/prefs.ui:493 assets/ui/prefs.ui:510
+#: assets/ui/prefs.ui:527 assets/ui/prefs.ui:544 assets/ui/prefs.ui:561
+#: assets/ui/prefs.ui:578 assets/ui/prefs.ui:595 assets/ui/prefs.ui:612
 msgid "Set"
 msgstr "Задаць"
 
-#: assets/ui/prefs.ui:628
+#: assets/ui/prefs.ui:622
 msgid "Shortcut overview"
 msgstr "Агляд спалучэнняў"
 
-#: assets/ui/prefs.ui:629
+#: assets/ui/prefs.ui:623
 msgid "View all assigned shortcuts"
 msgstr "Паказаць усе прызначаныя спалучэнні"
 
-#: assets/ui/prefs.ui:634
+#: assets/ui/prefs.ui:628
 msgid "View"
 msgstr "Паказаць"
 
-#: assets/ui/prefs.ui:642
+#: assets/ui/prefs.ui:636
 msgid "Reset keyboard shortcuts"
 msgstr "Скінуць спалучэнні клавіш"
 
-#: assets/ui/prefs.ui:653
+#: assets/ui/prefs.ui:647
 msgid "Mouse actions"
 msgstr "Дзеянні мышы"
 
-#: assets/ui/prefs.ui:654
+#: assets/ui/prefs.ui:648
 msgid "Assign actions to clicks and scrolling on the top bar button"
 msgstr "Прызначце дзеянні пстрычкам і пракрутцы на кнопцы верхняй панэлі"
 
-#: assets/ui/prefs.ui:657
+#: assets/ui/prefs.ui:651
 msgid "Left click / tap"
 msgstr "Левая пстрычка / Дотык"
 
-#: assets/ui/prefs.ui:663
+#: assets/ui/prefs.ui:657
 msgid "Middle click"
 msgstr "Сярэдні клік"
 
-#: assets/ui/prefs.ui:669
+#: assets/ui/prefs.ui:663
 msgid "Right click"
 msgstr "Правы клік"
 
-#: assets/ui/prefs.ui:675
+#: assets/ui/prefs.ui:669
 msgid "Double click / tap"
 msgstr "Падвойная пстрычка / Дотык"
 
-#: assets/ui/prefs.ui:681
+#: assets/ui/prefs.ui:675
 msgid "Scroll up"
 msgstr "Пракруціць уверх"
 
-#: assets/ui/prefs.ui:687
+#: assets/ui/prefs.ui:681
 msgid "Scroll down"
 msgstr "Пракруціць уніз"
 
-#: assets/ui/prefs.ui:695
+#: assets/ui/prefs.ui:689
 msgid "Others"
 msgstr "Іншае"
 
-#: assets/ui/prefs.ui:699
+#: assets/ui/prefs.ui:693
 msgid "GNOME Shell"
 msgstr "GNOME Shell"
 
-#: assets/ui/prefs.ui:700
+#: assets/ui/prefs.ui:694
 msgid "Control how MediaShell integrates with GNOME Shell"
 msgstr "Наладзьце інтэграцыю MediaShell з GNOME Shell"
 
-#: assets/ui/prefs.ui:703
+#: assets/ui/prefs.ui:697
 msgid "Hide GNOME Shell media controls"
 msgstr "Схаваць элементы кіравання медыя GNOME Shell"
 
-#: assets/ui/prefs.ui:704
+#: assets/ui/prefs.ui:698
 msgid "Hide GNOME Shell's default media controls from the notification list"
 msgstr ""
 "Схаваць стандартныя элементы кіравання медыя GNOME Shell са спіса "
 "апавяшчэнняў"
 
-#: assets/ui/prefs.ui:711
+#: assets/ui/prefs.ui:705
 msgid "Album art cache"
 msgstr "Кэш вокладак альбомаў"
 
-#: assets/ui/prefs.ui:712
+#: assets/ui/prefs.ui:706
 msgid "Store album art on disk so it loads faster"
 msgstr "Захоўваць вокладкі альбомаў на дыску, каб яны загружаліся хутчэй"
 
-#: assets/ui/prefs.ui:715
+#: assets/ui/prefs.ui:709
 msgid "Cache album art"
 msgstr "Кэшаваць вокладкі альбомаў"
 
-#: assets/ui/prefs.ui:730
+#: assets/ui/prefs.ui:724
 msgid "Clear"
 msgstr "Ачысціць"
 
-#: assets/ui/prefs.ui:746
+#: assets/ui/prefs.ui:740
 msgid "Restore the extension's factory defaults"
 msgstr "Аднавіць заводскія налады пашырэння"
 
-#: assets/ui/prefs.ui:752
+#: assets/ui/prefs.ui:746
 msgid "None"
 msgstr "Няма"
 
@@ -657,23 +667,26 @@ msgstr "Парадак элементаў"
 msgid "Drag to reorder elements inside the top bar button"
 msgstr "Перацягвайце элементы, каб змяніць іх парадак у кнопцы верхняй панэлі"
 
-#: assets/ui/top-bar-track-information-content-row.ui:6
-msgid "Track information content"
-msgstr "Змесціва звестак аб трэку"
+#: assets/ui/track-information-content-row.ui:10
+msgid "Missing information"
+msgstr "Адсутная інфармацыя"
 
-#: assets/ui/top-bar-track-information-content-row.ui:7
-msgid "Choose and reorder track information shown in the top bar"
+#: assets/ui/track-information-content-row.ui:17
+msgid ""
+"Some media apps may not expose all track information through MPRIS. Missing "
+"fields are hidden automatically."
 msgstr ""
-"Выбраць і ўпарадкаваць звесткі аб трэку, якія паказваюцца на верхняй панэлі"
+"Некаторыя медыяпраграмы могуць не раскрываць усю інфармацыю аб трэку праз "
+"MPRIS. Адсутныя палі аўтаматычна хаваюцца."
 
-#: assets/ui/top-bar-track-information-content-row.ui:11
+#: assets/ui/track-information-content-row.ui:33
 msgid "Add item"
 msgstr "Дадаць элемент"
 
-#: assets/ui/top-bar-track-information-content-row.ui:20
+#: assets/ui/track-information-content-row.ui:42
 msgid "Add field"
 msgstr "Дадаць поле"
 
-#: assets/ui/top-bar-track-information-content-row.ui:26
+#: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Дадаць тэкст"

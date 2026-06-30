@@ -29,6 +29,13 @@ export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([
   "PLAYBACK_CONTROLS",
 ]);
 
+/** Default ordered content for top bar track information. */
+export const TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
+  "TITLE",
+  "•",
+  "ARTIST",
+]);
+
 /** Bounds and default width for the top bar track information area, in pixels. */
 export const TOP_BAR_TRACK_INFORMATION_WIDTH = Object.freeze({
   MIN: 0,
@@ -72,6 +79,13 @@ export const POPUP_ALBUM_ART_CORNER_RADIUS = Object.freeze({
   MAX: 50,
   DEFAULT: 20,
 });
+
+/** Default ordered content for popup track information. */
+export const POPUP_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
+  "TITLE",
+  "ARTIST",
+  "ALBUM",
+]);
 
 // --- Panel placement settings ---
 

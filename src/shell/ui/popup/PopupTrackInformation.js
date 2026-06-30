@@ -2,29 +2,30 @@
  * @file PopupTrackInformation.js
  * @module shell.ui.popup.PopupTrackInformation
  *
- * Renders title, artist, and album metadata inside the popup.
+ * Renders configurable track information inside the popup.
  *
  * PopupContent delegates popup-specific metadata labels to this component so it
- * can apply display fallbacks and visibility rules independently from top bar
- * scrolling text. The component reads normalized PlayerProxy metadata through
- * shared helpers instead of reimplementing field parsing.
+ * can keep title and artist styling while using the shared ordered metadata
+ * model also used by the top bar. Missing MPRIS fields are hidden by the shared
+ * metadata helpers before labels are created.
  */
 
 import Clutter from "gi://Clutter";
 import St from "gi://St";
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { readTrackInformation } from "../../../shared/utils/metadata.js";
+import { TrackInformationFields } from "../../../shared/enums/trackInformation.js";
+import { buildTrackInformationItems } from "../../../shared/utils/metadata.js";
 import ScrollingLabel from "../ScrollingLabel.js";
 
 /**
- * Renders title, artist, and album metadata inside the popup.
+ * Renders configurable track information inside the popup.
  */
 export default class PopupTrackInformation {
   constructor(popupContent) {
     this.popupContent = popupContent;
     this.renderKey = null;
+    this.trackInformationLabels = [];
   }
 
   get extensionController() {
@@ -55,32 +56,23 @@ export default class PopupTrackInformation {
   }
 
   pause() {
-    this.titleLabel?.pauseScrolling();
-    this.artistLabel?.pauseScrolling();
-    this.albumLabel?.pauseScrolling();
+    for (const label of this.trackInformationLabels) label.pauseScrolling();
   }
 
   resume() {
-    this.titleLabel?.resumeScrolling();
-    this.artistLabel?.resumeScrolling();
-    this.albumLabel?.resumeScrolling();
+    for (const label of this.trackInformationLabels) label.resumeScrolling();
   }
 
   render() {
     const metadata = this.mediaApp.metadata;
     const width = this.getTrackInformationWidth();
-    const { title, artist, album } = readTrackInformation(metadata, {
-      unknownArtist: _("Unknown artist"),
-      unknownAlbum: _("Unknown album"),
-    });
+    const items = buildTrackInformationItems(
+      metadata,
+      this.extensionController.popupTrackInformationContent,
+    );
     const renderKey = [
-      title,
-      artist,
-      album,
+      ...items.map((item) => `${item.field ?? "TEXT"}:${item.text}`),
       width,
-      this.extensionController.popupTrackInformationTitleShow,
-      this.extensionController.popupTrackInformationArtistShow,
-      this.extensionController.popupTrackInformationAlbumShow,
       this.extensionController.popupTrackInformationScrollEnabled,
       this.extensionController.popupTrackInformationScrollSpeed,
       this.extensionController.popupTrackInformationScrollPauseMilliseconds,
@@ -95,42 +87,26 @@ export default class PopupTrackInformation {
     this.clearFields();
 
     const paused = this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING;
-    if (this.extensionController.popupTrackInformationTitleShow) {
-      this.titleLabel = this.createLabel(
-        title,
-        "mediashell-popup-track-information-title",
+    for (const item of items) {
+      const label = this.createLabel(
+        item.text,
+        this.resolveStyleClass(item.field),
         width,
         paused,
+        item.field === TrackInformationFields.ARTIST
+          ? Clutter.TimelineDirection.BACKWARD
+          : Clutter.TimelineDirection.FORWARD,
       );
-    }
-    if (this.extensionController.popupTrackInformationArtistShow) {
-      this.artistLabel = this.createLabel(
-        artist,
-        "mediashell-popup-track-information-artist",
-        width,
-        paused,
-        Clutter.TimelineDirection.BACKWARD,
-      );
-    }
-    if (this.extensionController.popupTrackInformationAlbumShow) {
-      this.albumLabel = this.createLabel(
-        album,
-        "mediashell-popup-track-information-album",
-        width,
-        paused,
-      );
+      this.trackInformationLabels.push(label);
+      this.trackInformationBox.add_child(label);
     }
 
-    const labels = [this.titleLabel, this.artistLabel, this.albumLabel].filter(
-      Boolean,
-    );
-    if (labels.length === 0) {
+    if (this.trackInformationLabels.length === 0) {
       this.trackInformationBox
         .get_parent()
         ?.remove_child(this.trackInformationBox);
       return;
     }
-    for (const label of labels) this.trackInformationBox.add_child(label);
     this.attach();
   }
 
@@ -178,14 +154,20 @@ export default class PopupTrackInformation {
     return label;
   }
 
+  resolveStyleClass(field) {
+    if (field === TrackInformationFields.TITLE)
+      return "mediashell-popup-track-information-title";
+    if (field === TrackInformationFields.ARTIST)
+      return "mediashell-popup-track-information-artist";
+    return "mediashell-popup-track-information-album";
+  }
+
   clearFields() {
-    for (const label of [this.titleLabel, this.artistLabel, this.albumLabel]) {
-      label?.get_parent()?.remove_child(label);
-      label?.destroy();
+    for (const label of this.trackInformationLabels) {
+      label.get_parent()?.remove_child(label);
+      label.destroy();
     }
-    this.titleLabel = null;
-    this.artistLabel = null;
-    this.albumLabel = null;
+    this.trackInformationLabels.length = 0;
   }
 
   attach() {
@@ -224,9 +206,7 @@ export default class PopupTrackInformation {
   destroy() {
     this.trackInformationBox?.destroy();
     this.trackInformationBox = null;
-    this.titleLabel = null;
-    this.artistLabel = null;
-    this.albumLabel = null;
+    this.trackInformationLabels.length = 0;
     this.renderKey = null;
     this.popupContent = null;
   }

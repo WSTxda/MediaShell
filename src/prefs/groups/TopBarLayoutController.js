@@ -2,11 +2,11 @@
  * @file TopBarLayoutController.js
  * @module prefs.groups.TopBarLayoutController
  *
- * Coordinates custom preference widgets that edit the top bar layout.
+ * Coordinates custom preference widgets that edit top bar layout.
  *
- * The controller owns the element-order widget and the track-information content
- * row, connecting their drag/drop and selection signals to GSettings. Ordered
- * list coordination stays here instead of entering the generic binding table.
+ * The controller owns only the element-order widget and persists its drag/drop
+ * order to GSettings. Track-information content is coordinated by its own shared
+ * controller because both popup and top bar use the same configurable editor.
  */
 
 import { TOP_BAR_ELEMENT_ORDER_DEFAULT } from "../../shared/constants/settings.js";
@@ -18,6 +18,7 @@ import {
 } from "../utils/SignalConnections.js";
 
 const logger = createLogger("TopBarLayoutController");
+const TOP_BAR_ELEMENT_ORDER_KEY = "top-bar-element-order";
 
 function arraysEqual(first, second) {
   return (
@@ -27,7 +28,7 @@ function arraysEqual(first, second) {
 }
 
 /**
- * Coordinates custom preference widgets that edit the top bar layout.
+ * Coordinates custom preference widgets that edit top bar layout.
  */
 export default class TopBarLayoutController {
   constructor(settings, builder) {
@@ -40,11 +41,7 @@ export default class TopBarLayoutController {
     this.topBarElementOrderGroup = this.builder.get_object(
       "gp-panel-top-bar-element-order",
     );
-    this.topBarTrackInformationContentRow = this.builder.get_object(
-      "er-top-bar-track-information-content",
-    );
     this.syncElementOrderFromSettings();
-    this.syncTrackInformationContentFromSettings();
 
     this.connectOwnedSignal(
       this.topBarElementOrderGroup,
@@ -54,61 +51,26 @@ export default class TopBarLayoutController {
         if (
           !arraysEqual(
             elementOrder,
-            this.settings.get_strv("top-bar-element-order"),
+            this.settings.get_strv(TOP_BAR_ELEMENT_ORDER_KEY),
           )
         )
-          this.settings.set_strv("top-bar-element-order", elementOrder);
-      },
-    );
-    this.connectOwnedSignal(
-      this.topBarTrackInformationContentRow,
-      "notify::content-items",
-      () => {
-        const contentItems = this.topBarTrackInformationContentRow.contentItems;
-        if (
-          !arraysEqual(
-            contentItems,
-            this.settings.get_strv("top-bar-track-information-content"),
-          )
-        )
-          this.settings.set_strv(
-            "top-bar-track-information-content",
-            contentItems,
-          );
+          this.settings.set_strv(TOP_BAR_ELEMENT_ORDER_KEY, elementOrder);
       },
     );
     this.connectOwnedSignal(
       this.settings,
-      "changed::top-bar-element-order",
+      `changed::${TOP_BAR_ELEMENT_ORDER_KEY}`,
       () => this.syncElementOrderFromSettings(),
-    );
-    this.connectOwnedSignal(
-      this.settings,
-      "changed::top-bar-track-information-content",
-      () => this.syncTrackInformationContentFromSettings(),
     );
   }
 
   syncElementOrderFromSettings() {
     const elementOrder = normalizeOrderedValues(
-      this.settings.get_strv("top-bar-element-order"),
+      this.settings.get_strv(TOP_BAR_ELEMENT_ORDER_KEY),
       TOP_BAR_ELEMENT_ORDER_DEFAULT,
     );
     if (!arraysEqual(elementOrder, this.topBarElementOrderGroup.elementOrder))
       this.topBarElementOrderGroup.setElementOrder(elementOrder);
-  }
-
-  syncTrackInformationContentFromSettings() {
-    const contentItems = this.settings.get_strv(
-      "top-bar-track-information-content",
-    );
-    if (
-      !arraysEqual(
-        contentItems,
-        this.topBarTrackInformationContentRow.contentItems,
-      )
-    )
-      this.topBarTrackInformationContentRow.setContentItems(contentItems);
   }
 
   connectOwnedSignal(object, signal, callback) {
@@ -123,7 +85,6 @@ export default class TopBarLayoutController {
       );
     });
     this.topBarElementOrderGroup = null;
-    this.topBarTrackInformationContentRow = null;
     this.settings = null;
     this.builder = null;
   }

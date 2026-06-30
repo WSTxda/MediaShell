@@ -12,11 +12,11 @@
 import GObject from "gi://GObject";
 
 import BlockedAppsGroup from "./BlockedAppsGroup.js";
-import TopBarTrackInformationContentRow from "./TopBarTrackInformationContentRow.js";
+import TrackInformationContentRow from "./TrackInformationContentRow.js";
 import TopBarElementOrderGroup from "./TopBarElementOrderGroup.js";
 
 export function ensurePreferenceWidgetsRegistered() {
   GObject.type_ensure(BlockedAppsGroup.$gtype);
-  GObject.type_ensure(TopBarTrackInformationContentRow.$gtype);
+  GObject.type_ensure(TrackInformationContentRow.$gtype);
   GObject.type_ensure(TopBarElementOrderGroup.$gtype);
 }

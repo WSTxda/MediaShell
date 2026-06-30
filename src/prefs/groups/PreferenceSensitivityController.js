@@ -48,6 +48,9 @@ export default class PreferenceSensitivityController {
     this.popupTrackInformationRow = this.builder.get_object(
       "er-popup-track-information",
     );
+    this.popupTrackInformationContentRow = this.builder.get_object(
+      "er-popup-track-information-content",
+    );
     this.popupTrackInformationScrollEnabledRow = this.builder.get_object(
       "sr-popup-track-information-scroll-enabled",
     );
@@ -113,6 +116,8 @@ export default class PreferenceSensitivityController {
       this.popupTrackInformationScrollEnabledSwitch.active;
     this.popupTrackInformationScrollSpeedRow.sensitive = popupScrollingEnabled;
     this.popupScrollPauseRow.sensitive = popupScrollingEnabled;
+    this.popupTrackInformationContentRow.sensitive =
+      this.popupTrackInformationRow.enableExpansion;
   }
 
   updateVisualizerSensitivity() {
@@ -140,6 +145,7 @@ export default class PreferenceSensitivityController {
     this.topBarScrollPauseRow = null;
     this.topBarTrackInformationContentRow = null;
     this.popupTrackInformationRow = null;
+    this.popupTrackInformationContentRow = null;
     this.popupTrackInformationScrollEnabledRow = null;
     this.popupTrackInformationScrollEnabledSwitch = null;
     this.popupTrackInformationScrollSpeedRow = null;

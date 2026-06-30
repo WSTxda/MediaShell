@@ -2,17 +2,21 @@
  * @file trackInformation.js
  * @module shared.enums.trackInformation
  *
- * Enum values for metadata fields used by top bar track information.
+ * Enum values for configurable track information metadata fields.
  *
- * Preferences store these IDs in the user-selected order, and runtime widgets
- * use the same values when assembling the compact top bar label. Keeping the
- * enum separate from top bar placement avoids mixing metadata policy with layout.
+ * Preferences store these IDs in user-selected order, while popup and top bar
+ * widgets use the same IDs to read normalized MPRIS metadata. Keeping the enum
+ * shared avoids duplicating metadata policy in separate UI surfaces.
  */
 
 export const TrackInformationFields = Object.freeze({
-  ARTIST: "Artist",
-  TITLE: "Title",
-  ALBUM: "Album",
-  DISC_NUMBER: "Disc Number",
-  TRACK_NUMBER: "Track Number",
+  TITLE: "TITLE",
+  ARTIST: "ARTIST",
+  ALBUM: "ALBUM",
+  ALBUM_ARTIST: "ALBUM_ARTIST",
+  GENRE: "GENRE",
+  CONTENT_CREATED: "CONTENT_CREATED",
+  COMPOSER: "COMPOSER",
+  DISC_NUMBER: "DISC_NUMBER",
+  TRACK_NUMBER: "TRACK_NUMBER",
 });

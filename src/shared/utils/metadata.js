@@ -5,93 +5,130 @@
  * Normalizes MPRIS metadata into text that MediaShell widgets can display safely.
  *
  * PopupTrackInformation and TopBarTrackInformation use these helpers to share
- * title, artist, album, disc, and track fallbacks without sharing actor code. The
- * functions stay pure so metadata rules can be tested outside GNOME Shell.
+ * field extraction, custom text handling, and missing-metadata rules without
+ * sharing actor code. The functions stay pure so metadata policy can be tested
+ * outside GNOME Shell.
  */
 
 import { TrackInformationFields } from "../enums/trackInformation.js";
+
+const METADATA_FIELD_KEYS = Object.freeze({
+  [TrackInformationFields.TITLE]: "xesam:title",
+  [TrackInformationFields.ARTIST]: "xesam:artist",
+  [TrackInformationFields.ALBUM]: "xesam:album",
+  [TrackInformationFields.ALBUM_ARTIST]: "xesam:albumArtist",
+  [TrackInformationFields.GENRE]: "xesam:genre",
+  [TrackInformationFields.CONTENT_CREATED]: "xesam:contentCreated",
+  [TrackInformationFields.COMPOSER]: "xesam:composer",
+  [TrackInformationFields.DISC_NUMBER]: "xesam:discNumber",
+  [TrackInformationFields.TRACK_NUMBER]: "xesam:trackNumber",
+});
+
+function sanitizeSingleLineText(value) {
+  return String(value ?? "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatListValue(value) {
+  if (Array.isArray(value))
+    return value.map(sanitizeSingleLineText).filter(Boolean).join(", ");
+  return sanitizeSingleLineText(value);
+}
+
+function formatYear(value) {
+  const text = formatListValue(value);
+  return text.match(/^\d{4}/)?.[0] ?? text;
+}
 
 /**
  * Formats the MPRIS artist field into a single display string.
  *
  * MPRIS commonly exposes `xesam:artist` as an array of strings, but sparse
- * endpoints may send a string, an empty array, or no value. This helper keeps the
- * fallback policy identical for popup and top bar track information without requiring
- * either widget to know the raw metadata shape.
+ * endpoints may send a string, an empty array, or no value. This helper is kept
+ * as a small public utility for tests and call sites that need explicit artist
+ * fallback behavior.
  *
  * @param {unknown} artistValue - Raw `xesam:artist` value from MPRIS metadata.
  * @param {string} fallback - Text used when no non-empty artist name is available.
  * @returns {string} Comma-separated artist names or the fallback.
  */
 export function formatArtistNames(artistValue, fallback = "") {
-  if (Array.isArray(artistValue))
-    return artistValue.filter(Boolean).join(", ") || fallback;
-  if (typeof artistValue === "string" && artistValue.trim()) return artistValue;
-  return fallback;
+  return formatListValue(artistValue) || fallback;
 }
 
 /**
- * Reads the track fields MediaShell displays from raw MPRIS metadata.
+ * Reads a single configured track-information field from raw MPRIS metadata.
  *
- * The returned object is intentionally UI-neutral: PopupTrackInformation can bind
- * individual labels while TopBarTrackInformation can assemble the same fields
- * into a compact ordered string. Field fallback text is supplied by callers so
- * gettext stays close to the UI surface that displays the value.
+ * Missing or empty fields return an empty string so configurable displays can
+ * hide unavailable MPRIS metadata instead of showing fallback placeholders.
  *
  * @param {Record<string, unknown>} metadata - Raw MPRIS metadata map.
- * @param {{unknownArtist?: string, unknownAlbum?: string}} fallbacks - Display fallbacks.
- * @returns {{title: unknown, artist: string, album: unknown, discNumber: unknown, trackNumber: unknown}}
+ * @param {string} field - One of TrackInformationFields.
+ * @returns {string} Display-safe single-line text, or an empty string.
  */
-export function readTrackInformation(metadata = {}, fallbacks = {}) {
-  const unknownArtist = fallbacks.unknownArtist ?? "";
-  const unknownAlbum = fallbacks.unknownAlbum ?? "";
+export function readTrackInformationField(metadata = {}, field) {
+  const metadataKey = METADATA_FIELD_KEYS[field];
+  if (!metadataKey) return "";
 
-  return {
-    title: metadata["xesam:title"] ?? "",
-    artist: formatArtistNames(metadata["xesam:artist"], unknownArtist),
-    album: metadata["xesam:album"] || unknownAlbum,
-    discNumber: metadata["xesam:discNumber"],
-    trackNumber: metadata["xesam:trackNumber"],
-  };
+  const value = metadata[metadataKey];
+  if (field === TrackInformationFields.CONTENT_CREATED)
+    return formatYear(value);
+  return formatListValue(value);
 }
 
 /**
- * Builds the top bar track information string from ordered field IDs.
- *
- * Unknown field IDs are kept as literal custom text so older or hand-edited
- * settings do not erase user intent. Newline characters are flattened because
- * top bar text is rendered inside a single ScrollingLabel actor.
+ * Reads all track-information fields MediaShell can display from MPRIS metadata.
  *
  * @param {Record<string, unknown>} metadata - Raw MPRIS metadata map.
- * @param {string[]} fields - Ordered field IDs or custom text fragments.
- * @param {{unknownArtist?: string, unknownAlbum?: string}} fallbacks - Display fallbacks.
- * @returns {string} Single-line text ready for the top bar label.
+ * @returns {Record<string, string>} Field ID to display-safe text.
  */
-export function buildTrackInformationText(
-  metadata = {},
-  fields = [],
-  fallbacks = {},
-) {
-  const trackInformation = readTrackInformation(metadata, fallbacks);
-  const values = [];
+export function readTrackInformation(metadata = {}) {
+  return Object.fromEntries(
+    Object.values(TrackInformationFields).map((field) => [
+      field,
+      readTrackInformationField(metadata, field),
+    ]),
+  );
+}
 
-  for (const field of fields) {
-    const fieldValue = TrackInformationFields[field];
-    if (fieldValue === TrackInformationFields.TITLE)
-      values.push(trackInformation.title);
-    else if (fieldValue === TrackInformationFields.ARTIST)
-      values.push(trackInformation.artist);
-    else if (fieldValue === TrackInformationFields.ALBUM)
-      values.push(trackInformation.album);
-    else if (fieldValue === TrackInformationFields.DISC_NUMBER)
-      values.push(trackInformation.discNumber);
-    else if (fieldValue === TrackInformationFields.TRACK_NUMBER)
-      values.push(trackInformation.trackNumber);
-    else values.push(field);
+/**
+ * Builds ordered display items from metadata fields and custom text fragments.
+ *
+ * Unknown field IDs are kept as literal custom text so hand-edited settings do
+ * not erase user intent. Empty metadata fields and empty custom text are hidden.
+ *
+ * @param {Record<string, unknown>} metadata - Raw MPRIS metadata map.
+ * @param {string[]} contentItems - Ordered field IDs or custom text fragments.
+ * @returns {{field: string|null, text: string, isCustomText: boolean}[]} Display items.
+ */
+export function buildTrackInformationItems(metadata = {}, contentItems = []) {
+  const items = [];
+
+  for (const contentItem of contentItems) {
+    if (Object.values(TrackInformationFields).includes(contentItem)) {
+      const text = readTrackInformationField(metadata, contentItem);
+      if (text) items.push({ field: contentItem, text, isCustomText: false });
+      continue;
+    }
+
+    const text = sanitizeSingleLineText(contentItem);
+    if (text) items.push({ field: null, text, isCustomText: true });
   }
 
-  return values
-    .filter((value) => value != null)
-    .join(" ")
-    .replace(/[\r\n]+/g, " ");
+  return items;
+}
+
+/**
+ * Builds the compact top bar track-information string from ordered content items.
+ *
+ * @param {Record<string, unknown>} metadata - Raw MPRIS metadata map.
+ * @param {string[]} contentItems - Ordered field IDs or custom text fragments.
+ * @returns {string} Single-line text ready for the top bar label.
+ */
+export function buildTrackInformationText(metadata = {}, contentItems = []) {
+  return buildTrackInformationItems(metadata, contentItems)
+    .map((item) => item.text)
+    .join(" ");
 }

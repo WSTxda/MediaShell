@@ -46,14 +46,8 @@
     <key name="popup-track-information-show" type="b">
       <default>true</default>
     </key>
-    <key name="popup-track-information-title-show" type="b">
-      <default>true</default>
-    </key>
-    <key name="popup-track-information-artist-show" type="b">
-      <default>true</default>
-    </key>
-    <key name="popup-track-information-album-show" type="b">
-      <default>true</default>
+    <key name="popup-track-information-content" type="as">
+      <default>['TITLE', 'ARTIST', 'ALBUM']</default>
     </key>
     <key name="popup-progress-bar-show" type="b">
       <default>true</default>

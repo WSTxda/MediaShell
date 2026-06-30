@@ -59,22 +59,27 @@ Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("PlayerProxy");
 
+function normalizeMetadataRevisionValue(value) {
+  return Array.isArray(value) ? value.join("\u0000") : value;
+}
+
 function getMetadataRevision(metadata) {
-  const artist = Array.isArray(metadata?.["xesam:artist"])
-    ? metadata["xesam:artist"].join("\u0000")
-    : metadata?.["xesam:artist"];
   return [
     metadata?.["mpris:trackid"],
     metadata?.["mpris:length"],
     metadata?.["mpris:artUrl"],
     metadata?.["xesam:url"],
     metadata?.["xesam:title"],
-    artist,
+    metadata?.["xesam:artist"],
     metadata?.["xesam:album"],
+    metadata?.["xesam:albumArtist"],
+    metadata?.["xesam:genre"],
+    metadata?.["xesam:contentCreated"],
+    metadata?.["xesam:composer"],
     metadata?.["xesam:discNumber"],
     metadata?.["xesam:trackNumber"],
   ]
-    .map((value) => String(value ?? ""))
+    .map((value) => String(normalizeMetadataRevisionValue(value) ?? ""))
     .join("\u0001");
 }
 

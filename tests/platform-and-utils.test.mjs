@@ -103,8 +103,8 @@ test("MPRIS artist metadata is normalized without leaking invalid values", () =>
   );
   assert.equal(formatArtistNames(["Artist A", "", null]), "Artist A");
   assert.equal(formatArtistNames("Artist A"), "Artist A");
-  assert.equal(formatArtistNames("   ", "Unknown artist"), "Unknown artist");
-  assert.equal(formatArtistNames(null, "Unknown artist"), "Unknown artist");
+  assert.equal(formatArtistNames("   ", "Fallback artist"), "Fallback artist");
+  assert.equal(formatArtistNames(null, "Fallback artist"), "Fallback artist");
 });
 
 test("app identity normalization removes desktop suffixes and unstable bus segments", () => {
