@@ -168,8 +168,8 @@ export default class ExtensionController {
     return this.mediaAppRegistry?.activateMediaApp(mediaApp) ?? false;
   }
 
-  activateNextMediaApp() {
-    return this.mediaAppRegistry?.activateNextMediaApp() ?? false;
+  switchMediaApp() {
+    return this.mediaAppRegistry?.switchMediaApp() ?? false;
   }
 
   toggleMediaAppPin(mediaApp) {
@@ -188,14 +188,20 @@ export default class ExtensionController {
     const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
 
     switch (inputAction) {
+      case InputActions.TOGGLE_SHUFFLE:
+        mediaApp?.toggleShuffle();
+        break;
+      case InputActions.PREVIOUS_TRACK:
+        mediaApp?.previous();
+        break;
       case InputActions.PLAY_PAUSE:
         mediaApp?.playPause();
         break;
       case InputActions.NEXT_TRACK:
         mediaApp?.next();
         break;
-      case InputActions.PREVIOUS_TRACK:
-        mediaApp?.previous();
+      case InputActions.TOGGLE_LOOP:
+        mediaApp?.toggleLoop();
         break;
       case InputActions.VOLUME_UP:
         if (mediaApp)
@@ -205,14 +211,11 @@ export default class ExtensionController {
         if (mediaApp)
           mediaApp.volume = Math.max(mediaApp.volume - VOLUME_STEP, 0);
         break;
-      case InputActions.TOGGLE_LOOP:
-        mediaApp?.toggleLoop();
-        break;
-      case InputActions.TOGGLE_SHUFFLE:
-        mediaApp?.toggleShuffle();
-        break;
       case InputActions.TOGGLE_POPUP:
         this.togglePopup();
+        break;
+      case InputActions.OPEN_PREFERENCES:
+        this.openPreferences();
         break;
       case InputActions.RAISE_APP:
         mediaApp?.raise();
@@ -220,11 +223,8 @@ export default class ExtensionController {
       case InputActions.QUIT_APP:
         mediaApp?.quit();
         break;
-      case InputActions.OPEN_PREFERENCES:
-        this.openPreferences();
-        break;
-      case InputActions.NEXT_APP:
-        this.activateNextMediaApp();
+      case InputActions.SWITCH_APP:
+        this.switchMediaApp();
         break;
       default:
         break;

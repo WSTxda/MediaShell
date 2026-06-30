@@ -36,7 +36,7 @@ export default class GlobalShortcutsService {
       try {
         const actionMode =
           action === InputActions.TOGGLE_POPUP ||
-          action === InputActions.NEXT_APP
+          action === InputActions.SWITCH_APP
             ? Shell.ActionMode.NORMAL | Shell.ActionMode.POPUP
             : Shell.ActionMode.NORMAL;
         Main.wm.addKeybinding(

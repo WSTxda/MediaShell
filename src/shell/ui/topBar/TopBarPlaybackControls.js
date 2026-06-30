@@ -23,11 +23,11 @@ import {
 import { createIcon, setIconName } from "../../utils/icons.js";
 
 const PLAYBACK_CONTROL_ORDER = Object.freeze([
-  PlaybackControls.LOOP_NONE.name,
+  PlaybackControls.SHUFFLE_ON.name,
   PlaybackControls.PREVIOUS.name,
   PlaybackControls.PLAY.name,
   PlaybackControls.NEXT.name,
-  PlaybackControls.SHUFFLE_ON.name,
+  PlaybackControls.LOOP_NONE.name,
 ]);
 
 function getPlaybackControlIconOpacity(isReactive, isStateControl, isActive) {
@@ -50,7 +50,8 @@ export default class TopBarPlaybackControls {
   render(widgetFlags) {
     this.ensureActor();
 
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_REPEAT) this.renderRepeat();
+    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE)
+      this.renderShuffle();
     if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS) {
       this.renderOptionalControl(
         this.topBarButton.extensionController
@@ -73,8 +74,7 @@ export default class TopBarPlaybackControls {
         () => this.topBarButton.mediaApp.next(),
       );
     }
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE)
-      this.renderShuffle();
+    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_REPEAT) this.renderRepeat();
 
     // Partial MPRIS updates must never use the configured absolute index of
     // one control in isolation. Reconcile the complete visible row once so

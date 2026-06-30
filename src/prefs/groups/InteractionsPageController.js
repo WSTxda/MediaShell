@@ -37,10 +37,18 @@ import {
 } from "../utils/ShortcutValidation.js";
 
 const logger = createLogger("InteractionsPageController");
-const SECTION_ORDER = Object.freeze(["playback", "audio", "apps", "interface"]);
+const SECTION_ORDER = Object.freeze(["playback", "audio", "interface", "apps"]);
 
 function createActionCopy() {
   return Object.freeze({
+    "toggle-shuffle": Object.freeze({
+      title: _("Shuffle"),
+      section: "playback",
+    }),
+    "previous-track": Object.freeze({
+      title: _("Previous track"),
+      section: "playback",
+    }),
     "play-pause": Object.freeze({
       title: _("Play / pause"),
       section: "playback",
@@ -49,28 +57,19 @@ function createActionCopy() {
       title: _("Next track"),
       section: "playback",
     }),
-    "previous-track": Object.freeze({
-      title: _("Previous track"),
-      section: "playback",
-    }),
+    "toggle-loop": Object.freeze({ title: _("Repeat"), section: "playback" }),
     "volume-up": Object.freeze({ title: _("Volume up"), section: "audio" }),
     "volume-down": Object.freeze({ title: _("Volume down"), section: "audio" }),
-    "toggle-loop": Object.freeze({ title: _("Repeat"), section: "playback" }),
-    "toggle-shuffle": Object.freeze({
-      title: _("Shuffle"),
-      section: "playback",
-    }),
     "toggle-popup": Object.freeze({ title: _("Popup"), section: "interface" }),
-    "raise-app": Object.freeze({ title: _("Open app"), section: "apps" }),
-    "quit-app": Object.freeze({ title: _("Quit app"), section: "apps" }),
     "open-preferences": Object.freeze({
       title: _("Preferences"),
       section: "interface",
     }),
-    "next-app": Object.freeze({ title: _("Next app"), section: "apps" }),
+    "raise-app": Object.freeze({ title: _("Open app"), section: "apps" }),
+    "quit-app": Object.freeze({ title: _("Quit app"), section: "apps" }),
+    "switch-app": Object.freeze({ title: _("Switch app"), section: "apps" }),
   });
 }
-
 function createSectionCopy() {
   return Object.freeze({
     playback: _("Playback"),

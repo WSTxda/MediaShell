@@ -25,8 +25,8 @@ function createTranslatedFields() {
     ALBUM: _("Album"),
     ALBUM_ARTIST: _("Album artist"),
     GENRE: _("Genre"),
-    CONTENT_CREATED: _("Year"),
     COMPOSER: _("Composer"),
+    CONTENT_CREATED: _("Year"),
     DISC_NUMBER: _("Disc"),
     TRACK_NUMBER: _("Track"),
   });

@@ -24,16 +24,16 @@ import { createIcon, setIconName } from "../../utils/icons.js";
 
 function getPopupPlaybackControlIndex(controlName) {
   if (
-    controlName === PlaybackControls.PREVIOUS.name ||
-    controlName === PlaybackControls.LOOP_NONE.name
+    controlName === PlaybackControls.SHUFFLE_ON.name ||
+    controlName === PlaybackControls.PREVIOUS.name
   )
     return 0;
+  if (controlName === PlaybackControls.PLAY.name) return 1;
   if (
-    controlName === PlaybackControls.PLAY.name ||
-    controlName === PlaybackControls.SHUFFLE_ON.name
+    controlName === PlaybackControls.NEXT.name ||
+    controlName === PlaybackControls.LOOP_NONE.name
   )
-    return 1;
-  if (controlName === PlaybackControls.NEXT.name) return 2;
+    return 2;
   return 0;
 }
 
@@ -61,17 +61,13 @@ export default class PopupPlaybackControls {
     this.ensureActors();
     const mediaApp = this.mediaApp;
 
-    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_LOOP) {
-      const loopControlDefinition =
-        mediaApp.loopStatus === LoopStatus.NONE
-          ? PlaybackControls.LOOP_NONE
-          : mediaApp.loopStatus === LoopStatus.TRACK
-            ? PlaybackControls.LOOP_TRACK
-            : PlaybackControls.LOOP_PLAYLIST;
+    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_SHUFFLE) {
       this.updatePlaybackControl(
-        loopControlDefinition,
+        mediaApp.shuffle
+          ? PlaybackControls.SHUFFLE_ON
+          : PlaybackControls.SHUFFLE_OFF,
         mediaApp.canControl,
-        () => mediaApp.toggleLoop(),
+        () => mediaApp.toggleShuffle(),
       );
     }
     if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_PREVIOUS) {
@@ -90,13 +86,17 @@ export default class PopupPlaybackControls {
         () => mediaApp.next(),
       );
     }
-    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_SHUFFLE) {
+    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_LOOP) {
+      const loopControlDefinition =
+        mediaApp.loopStatus === LoopStatus.NONE
+          ? PlaybackControls.LOOP_NONE
+          : mediaApp.loopStatus === LoopStatus.TRACK
+            ? PlaybackControls.LOOP_TRACK
+            : PlaybackControls.LOOP_PLAYLIST;
       this.updatePlaybackControl(
-        mediaApp.shuffle
-          ? PlaybackControls.SHUFFLE_ON
-          : PlaybackControls.SHUFFLE_OFF,
+        loopControlDefinition,
         mediaApp.canControl,
-        () => mediaApp.toggleShuffle(),
+        () => mediaApp.toggleLoop(),
       );
     }
 

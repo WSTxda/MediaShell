@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 20:08-0300\n"
+"POT-Creation-Date: 2026-06-30 20:12-0300\n"
 "PO-Revision-Date: 2026-06-13 21:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,84 +45,84 @@ msgstr "Desenvolupat per"
 msgid "View all..."
 msgstr "Mostra-ho tot..."
 
-#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:182
+#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
 #: assets/ui/prefs.ui:452 assets/ui/prefs.ui:782
-msgid "Play / pause"
-msgstr "Reprodueix / Pausa"
+msgid "Shuffle"
+msgstr "Aleatori"
 
-#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:192
+#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
 #: assets/ui/prefs.ui:469 assets/ui/prefs.ui:783
-msgid "Next track"
-msgstr "Pista següent"
-
-#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
 msgid "Previous track"
 msgstr "Pista anterior"
 
-#: src/prefs/groups/InteractionsPageController.js:56 assets/ui/prefs.ui:503
-#: assets/ui/prefs.ui:785
-msgid "Volume up"
-msgstr "Apuja el volum"
+#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
+#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
+msgid "Play / pause"
+msgstr "Reprodueix / Pausa"
 
-#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:520
-#: assets/ui/prefs.ui:786
-msgid "Volume down"
-msgstr "Abaixa el volum"
+#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
+#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:785
+msgid "Next track"
+msgstr "Pista següent"
 
-#: src/prefs/groups/InteractionsPageController.js:58 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:537 assets/ui/prefs.ui:787
+#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
+#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:786
 msgid "Repeat"
 msgstr "Repetició"
 
-#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:554 assets/ui/prefs.ui:788
-msgid "Shuffle"
-msgstr "Aleatori"
+#: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
+#: assets/ui/prefs.ui:787
+msgid "Volume up"
+msgstr "Apuja el volum"
+
+#: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
+#: assets/ui/prefs.ui:788
+msgid "Volume down"
+msgstr "Abaixa el volum"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:571 assets/ui/prefs.ui:789
 msgid "Popup"
 msgstr "Finestra emergent"
 
-#: src/prefs/groups/InteractionsPageController.js:64 assets/ui/prefs.ui:588
+#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
 #: assets/ui/prefs.ui:790
-msgid "Open app"
-msgstr "Obre l’aplicació"
-
-#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:791
-msgid "Quit app"
-msgstr "Tanca l’aplicació"
-
-#: src/prefs/groups/InteractionsPageController.js:67 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:792
 msgid "Preferences"
 msgstr "Preferències"
 
+#: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
+#: assets/ui/prefs.ui:791
+msgid "Open app"
+msgstr "Obre l’aplicació"
+
+#: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
+#: assets/ui/prefs.ui:792
+msgid "Quit app"
+msgstr "Tanca l’aplicació"
+
 #: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
 #: assets/ui/prefs.ui:793
-msgid "Next app"
-msgstr "Aplicació següent"
+msgid "Switch app"
+msgstr "Canvia d’aplicació"
 
-#: src/prefs/groups/InteractionsPageController.js:76
+#: src/prefs/groups/InteractionsPageController.js:75
 msgid "Playback"
 msgstr "Reproducció"
 
-#: src/prefs/groups/InteractionsPageController.js:77
+#: src/prefs/groups/InteractionsPageController.js:76
 msgid "Audio"
 msgstr "Àudio"
 
-#: src/prefs/groups/InteractionsPageController.js:78 assets/ui/prefs.ui:138
+#: src/prefs/groups/InteractionsPageController.js:77 assets/ui/prefs.ui:138
 #: assets/ui/prefs.ui:378
 msgid "Apps"
 msgstr "Aplicacions"
 
-#: src/prefs/groups/InteractionsPageController.js:79
+#: src/prefs/groups/InteractionsPageController.js:78
 msgid "Interface"
 msgstr "Interfície"
 
-#: src/prefs/groups/InteractionsPageController.js:157
+#: src/prefs/groups/InteractionsPageController.js:156
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -132,43 +132,43 @@ msgstr ""
 "Premeu Retorn per desar.\n"
 "Premeu Retrocés per esborrar la drecera."
 
-#: src/prefs/groups/InteractionsPageController.js:165
+#: src/prefs/groups/InteractionsPageController.js:164
 msgid "Press a shortcut"
 msgstr "Premeu una drecera"
 
-#: src/prefs/groups/InteractionsPageController.js:267
+#: src/prefs/groups/InteractionsPageController.js:266
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "La drecera ja la fa servir %s"
 
-#: src/prefs/groups/InteractionsPageController.js:287 assets/ui/prefs.ui:443
+#: src/prefs/groups/InteractionsPageController.js:286 assets/ui/prefs.ui:443
 msgid "Keyboard shortcuts"
 msgstr "Dreceres de teclat"
 
-#: src/prefs/groups/InteractionsPageController.js:310
+#: src/prefs/groups/InteractionsPageController.js:309
 msgid "Not set"
 msgstr "No definida"
 
-#: src/prefs/groups/InteractionsPageController.js:338
+#: src/prefs/groups/InteractionsPageController.js:337
 msgid "Reset keyboard shortcuts?"
 msgstr "Voleu restablir les dreceres de teclat?"
 
-#: src/prefs/groups/InteractionsPageController.js:339
+#: src/prefs/groups/InteractionsPageController.js:338
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Es desactivaran totes les dreceres de teclat."
 
-#: src/prefs/groups/InteractionsPageController.js:342
+#: src/prefs/groups/InteractionsPageController.js:341
 #: src/prefs/groups/OthersPageController.js:125
 #: src/prefs/widgets/BlockedAppChooserDialog.js:66
 msgid "Cancel"
 msgstr "Cancel·la"
 
-#: src/prefs/groups/InteractionsPageController.js:343
+#: src/prefs/groups/InteractionsPageController.js:342
 #: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:774
 msgid "Reset"
 msgstr "Restableix"
 
-#: src/prefs/groups/InteractionsPageController.js:362
+#: src/prefs/groups/InteractionsPageController.js:361
 msgid "Keyboard shortcuts reset"
 msgstr "Dreceres de teclat restablertes"
 
@@ -262,12 +262,12 @@ msgid "Genre"
 msgstr "Gènere"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:28
-msgid "Year"
-msgstr "Any"
-
-#: src/prefs/widgets/TrackInformationContentRow.js:29
 msgid "Composer"
 msgstr "Compositor"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:29
+msgid "Year"
+msgstr "Any"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:30
 msgid "Disc"
