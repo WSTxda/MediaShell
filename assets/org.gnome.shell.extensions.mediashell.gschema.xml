@@ -3,18 +3,18 @@
 
   <enum id="org.gnome.shell.extensions.mediashell.input-actions">
     <value nick="NONE"             value="0"  />
-    <value nick="PLAY_PAUSE"       value="1"  />
-    <value nick="NEXT_TRACK"       value="2"  />
-    <value nick="PREVIOUS_TRACK"   value="3"  />
-    <value nick="VOLUME_UP"        value="4"  />
-    <value nick="VOLUME_DOWN"      value="5"  />
-    <value nick="TOGGLE_LOOP"      value="6"  />
-    <value nick="TOGGLE_SHUFFLE"   value="7"  />
+    <value nick="TOGGLE_SHUFFLE"   value="1"  />
+    <value nick="PREVIOUS_TRACK"   value="2"  />
+    <value nick="PLAY_PAUSE"       value="3"  />
+    <value nick="NEXT_TRACK"       value="4"  />
+    <value nick="TOGGLE_LOOP"      value="5"  />
+    <value nick="VOLUME_UP"        value="6"  />
+    <value nick="VOLUME_DOWN"      value="7"  />
     <value nick="TOGGLE_POPUP"     value="8"  />
-    <value nick="RAISE_APP"        value="9"  />
-    <value nick="QUIT_APP"         value="10" />
-    <value nick="OPEN_PREFERENCES" value="11" />
-    <value nick="NEXT_APP"         value="12" />
+    <value nick="OPEN_PREFERENCES" value="9"  />
+    <value nick="RAISE_APP"        value="10" />
+    <value nick="QUIT_APP"         value="11" />
+    <value nick="SWITCH_APP"       value="12" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
@@ -112,7 +112,7 @@
     <key name="top-bar-playback-controls-show" type="b">
       <default>true</default>
     </key>
-    <key name="top-bar-playback-controls-repeat-show" type="b">
+    <key name="top-bar-playback-controls-shuffle-show" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-playback-controls-previous-track-show" type="b">
@@ -124,7 +124,7 @@
     <key name="top-bar-playback-controls-next-track-show" type="b">
       <default>true</default>
     </key>
-    <key name="top-bar-playback-controls-shuffle-show" type="b">
+    <key name="top-bar-playback-controls-repeat-show" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
@@ -142,13 +142,19 @@
     </key>
 
     <!-- Interactions -->
+    <key name="interactions-shortcut-toggle-shuffle" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-previous-track" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
     <key name="interactions-shortcut-play-pause" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-next-track" type="as">
       <default><![CDATA[['']]]></default>
     </key>
-    <key name="interactions-shortcut-previous-track" type="as">
+    <key name="interactions-shortcut-toggle-loop" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-volume-up" type="as">
@@ -157,13 +163,10 @@
     <key name="interactions-shortcut-volume-down" type="as">
       <default><![CDATA[['']]]></default>
     </key>
-    <key name="interactions-shortcut-toggle-loop" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="interactions-shortcut-toggle-shuffle" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
     <key name="interactions-shortcut-toggle-popup" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-open-preferences" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-raise-app" type="as">
@@ -172,10 +175,7 @@
     <key name="interactions-shortcut-quit-app" type="as">
       <default><![CDATA[['']]]></default>
     </key>
-    <key name="interactions-shortcut-open-preferences" type="as">
-      <default><![CDATA[['']]]></default>
-    </key>
-    <key name="interactions-shortcut-next-app" type="as">
+    <key name="interactions-shortcut-switch-app" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-mouse-action-left"

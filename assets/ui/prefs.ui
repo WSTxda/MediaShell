@@ -158,11 +158,11 @@
             <property name="subtitle" translatable="yes">Show playback controls in the top bar</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-repeat-show">
-                <property name="title" translatable="yes">Repeat</property>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-shuffle-show">
+                <property name="title" translatable="yes">Shuffle</property>
                 <child type="prefix">
                   <object class="GtkImage">
-                    <property name="icon-name">media-playlist-repeat-symbolic</property>
+                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
                   </object>
                 </child>
               </object>
@@ -198,11 +198,11 @@
               </object>
             </child>
             <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-shuffle-show">
-                <property name="title" translatable="yes">Shuffle</property>
+              <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-repeat-show">
+                <property name="title" translatable="yes">Repeat</property>
                 <child type="prefix">
                   <object class="GtkImage">
-                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                    <property name="icon-name">media-playlist-repeat-symbolic</property>
                   </object>
                 </child>
               </object>
@@ -447,6 +447,40 @@
             <property name="title" translatable="yes">Shortcut assignments</property>
             <property name="subtitle" translatable="yes">Configure each keyboard action</property>
             <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-shuffle">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Shuffle</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-shuffle">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-previous-track">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Previous track</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">media-skip-backward-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-previous-track">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-play-pause">
                 <property name="activatable">true</property>
                 <property name="title" translatable="yes">Play / pause</property>
@@ -481,16 +515,16 @@
               </object>
             </child>
             <child>
-              <object class="AdwActionRow" id="ar-interactions-shortcut-previous-track">
+              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-loop">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Previous track</property>
+                <property name="title" translatable="yes">Repeat</property>
                 <child type="prefix">
                   <object class="GtkImage">
-                    <property name="icon-name">media-skip-backward-symbolic</property>
+                    <property name="icon-name">media-playlist-repeat-symbolic</property>
                   </object>
                 </child>
                 <child type="suffix">
-                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-previous-track">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-loop">
                     <property name="disabled-text" translatable="yes">Set</property>
                     <property name="valign">3</property>
                   </object>
@@ -532,40 +566,6 @@
               </object>
             </child>
             <child>
-              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-loop">
-                <property name="activatable">true</property>
-                <property name="title" translatable="yes">Repeat</property>
-                <child type="prefix">
-                  <object class="GtkImage">
-                    <property name="icon-name">media-playlist-repeat-symbolic</property>
-                  </object>
-                </child>
-                <child type="suffix">
-                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-loop">
-                    <property name="disabled-text" translatable="yes">Set</property>
-                    <property name="valign">3</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-shuffle">
-                <property name="activatable">true</property>
-                <property name="title" translatable="yes">Shuffle</property>
-                <child type="prefix">
-                  <object class="GtkImage">
-                    <property name="icon-name">media-playlist-shuffle-symbolic</property>
-                  </object>
-                </child>
-                <child type="suffix">
-                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-shuffle">
-                    <property name="disabled-text" translatable="yes">Set</property>
-                    <property name="valign">3</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-popup">
                 <property name="activatable">true</property>
                 <property name="title" translatable="yes">Popup</property>
@@ -576,6 +576,23 @@
                 </child>
                 <child type="suffix">
                   <object class="GtkShortcutLabel" id="sl-interactions-shortcut-toggle-popup">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-open-preferences">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Preferences</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">org.gnome.Settings-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-open-preferences">
                     <property name="disabled-text" translatable="yes">Set</property>
                     <property name="valign">3</property>
                   </object>
@@ -617,33 +634,16 @@
               </object>
             </child>
             <child>
-              <object class="AdwActionRow" id="ar-interactions-shortcut-open-preferences">
+              <object class="AdwActionRow" id="ar-interactions-shortcut-switch-app">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Preferences</property>
-                <child type="prefix">
-                  <object class="GtkImage">
-                    <property name="icon-name">org.gnome.Settings-symbolic</property>
-                  </object>
-                </child>
-                <child type="suffix">
-                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-open-preferences">
-                    <property name="disabled-text" translatable="yes">Set</property>
-                    <property name="valign">3</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwActionRow" id="ar-interactions-shortcut-next-app">
-                <property name="activatable">true</property>
-                <property name="title" translatable="yes">Next app</property>
+                <property name="title" translatable="yes">Switch app</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">network-transmit-receive-symbolic</property>
                   </object>
                 </child>
                 <child type="suffix">
-                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-next-app">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-switch-app">
                     <property name="disabled-text" translatable="yes">Set</property>
                     <property name="valign">3</property>
                   </object>
@@ -779,18 +779,18 @@
   <object class="GtkStringList" id="model-input-actions">
     <items>
       <item translatable="yes">None</item>
+      <item translatable="yes">Shuffle</item>
+      <item translatable="yes">Previous track</item>
       <item translatable="yes">Play / pause</item>
       <item translatable="yes">Next track</item>
-      <item translatable="yes">Previous track</item>
+      <item translatable="yes">Repeat</item>
       <item translatable="yes">Volume up</item>
       <item translatable="yes">Volume down</item>
-      <item translatable="yes">Repeat</item>
-      <item translatable="yes">Shuffle</item>
       <item translatable="yes">Popup</item>
+      <item translatable="yes">Preferences</item>
       <item translatable="yes">Open app</item>
       <item translatable="yes">Quit app</item>
-      <item translatable="yes">Preferences</item>
-      <item translatable="yes">Next app</item>
+      <item translatable="yes">Switch app</item>
     </items>
   </object>
 </interface>

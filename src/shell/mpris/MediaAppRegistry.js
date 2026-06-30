@@ -457,14 +457,14 @@ export default class MediaAppRegistry {
     return true;
   }
 
-  activateNextMediaApp() {
+  switchMediaApp() {
     if (this.getPinnedMediaApp()) return false;
 
-    const nextMediaApp = selectNextMediaApp(
+    const targetMediaApp = selectNextMediaApp(
       this.getMediaApps(),
       this.activeMediaApp,
     );
-    return nextMediaApp ? this.activateMediaApp(nextMediaApp) : false;
+    return targetMediaApp ? this.activateMediaApp(targetMediaApp) : false;
   }
 
   pinMediaApp(mediaApp) {

@@ -22,6 +22,16 @@ import { InputActions } from "../enums/input.js";
  */
 export const INPUT_ACTION_DEFINITIONS = Object.freeze([
   Object.freeze({
+    id: "toggle-shuffle",
+    action: InputActions.TOGGLE_SHUFFLE,
+    shortcutKey: "interactions-shortcut-toggle-shuffle",
+  }),
+  Object.freeze({
+    id: "previous-track",
+    action: InputActions.PREVIOUS_TRACK,
+    shortcutKey: "interactions-shortcut-previous-track",
+  }),
+  Object.freeze({
     id: "play-pause",
     action: InputActions.PLAY_PAUSE,
     shortcutKey: "interactions-shortcut-play-pause",
@@ -32,9 +42,9 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     shortcutKey: "interactions-shortcut-next-track",
   }),
   Object.freeze({
-    id: "previous-track",
-    action: InputActions.PREVIOUS_TRACK,
-    shortcutKey: "interactions-shortcut-previous-track",
+    id: "toggle-loop",
+    action: InputActions.TOGGLE_LOOP,
+    shortcutKey: "interactions-shortcut-toggle-loop",
   }),
   Object.freeze({
     id: "volume-up",
@@ -47,19 +57,14 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     shortcutKey: "interactions-shortcut-volume-down",
   }),
   Object.freeze({
-    id: "toggle-loop",
-    action: InputActions.TOGGLE_LOOP,
-    shortcutKey: "interactions-shortcut-toggle-loop",
-  }),
-  Object.freeze({
-    id: "toggle-shuffle",
-    action: InputActions.TOGGLE_SHUFFLE,
-    shortcutKey: "interactions-shortcut-toggle-shuffle",
-  }),
-  Object.freeze({
     id: "toggle-popup",
     action: InputActions.TOGGLE_POPUP,
     shortcutKey: "interactions-shortcut-toggle-popup",
+  }),
+  Object.freeze({
+    id: "open-preferences",
+    action: InputActions.OPEN_PREFERENCES,
+    shortcutKey: "interactions-shortcut-open-preferences",
   }),
   Object.freeze({
     id: "raise-app",
@@ -72,14 +77,9 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     shortcutKey: "interactions-shortcut-quit-app",
   }),
   Object.freeze({
-    id: "open-preferences",
-    action: InputActions.OPEN_PREFERENCES,
-    shortcutKey: "interactions-shortcut-open-preferences",
-  }),
-  Object.freeze({
-    id: "next-app",
-    action: InputActions.NEXT_APP,
-    shortcutKey: "interactions-shortcut-next-app",
+    id: "switch-app",
+    action: InputActions.SWITCH_APP,
+    shortcutKey: "interactions-shortcut-switch-app",
   }),
 ]);
 

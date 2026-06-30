@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 20:08-0300\n"
+"POT-Creation-Date: 2026-06-30 20:12-0300\n"
 "PO-Revision-Date: 2026-06-13 21:00+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,84 +46,84 @@ msgstr "Распрацавана"
 msgid "View all..."
 msgstr "Паказаць усіх..."
 
-#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:182
+#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
 #: assets/ui/prefs.ui:452 assets/ui/prefs.ui:782
-msgid "Play / pause"
-msgstr "Прайграць / Паўза"
+msgid "Shuffle"
+msgstr "Выпадкова"
 
-#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:192
+#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
 #: assets/ui/prefs.ui:469 assets/ui/prefs.ui:783
-msgid "Next track"
-msgstr "Наступны трэк"
-
-#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
 msgid "Previous track"
 msgstr "Папярэдні трэк"
 
-#: src/prefs/groups/InteractionsPageController.js:56 assets/ui/prefs.ui:503
-#: assets/ui/prefs.ui:785
-msgid "Volume up"
-msgstr "Павялічыць гучнасць"
+#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
+#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
+msgid "Play / pause"
+msgstr "Прайграць / Паўза"
 
-#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:520
-#: assets/ui/prefs.ui:786
-msgid "Volume down"
-msgstr "Паменшыць гучнасць"
+#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
+#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:785
+msgid "Next track"
+msgstr "Наступны трэк"
 
-#: src/prefs/groups/InteractionsPageController.js:58 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:537 assets/ui/prefs.ui:787
+#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
+#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:786
 msgid "Repeat"
 msgstr "Паўтор"
 
-#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:554 assets/ui/prefs.ui:788
-msgid "Shuffle"
-msgstr "Выпадкова"
+#: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
+#: assets/ui/prefs.ui:787
+msgid "Volume up"
+msgstr "Павялічыць гучнасць"
+
+#: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
+#: assets/ui/prefs.ui:788
+msgid "Volume down"
+msgstr "Паменшыць гучнасць"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:571 assets/ui/prefs.ui:789
 msgid "Popup"
 msgstr "Усплывальнае меню"
 
-#: src/prefs/groups/InteractionsPageController.js:64 assets/ui/prefs.ui:588
+#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
 #: assets/ui/prefs.ui:790
-msgid "Open app"
-msgstr "Адкрыць праграму"
-
-#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:791
-msgid "Quit app"
-msgstr "Завяршыць праграму"
-
-#: src/prefs/groups/InteractionsPageController.js:67 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:792
 msgid "Preferences"
 msgstr "Налады"
 
+#: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
+#: assets/ui/prefs.ui:791
+msgid "Open app"
+msgstr "Адкрыць праграму"
+
+#: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
+#: assets/ui/prefs.ui:792
+msgid "Quit app"
+msgstr "Завяршыць праграму"
+
 #: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
 #: assets/ui/prefs.ui:793
-msgid "Next app"
-msgstr "Наступная праграма"
+msgid "Switch app"
+msgstr "Пераключыць праграму"
 
-#: src/prefs/groups/InteractionsPageController.js:76
+#: src/prefs/groups/InteractionsPageController.js:75
 msgid "Playback"
 msgstr "Прайграванне"
 
-#: src/prefs/groups/InteractionsPageController.js:77
+#: src/prefs/groups/InteractionsPageController.js:76
 msgid "Audio"
 msgstr "Аўдыя"
 
-#: src/prefs/groups/InteractionsPageController.js:78 assets/ui/prefs.ui:138
+#: src/prefs/groups/InteractionsPageController.js:77 assets/ui/prefs.ui:138
 #: assets/ui/prefs.ui:378
 msgid "Apps"
 msgstr "Праграмы"
 
-#: src/prefs/groups/InteractionsPageController.js:79
+#: src/prefs/groups/InteractionsPageController.js:78
 msgid "Interface"
 msgstr "Інтэрфейс"
 
-#: src/prefs/groups/InteractionsPageController.js:157
+#: src/prefs/groups/InteractionsPageController.js:156
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -133,43 +133,43 @@ msgstr ""
 "Націсніце Enter, каб захаваць.\n"
 "Націсніце Backspace, каб ачысціць спалучэнне."
 
-#: src/prefs/groups/InteractionsPageController.js:165
+#: src/prefs/groups/InteractionsPageController.js:164
 msgid "Press a shortcut"
 msgstr "Націсніце клавіятурнае спалучэнне"
 
-#: src/prefs/groups/InteractionsPageController.js:267
+#: src/prefs/groups/InteractionsPageController.js:266
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Спалучэнне ўжо выкарыстоўваецца для %s"
 
-#: src/prefs/groups/InteractionsPageController.js:287 assets/ui/prefs.ui:443
+#: src/prefs/groups/InteractionsPageController.js:286 assets/ui/prefs.ui:443
 msgid "Keyboard shortcuts"
 msgstr "Спалучэнні клавіш"
 
-#: src/prefs/groups/InteractionsPageController.js:310
+#: src/prefs/groups/InteractionsPageController.js:309
 msgid "Not set"
 msgstr "Не зададзена"
 
-#: src/prefs/groups/InteractionsPageController.js:338
+#: src/prefs/groups/InteractionsPageController.js:337
 msgid "Reset keyboard shortcuts?"
 msgstr "Скінуць спалучэнні клавіш?"
 
-#: src/prefs/groups/InteractionsPageController.js:339
+#: src/prefs/groups/InteractionsPageController.js:338
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Усе спалучэнні клавіш будуць адключаны."
 
-#: src/prefs/groups/InteractionsPageController.js:342
+#: src/prefs/groups/InteractionsPageController.js:341
 #: src/prefs/groups/OthersPageController.js:125
 #: src/prefs/widgets/BlockedAppChooserDialog.js:66
 msgid "Cancel"
 msgstr "Скасаваць"
 
-#: src/prefs/groups/InteractionsPageController.js:343
+#: src/prefs/groups/InteractionsPageController.js:342
 #: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:774
 msgid "Reset"
 msgstr "Скінуць"
 
-#: src/prefs/groups/InteractionsPageController.js:362
+#: src/prefs/groups/InteractionsPageController.js:361
 msgid "Keyboard shortcuts reset"
 msgstr "Спалучэнні клавіш скінуты"
 
@@ -263,12 +263,12 @@ msgid "Genre"
 msgstr "Жанр"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:28
-msgid "Year"
-msgstr "Год"
-
-#: src/prefs/widgets/TrackInformationContentRow.js:29
 msgid "Composer"
 msgstr "Кампазітар"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:29
+msgid "Year"
+msgstr "Год"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:30
 msgid "Disc"

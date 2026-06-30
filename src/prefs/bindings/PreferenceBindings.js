@@ -78,8 +78,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "enable-expansion",
   ],
   [
-    "top-bar-playback-controls-repeat-show",
-    "sr-top-bar-playback-controls-repeat-show",
+    "top-bar-playback-controls-shuffle-show",
+    "sr-top-bar-playback-controls-shuffle-show",
     "active",
   ],
   [
@@ -98,8 +98,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "active",
   ],
   [
-    "top-bar-playback-controls-shuffle-show",
-    "sr-top-bar-playback-controls-shuffle-show",
+    "top-bar-playback-controls-repeat-show",
+    "sr-top-bar-playback-controls-repeat-show",
     "active",
   ],
   ["top-bar-app-icon-show", "er-top-bar-app-icon", "enable-expansion"],
@@ -116,6 +116,16 @@ const PANEL_BINDINGS = Object.freeze([
 
 const INTERACTIONS_BINDINGS = Object.freeze([
   [
+    "interactions-shortcut-toggle-shuffle",
+    "sl-interactions-shortcut-toggle-shuffle",
+    "accelerator",
+  ],
+  [
+    "interactions-shortcut-previous-track",
+    "sl-interactions-shortcut-previous-track",
+    "accelerator",
+  ],
+  [
     "interactions-shortcut-play-pause",
     "sl-interactions-shortcut-play-pause",
     "accelerator",
@@ -126,8 +136,8 @@ const INTERACTIONS_BINDINGS = Object.freeze([
     "accelerator",
   ],
   [
-    "interactions-shortcut-previous-track",
-    "sl-interactions-shortcut-previous-track",
+    "interactions-shortcut-toggle-loop",
+    "sl-interactions-shortcut-toggle-loop",
     "accelerator",
   ],
   [
@@ -141,18 +151,13 @@ const INTERACTIONS_BINDINGS = Object.freeze([
     "accelerator",
   ],
   [
-    "interactions-shortcut-toggle-loop",
-    "sl-interactions-shortcut-toggle-loop",
-    "accelerator",
-  ],
-  [
-    "interactions-shortcut-toggle-shuffle",
-    "sl-interactions-shortcut-toggle-shuffle",
-    "accelerator",
-  ],
-  [
     "interactions-shortcut-toggle-popup",
     "sl-interactions-shortcut-toggle-popup",
+    "accelerator",
+  ],
+  [
+    "interactions-shortcut-open-preferences",
+    "sl-interactions-shortcut-open-preferences",
     "accelerator",
   ],
   [
@@ -166,13 +171,8 @@ const INTERACTIONS_BINDINGS = Object.freeze([
     "accelerator",
   ],
   [
-    "interactions-shortcut-open-preferences",
-    "sl-interactions-shortcut-open-preferences",
-    "accelerator",
-  ],
-  [
-    "interactions-shortcut-next-app",
-    "sl-interactions-shortcut-next-app",
+    "interactions-shortcut-switch-app",
+    "sl-interactions-shortcut-switch-app",
     "accelerator",
   ],
   ["interactions-mouse-action-left", "cr-interactions-left-click", "selected"],
