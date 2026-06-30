@@ -22,21 +22,6 @@ const POPUP_BINDINGS = Object.freeze([
     "er-popup-track-information",
     "enable-expansion",
   ],
-  [
-    "popup-track-information-title-show",
-    "sr-popup-track-information-title-show",
-    "active",
-  ],
-  [
-    "popup-track-information-artist-show",
-    "sr-popup-track-information-artist-show",
-    "active",
-  ],
-  [
-    "popup-track-information-album-show",
-    "sr-popup-track-information-album-show",
-    "active",
-  ],
   ["popup-progress-bar-show", "sr-popup-progress-bar-show", "active"],
   [
     "popup-track-information-scroll-enabled",

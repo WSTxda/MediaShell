@@ -11,10 +11,12 @@
 
 import {
   POPUP_ALBUM_ART_CORNER_RADIUS,
+  POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
   POPUP_WIDTH,
   TEXT_SCROLL_PAUSE_SECONDS,
   TEXT_SCROLL_SPEED,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
+  TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX,
   TOP_BAR_TRACK_INFORMATION_WIDTH,
   TOP_BAR_VISUALIZER_SPEED,
@@ -56,6 +58,14 @@ function createSecondsToMillisecondsTransform(bounds) {
   return (value) => constrainValue(value) * 1000;
 }
 
+function normalizeTrackInformationContent(value, fallback) {
+  if (!Array.isArray(value)) return fallback;
+  const normalized = value
+    .map((item) => String(item ?? "").trim())
+    .filter(Boolean);
+  return normalized.length > 0 ? normalized : fallback;
+}
+
 export const SETTINGS_SPEC = Object.freeze({
   // Popup
   "popup-width": {
@@ -86,19 +96,14 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-track-information-title-show": {
-    property: "popupTrackInformationTitleShow",
-    read: "get_boolean",
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
-  },
-  "popup-track-information-artist-show": {
-    property: "popupTrackInformationArtistShow",
-    read: "get_boolean",
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
-  },
-  "popup-track-information-album-show": {
-    property: "popupTrackInformationAlbumShow",
-    read: "get_boolean",
+  "popup-track-information-content": {
+    property: "popupTrackInformationContent",
+    read: "get_strv",
+    transform: (value) =>
+      normalizeTrackInformationContent(
+        value,
+        POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
+      ),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
   "popup-progress-bar-show": {
@@ -166,6 +171,11 @@ export const SETTINGS_SPEC = Object.freeze({
   "top-bar-track-information-content": {
     property: "topBarTrackInformationContent",
     read: "get_strv",
+    transform: (value) =>
+      normalizeTrackInformationContent(
+        value,
+        TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
+      ),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
   "top-bar-app-icon-show": {

@@ -1,12 +1,12 @@
 /**
- * @file TopBarTrackInformationContentRow.js
- * @module prefs.widgets.TopBarTrackInformationContentRow
+ * @file TrackInformationContentRow.js
+ * @module prefs.widgets.TrackInformationContentRow
  *
- * Custom row for choosing which track-information fields appear in the top bar.
+ * Custom row for choosing ordered track-information fields and text fragments.
  *
- * The row owns the selectable content chips and drag/drop order used to produce
- * the persisted list of title, artist, and album fields. It mirrors the runtime
- * top bar track-information model without importing Shell UI code.
+ * Popup and top bar preferences share this editor so field selection, custom
+ * text, drag/drop ordering, and metadata availability information stay aligned
+ * while each runtime surface keeps its own rendering code.
  */
 
 import Adw from "gi://Adw";
@@ -20,19 +20,24 @@ import { TrackInformationFields } from "../../shared/enums/trackInformation.js";
 
 function createTranslatedFields() {
   return Object.freeze({
-    ARTIST: _("Artist"),
     TITLE: _("Title"),
+    ARTIST: _("Artist"),
     ALBUM: _("Album"),
+    ALBUM_ARTIST: _("Album artist"),
+    GENRE: _("Genre"),
+    CONTENT_CREATED: _("Year"),
+    COMPOSER: _("Composer"),
     DISC_NUMBER: _("Disc"),
     TRACK_NUMBER: _("Track"),
   });
 }
 
 /**
- * Custom row for choosing which track-information fields appear in the top bar.
+ * Custom row for choosing ordered track-information fields and text fragments.
  */
-class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
+class TrackInformationContentRow extends Adw.ExpanderRow {
   contentItems = [];
+  customTextDefault = "•";
 
   constructor(params = {}) {
     super(params);
@@ -44,7 +49,13 @@ class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
     });
 
     this._btn_add_field.connect("clicked", () => this.addContentItem("ALBUM"));
-    this._btn_add_text.connect("clicked", () => this.addContentItem("•"));
+    this._btn_add_text.connect("clicked", () =>
+      this.addContentItem(this.customTextDefault),
+    );
+  }
+
+  setCustomTextDefault(customTextDefault) {
+    this.customTextDefault = customTextDefault || "•";
   }
 
   addContentItem(contentItem) {
@@ -185,7 +196,6 @@ class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
     const paintable = new Gtk.WidgetPaintable({ widget: row });
     const snapshot = new Gtk.Snapshot();
     paintable.snapshot(snapshot, width, height);
-    // GSK texture rendering expects explicit Graphene.Rect bounds for the row snapshot
     const rect = new Graphene.Rect();
     rect.init(0, 0, width, height);
     return row
@@ -197,18 +207,18 @@ class TopBarTrackInformationContentRow extends Adw.ExpanderRow {
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellTopBarTrackInformationContentRow",
+    GTypeName: "MediaShellTrackInformationContentRow",
     Template:
-      "resource:///org/gnome/shell/extensions/mediashell/ui/top-bar-track-information-content-row.ui",
+      "resource:///org/gnome/shell/extensions/mediashell/ui/track-information-content-row.ui",
     InternalChildren: ["btn-add-field", "btn-add-text"],
     Properties: {
       "content-items": GObject.ParamSpec.jsobject(
         "content-items",
         "Content items",
-        "Track information content items shown in the top bar",
+        "Track information content items",
         GObject.ParamFlags.READABLE,
       ),
     },
   },
-  TopBarTrackInformationContentRow,
+  TrackInformationContentRow,
 );

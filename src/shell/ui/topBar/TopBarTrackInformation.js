@@ -10,8 +10,6 @@
  * metadata normalization.
  */
 
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
-
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
 import ScrollingLabel from "../ScrollingLabel.js";
@@ -81,10 +79,6 @@ export default class TopBarTrackInformation {
     return buildTrackInformationText(
       this.topBarButton.mediaApp.metadata,
       this.topBarButton.extensionController.topBarTrackInformationContent,
-      {
-        unknownArtist: _("Unknown artist"),
-        unknownAlbum: _("Unknown album"),
-      },
     );
   }
 

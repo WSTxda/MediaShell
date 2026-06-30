@@ -60,21 +60,6 @@
             <property name="subtitle" translatable="yes">Show track information in the popup</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSwitchRow" id="sr-popup-track-information-title-show">
-                <property name="title" translatable="yes">Show title</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwSwitchRow" id="sr-popup-track-information-artist-show">
-                <property name="title" translatable="yes">Show artist</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwSwitchRow" id="sr-popup-track-information-album-show">
-                <property name="title" translatable="yes">Show album</property>
-              </object>
-            </child>
-            <child>
               <object class="AdwActionRow" id="sr-popup-track-information-scroll-enabled">
                 <property name="title" translatable="yes">Scroll track information</property>
                 <property name="subtitle" translatable="yes">Scroll overflowing track information in the popup</property>
@@ -137,6 +122,13 @@
                 </property>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="MediaShellTrackInformationContentRow" id="er-popup-track-information-content">
+            <property name="title" translatable="yes">Track information content</property>
+            <property name="subtitle" translatable="yes">Choose and reorder track information shown in the popup</property>
+            <property name="expanded">false</property>
           </object>
         </child>
       </object>
@@ -338,7 +330,9 @@
           </object>
         </child>
         <child>
-          <object class="MediaShellTopBarTrackInformationContentRow" id="er-top-bar-track-information-content">
+          <object class="MediaShellTrackInformationContentRow" id="er-top-bar-track-information-content">
+            <property name="title" translatable="yes">Track information content</property>
+            <property name="subtitle" translatable="yes">Choose and reorder track information shown in the top bar</property>
             <property name="expanded">false</property>
           </object>
         </child>
