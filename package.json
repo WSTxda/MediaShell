@@ -33,5 +33,8 @@
     "translations:extract": "rm -f assets/locale/mediashell@wstxda.github.com.pot && xgettext --from-code=UTF-8 --add-comments --keyword=_ --keyword=ngettext:1,2 --keyword=C_:1c,2 --language=Javascript --output=assets/locale/mediashell@wstxda.github.com.pot $(find . -type f -name '*.js' -not -path './node_modules/*' -not -path './dist/*') && xgettext --from-code=UTF-8 --add-comments --join-existing --language=Glade --output=assets/locale/mediashell@wstxda.github.com.pot $(find assets/ui -type f -name '*.ui')",
     "translations:merge": "for po in assets/locale/*.po; do msgmerge -U \"$po\" assets/locale/mediashell@wstxda.github.com.pot; done && rm -f assets/locale/*.po~",
     "translations": "pnpm run translations:extract && pnpm run translations:merge"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.4"
   }
 }
