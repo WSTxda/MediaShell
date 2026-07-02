@@ -43,7 +43,7 @@ export default class TopBarVisualizer {
     this.bars = [];
     this.timeline = null;
     this.timelineFrameSignalId = null;
-    this.visualizerStyle = VisualizerStyles.WAVE;
+    this.visualizerStyle = VisualizerStyles.BEATS;
     this.animationSpeed = normalizeVisualizerSpeed();
     this.playing = false;
     this.animationElapsedSeconds = 0;
@@ -108,7 +108,7 @@ export default class TopBarVisualizer {
   setStyle(style) {
     const normalizedStyle = Object.values(VisualizerStyles).includes(style)
       ? style
-      : VisualizerStyles.WAVE;
+      : VisualizerStyles.BEATS;
     if (this.visualizerStyle === normalizedStyle) return;
     this.visualizerStyle = normalizedStyle;
     this.syncBarPivots();

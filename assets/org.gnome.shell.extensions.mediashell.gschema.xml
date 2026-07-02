@@ -24,7 +24,7 @@
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.visualizer-styles">
-    <value nick="WAVE"  value="0" />
+    <value nick="BEATS" value="0" />
     <value nick="PULSE" value="1" />
   </enum>
 
@@ -103,7 +103,7 @@
     </key>
     <key name="top-bar-visualizer-style"
          enum="org.gnome.shell.extensions.mediashell.visualizer-styles">
-      <default>'WAVE'</default>
+      <default>'BEATS'</default>
     </key>
     <key name="top-bar-visualizer-speed" type="u">
       <range min="1" max="8" />

@@ -196,7 +196,7 @@ export const SETTINGS_SPEC = Object.freeze({
   "top-bar-visualizer-style": {
     property: "topBarVisualizerStyle",
     read: "get_enum",
-    fallback: VisualizerStyles.WAVE,
+    fallback: VisualizerStyles.BEATS,
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
   "top-bar-visualizer-speed": {

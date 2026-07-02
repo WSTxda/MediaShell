@@ -16,6 +16,8 @@ import { VisualizerStyles } from "../enums/visualizer.js";
 export const TOP_BAR_VISUALIZER_BAR_COUNT = 4;
 
 const PULSE_SPEEDS = Object.freeze([1.15, 1.7, 1.35, 1.9]);
+const BEATS_FREQUENCIES = Object.freeze([1.5, 2.0, 2.6, 3.2]);
+const BEATS_PHASES = Object.freeze([0, 0.7, 1.4, 2.1]);
 
 /**
  * Clamps user-configured visualizer speed to the supported settings range.
@@ -72,9 +74,14 @@ export function getVisualizerBarLevels(
         2;
       level = 0.25 + pulse * 0.75;
     } else {
-      const wave =
-        (Math.sin(animationTime * Math.PI * 2.2 - index * 0.95) + 1) / 2;
-      level = 0.25 + wave * 0.75;
+      const value =
+        (Math.sin(
+          animationTime * BEATS_FREQUENCIES[index] * Math.PI +
+            BEATS_PHASES[index],
+        ) +
+          1) /
+        2;
+      level = 0.2 + value * 0.8;
     }
     levels[index] = Math.min(1, Math.max(0.2, level));
   }
