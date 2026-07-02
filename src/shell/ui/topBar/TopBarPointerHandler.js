@@ -29,6 +29,7 @@ export default class TopBarPointerHandler {
     this.topBarButton = topBarButton;
     this.pointerActionCleanups = [];
     this.primaryActivationTimeoutId = null;
+    this.disabledClickGesture = null;
   }
 
   get extensionController() {
@@ -41,8 +42,10 @@ export default class TopBarPointerHandler {
     if (
       this.topBarButton._clickGesture &&
       typeof this.topBarButton._clickGesture.set_enabled === "function"
-    )
+    ) {
       this.topBarButton._clickGesture.set_enabled(false);
+      this.disabledClickGesture = this.topBarButton._clickGesture;
+    }
 
     for (const actor of [
       this.topBarButton.topBarActionBoxBefore,
@@ -209,6 +212,12 @@ export default class TopBarPointerHandler {
       GLib.Source.remove(this.primaryActivationTimeoutId);
       this.primaryActivationTimeoutId = null;
     }
+    if (
+      this.disabledClickGesture &&
+      typeof this.disabledClickGesture.set_enabled === "function"
+    )
+      this.disabledClickGesture.set_enabled(true);
+    this.disabledClickGesture = null;
     this.topBarButton = null;
   }
 }
