@@ -448,8 +448,8 @@ msgid "Style"
 msgstr "Estil"
 
 #: assets/ui/prefs.ui:248
-msgid "Wave"
-msgstr "Ona"
+msgid "Beats"
+msgstr "Batecs"
 
 #: assets/ui/prefs.ui:249
 msgid "Pulse"

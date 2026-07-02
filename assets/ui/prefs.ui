@@ -245,7 +245,7 @@
                 <property name="model">
                   <object class="GtkStringList">
                     <items>
-                      <item translatable="yes">Wave</item>
+                      <item translatable="yes">Beats</item>
                       <item translatable="yes">Pulse</item>
                     </items>
                   </object>

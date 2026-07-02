@@ -194,7 +194,7 @@ test("visualizer styles produce bounded fixed-size levels", () => {
   assert.equal(normalizeVisualizerSpeed(0), 1);
   assert.equal(normalizeVisualizerSpeed(11), 8);
 
-  for (const style of [VisualizerStyles.WAVE, VisualizerStyles.PULSE]) {
+  for (const style of [VisualizerStyles.BEATS, VisualizerStyles.PULSE]) {
     const firstFrame = getVisualizerBarLevels(style, 0);
     const laterFrame = getVisualizerBarLevels(style, 0.37);
     const slowFrame = getVisualizerBarLevels(style, 0.37, 1);

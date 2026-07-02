@@ -10,6 +10,6 @@
  */
 
 export const VisualizerStyles = Object.freeze({
-  WAVE: 0,
+  BEATS: 0,
   PULSE: 1,
 });

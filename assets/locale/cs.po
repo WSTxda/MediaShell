@@ -445,8 +445,8 @@ msgid "Style"
 msgstr "Styl"
 
 #: assets/ui/prefs.ui:248
-msgid "Wave"
-msgstr "Vlna"
+msgid "Beats"
+msgstr "Rytmy"
 
 #: assets/ui/prefs.ui:249
 msgid "Pulse"
