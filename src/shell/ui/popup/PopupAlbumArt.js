@@ -23,11 +23,14 @@ import AlbumArtLoader from "../../services/AlbumArtLoader.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 
-Gio._promisify(
-  GdkPixbuf.Pixbuf,
-  "new_from_stream_at_scale_async",
-  "new_from_stream_finish",
-);
+if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
+  Gio._promisify(
+    GdkPixbuf.Pixbuf,
+    "new_from_stream_at_scale_async",
+    "new_from_stream_finish",
+  );
+}
+
 Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 
 const logger = createLogger("PopupAlbumArt");
@@ -306,6 +309,13 @@ export default class PopupAlbumArt {
 
   async decodeAlbumArtStream(stream, width, loadCancellable) {
     if (!stream) return null;
+
+    if (
+      typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async !== "function"
+    ) {
+      this.closeInputStream(stream);
+      return null;
+    }
 
     try {
       const decodeSize = Math.max(1, Math.round(width * 2));
