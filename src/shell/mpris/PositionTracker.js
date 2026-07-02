@@ -14,6 +14,7 @@ import GLib from "gi://GLib";
 
 import { MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
 import { DBUS_CALL_TIMEOUT_MS } from "../../shared/constants/timing.js";
+import { MAX_REASONABLE_TRACK_DURATION_MICROSECONDS } from "../../shared/constants/limits.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
@@ -95,9 +96,12 @@ export default class PositionTracker {
 
     const elapsedMicroseconds =
       GLib.get_monotonic_time() - this.anchorMonotonicMicroseconds;
-    return Math.max(
-      0,
-      this.positionMicroseconds + elapsedMicroseconds * this.playbackRate,
+    return Math.min(
+      MAX_REASONABLE_TRACK_DURATION_MICROSECONDS,
+      Math.max(
+        0,
+        this.positionMicroseconds + elapsedMicroseconds * this.playbackRate,
+      ),
     );
   }
 

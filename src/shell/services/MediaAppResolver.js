@@ -5,20 +5,23 @@
  * Resolves MPRIS identity hints to installed desktop applications.
  *
  * The service owns bounded Shell.App and Gio.AppInfo caches so repeated track
- * changes do not force desktop database scans. Misses are deliberately left uncached because
- * browser media endpoints can appear before Shell has associated them with a
- * desktop app. ExtensionController clears the singleton on disable to release
- * stale Shell.App references.
+ * changes do not force desktop database scans. Unresolved lookups are cached
+ * with a short TTL to avoid repeated desktop database scans while still
+ * allowing re-resolution when the desktop file appears later.
+ * ExtensionController clears the singleton on disable to release stale
+ * Shell.App references.
  *
  * @see src/shared/utils/appIdentity.js
  */
 
 import Gio from "gi://Gio";
+import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
 import { IconNames } from "../../shared/constants/icons.js";
 import { resolveBrowserIdentityCandidate } from "../../shared/utils/browserIdentity.js";
 import { APP_RESOLVER_CACHE_LIMIT } from "../../shared/constants/limits.js";
+import { APP_RESOLVER_MISS_CACHE_TTL_MS } from "../../shared/constants/timing.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
@@ -341,6 +344,7 @@ export default class MediaAppResolver {
   #fallbackMediaAppIcon = null;
   #shellAppCache = new Map();
   #appInfoCache = new Map();
+  #missCache = new Map();
 
   #findShellApp(identity, desktopEntry, busName = "") {
     const appCacheKey = createAppCacheKey(identity, desktopEntry, busName);
@@ -532,19 +536,41 @@ export default class MediaAppResolver {
     }
   }
 
+  #isRecentMiss(appCacheKey) {
+    const missTime = this.#missCache.get(appCacheKey);
+    if (missTime === undefined) return false;
+
+    const elapsed = GLib.get_monotonic_time() / 1000 - missTime;
+    if (elapsed < APP_RESOLVER_MISS_CACHE_TTL_MS) return true;
+
+    this.#missCache.delete(appCacheKey);
+    return false;
+  }
+
+  #recordMiss(appCacheKey) {
+    this.#missCache.set(appCacheKey, GLib.get_monotonic_time() / 1000);
+  }
+
   resolveMediaApp(identity, desktopEntry, busName = "") {
     const appCacheKey = createAppCacheKey(identity, desktopEntry, busName);
+
+    if (this.#isRecentMiss(appCacheKey)) return null;
+
     if (
       this.#shellAppCache.has(appCacheKey) ||
       this.#appInfoCache.has(appCacheKey)
-    )
+    ) {
       logger.debug("App resolver cache hit for", busName);
-    else logger.debug("App resolver cache miss, resolving", busName);
+    } else {
+      logger.debug("App resolver cache miss, resolving", busName);
+    }
 
-    return (
+    const app =
       this.resolveShellMediaApp(identity, desktopEntry, busName) ??
-      this.#findAppInfo(identity, desktopEntry, busName)
-    );
+      this.#findAppInfo(identity, desktopEntry, busName);
+
+    if (!app) this.#recordMiss(appCacheKey);
+    return app;
   }
 
   #getFallbackMediaAppIcon() {
@@ -624,6 +650,7 @@ export default class MediaAppResolver {
   clearCaches() {
     this.#shellAppCache.clear();
     this.#appInfoCache.clear();
+    this.#missCache.clear();
     this.#fallbackMediaAppIcon = null;
   }
 }

@@ -28,3 +28,9 @@ export const ALBUM_ART_READ_CHUNK_BYTES = 64 * 1024;
 
 /** HTTP timeout for remote album-art requests, in seconds. */
 export const ALBUM_ART_REQUEST_TIMEOUT_SECONDS = 15;
+
+// --- Position and track duration limits ---
+
+/** Maximum reasonable track duration in microseconds (24 hours). */
+export const MAX_REASONABLE_TRACK_DURATION_MICROSECONDS =
+  24 * 60 * 60 * 1000 * 1000;
