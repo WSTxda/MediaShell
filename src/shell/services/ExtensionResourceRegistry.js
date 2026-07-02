@@ -28,13 +28,21 @@ export default class ExtensionResourceRegistry {
   register() {
     if (this.resource) return;
 
-    const resourcePath = GLib.build_filenamev([
-      this.extensionPath,
-      "org.gnome.shell.extensions.mediashell.gresource",
-    ]);
-    this.resource = Gio.resource_load(resourcePath);
-    Gio.resources_register(this.resource);
-    logger.debug("Registered extension resources");
+    try {
+      const resourcePath = GLib.build_filenamev([
+        this.extensionPath,
+        "org.gnome.shell.extensions.mediashell.gresource",
+      ]);
+      this.resource = Gio.resource_load(resourcePath);
+      Gio.resources_register(this.resource);
+      logger.debug("Registered extension resources");
+    } catch (error) {
+      logger.warn(
+        "Failed to load compiled resources; extension will use theme fallbacks",
+        error,
+      );
+      this.resource = null;
+    }
   }
 
   destroy() {
