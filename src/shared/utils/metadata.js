@@ -26,6 +26,7 @@ const METADATA_FIELD_KEYS = Object.freeze({
 
 function sanitizeSingleLineText(value) {
   return String(value ?? "")
+    .replace(/<[^>]*>/g, "")
     .replace(/[\r\n]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
