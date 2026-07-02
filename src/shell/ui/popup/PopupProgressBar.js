@@ -9,12 +9,12 @@
  * from album art, track information, and playback control rendering.
  */
 
+import { MAX_REASONABLE_TRACK_DURATION_MICROSECONDS } from "../../../shared/constants/limits.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import PopupProgressBarSlider from "./PopupProgressBarSlider.js";
 
 const logger = createLogger("PopupProgressBar");
-const MAX_REASONABLE_TRACK_DURATION_MICROSECONDS = 24 * 60 * 60 * 1000 * 1000;
 
 /**
  * Owns the popup progress bar section.

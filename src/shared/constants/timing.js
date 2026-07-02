@@ -32,6 +32,15 @@ export const DBUS_CALL_TIMEOUT_MS = 1000;
 /** Timeout for the initial D-Bus ListNames discovery call. */
 export const DBUS_LIST_NAMES_TIMEOUT_MS = 2000;
 
+/**
+ * TTL for unresolved (miss) entries in the MediaAppResolver cache.
+ *
+ * Browser-based media players can appear on D-Bus before GNOME Shell has
+ * associated them with a desktop file. A short TTL allows re-resolution on
+ * subsequent metadata changes without repeatedly scanning all installed apps.
+ */
+export const APP_RESOLVER_MISS_CACHE_TTL_MS = 30_000;
+
 // --- Media app lifecycle grace periods ---
 
 /**
