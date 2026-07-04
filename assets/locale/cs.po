@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 20:12-0300\n"
-"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"POT-Creation-Date: 2026-07-04 19:00-0300\n"
+"PO-Revision-Date: 2026-07-03 02:30-0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -19,17 +19,17 @@ msgstr "O aplikaci MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME Shell extension that adds media controls to your top "
+"MediaShell is a GNOME extension that adds media controls to your top "
 "bar. Click the icon to open a popup featuring album art, playback controls, "
 "and an app selector for any app currently playing media. The top bar widget "
-"and popup use the GNOME Shell UI toolkit, and preferences are built with "
+"and popup use the GNOME UI toolkit, and preferences are built with "
 "GTK4 and Libadwaita to match the rest of the desktop."
 msgstr ""
-"MediaShell je rozšíření GNOME Shellu, které přidává ovládání médií do horní "
+"MediaShell je rozšíření GNOME u, které přidává ovládání médií do horní "
 "lišty. Kliknutím na ikonu otevřete vyskakovací okno s obalem alba, ovládáním "
 "přehrávání a výběrem aplikace pro libovolnou aplikaci, která právě přehrává "
 "média. Widget horní lišty a vyskakovací okno používají sadu nástrojů "
-"uživatelského rozhraní GNOME Shell a předvolby jsou vytvořeny pomocí GTK4 a "
+"uživatelského rozhraní GNOME a předvolby jsou vytvořeny pomocí GTK4 a "
 "Libadwaita, aby zapadaly do zbytku pracovního prostředí."
 
 #: src/prefs/about/AboutDialogController.js:106
@@ -45,62 +45,62 @@ msgid "View all..."
 msgstr "Zobrazit vše..."
 
 #: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:782
+#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
 msgid "Shuffle"
 msgstr "Náhodně"
 
 #: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:783
+#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
 msgid "Previous track"
 msgstr "Předchozí skladba"
 
 #: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
+#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
 msgid "Play / pause"
 msgstr "Přehrát / Pozastavit"
 
 #: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
-#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:785
+#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
 msgid "Next track"
 msgstr "Následující skladba"
 
 #: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:786
+#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
 msgid "Repeat"
 msgstr "Opakování"
 
 #: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
-#: assets/ui/prefs.ui:787
+#: assets/ui/prefs.ui:786
 msgid "Volume up"
 msgstr "Zvýšit hlasitost"
 
 #: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
-#: assets/ui/prefs.ui:788
+#: assets/ui/prefs.ui:787
 msgid "Volume down"
 msgstr "Snížit hlasitost"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:789
+#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
 msgid "Popup"
 msgstr "Vyskakovací okno"
 
 #: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
-#: assets/ui/prefs.ui:790
+#: assets/ui/prefs.ui:789
 msgid "Preferences"
 msgstr "Předvolby"
 
 #: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:791
+#: assets/ui/prefs.ui:790
 msgid "Open app"
 msgstr "Otevřít aplikaci"
 
 #: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:792
+#: assets/ui/prefs.ui:791
 msgid "Quit app"
 msgstr "Ukončit aplikaci"
 
 #: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
-#: assets/ui/prefs.ui:793
+#: assets/ui/prefs.ui:792
 msgid "Switch app"
 msgstr "Přepnout aplikaci"
 
@@ -163,13 +163,17 @@ msgid "Cancel"
 msgstr "Zrušit"
 
 #: src/prefs/groups/InteractionsPageController.js:342
-#: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:774
+#: src/prefs/groups/OthersPageController.js:98
 msgid "Reset"
 msgstr "Obnovit"
 
 #: src/prefs/groups/InteractionsPageController.js:361
 msgid "Keyboard shortcuts reset"
 msgstr "Klávesové zkratky byly obnoveny"
+
+#: src/prefs/groups/TrackInformationContentController.js:59
+msgid "by"
+msgstr "od"
 
 #: src/prefs/groups/OthersPageController.js:84
 msgid "Reset all settings"
@@ -188,24 +192,24 @@ msgid "Settings reset"
 msgstr "Nastavení obnovena"
 
 #: src/prefs/groups/OthersPageController.js:116
-msgid "Clear the album art cache?"
-msgstr "Vymazat mezipaměť obalů alb?"
+msgid "Clear the cache?"
+msgstr "Vyčistit mezipaměť?"
 
 #: src/prefs/groups/OthersPageController.js:117
-msgid "Cached images will be downloaded again when needed."
-msgstr "Obrázky v mezipaměti budou v případě potřeby staženy znovu."
+msgid "Cached content will be downloaded again when needed."
+msgstr "Obsah v mezipaměti bude v případě potřeby znovu stažen."
 
 #: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:749
 msgid "Clear cache"
 msgstr "Vyčistit mezipaměť"
 
 #: src/prefs/groups/OthersPageController.js:168
-msgid "Album art cache cleared"
-msgstr "Mezipaměť obalů alb byla vymazána"
+msgid "Cache cleared"
+msgstr "Mezipaměť byla vymazána"
 
 #: src/prefs/groups/OthersPageController.js:181
-msgid "Could not clear the album art cache"
-msgstr "Mezipaměť obalů alb se nepodařilo vymazat"
+msgid "Could not clear the cache"
+msgstr "Mezipaměť se nepodařilo vymazat"
 
 #: src/prefs/groups/OthersPageController.js:190
 #, javascript-format
@@ -215,9 +219,9 @@ msgstr[0] "%d obal — %s"
 msgstr[1] "%d obaly — %s"
 msgstr[2] "%d obalů — %s"
 
-#: src/prefs/groups/TrackInformationContentController.js:59
-msgid "by"
-msgstr "od"
+#: src/prefs/widgets/BlockedAppsGroup.js:102
+msgid "No apps are blocked"
+msgstr "Žádné aplikace nejsou blokovány"
 
 #: src/prefs/widgets/BlockedAppChooserDialog.js:44
 msgid "Select an app to block"
@@ -235,10 +239,6 @@ msgstr "Vybrat"
 #: src/prefs/widgets/BlockedAppChooserDialog.js:105
 msgid "No apps found"
 msgstr "Nebyly nalezeny žádné aplikace"
-
-#: src/prefs/widgets/BlockedAppsGroup.js:102
-msgid "No apps are blocked"
-msgstr "Žádné aplikace nejsou blokovány"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:23
 msgid "Title"
@@ -288,22 +288,35 @@ msgstr "Vlastní text"
 msgid "Remove"
 msgstr "Odebrat"
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 #: src/shell/ui/popup/PopupAppSelectorList.js:218
+#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 msgid "Unknown app"
 msgstr "Neznámá aplikace"
 
-#: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
-msgstr "Blokované aplikace"
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element order"
+msgstr "Pořadí prvků"
 
-#: assets/ui/blocked-apps.ui:7
-msgid "Block and hide apps so they are ignored by the extension"
-msgstr "Zablokujte a skryjte aplikace, aby je rozšíření ignorovalo"
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr "Přetažením změňte pořadí prvků uvnitř tlačítka horní lišty"
 
-#: assets/ui/blocked-apps.ui:17
-msgid "Add"
-msgstr "Přidat"
+#: assets/ui/top-bar-element-order.ui:16 assets/ui/prefs.ui:382
+msgid "App icon"
+msgstr "Ikona aplikace"
+
+#: assets/ui/top-bar-element-order.ui:27 assets/ui/prefs.ui:59
+#: assets/ui/prefs.ui:279
+msgid "Track information"
+msgstr "Informace o skladbě"
+
+#: assets/ui/top-bar-element-order.ui:38 assets/ui/prefs.ui:214
+msgid "Visualizer"
+msgstr "Vizualizér"
+
+#: assets/ui/top-bar-element-order.ui:49 assets/ui/prefs.ui:157
+msgid "Playback controls"
+msgstr "Ovládací prvky přehrávání"
 
 #: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
@@ -334,8 +347,8 @@ msgid "Album art"
 msgstr "Obal alba"
 
 #: assets/ui/prefs.ui:38
-msgid "Show album art in the popup"
-msgstr "Zobrazit obal alba ve vyskakovacím okně"
+msgid "Show album art"
+msgstr "Zobrazit obal alba"
 
 #: assets/ui/prefs.ui:42
 msgid "Corner radius"
@@ -345,22 +358,17 @@ msgstr "Poloměr rohů"
 msgid "0 disables rounded corners"
 msgstr "0 vypne zaoblení rohů"
 
-#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
-#: assets/ui/top-bar-element-order.ui:27
-msgid "Track information"
-msgstr "Informace o skladbě"
-
-#: assets/ui/prefs.ui:60
-msgid "Show track information in the popup"
-msgstr "Zobrazit informace o skladbě ve vyskakovacím okně"
+#: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
+msgid "Show track information"
+msgstr "Zobrazit informace o skladbě"
 
 #: assets/ui/prefs.ui:64 assets/ui/prefs.ui:304
 msgid "Scroll track information"
 msgstr "Posouvat informace o skladbě"
 
-#: assets/ui/prefs.ui:65
-msgid "Scroll overflowing track information in the popup"
-msgstr "Posouvat informace o skladbě, když se nevejdou do vyskakovacího okna"
+#: assets/ui/prefs.ui:65 assets/ui/prefs.ui:305
+msgid "Scroll overflowing track information"
+msgstr "Posouvat informace o skladbě, které se nevejdou"
 
 #: assets/ui/prefs.ui:69 assets/ui/prefs.ui:309
 msgid "Scrolling performance"
@@ -394,38 +402,29 @@ msgstr "Počet sekund před zahájením nebo opětovným spuštěním posouván�
 msgid "Track information content"
 msgstr "Obsah informací o skladbě"
 
-#: assets/ui/prefs.ui:130
-msgid "Choose and reorder track information shown in the popup"
-msgstr ""
-"Vyberte a změňte pořadí informací o skladbě zobrazených ve vyskakovacím okně"
+#: assets/ui/prefs.ui:130 assets/ui/prefs.ui:370
+msgid "Choose and reorder track information"
+msgstr "Vyberte a změňte pořadí informací o skladbě"
 
 #: assets/ui/prefs.ui:141 assets/ui/prefs.ui:387
 msgid "Colored app icon"
 msgstr "Barevná ikona aplikace"
 
-#: assets/ui/prefs.ui:142
-msgid "Use the media app's full-color icon in the popup"
-msgstr "Použít plnobarevnou ikonu mediální aplikace ve vyskakovacím okně"
+#: assets/ui/prefs.ui:142 assets/ui/prefs.ui:388
+msgid "Use the media app's full-color icon"
+msgstr "Použít plnobarevnou ikonu mediální aplikace"
 
 #: assets/ui/prefs.ui:149
 msgid "Top bar"
 msgstr "Horní lišta"
 
-#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
-msgid "Playback controls"
-msgstr "Ovládací prvky přehrávání"
-
 #: assets/ui/prefs.ui:158
-msgid "Show playback controls in the top bar"
-msgstr "Zobrazit ovládání přehrávání v horní liště"
-
-#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
-msgid "Visualizer"
-msgstr "Vizualizér"
+msgid "Show playback controls"
+msgstr "Zobrazit ovládání přehrávání"
 
 #: assets/ui/prefs.ui:215
-msgid "Show the animated playback indicator in the top bar"
-msgstr "Zobrazit animovaný indikátor přehrávání v horní liště"
+msgid "Show the animated playback indicator"
+msgstr "Zobrazit animovaný indikátor přehrávání"
 
 #: assets/ui/prefs.ui:221
 msgid "Visualizer performance"
@@ -460,10 +459,6 @@ msgstr "Rychlost animace"
 msgid "Higher values animate faster"
 msgstr "Vyšší hodnoty zrychlují animaci"
 
-#: assets/ui/prefs.ui:280
-msgid "Show track information in the top bar"
-msgstr "Zobrazit informace o skladbě v horní liště"
-
 #: assets/ui/prefs.ui:285
 msgid "Maximum width in pixels; 0 uses available space"
 msgstr "Maximální šířka v pixelech; 0 použije veškerý dostupný prostor"
@@ -476,25 +471,9 @@ msgstr "Uzamknout šířku"
 msgid "Keep the configured width for short text"
 msgstr "Zachovat nastavenou šířku, když je obsah kratší"
 
-#: assets/ui/prefs.ui:305
-msgid "Scroll overflowing track information in the top bar"
-msgstr "Posouvat informace o skladbě, když se nevejdou do horní lišty"
-
-#: assets/ui/prefs.ui:370
-msgid "Choose and reorder track information shown in the top bar"
-msgstr "Vyberte a změňte pořadí informací o skladbě zobrazených v horní liště"
-
-#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
-msgid "App icon"
-msgstr "Ikona aplikace"
-
 #: assets/ui/prefs.ui:383
-msgid "Show the app icon in the top bar"
-msgstr "Zobrazit ikonu aplikace v horní liště"
-
-#: assets/ui/prefs.ui:388
-msgid "Use the media app's full-color icon in the top bar"
-msgstr "Použít plnobarevnou ikonu mediální aplikace v horní liště"
+msgid "Show the app icon"
+msgstr "Zobrazit ikonu aplikace"
 
 #: assets/ui/prefs.ui:397
 msgid "Panel"
@@ -505,8 +484,8 @@ msgid "Extension placement"
 msgstr "Umístění rozšíření"
 
 #: assets/ui/prefs.ui:402
-msgid "Choose where the extension appears in the top bar"
-msgstr "Zvolte, kde se rozšíření zobrazí na horní liště"
+msgid "Choose where the extension appears"
+msgstr "Zvolte, kde se rozšíření zobrazí"
 
 #: assets/ui/prefs.ui:405
 msgid "Position"
@@ -612,52 +591,44 @@ msgid "Others"
 msgstr "Ostatní"
 
 #: assets/ui/prefs.ui:728
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+msgid "System"
+msgstr "Systém"
 
 #: assets/ui/prefs.ui:729
-msgid "Control how MediaShell integrates with GNOME Shell"
-msgstr "Nastavte, jak se MediaShell integruje s GNOME Shellem"
+msgid "Control how MediaShell integrates with GNOME"
+msgstr "Nastavte, jak se MediaShell integruje s GNOME"
 
 #: assets/ui/prefs.ui:732
-msgid "Hide GNOME Shell media controls"
-msgstr "Skrýt ovládání médií GNOME Shellu"
+msgid "Hide media controls"
+msgstr "Skrýt ovládání médií"
 
 #: assets/ui/prefs.ui:733
-msgid "Hide GNOME Shell's default media controls from the notification list"
-msgstr "Skrýt výchozí ovládání médií GNOME Shellu ze seznamu oznámení"
+msgid "Remove the default media controls from the notification list"
+msgstr "Skrýt výchozí ovládání médií ze seznamu oznámení"
 
 #: assets/ui/prefs.ui:740
-msgid "Album art cache"
-msgstr "Mezipaměť obalů alb"
+msgid "Cache"
+msgstr "Mezipaměť"
 
 #: assets/ui/prefs.ui:741
-msgid "Store album art on disk so it loads faster"
-msgstr "Ukládat obaly alb na disk, aby se načítaly rychleji"
+msgid "Store content on disk to load it faster"
+msgstr "Ukládat obsah na disk, aby se načítal rychleji"
 
 #: assets/ui/prefs.ui:744
-msgid "Cache album art"
-msgstr "Ukládat obaly alb do mezipaměti"
+msgid "Store album art"
+msgstr "Ukládat obaly alb"
 
 #: assets/ui/prefs.ui:759
 msgid "Clear"
 msgstr "Vymazat"
 
-#: assets/ui/prefs.ui:775
-msgid "Restore the extension's factory defaults"
-msgstr "Obnoví výchozí tovární nastavení rozšíření"
+#: assets/ui/prefs.ui:774
+msgid "Extension settings"
+msgstr "Nastavení rozšíření"
 
-#: assets/ui/prefs.ui:781
+#: assets/ui/prefs.ui:780
 msgid "None"
-msgstr "---"
-
-#: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
-msgstr "Pořadí prvků"
-
-#: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
-msgstr "Přetažením změňte pořadí prvků uvnitř tlačítka horní lišty"
+msgstr "Žádná"
 
 #: assets/ui/track-information-content-row.ui:10
 msgid "Missing information"
@@ -682,3 +653,15 @@ msgstr "Přidat pole"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Přidat text"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked apps"
+msgstr "Blokované aplikace"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Blocked apps are ignored and hidden by the extension"
+msgstr "Blokované aplikace jsou rozšířením ignorovány a skryty"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Přidat"

@@ -35,7 +35,7 @@
           <object class="AdwExpanderRow" id="er-popup-album-art">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Album art</property>
-            <property name="subtitle" translatable="yes">Show album art in the popup</property>
+            <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwSpinRow" id="sp-popup-album-art-corner-radius">
@@ -57,12 +57,12 @@
           <object class="AdwExpanderRow" id="er-popup-track-information">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Track information</property>
-            <property name="subtitle" translatable="yes">Show track information in the popup</property>
+            <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwActionRow" id="sr-popup-track-information-scroll-enabled">
                 <property name="title" translatable="yes">Scroll track information</property>
-                <property name="subtitle" translatable="yes">Scroll overflowing track information in the popup</property>
+                <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
                   <object class="GtkMenuButton" id="mb-popup-track-information-scroll-info">
                     <property name="icon-name">info-outline-symbolic</property>
@@ -127,7 +127,7 @@
         <child>
           <object class="MediaShellTrackInformationContentRow" id="er-popup-track-information-content">
             <property name="title" translatable="yes">Track information content</property>
-            <property name="subtitle" translatable="yes">Choose and reorder track information shown in the popup</property>
+            <property name="subtitle" translatable="yes">Choose and reorder track information</property>
             <property name="expanded">false</property>
           </object>
         </child>
@@ -139,7 +139,7 @@
         <child>
           <object class="AdwSwitchRow" id="sr-popup-app-icon-use-color">
             <property name="title" translatable="yes">Colored app icon</property>
-            <property name="subtitle" translatable="yes">Use the media app's full-color icon in the popup</property>
+            <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
           </object>
         </child>
       </object>
@@ -155,7 +155,7 @@
           <object class="AdwExpanderRow" id="er-top-bar-playback-controls">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Playback controls</property>
-            <property name="subtitle" translatable="yes">Show playback controls in the top bar</property>
+            <property name="subtitle" translatable="yes">Show playback controls</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-shuffle-show">
@@ -212,7 +212,7 @@
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-visualizer">
             <property name="title" translatable="yes">Visualizer</property>
-            <property name="subtitle" translatable="yes">Show the animated playback indicator in the top bar</property>
+            <property name="subtitle" translatable="yes">Show the animated playback indicator</property>
             <property name="expanded">false</property>
             <property name="show-enable-switch">true</property>
             <child type="suffix">
@@ -277,7 +277,7 @@
           <object class="AdwExpanderRow" id="er-top-bar-track-information">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Track information</property>
-            <property name="subtitle" translatable="yes">Show track information in the top bar</property>
+            <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwSpinRow" id="sp-top-bar-track-information-width">
@@ -302,7 +302,7 @@
             <child>
               <object class="AdwActionRow" id="sr-top-bar-track-information-scroll-enabled">
                 <property name="title" translatable="yes">Scroll track information</property>
-                <property name="subtitle" translatable="yes">Scroll overflowing track information in the top bar</property>
+                <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
                   <object class="GtkMenuButton" id="mb-top-bar-track-information-scroll-info">
                     <property name="icon-name">info-outline-symbolic</property>
@@ -367,7 +367,7 @@
         <child>
           <object class="MediaShellTrackInformationContentRow" id="er-top-bar-track-information-content">
             <property name="title" translatable="yes">Track information content</property>
-            <property name="subtitle" translatable="yes">Choose and reorder track information shown in the top bar</property>
+            <property name="subtitle" translatable="yes">Choose and reorder track information</property>
             <property name="expanded">false</property>
           </object>
         </child>
@@ -380,12 +380,12 @@
           <object class="AdwExpanderRow" id="er-top-bar-app-icon">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">App icon</property>
-            <property name="subtitle" translatable="yes">Show the app icon in the top bar</property>
+            <property name="subtitle" translatable="yes">Show the app icon</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-app-icon-use-color">
                 <property name="title" translatable="yes">Colored app icon</property>
-                <property name="subtitle" translatable="yes">Use the media app's full-color icon in the top bar</property>
+                <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
               </object>
             </child>
           </object>
@@ -399,7 +399,7 @@
     <child>
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Extension placement</property>
-        <property name="description" translatable="yes">Choose where the extension appears in the top bar</property>
+        <property name="description" translatable="yes">Choose where the extension appears</property>
         <child>
           <object class="AdwComboRow" id="cr-panel-position">
             <property name="title" translatable="yes">Position</property>
@@ -725,23 +725,23 @@
     <property name="icon-name">preferences-other-symbolic</property>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">GNOME Shell</property>
-        <property name="description" translatable="yes">Control how MediaShell integrates with GNOME Shell</property>
+        <property name="title" translatable="yes">System</property>
+        <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
           <object class="AdwSwitchRow" id="sr-gnome-shell-hide-media-controls">
-            <property name="title" translatable="yes">Hide GNOME Shell media controls</property>
-            <property name="subtitle" translatable="yes">Hide GNOME Shell's default media controls from the notification list</property>
+            <property name="title" translatable="yes">Hide media controls</property>
+            <property name="subtitle" translatable="yes">Remove the default media controls from the notification list</property>
           </object>
         </child>
       </object>
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Album art cache</property>
-        <property name="description" translatable="yes">Store album art on disk so it loads faster</property>
+        <property name="title" translatable="yes">Cache</property>
+        <property name="description" translatable="yes">Store content on disk to load it faster</property>
         <child>
           <object class="AdwSwitchRow" id="sr-album-art-cache-enabled">
-            <property name="title" translatable="yes">Cache album art</property>
+            <property name="title" translatable="yes">Store album art</property>
           </object>
         </child>
         <child>
@@ -771,8 +771,7 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup" id="gp-reset-settings">
-        <property name="title" translatable="yes">Reset</property>
-        <property name="description" translatable="yes">Restore the extension's factory defaults</property>
+        <property name="title" translatable="yes">Extension settings</property>
       </object>
     </child>
   </object>

@@ -31,7 +31,7 @@ Keep Shell, Preferences, and Shared code separated. Shared modules must remain t
 
 Use project vocabulary consistently in code, logs, comments, documentation, and visible strings.
 
-- **Panel** configures extension placement in the GNOME Shell panel/top bar area.
+- **Panel** configures extension placement in the GNOME panel/top bar area.
 - **Top bar** configures the compact top bar button.
 - **Popup** configures the menu opened from the top bar button.
 - Use **app selector** for active media-app selection. Use chooser terminology only for blocked-app dialogs.

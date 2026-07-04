@@ -18,7 +18,7 @@ Describe the problem and the result you expected.
 
 ## Environment
 
-- GNOME Shell:
+- GNOME:
 - Distribution:
 - Session: Wayland / X11
 - Media app or browser:
@@ -38,7 +38,7 @@ Describe the problem and the result you expected.
 - [ ] Mouse actions
 - [ ] Keyboard shortcuts
 - [ ] Blocked apps
-- [ ] Hide GNOME Shell media controls
+- [ ] Hide GNOME media controls
 - [ ] Preferences
 - [ ] Other
 

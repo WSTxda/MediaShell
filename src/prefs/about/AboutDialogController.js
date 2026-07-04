@@ -95,7 +95,7 @@ export default class AboutDialogController {
       developer_name: "WSTxda",
       version: String(metadataVersion ?? fallbackVersion ?? ""),
       comments: _(
-        "MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.",
+        "MediaShell is a GNOME extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.",
       ),
       issue_url: ISSUE_URL,
       copyright: "Copyright (c) 2026 WSTxda",

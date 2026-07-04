@@ -56,13 +56,13 @@ Important owners:
 
 MediaShell has separate configuration surfaces:
 
-- **Panel** controls where the extension appears in the GNOME Shell panel/top bar area: position, index, and element order.
+- **Panel** controls where the extension appears in the GNOME panel/top bar area: position, index, and element order.
 - **Top bar** controls the compact top bar button: app icon, track information, playback controls, and visualizer.
 - **Popup** controls the menu opened by the top bar button: app selector, album art, track information, progress bar, and playback controls.
 - **Interactions** controls mouse actions and keyboard shortcuts.
-- **Others** contains blocked apps, cache maintenance, reset actions, and the Hide GNOME Shell media controls option.
+- **Others** contains blocked apps, cache maintenance, reset actions, and the Hide media controls option.
 
-Do not use Panel, Top bar, and Popup interchangeably. Panel is placement. Top bar is the visible button. Popup is the menu opened from that button.
+Do not use Panel, Top bar, and Popup interchangeably. Panel sets the position. Top bar is the visible button. Popup is the menu opened from that button.
 
 ## Runtime lifecycle
 

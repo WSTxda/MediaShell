@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 20:12-0300\n"
-"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"POT-Creation-Date: 2026-07-04 19:00-0300\n"
+"PO-Revision-Date: 2026-07-03 02:30-0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sk\n"
@@ -19,17 +19,17 @@ msgstr "O aplikácii MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME Shell extension that adds media controls to your top "
+"MediaShell is a GNOME extension that adds media controls to your top "
 "bar. Click the icon to open a popup featuring album art, playback controls, "
 "and an app selector for any app currently playing media. The top bar widget "
-"and popup use the GNOME Shell UI toolkit, and preferences are built with "
+"and popup use the GNOME UI toolkit, and preferences are built with "
 "GTK4 and Libadwaita to match the rest of the desktop."
 msgstr ""
-"MediaShell je rozšírenie GNOME Shell, ktoré pridáva ovládanie médií do "
+"MediaShell je rozšírenie GNOME, ktoré pridáva ovládanie médií do "
 "hornej lišty. Kliknutím na ikonu otvoríte vyskakovacie okno s obalom albumu, "
 "ovládacími prvkami prehrávania a výberom aplikácií pre každú aplikáciu, "
 "ktorá práve prehráva médiá. Widget hornej lišty a vyskakovacie okno "
-"používajú nástrojovú sadu používateľského rozhrania GNOME Shell a predvoľby "
+"používajú nástrojovú sadu používateľského rozhrania GNOME a predvoľby "
 "sú vytvorené pomocou GTK4 a Libadwaita, aby zapadli do zvyšku pracovného "
 "prostredia."
 
@@ -46,62 +46,62 @@ msgid "View all..."
 msgstr "Zobraziť všetko..."
 
 #: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:782
+#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
 msgid "Shuffle"
 msgstr "Náhodne"
 
 #: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:783
+#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
 msgid "Previous track"
 msgstr "Predchádzajúca skladba"
 
 #: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
+#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
 msgid "Play / pause"
 msgstr "Prehrať / Pozastaviť"
 
 #: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
-#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:785
+#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
 msgid "Next track"
 msgstr "Nasledujúca skladba"
 
 #: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:786
+#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
 msgid "Repeat"
 msgstr "Opakovanie"
 
 #: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
-#: assets/ui/prefs.ui:787
+#: assets/ui/prefs.ui:786
 msgid "Volume up"
 msgstr "Zvýšiť hlasitosť"
 
 #: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
-#: assets/ui/prefs.ui:788
+#: assets/ui/prefs.ui:787
 msgid "Volume down"
 msgstr "Znížiť hlasitosť"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:789
+#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
 msgid "Popup"
 msgstr "Vyskakovacie okno"
 
 #: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
-#: assets/ui/prefs.ui:790
+#: assets/ui/prefs.ui:789
 msgid "Preferences"
 msgstr "Nastavenia"
 
 #: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:791
+#: assets/ui/prefs.ui:790
 msgid "Open app"
 msgstr "Otvoriť aplikáciu"
 
 #: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:792
+#: assets/ui/prefs.ui:791
 msgid "Quit app"
 msgstr "Ukončiť aplikáciu"
 
 #: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
-#: assets/ui/prefs.ui:793
+#: assets/ui/prefs.ui:792
 msgid "Switch app"
 msgstr "Prepnúť aplikáciu"
 
@@ -164,13 +164,17 @@ msgid "Cancel"
 msgstr "Zrušiť"
 
 #: src/prefs/groups/InteractionsPageController.js:342
-#: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:774
+#: src/prefs/groups/OthersPageController.js:98
 msgid "Reset"
 msgstr "Obnoviť"
 
 #: src/prefs/groups/InteractionsPageController.js:361
 msgid "Keyboard shortcuts reset"
 msgstr "Klávesové skratky boli obnovené"
+
+#: src/prefs/groups/TrackInformationContentController.js:59
+msgid "by"
+msgstr "od"
 
 #: src/prefs/groups/OthersPageController.js:84
 msgid "Reset all settings"
@@ -189,24 +193,24 @@ msgid "Settings reset"
 msgstr "Nastavenia obnovené"
 
 #: src/prefs/groups/OthersPageController.js:116
-msgid "Clear the album art cache?"
-msgstr "Vymazať vyrovnávaciu pamäť obalov albumov?"
+msgid "Clear the cache?"
+msgstr "Vymazať vyrovnávaciu pamäť?"
 
 #: src/prefs/groups/OthersPageController.js:117
-msgid "Cached images will be downloaded again when needed."
-msgstr "Obrázky vo vyrovnávacej pamäti sa v prípade potreby stiahnu znova."
+msgid "Cached content will be downloaded again when needed."
+msgstr "Obsah vo vyrovnávacej pamäti sa v prípade potreby znova stiahne."
 
 #: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:749
 msgid "Clear cache"
 msgstr "Vymazať vyrovnávaciu pamäť"
 
 #: src/prefs/groups/OthersPageController.js:168
-msgid "Album art cache cleared"
-msgstr "Vyrovnávacia pamäť obalov albumov bola vymazaná"
+msgid "Cache cleared"
+msgstr "Vyrovnávacia pamäť bola vymazaná"
 
 #: src/prefs/groups/OthersPageController.js:181
-msgid "Could not clear the album art cache"
-msgstr "Vyrovnávaciu pamäť obalov albumov sa nepodarilo vymazať"
+msgid "Could not clear the cache"
+msgstr "Vyrovnávaciu pamäť sa nepodarilo vymazať"
 
 #: src/prefs/groups/OthersPageController.js:190
 #, javascript-format
@@ -216,9 +220,9 @@ msgstr[0] "%d obal — %s"
 msgstr[1] "%d obaly — %s"
 msgstr[2] "%d obalov — %s"
 
-#: src/prefs/groups/TrackInformationContentController.js:59
-msgid "by"
-msgstr "od"
+#: src/prefs/widgets/BlockedAppsGroup.js:102
+msgid "No apps are blocked"
+msgstr "Žiadne aplikácie nie sú blokované"
 
 #: src/prefs/widgets/BlockedAppChooserDialog.js:44
 msgid "Select an app to block"
@@ -236,10 +240,6 @@ msgstr "Vybrať"
 #: src/prefs/widgets/BlockedAppChooserDialog.js:105
 msgid "No apps found"
 msgstr "Nenašli sa žiadne aplikácie"
-
-#: src/prefs/widgets/BlockedAppsGroup.js:102
-msgid "No apps are blocked"
-msgstr "Žiadne aplikácie nie sú blokované"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:23
 msgid "Title"
@@ -289,22 +289,35 @@ msgstr "Vlastný text"
 msgid "Remove"
 msgstr "Odstrániť"
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 #: src/shell/ui/popup/PopupAppSelectorList.js:218
+#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 msgid "Unknown app"
 msgstr "Neznáma aplikácia"
 
-#: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
-msgstr "Blokované aplikácie"
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element order"
+msgstr "Poradie prvkov"
 
-#: assets/ui/blocked-apps.ui:7
-msgid "Block and hide apps so they are ignored by the extension"
-msgstr "Zablokujte a skryte aplikácie, aby ich rozšírenie ignorovalo"
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr "Potiahnutím zmeňte poradie prvkov v tlačidle hornej lišty"
 
-#: assets/ui/blocked-apps.ui:17
-msgid "Add"
-msgstr "Pridať"
+#: assets/ui/top-bar-element-order.ui:16 assets/ui/prefs.ui:382
+msgid "App icon"
+msgstr "Ikona aplikácie"
+
+#: assets/ui/top-bar-element-order.ui:27 assets/ui/prefs.ui:59
+#: assets/ui/prefs.ui:279
+msgid "Track information"
+msgstr "Informácie o skladbe"
+
+#: assets/ui/top-bar-element-order.ui:38 assets/ui/prefs.ui:214
+msgid "Visualizer"
+msgstr "Vizualizér"
+
+#: assets/ui/top-bar-element-order.ui:49 assets/ui/prefs.ui:157
+msgid "Playback controls"
+msgstr "Ovládacie prvky prehrávania"
 
 #: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
@@ -335,8 +348,8 @@ msgid "Album art"
 msgstr "Obal albumu"
 
 #: assets/ui/prefs.ui:38
-msgid "Show album art in the popup"
-msgstr "Zobraziť obal albumu vo vyskakovacom okne"
+msgid "Show album art"
+msgstr "Zobraziť obal albumu"
 
 #: assets/ui/prefs.ui:42
 msgid "Corner radius"
@@ -346,22 +359,17 @@ msgstr "Polomer rohov"
 msgid "0 disables rounded corners"
 msgstr "0 vypne zaoblenie rohov"
 
-#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
-#: assets/ui/top-bar-element-order.ui:27
-msgid "Track information"
-msgstr "Informácie o skladbe"
-
-#: assets/ui/prefs.ui:60
-msgid "Show track information in the popup"
-msgstr "Zobraziť informácie o skladbe vo vyskakovacom okne"
+#: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
+msgid "Show track information"
+msgstr "Zobraziť informácie o skladbe"
 
 #: assets/ui/prefs.ui:64 assets/ui/prefs.ui:304
 msgid "Scroll track information"
 msgstr "Posúvať informácie o skladbe"
 
-#: assets/ui/prefs.ui:65
-msgid "Scroll overflowing track information in the popup"
-msgstr "Posúvať informácie o skladbe, keď sa nezmestia do vyskakovacieho okna"
+#: assets/ui/prefs.ui:65 assets/ui/prefs.ui:305
+msgid "Scroll overflowing track information"
+msgstr "Posúvať informácie o skladbe, keď sa nezmestia"
 
 #: assets/ui/prefs.ui:69 assets/ui/prefs.ui:309
 msgid "Scrolling performance"
@@ -395,39 +403,29 @@ msgstr "Počet sekúnd pred začatím alebo opätovným spustením posúvania"
 msgid "Track information content"
 msgstr "Obsah informácií o skladbe"
 
-#: assets/ui/prefs.ui:130
-msgid "Choose and reorder track information shown in the popup"
-msgstr ""
-"Vyberte a zmeňte poradie informácií o skladbe zobrazených vo vyskakovacom "
-"okne"
+#: assets/ui/prefs.ui:130 assets/ui/prefs.ui:370
+msgid "Choose and reorder track information"
+msgstr "Vyberte a zmeňte poradie informácií o skladbe"
 
 #: assets/ui/prefs.ui:141 assets/ui/prefs.ui:387
 msgid "Colored app icon"
 msgstr "Farebná ikona aplikácie"
 
-#: assets/ui/prefs.ui:142
-msgid "Use the media app's full-color icon in the popup"
-msgstr "Použiť plnofarebnú ikonu mediálnej aplikácie vo vyskakovacom okne"
+#: assets/ui/prefs.ui:142 assets/ui/prefs.ui:388
+msgid "Use the media app's full-color icon"
+msgstr "Použiť plnofarebnú ikonu mediálnej aplikácie"
 
 #: assets/ui/prefs.ui:149
 msgid "Top bar"
 msgstr "Horná lišta"
 
-#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
-msgid "Playback controls"
-msgstr "Ovládacie prvky prehrávania"
-
 #: assets/ui/prefs.ui:158
-msgid "Show playback controls in the top bar"
-msgstr "Zobraziť ovládanie prehrávania na hornej lište"
-
-#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
-msgid "Visualizer"
-msgstr "Vizualizér"
+msgid "Show playback controls"
+msgstr "Zobraziť ovládanie prehrávania"
 
 #: assets/ui/prefs.ui:215
-msgid "Show the animated playback indicator in the top bar"
-msgstr "Zobraziť animovaný indikátor prehrávania na hornej lište"
+msgid "Show the animated playback indicator"
+msgstr "Zobraziť animovaný indikátor prehrávania"
 
 #: assets/ui/prefs.ui:221
 msgid "Visualizer performance"
@@ -463,10 +461,6 @@ msgstr "Rýchlosť animácie"
 msgid "Higher values animate faster"
 msgstr "Vyššie hodnoty zrýchľujú animáciu"
 
-#: assets/ui/prefs.ui:280
-msgid "Show track information in the top bar"
-msgstr "Zobraziť informácie o skladbe na hornej lište"
-
 #: assets/ui/prefs.ui:285
 msgid "Maximum width in pixels; 0 uses available space"
 msgstr "Maximálna šírka v pixeloch; 0 použije všetok dostupný priestor"
@@ -479,26 +473,9 @@ msgstr "Uzamknúť šírku"
 msgid "Keep the configured width for short text"
 msgstr "Zachovať nastavenú šírku, keď je obsah kratší"
 
-#: assets/ui/prefs.ui:305
-msgid "Scroll overflowing track information in the top bar"
-msgstr "Posúvať informácie o skladbe, keď sa nezmestia na hornú lištu"
-
-#: assets/ui/prefs.ui:370
-msgid "Choose and reorder track information shown in the top bar"
-msgstr ""
-"Vybrať a zmeniť poradie informácií o skladbe zobrazených na hornej lište"
-
-#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
-msgid "App icon"
-msgstr "Ikona aplikácie"
-
 #: assets/ui/prefs.ui:383
-msgid "Show the app icon in the top bar"
-msgstr "Zobraziť ikonu aplikácie na hornej lište"
-
-#: assets/ui/prefs.ui:388
-msgid "Use the media app's full-color icon in the top bar"
-msgstr "Použiť plnofarebnú ikonu mediálnej aplikácie na hornej lište"
+msgid "Show the app icon"
+msgstr "Zobraziť ikonu aplikácie"
 
 #: assets/ui/prefs.ui:397
 msgid "Panel"
@@ -509,8 +486,8 @@ msgid "Extension placement"
 msgstr "Umiestnenie rozšírenia"
 
 #: assets/ui/prefs.ui:402
-msgid "Choose where the extension appears in the top bar"
-msgstr "Vyberte, kde sa rozšírenie zobrazí na hornej lište"
+msgid "Choose where the extension appears"
+msgstr "Vyberte, kde sa rozšírenie zobrazí"
 
 #: assets/ui/prefs.ui:405
 msgid "Position"
@@ -616,52 +593,44 @@ msgid "Others"
 msgstr "Ostatné"
 
 #: assets/ui/prefs.ui:728
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+msgid "System"
+msgstr "Systém"
 
 #: assets/ui/prefs.ui:729
-msgid "Control how MediaShell integrates with GNOME Shell"
-msgstr "Nastavte, ako sa MediaShell integruje s GNOME Shellom"
+msgid "Control how MediaShell integrates with GNOME"
+msgstr "Nastavte, ako sa MediaShell integruje s GNOME"
 
 #: assets/ui/prefs.ui:732
-msgid "Hide GNOME Shell media controls"
-msgstr "Skryť ovládanie médií GNOME Shellu"
+msgid "Hide media controls"
+msgstr "Skryť ovládanie médií"
 
 #: assets/ui/prefs.ui:733
-msgid "Hide GNOME Shell's default media controls from the notification list"
-msgstr "Skryť predvolené ovládanie médií GNOME Shellu zo zoznamu oznámení"
+msgid "Remove the default media controls from the notification list"
+msgstr "Skryť predvolené ovládanie médií zo zoznamu oznámení"
 
 #: assets/ui/prefs.ui:740
-msgid "Album art cache"
-msgstr "Vyrovnávacia pamäť obalov albumov"
+msgid "Cache"
+msgstr "Vyrovnávacia pamäť"
 
 #: assets/ui/prefs.ui:741
-msgid "Store album art on disk so it loads faster"
-msgstr "Ukladať obaly albumov na disk, aby sa načítavali rýchlejšie"
+msgid "Store content on disk to load it faster"
+msgstr "Ukladať obsah na disk, aby sa načítaval rýchlejšie"
 
 #: assets/ui/prefs.ui:744
-msgid "Cache album art"
-msgstr "Ukladať obaly albumov do vyrovnávacej pamäte"
+msgid "Store album art"
+msgstr "Ukladať obaly albumov"
 
 #: assets/ui/prefs.ui:759
 msgid "Clear"
 msgstr "Vymazať"
 
-#: assets/ui/prefs.ui:775
-msgid "Restore the extension's factory defaults"
-msgstr "Obnoví výrobné nastavenia rozšírenia"
+#: assets/ui/prefs.ui:774
+msgid "Extension settings"
+msgstr "Nastavenia rozšírenia"
 
-#: assets/ui/prefs.ui:781
+#: assets/ui/prefs.ui:780
 msgid "None"
 msgstr "Žiadna"
-
-#: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
-msgstr "Poradie prvkov"
-
-#: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
-msgstr "Potiahnutím zmeňte poradie prvkov v tlačidle hornej lišty"
 
 #: assets/ui/track-information-content-row.ui:10
 msgid "Missing information"
@@ -686,3 +655,15 @@ msgstr "Pridať pole"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Pridať text"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked apps"
+msgstr "Blokované aplikácie"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Blocked apps are ignored and hidden by the extension"
+msgstr "Blokované aplikácie sú rozšírením ignorované a skryté"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Pridať"

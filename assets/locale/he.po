@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 20:12-0300\n"
-"PO-Revision-Date: 2026-06-13 21:00+0000\n"
+"POT-Creation-Date: 2026-07-04 19:00-0300\n"
+"PO-Revision-Date: 2026-07-03 02:30-0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: he\n"
@@ -20,16 +20,16 @@ msgstr "על MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME Shell extension that adds media controls to your top "
+"MediaShell is a GNOME extension that adds media controls to your top "
 "bar. Click the icon to open a popup featuring album art, playback controls, "
 "and an app selector for any app currently playing media. The top bar widget "
-"and popup use the GNOME Shell UI toolkit, and preferences are built with "
+"and popup use the GNOME UI toolkit, and preferences are built with "
 "GTK4 and Libadwaita to match the rest of the desktop."
 msgstr ""
-"MediaShell היא הרחבה ל־GNOME Shell שמוסיפה פקדי מדיה לסרגל העליון שלך. לחיצה "
+"MediaShell היא הרחבה ל־GNOME שמוסיפה פקדי מדיה לסרגל העליון שלך. לחיצה "
 "על הסמל פותחת חלון קופץ עם עטיפת אלבום, פקדי נגינה ובורר יישומים עבור כל "
 "יישום שמנגן מדיה כרגע. היישומון בסרגל העליון והחלון הקופץ משתמשים בערכת ממשק "
-"המשתמש של GNOME Shell, וההעדפות נבנות עם GTK4 ו־Libadwaita כדי להתאים לשאר "
+"המשתמש של GNOME, וההעדפות נבנות עם GTK4 ו־Libadwaita כדי להתאים לשאר "
 "שולחן העבודה."
 
 #: src/prefs/about/AboutDialogController.js:106
@@ -45,62 +45,62 @@ msgid "View all..."
 msgstr "הצגת הכול..."
 
 #: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:782
+#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
 msgid "Shuffle"
 msgstr "ערבוב"
 
 #: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:783
+#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
 msgid "Previous track"
 msgstr "הרצועה הקודמת"
 
 #: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:784
+#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
 msgid "Play / pause"
 msgstr "נגינה / השהיה"
 
 #: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
-#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:785
+#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
 msgid "Next track"
 msgstr "הרצועה הבאה"
 
 #: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:786
+#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
 msgid "Repeat"
 msgstr "חזרה"
 
 #: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
-#: assets/ui/prefs.ui:787
+#: assets/ui/prefs.ui:786
 msgid "Volume up"
 msgstr "הגברת עוצמת הקול"
 
 #: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
-#: assets/ui/prefs.ui:788
+#: assets/ui/prefs.ui:787
 msgid "Volume down"
 msgstr "הנמכת עוצמת הקול"
 
 #: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:789
+#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
 msgid "Popup"
 msgstr "חלונית קופצת"
 
 #: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
-#: assets/ui/prefs.ui:790
+#: assets/ui/prefs.ui:789
 msgid "Preferences"
 msgstr "העדפות"
 
 #: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:791
+#: assets/ui/prefs.ui:790
 msgid "Open app"
 msgstr "פתיחת יישום"
 
 #: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:792
+#: assets/ui/prefs.ui:791
 msgid "Quit app"
 msgstr "יציאה מהיישום"
 
 #: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
-#: assets/ui/prefs.ui:793
+#: assets/ui/prefs.ui:792
 msgid "Switch app"
 msgstr "החלפת יישום"
 
@@ -163,13 +163,17 @@ msgid "Cancel"
 msgstr "ביטול"
 
 #: src/prefs/groups/InteractionsPageController.js:342
-#: src/prefs/groups/OthersPageController.js:98 assets/ui/prefs.ui:774
+#: src/prefs/groups/OthersPageController.js:98
 msgid "Reset"
 msgstr "איפוס"
 
 #: src/prefs/groups/InteractionsPageController.js:361
 msgid "Keyboard shortcuts reset"
 msgstr "קיצורי המקשים אופסו"
+
+#: src/prefs/groups/TrackInformationContentController.js:59
+msgid "by"
+msgstr "מאת"
 
 #: src/prefs/groups/OthersPageController.js:84
 msgid "Reset all settings"
@@ -188,24 +192,24 @@ msgid "Settings reset"
 msgstr "ההגדרות אופסו"
 
 #: src/prefs/groups/OthersPageController.js:116
-msgid "Clear the album art cache?"
-msgstr "לנקות את מטמון עטיפות האלבומים?"
+msgid "Clear the cache?"
+msgstr "לנקות את המטמון?"
 
 #: src/prefs/groups/OthersPageController.js:117
-msgid "Cached images will be downloaded again when needed."
-msgstr "תמונות שבמטמון יורדו שוב בעת הצורך."
+msgid "Cached content will be downloaded again when needed."
+msgstr "התוכן השמור במטמון יורד שוב בעת הצורך."
 
 #: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:749
 msgid "Clear cache"
 msgstr "ניקוי המטמון"
 
 #: src/prefs/groups/OthersPageController.js:168
-msgid "Album art cache cleared"
-msgstr "מטמון עטיפות האלבומים נוקה"
+msgid "Cache cleared"
+msgstr "המטמון נוקה"
 
 #: src/prefs/groups/OthersPageController.js:181
-msgid "Could not clear the album art cache"
-msgstr "לא ניתן לנקות את מטמון עטיפות האלבומים"
+msgid "Could not clear the cache"
+msgstr "לא ניתן לנקות את המטמון"
 
 #: src/prefs/groups/OthersPageController.js:190
 #, javascript-format
@@ -216,9 +220,9 @@ msgstr[1] "%d עטיפות — %s"
 msgstr[2] "%d עטיפות — %s"
 msgstr[3] "%d עטיפות — %s"
 
-#: src/prefs/groups/TrackInformationContentController.js:59
-msgid "by"
-msgstr "מאת"
+#: src/prefs/widgets/BlockedAppsGroup.js:102
+msgid "No apps are blocked"
+msgstr "אין יישומים חסומים"
 
 #: src/prefs/widgets/BlockedAppChooserDialog.js:44
 msgid "Select an app to block"
@@ -236,10 +240,6 @@ msgstr "בחירה"
 #: src/prefs/widgets/BlockedAppChooserDialog.js:105
 msgid "No apps found"
 msgstr "לא נמצאו יישומים"
-
-#: src/prefs/widgets/BlockedAppsGroup.js:102
-msgid "No apps are blocked"
-msgstr "אין יישומים חסומים"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:23
 msgid "Title"
@@ -289,22 +289,35 @@ msgstr "טקסט מותאם אישית"
 msgid "Remove"
 msgstr "הסרה"
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 #: src/shell/ui/popup/PopupAppSelectorList.js:218
+#: src/shell/ui/popup/PopupAppSelectorButton.js:85
 msgid "Unknown app"
 msgstr "יישום לא ידוע"
 
-#: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
-msgstr "יישומים חסומים"
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element order"
+msgstr "סדר הרכיבים"
 
-#: assets/ui/blocked-apps.ui:7
-msgid "Block and hide apps so they are ignored by the extension"
-msgstr "חסימת יישומים והסתרתם כדי שההרחבה תתעלם מהם"
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr "יש לגרור כדי לשנות את סדר הרכיבים בתוך הכפתור בסרגל העליון"
 
-#: assets/ui/blocked-apps.ui:17
-msgid "Add"
-msgstr "הוספה"
+#: assets/ui/top-bar-element-order.ui:16 assets/ui/prefs.ui:382
+msgid "App icon"
+msgstr "סמל היישום"
+
+#: assets/ui/top-bar-element-order.ui:27 assets/ui/prefs.ui:59
+#: assets/ui/prefs.ui:279
+msgid "Track information"
+msgstr "פרטי הרצועה"
+
+#: assets/ui/top-bar-element-order.ui:38 assets/ui/prefs.ui:214
+msgid "Visualizer"
+msgstr "חזותן"
+
+#: assets/ui/top-bar-element-order.ui:49 assets/ui/prefs.ui:157
+msgid "Playback controls"
+msgstr "פקדי נגינה"
 
 #: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
@@ -335,8 +348,8 @@ msgid "Album art"
 msgstr "עטיפת האלבום"
 
 #: assets/ui/prefs.ui:38
-msgid "Show album art in the popup"
-msgstr "הצגת עטיפת האלבום בחלונית הקופצת"
+msgid "Show album art"
+msgstr "הצגת עטיפת האלבום"
 
 #: assets/ui/prefs.ui:42
 msgid "Corner radius"
@@ -346,22 +359,17 @@ msgstr "רדיוס פינות"
 msgid "0 disables rounded corners"
 msgstr "0 מבטל פינות מעוגלות"
 
-#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
-#: assets/ui/top-bar-element-order.ui:27
-msgid "Track information"
-msgstr "פרטי הרצועה"
-
-#: assets/ui/prefs.ui:60
-msgid "Show track information in the popup"
-msgstr "הצגת פרטי הרצועה בחלונית הקופצת"
+#: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
+msgid "Show track information"
+msgstr "הצגת פרטי הרצועה"
 
 #: assets/ui/prefs.ui:64 assets/ui/prefs.ui:304
 msgid "Scroll track information"
 msgstr "גלילת פרטי הרצועה"
 
-#: assets/ui/prefs.ui:65
-msgid "Scroll overflowing track information in the popup"
-msgstr "גלילת פרטי הרצועה החורגים מהשטח בחלונית הקופצת"
+#: assets/ui/prefs.ui:65 assets/ui/prefs.ui:305
+msgid "Scroll overflowing track information"
+msgstr "גלילת פרטי הרצועה החורגים מהשטח"
 
 #: assets/ui/prefs.ui:69 assets/ui/prefs.ui:309
 msgid "Scrolling performance"
@@ -395,37 +403,29 @@ msgstr "מספר השניות להמתנה לפני התחלה או הפעלה �
 msgid "Track information content"
 msgstr "תוכן פרטי הרצועה"
 
-#: assets/ui/prefs.ui:130
-msgid "Choose and reorder track information shown in the popup"
-msgstr "בחירה וסידור מחדש של פרטי הרצועה המוצגים בחלון הקופץ"
+#: assets/ui/prefs.ui:130 assets/ui/prefs.ui:370
+msgid "Choose and reorder track information"
+msgstr "בחירה וסידור מחדש של פרטי הרצועה המוצגים"
 
 #: assets/ui/prefs.ui:141 assets/ui/prefs.ui:387
 msgid "Colored app icon"
 msgstr "סמל יישום צבעוני"
 
-#: assets/ui/prefs.ui:142
-msgid "Use the media app's full-color icon in the popup"
-msgstr "שימוש בסמל הצבעוני המלא של יישום המדיה בחלונית הקופצת"
+#: assets/ui/prefs.ui:142 assets/ui/prefs.ui:388
+msgid "Use the media app's full-color icon"
+msgstr "שימוש בסמל הצבעוני המלא של יישום המדיה"
 
 #: assets/ui/prefs.ui:149
 msgid "Top bar"
 msgstr "הסרגל העליון"
 
-#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
-msgid "Playback controls"
-msgstr "פקדי נגינה"
-
 #: assets/ui/prefs.ui:158
-msgid "Show playback controls in the top bar"
-msgstr "הצגת פקדי ההשמעה בסרגל העליון"
-
-#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
-msgid "Visualizer"
-msgstr "חזותן"
+msgid "Show playback controls"
+msgstr "הצגת פקדי ההשמעה"
 
 #: assets/ui/prefs.ui:215
-msgid "Show the animated playback indicator in the top bar"
-msgstr "הצגת מחוון ההשמעה המונפש בסרגל העליון"
+msgid "Show the animated playback indicator"
+msgstr "הצגת מחוון ההשמעה המונפש"
 
 #: assets/ui/prefs.ui:221
 msgid "Visualizer performance"
@@ -460,10 +460,6 @@ msgstr "מהירות ההנפשה"
 msgid "Higher values animate faster"
 msgstr "ערכים גבוהים יותר מאיצים את ההנפשה"
 
-#: assets/ui/prefs.ui:280
-msgid "Show track information in the top bar"
-msgstr "הצגת פרטי הרצועה בסרגל העליון"
-
 #: assets/ui/prefs.ui:285
 msgid "Maximum width in pixels; 0 uses available space"
 msgstr "הרוחב המרבי בפיקסלים; 0 משתמש בכל המקום הזמין"
@@ -476,25 +472,9 @@ msgstr "נעילת רוחב"
 msgid "Keep the configured width for short text"
 msgstr "שמירת הרוחב שהוגדר כאשר התוכן קצר יותר"
 
-#: assets/ui/prefs.ui:305
-msgid "Scroll overflowing track information in the top bar"
-msgstr "גלילת פרטי הרצועה החורגים מהשטח בסרגל העליון"
-
-#: assets/ui/prefs.ui:370
-msgid "Choose and reorder track information shown in the top bar"
-msgstr "בחירה וסידור מחדש של פרטי הרצועה המוצגים בסרגל העליון"
-
-#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
-msgid "App icon"
-msgstr "סמל היישום"
-
 #: assets/ui/prefs.ui:383
-msgid "Show the app icon in the top bar"
-msgstr "הצגת סמל היישום בסרגל העליון"
-
-#: assets/ui/prefs.ui:388
-msgid "Use the media app's full-color icon in the top bar"
-msgstr "שימוש בסמל הצבעוני המלא של יישום המדיה בסרגל העליון"
+msgid "Show the app icon"
+msgstr "הצגת סמל היישום"
 
 #: assets/ui/prefs.ui:397
 msgid "Panel"
@@ -505,8 +485,8 @@ msgid "Extension placement"
 msgstr "מיקום ההרחבה"
 
 #: assets/ui/prefs.ui:402
-msgid "Choose where the extension appears in the top bar"
-msgstr "בחירת המיקום שבו ההרחבה תופיע בסרגל העליון"
+msgid "Choose where the extension appears"
+msgstr "בחירת המיקום שבו ההרחבה תופיע"
 
 #: assets/ui/prefs.ui:405
 msgid "Position"
@@ -612,52 +592,44 @@ msgid "Others"
 msgstr "אחר"
 
 #: assets/ui/prefs.ui:728
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+msgid "System"
+msgstr "מערכת"
 
 #: assets/ui/prefs.ui:729
-msgid "Control how MediaShell integrates with GNOME Shell"
-msgstr "שליטה באופן השילוב של MediaShell עם GNOME Shell"
+msgid "Control how MediaShell integrates with GNOME"
+msgstr "שליטה באופן השילוב של MediaShell עם GNOME"
 
 #: assets/ui/prefs.ui:732
-msgid "Hide GNOME Shell media controls"
-msgstr "הסתרת פקדי המדיה של GNOME Shell"
+msgid "Hide media controls"
+msgstr "הסתרת פקדי המדיה"
 
 #: assets/ui/prefs.ui:733
-msgid "Hide GNOME Shell's default media controls from the notification list"
-msgstr "הסתרת פקדי המדיה המוגדרים כברירת מחדל של GNOME Shell מרשימת ההתראות"
+msgid "Remove the default media controls from the notification list"
+msgstr "הסתרת פקדי המדיה המוגדרים כברירת מחדל מרשימת ההתראות"
 
 #: assets/ui/prefs.ui:740
-msgid "Album art cache"
-msgstr "מטמון עטיפות האלבומים"
+msgid "Cache"
+msgstr "מטמון"
 
 #: assets/ui/prefs.ui:741
-msgid "Store album art on disk so it loads faster"
-msgstr "שמירת עטיפות האלבומים בדיסק כדי שייטענו מהר יותר"
+msgid "Store content on disk to load it faster"
+msgstr "שמירת תוכן על הדיסק כדי שייטען מהר יותר"
 
 #: assets/ui/prefs.ui:744
-msgid "Cache album art"
-msgstr "שמירת עטיפות אלבומים במטמון"
+msgid "Store album art"
+msgstr "שמירת עטיפות אלבומים"
 
 #: assets/ui/prefs.ui:759
 msgid "Clear"
 msgstr "ניקוי"
 
-#: assets/ui/prefs.ui:775
-msgid "Restore the extension's factory defaults"
-msgstr "שחזור ברירות המחדל של היצרן עבור ההרחבה"
+#: assets/ui/prefs.ui:774
+msgid "Extension settings"
+msgstr "הגדרות ההרחבה"
 
-#: assets/ui/prefs.ui:781
+#: assets/ui/prefs.ui:780
 msgid "None"
 msgstr "ללא"
-
-#: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
-msgstr "סדר הרכיבים"
-
-#: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
-msgstr "יש לגרור כדי לשנות את סדר הרכיבים בתוך הכפתור בסרגל העליון"
 
 #: assets/ui/track-information-content-row.ui:10
 msgid "Missing information"
@@ -682,3 +654,15 @@ msgstr "הוספת שדה"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "הוספת טקסט"
+
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked apps"
+msgstr "יישומים חסומים"
+
+#: assets/ui/blocked-apps.ui:7
+msgid "Blocked apps are ignored and hidden by the extension"
+msgstr "יישומים חסומים מתעלמים ומוסתרים על ידי ההרחבה"
+
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "הוספה"

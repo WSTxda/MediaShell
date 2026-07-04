@@ -4,7 +4,7 @@
   <requires lib="gtk" version="4.0"/>
   <template class="MediaShellBlockedAppsGroup" parent="AdwPreferencesGroup">
     <property name="title" translatable="yes">Blocked apps</property>
-    <property name="description" translatable="yes">Block and hide apps so they are ignored by the extension</property>
+    <property name="description" translatable="yes">Blocked apps are ignored and hidden by the extension</property>
     <property name="header-suffix">
       <object class="GtkButton" id="btn-add">
         <property name="halign">2</property>

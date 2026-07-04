@@ -5,8 +5,8 @@
  * Coordinates the preferences page for system integration and blocked apps.
  *
  * The controller owns rows that cannot be represented by a simple settings
- * binding, including the album-art cache action, the blocked-app list, and the
- * The Hide GNOME Shell media controls row. Page-specific maintenance and confirmation
+ * binding, including the album-art cache action, the blocked-app list, and
+ * The Hide GNOME media controls row. Page-specific maintenance and confirmation
  * flows stay out of the global PreferencesController.
  */
 
@@ -113,8 +113,8 @@ export default class OthersPageController {
 
   presentClearAlbumArtCacheConfirmation() {
     this.presentDestructiveConfirmation(
-      _("Clear the album art cache?"),
-      _("Cached images will be downloaded again when needed."),
+      _("Clear the cache?"),
+      _("Cached content will be downloaded again when needed."),
       _("Clear cache"),
       () => this.clearAlbumArtCache(),
     );
@@ -165,7 +165,7 @@ export default class OthersPageController {
       this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(0, 0);
       this.preferencesWindow.add_toast(
         new Adw.Toast({
-          title: _("Album art cache cleared"),
+          title: _("Cache cleared"),
           timeout: TOAST_TIMEOUT_SECONDS,
         }),
       );
@@ -178,7 +178,7 @@ export default class OthersPageController {
       logger.warn("Failed to clear the album-art cache", error);
       this.preferencesWindow.add_toast(
         new Adw.Toast({
-          title: _("Could not clear the album art cache"),
+          title: _("Could not clear the cache"),
           timeout: TOAST_TIMEOUT_SECONDS,
         }),
       );

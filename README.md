@@ -1,6 +1,6 @@
-# MediaShell – GNOME Shell Media Controls
+# MediaShell – GNOME Media Controls
 
-A GNOME Shell extension that adds configurable MPRIS media controls to the top bar.
+A GNOME extension that adds configurable MPRIS media controls to the top bar.
 
 [![Platform](https://img.shields.io/badge/linux-platform?style=for-the-badge&logo=linux&logoColor=white&label=platform&labelColor=21262D&color=6E7681)](https://www.kernel.org)
 [![GNOME](https://img.shields.io/badge/47%E2%80%9350-versions?style=for-the-badge&logo=gnome&logoColor=white&label=GNOME&labelColor=21262D&color=3584E4)](https://www.gnome.org)
@@ -9,7 +9,7 @@ A GNOME Shell extension that adds configurable MPRIS media controls to the top b
 
 ![Banner](https://raw.githubusercontent.com/WSTxda/MediaShell/main/assets/images/banner.svg)
 
-MediaShell is a GNOME Shell extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME Shell UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
+MediaShell is a GNOME extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
 
 <details>
   <summary><h3>Screenshots</h3></summary>
@@ -63,7 +63,7 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 
 #### Fits into GNOME
 
-- The top bar and popup use the GNOME Shell UI toolkit and follow the same design as Quick Settings.
+- The top bar and popup use the GNOME UI toolkit and follow the same design as Quick Settings.
 - Preferences are built with GTK4 and Libadwaita, adhering to the GNOME Human Interface Guidelines.
 
 #### App selector
@@ -87,11 +87,11 @@ MediaShell is a GNOME Shell extension that adds media controls to your top bar. 
 
 - Choose where the button is placed in the top bar.
 - Configure track information, playback controls, and the optional top bar visualizer in a stable element order.
-- Use Hide GNOME Shell media controls to remove the built-in controls from the notification list and use MediaShell instead.
+- Use Hide GNOME media controls to remove the default notification controls and use MediaShell instead.
 
 ## Requirements
 
-- **GNOME Shell** 47–50
+- **GNOME** 47–50
 - An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
 
 > [!IMPORTANT]
@@ -115,7 +115,7 @@ gnome-extensions install --force mediashell@wstxda.github.com.shell-extension.zi
 gnome-extensions enable mediashell@wstxda.github.com
 ```
 
-3. Log out and back in to activate the extension. On X11 you can restart GNOME Shell in place with `Alt+F2`, type `r`, and press Enter.
+3. Log out and back in to activate the extension. On X11 you can restart GNOME in place with `Alt+F2`, type `r`, and press Enter.
 
 ## Development
 

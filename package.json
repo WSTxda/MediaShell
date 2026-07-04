@@ -2,7 +2,7 @@
   "name": "mediashell",
   "version": "1.0.1",
   "private": true,
-  "description": "A GNOME Shell extension that adds configurable MPRIS media controls to the top bar.",
+  "description": "A GNOME extension that adds configurable MPRIS media controls to the top bar.",
   "type": "module",
   "packageManager": "pnpm@10.12.1",
   "engines": {
