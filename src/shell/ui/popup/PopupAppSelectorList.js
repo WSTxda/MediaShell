@@ -38,13 +38,13 @@ function actorContainsDescendant(actor, candidateDescendant) {
 function actorContainsEventPoint(actor, event) {
   if (!actor) return false;
   const [eventX, eventY] = event.get_coords();
-  const stageAllocation = actor.get_stage_allocation();
-  if (!stageAllocation) return false;
+  const [actorX, actorY] = actor.get_transformed_position();
+  const [actorWidth, actorHeight] = actor.get_transformed_size();
   return (
-    eventX >= stageAllocation.x &&
-    eventX <= stageAllocation.x + stageAllocation.width &&
-    eventY >= stageAllocation.y &&
-    eventY <= stageAllocation.y + stageAllocation.height
+    eventX >= actorX &&
+    eventX <= actorX + actorWidth &&
+    eventY >= actorY &&
+    eventY <= actorY + actorHeight
   );
 }
 
