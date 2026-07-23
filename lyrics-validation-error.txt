@@ -1,0 +1,22 @@
+
+> mediashell@2.0.0 check /home/runner/work/MediaShell/MediaShell
+> node scripts/check.mjs
+
+
+==> JavaScript syntax
+JavaScript syntax passed for 104 modules.
+
+==> module documentation
+Module documentation validation failed:
+- src/shared/utils/lyricsCache.js:17: class declaration must have a compact JSDoc comment
+- src/shell/services/lyrics/LrclibClient.js:52: class declaration must have a compact JSDoc comment
+- src/shell/services/lyrics/LyricsResolver.js:30: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupContent.js:28: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupLyricsController.js:29: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupLyricsLayout.js:30: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupLyricsStatus.js:18: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupLyricsView.js:31: class declaration must have a compact JSDoc comment
+- src/shell/ui/popup/PopupPlaybackControls.js:40: class declaration must have a compact JSDoc comment
+- tests/lrc.test.mjs: missing module header
+- tests/lyrics.test.mjs: missing module header
+ ELIFECYCLE  Command failed with exit code 1.
