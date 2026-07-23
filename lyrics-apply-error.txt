@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/runner/work/MediaShell/MediaShell/scripts/apply_lyrics_reimplementation.py", line 2295, in <module>
+    replace_once("assets/ui/prefs.ui", metadata_anchor, lyrics_group + metadata_anchor)
+  File "/home/runner/work/MediaShell/MediaShell/scripts/apply_lyrics_reimplementation.py", line 27, in replace_once
+    raise RuntimeError(f"Expected one anchor in {path}, found {count}: {old[:80]!r}")
+RuntimeError: Expected one anchor in assets/ui/prefs.ui, found 2: '    <child>\n      <object class="AdwPreferencesGroup">\n        <property name="t'
