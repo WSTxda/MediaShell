@@ -38,7 +38,23 @@ jobs:
       - name: Apply implementation
         id: apply
         continue-on-error: true
-        run: python3 scripts/apply_lyrics_reimplementation.py > /tmp/lyrics-apply.log 2>&1
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/apply_lyrics_reimplementation.py')
+          source = path.read_text(encoding='utf-8')
+          old = 'replace_once("assets/ui/prefs.ui", metadata_anchor, lyrics_group + metadata_anchor)'
+          new = '''prefs_ui = read("assets/ui/prefs.ui")
+          metadata_index = prefs_ui.index(metadata_anchor)
+          write(
+              "assets/ui/prefs.ui",
+              prefs_ui[:metadata_index] + lyrics_group + prefs_ui[metadata_index:],
+          )'''
+          if old not in source:
+              raise SystemExit('preferences generator anchor missing')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+          python3 scripts/apply_lyrics_reimplementation.py > /tmp/lyrics-apply.log 2>&1
 
       - uses: actions/upload-artifact@v4
         if: steps.apply.outcome == 'failure'
