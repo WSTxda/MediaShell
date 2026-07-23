@@ -26,16 +26,30 @@ jobs:
 
       - name: Install native validation tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext libglib2.0-bin zip
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gettext libglib2.0-bin zip
 
       - name: Install dependencies
         run: |
           corepack enable
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --silent
 
       - name: Apply implementation
-        run: python3 scripts/apply_lyrics_reimplementation.py
+        id: apply
+        continue-on-error: true
+        run: python3 scripts/apply_lyrics_reimplementation.py > /tmp/lyrics-apply.log 2>&1
+
+      - uses: actions/upload-artifact@v4
+        if: steps.apply.outcome == 'failure'
+        with:
+          name: lyrics-apply-error
+          path: /tmp/lyrics-apply.log
+
+      - name: Stop after generator failure
+        if: steps.apply.outcome == 'failure'
+        run: |
+          cat /tmp/lyrics-apply.log
+          exit 1
 
       - name: Update translations
         run: |
