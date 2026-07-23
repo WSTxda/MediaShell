@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: feature/lyrics-reimplementation
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
@@ -45,9 +46,15 @@ jobs:
           name: lyrics-apply-error
           path: /tmp/lyrics-apply.log
 
-      - name: Stop after generator failure
+      - name: Persist generator failure
         if: steps.apply.outcome == 'failure'
         run: |
+          cp /tmp/lyrics-apply.log lyrics-apply-error.txt
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lyrics-apply-error.txt
+          git commit -m '[lyrics-error] chore: capture generator failure' || true
+          git push origin HEAD:feature/lyrics-reimplementation || true
           cat /tmp/lyrics-apply.log
           exit 1
 
@@ -67,6 +74,7 @@ jobs:
         run: |
           rm -f .github/workflows/lyrics-reimplementation.yml
           rm -f scripts/apply_lyrics_reimplementation.py
+          rm -f lyrics-apply-error.txt
           git diff 367fe96f7e89ee18e94a60ab487a631561bbe94f > /tmp/MediaShell-lyrics-reimplementation.patch
           zip -qr /tmp/MediaShell-lyrics-reimplementation-source.zip . \
             -x '.git/*' 'node_modules/*' 'dist/*'
