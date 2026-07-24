@@ -104,7 +104,7 @@ export default class GnomeShellMediaControlsPatch {
     if (!mediaSource?._proxy?.ListNamesAsync || !mediaSource?._addPlayer)
       return;
 
-    // _proxy is Shell's own DBus proxy for the session bus — same one used for
+    // _proxy is Shell's own D-Bus proxy for the session bus — same one used for
     // NameOwnerChanged. _onProxyReady() sets it up; we reuse it here without
     // calling _onProxyReady() again because that would install duplicate
     // subscriptions. Replay current names only, and discard the result if the

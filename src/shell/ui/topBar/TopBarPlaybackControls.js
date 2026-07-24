@@ -13,22 +13,20 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
-import { LoopStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
-import { resolvePlayPauseControl } from "../../../shared/utils/playbackControlState.js";
+import {
+  resolveLoopControl,
+  resolvePlayPauseControl,
+  resolveShuffleControl,
+} from "../../../shared/utils/playbackControlState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
+import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../../constants/playbackControls.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import { createIcon, setIconName } from "../../utils/icons.js";
-
-const PLAYBACK_CONTROL_ORDER = Object.freeze([
-  PlaybackControls.SHUFFLE_ON.name,
-  PlaybackControls.PREVIOUS.name,
-  PlaybackControls.PLAY.name,
-  PlaybackControls.NEXT.name,
-  PlaybackControls.LOOP_NONE.name,
-]);
+import { styleClassNames } from "../../utils/styleClasses.js";
 
 function getPlaybackControlIconOpacity(isReactive, isStateControl, isActive) {
   if (!isReactive) return INACTIVE_OPACITY;
@@ -46,7 +44,6 @@ export default class TopBarPlaybackControls {
     this.controlButtons = new Map();
   }
 
-  // widgetFlags controls which buttons need updating; no parent positioning needed
   render(widgetFlags) {
     this.ensureActor();
 
@@ -86,79 +83,64 @@ export default class TopBarPlaybackControls {
   ensureActor() {
     if (!this.actor) {
       this.actor = new St.BoxLayout({
-        name: "mediashell-top-bar-playback-controls",
-        styleClass: "mediashell-top-bar-playback-controls",
+        name: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
+        styleClass: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
       });
     }
   }
 
-  renderOptionalControl(isVisible, controlDefinition, isReactive, onClick) {
+  renderOptionalControl(isVisible, controlDefinition, isReactive, action) {
     if (isVisible)
-      this.updatePlaybackControlIcon(controlDefinition, isReactive, onClick);
-    else this.removePlaybackControlIcon(controlDefinition);
-  }
-
-  renderRepeat() {
-    if (
-      !this.topBarButton.extensionController.topBarPlaybackControlsRepeatShow
-    ) {
-      this.removePlaybackControlIcon(PlaybackControls.LOOP_NONE);
-      return;
-    }
-
-    const mediaApp = this.topBarButton.mediaApp;
-    const controlDefinition =
-      mediaApp.loopStatus === LoopStatus.NONE
-        ? PlaybackControls.LOOP_NONE
-        : mediaApp.loopStatus === LoopStatus.TRACK
-          ? PlaybackControls.LOOP_TRACK
-          : PlaybackControls.LOOP_PLAYLIST;
-    const isActive = controlDefinition !== PlaybackControls.LOOP_NONE;
-    this.updatePlaybackControlIcon(
-      controlDefinition,
-      mediaApp.canControl,
-      () => mediaApp.toggleLoop(),
-      isActive,
-    );
-  }
-
-  renderPlayPause() {
-    if (
-      !this.topBarButton.extensionController.topBarPlaybackControlsPlayPauseShow
-    ) {
-      this.removePlaybackControlIcon(PlaybackControls.PLAY);
-      return;
-    }
-
-    const { control, isReactive, action } = resolvePlayPauseControl(
-      this.topBarButton.mediaApp,
-    );
-    this.updatePlaybackControlIcon(control, isReactive, action);
+      this.updatePlaybackControl(controlDefinition, isReactive, action);
+    else this.removePlaybackControl(controlDefinition);
   }
 
   renderShuffle() {
     if (
       !this.topBarButton.extensionController.topBarPlaybackControlsShuffleShow
     ) {
-      this.removePlaybackControlIcon(PlaybackControls.SHUFFLE_ON);
+      this.removePlaybackControl(PlaybackControls.SHUFFLE_ON);
       return;
     }
 
-    const mediaApp = this.topBarButton.mediaApp;
-    this.updatePlaybackControlIcon(
-      mediaApp.shuffle
-        ? PlaybackControls.SHUFFLE_ON
-        : PlaybackControls.SHUFFLE_OFF,
-      mediaApp.canControl,
-      () => mediaApp.toggleShuffle(),
-      mediaApp.shuffle,
+    const { control, isReactive, action, isActive } = resolveShuffleControl(
+      this.topBarButton.mediaApp,
     );
+    this.updatePlaybackControl(control, isReactive, action, isActive);
   }
 
-  updatePlaybackControlIcon(
+  renderPlayPause() {
+    if (
+      !this.topBarButton.extensionController.topBarPlaybackControlsPlayPauseShow
+    ) {
+      this.removePlaybackControl(PlaybackControls.PLAY);
+      return;
+    }
+
+    const { control, isReactive, action } = resolvePlayPauseControl(
+      this.topBarButton.mediaApp,
+    );
+    this.updatePlaybackControl(control, isReactive, action);
+  }
+
+  renderRepeat() {
+    if (
+      !this.topBarButton.extensionController.topBarPlaybackControlsRepeatShow
+    ) {
+      this.removePlaybackControl(PlaybackControls.LOOP_NONE);
+      return;
+    }
+
+    const { control, isReactive, action, isActive } = resolveLoopControl(
+      this.topBarButton.mediaApp,
+    );
+    this.updatePlaybackControl(control, isReactive, action, isActive);
+  }
+
+  updatePlaybackControl(
     controlDefinition,
     isReactive,
-    onClick,
+    action,
     isActive = false,
   ) {
     let control = this.controlButtons.get(controlDefinition.name);
@@ -168,7 +150,7 @@ export default class TopBarPlaybackControls {
         controlDefinition.name === PlaybackControls.SHUFFLE_ON.name;
       const button = new St.Button({
         name: controlDefinition.name,
-        styleClass: "mediashell-top-bar-control-button",
+        styleClass: StyleClasses.TOP_BAR_CONTROL_BUTTON,
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
         canFocus: false,
@@ -176,16 +158,19 @@ export default class TopBarPlaybackControls {
         toggleMode: isStateControl,
       });
       const icon = createIcon({
-        styleClass:
-          "system-status-icon no-margin mediashell-top-bar-control-icon",
+        styleClass: styleClassNames(
+          StyleClasses.SYSTEM_STATUS_ICON,
+          StyleClasses.NO_MARGIN,
+          StyleClasses.TOP_BAR_CONTROL_ICON,
+        ),
       });
-      const signalId = button.connect("clicked", () => control.onClick?.());
-      control = { button, icon, signalId, onClick };
+      const signalId = button.connect("clicked", () => control.action?.());
+      control = { button, icon, signalId, action };
       button.set_child(icon);
       this.controlButtons.set(controlDefinition.name, control);
     }
 
-    control.onClick = onClick;
+    control.action = action;
     setIconName(control.icon, controlDefinition.iconName);
     control.button.opacity = ACTIVE_OPACITY;
     control.button.reactive = isReactive;
@@ -198,7 +183,7 @@ export default class TopBarPlaybackControls {
   }
 
   reconcileOrder() {
-    const orderedActors = PLAYBACK_CONTROL_ORDER.map(
+    const orderedActors = TOP_BAR_PLAYBACK_CONTROL_ORDER.map(
       (name) => this.controlButtons.get(name)?.button,
     ).filter(Boolean);
 
@@ -212,13 +197,13 @@ export default class TopBarPlaybackControls {
     }
   }
 
-  removePlaybackControlIcon(controlDefinition) {
+  removePlaybackControl(controlDefinition) {
     const control = this.controlButtons.get(controlDefinition.name);
     if (!control) return;
     control.button.disconnect(control.signalId);
     control.button.get_parent()?.remove_child(control.button);
     control.button.destroy();
-    control.onClick = null;
+    control.action = null;
     this.controlButtons.delete(controlDefinition.name);
   }
 
@@ -242,7 +227,7 @@ export default class TopBarPlaybackControls {
   remove() {
     if (!this.actor) return;
     for (const name of [...this.controlButtons.keys()])
-      this.removePlaybackControlIcon({ name });
+      this.removePlaybackControl({ name });
     this.actor.get_parent()?.remove_child(this.actor);
     this.actor.destroy();
     this.actor = null;

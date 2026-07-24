@@ -35,7 +35,7 @@ export const DBUS_LIST_NAMES_TIMEOUT_MS = 2000;
 /**
  * TTL for unresolved (miss) entries in the MediaAppResolver cache.
  *
- * Browser-based media players can appear on D-Bus before GNOME Shell has
+ * Browser-backed media apps can appear on D-Bus before GNOME Shell has
  * associated them with a desktop file. A short TTL allows re-resolution on
  * subsequent metadata changes without repeatedly scanning all installed apps.
  */

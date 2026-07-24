@@ -17,21 +17,22 @@ import { VisualizerStyles } from "../../../shared/enums/visualizer.js";
 import {
   getVisualizerBarLevels,
   normalizeVisualizerSpeed,
-  TOP_BAR_VISUALIZER_BAR_COUNT,
 } from "../../../shared/utils/visualizer.js";
+import { TOP_BAR_VISUALIZER_BAR_COUNT } from "../../../shared/constants/visualizer.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import {
   VISUALIZER_BAR_HEIGHT,
   VISUALIZER_BAR_WIDTH,
+  VISUALIZER_FRAME_INTERVAL_MS,
   VISUALIZER_HEIGHT,
   VISUALIZER_IDLE_LEVEL,
   VISUALIZER_TIMELINE_DURATION_MS,
 } from "../../constants/visualizer.js";
-
-const FRAME_INTERVAL_MILLISECONDS = Math.round(1000 / 30);
+import { placeActorAtIndex } from "../../utils/actors.js";
 
 /**
  * Draws the optional top bar visualizer for the active playing media app.
@@ -67,7 +68,7 @@ export default class TopBarVisualizer {
     if (this.actor) return;
 
     this.actor = new St.BoxLayout({
-      styleClass: "mediashell-top-bar-visualizer",
+      styleClass: StyleClasses.TOP_BAR_VISUALIZER,
       orientation: Clutter.Orientation.HORIZONTAL,
       height: VISUALIZER_HEIGHT,
       opacity: INACTIVE_OPACITY,
@@ -77,7 +78,7 @@ export default class TopBarVisualizer {
 
     this.bars = Array.from({ length: TOP_BAR_VISUALIZER_BAR_COUNT }, () => {
       const bar = new St.Widget({
-        styleClass: "mediashell-top-bar-visualizer-bar",
+        styleClass: StyleClasses.TOP_BAR_VISUALIZER_BAR,
         width: VISUALIZER_BAR_WIDTH,
         height: VISUALIZER_BAR_HEIGHT,
         yAlign: Clutter.ActorAlign.CENTER,
@@ -172,9 +173,10 @@ export default class TopBarVisualizer {
     const deltaMilliseconds = Math.max(0, timeline.get_delta());
     this.animationElapsedSeconds += deltaMilliseconds / 1000;
     this.frameAccumulatorMilliseconds += deltaMilliseconds;
-    if (this.frameAccumulatorMilliseconds < FRAME_INTERVAL_MILLISECONDS) return;
+    if (this.frameAccumulatorMilliseconds < VISUALIZER_FRAME_INTERVAL_MS)
+      return;
 
-    this.frameAccumulatorMilliseconds %= FRAME_INTERVAL_MILLISECONDS;
+    this.frameAccumulatorMilliseconds %= VISUALIZER_FRAME_INTERVAL_MS;
     this.updateFrame();
   }
 
@@ -206,13 +208,7 @@ export default class TopBarVisualizer {
   }
 
   attach(index, parentBox) {
-    const parent = this.actor.get_parent();
-    const currentIndex =
-      parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
-    if (currentIndex === index) return;
-
-    parent?.remove_child(this.actor);
-    parentBox.insert_child_at_index(this.actor, index);
+    placeActorAtIndex(this.actor, parentBox, index);
   }
 
   remove() {

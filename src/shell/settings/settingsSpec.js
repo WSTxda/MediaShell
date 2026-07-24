@@ -1,6 +1,6 @@
 /**
- * @file SettingsSpec.js
- * @module shell.settings.SettingsSpec
+ * @file settingsSpec.js
+ * @module shell.settings.settingsSpec
  *
  * Declares runtime metadata for every MediaShell GSettings key.
  *
@@ -13,6 +13,7 @@ import {
   POPUP_ALBUM_ART_CORNER_RADIUS,
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
   POPUP_WIDTH,
+  SettingsKeys,
   TEXT_SCROLL_PAUSE_SECONDS,
   TEXT_SCROLL_SPEED,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
@@ -36,7 +37,7 @@ import {
  * Creates a transform that clamps numeric settings to their supported bounds.
  *
  * SettingsStore calls these transforms after reading raw GSettings values. Keeping
- * bounds in SettingsSpec prevents invalid schema or user-edited values from
+ * bounds in SETTINGS_SPEC prevents invalid schema or user-edited values from
  * reaching UI components.
  *
  * @param {{MIN: number, MAX: number, DEFAULT: number}} bounds - Supported range and fallback.
@@ -68,7 +69,7 @@ function normalizeTrackInformationContent(value, fallback) {
 
 export const SETTINGS_SPEC = Object.freeze({
   // Popup
-  "popup-width": {
+  [SettingsKeys.POPUP_WIDTH]: {
     property: "popupWidth",
     read: "get_uint",
     transform: createNumericConstraint(POPUP_WIDTH),
@@ -77,7 +78,7 @@ export const SETTINGS_SPEC = Object.freeze({
       WidgetFlags.POPUP_TRACK_INFORMATION |
       WidgetFlags.POPUP_PROGRESS_BAR,
   },
-  "popup-album-art-show": {
+  [SettingsKeys.POPUP_ALBUM_ART_SHOW]: {
     property: "popupAlbumArtShow",
     read: "get_boolean",
     impact:
@@ -85,18 +86,18 @@ export const SETTINGS_SPEC = Object.freeze({
       WidgetFlags.POPUP_TRACK_INFORMATION |
       WidgetFlags.POPUP_PROGRESS_BAR,
   },
-  "popup-album-art-corner-radius": {
+  [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]: {
     property: "popupAlbumArtCornerRadius",
     read: "get_uint",
     transform: createNumericConstraint(POPUP_ALBUM_ART_CORNER_RADIUS),
     impact: WidgetFlags.POPUP_ALBUM_ART,
   },
-  "popup-track-information-show": {
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SHOW]: {
     property: "popupTrackInformationShow",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-track-information-content": {
+  [SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT]: {
     property: "popupTrackInformationContent",
     read: "get_strv",
     transform: (value) =>
@@ -106,69 +107,69 @@ export const SETTINGS_SPEC = Object.freeze({
       ),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-progress-bar-show": {
+  [SettingsKeys.POPUP_PROGRESS_BAR_SHOW]: {
     property: "popupProgressBarShow",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_PROGRESS_BAR,
   },
-  "popup-track-information-scroll-enabled": {
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "popupTrackInformationScrollEnabled",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-track-information-scroll-speed": {
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "popupTrackInformationScrollSpeed",
     read: "get_uint",
     transform: createNumericConstraint(TEXT_SCROLL_SPEED),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-track-information-scroll-pause-time": {
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "popupTrackInformationScrollPauseMilliseconds",
     read: "get_uint",
     transform: createSecondsToMillisecondsTransform(TEXT_SCROLL_PAUSE_SECONDS),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  "popup-app-icon-use-color": {
+  [SettingsKeys.POPUP_APP_ICON_USE_COLOR]: {
     property: "popupAppIconUseColor",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_APP_SELECTOR,
   },
 
   // Top bar
-  "top-bar-track-information-show": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW]: {
     property: "topBarTrackInformationShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-width": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH]: {
     property: "topBarTrackInformationWidth",
     read: "get_uint",
     transform: createNumericConstraint(TOP_BAR_TRACK_INFORMATION_WIDTH),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-width-lock": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK]: {
     property: "topBarTrackInformationWidthLock",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-scroll-enabled": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "topBarTrackInformationScrollEnabled",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-scroll-speed": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "topBarTrackInformationScrollSpeed",
     read: "get_uint",
     transform: createNumericConstraint(TEXT_SCROLL_SPEED),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-scroll-pause-time": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "topBarTrackInformationScrollPauseMilliseconds",
     read: "get_uint",
     transform: createSecondsToMillisecondsTransform(TEXT_SCROLL_PAUSE_SECONDS),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-track-information-content": {
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT]: {
     property: "topBarTrackInformationContent",
     read: "get_strv",
     transform: (value) =>
@@ -178,64 +179,64 @@ export const SETTINGS_SPEC = Object.freeze({
       ),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  "top-bar-app-icon-show": {
+  [SettingsKeys.TOP_BAR_APP_ICON_SHOW]: {
     property: "topBarAppIconShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_APP_ICON,
   },
-  "top-bar-app-icon-use-color": {
+  [SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR]: {
     property: "topBarAppIconUseColor",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_APP_ICON,
   },
-  "top-bar-visualizer-show": {
+  [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {
     property: "topBarVisualizerShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
-  "top-bar-visualizer-style": {
+  [SettingsKeys.TOP_BAR_VISUALIZER_STYLE]: {
     property: "topBarVisualizerStyle",
     read: "get_enum",
     fallback: VisualizerStyles.BEATS,
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
-  "top-bar-visualizer-speed": {
+  [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: {
     property: "topBarVisualizerSpeed",
     read: "get_uint",
     transform: createNumericConstraint(TOP_BAR_VISUALIZER_SPEED),
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
-  "top-bar-playback-controls-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW]: {
     property: "topBarPlaybackControlsShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS,
   },
-  "top-bar-playback-controls-shuffle-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW]: {
     property: "topBarPlaybackControlsShuffleShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE,
   },
-  "top-bar-playback-controls-previous-track-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW]: {
     property: "topBarPlaybackControlsPreviousTrackShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS,
   },
-  "top-bar-playback-controls-play-pause-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW]: {
     property: "topBarPlaybackControlsPlayPauseShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE,
   },
-  "top-bar-playback-controls-next-track-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW]: {
     property: "topBarPlaybackControlsNextTrackShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_NEXT,
   },
-  "top-bar-playback-controls-repeat-show": {
+  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW]: {
     property: "topBarPlaybackControlsRepeatShow",
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_PLAYBACK_REPEAT,
   },
-  "top-bar-element-order": {
+  [SettingsKeys.TOP_BAR_ELEMENT_ORDER]: {
     property: "topBarElementOrder",
     read: "get_strv",
     transform: (value) =>
@@ -244,14 +245,14 @@ export const SETTINGS_SPEC = Object.freeze({
   },
 
   // Panel
-  "panel-position": {
+  [SettingsKeys.PANEL_POSITION]: {
     property: "panelPosition",
     read: "get_enum",
     fallback: 1,
     transform: (value) => enumValueByIndex(PanelPositions, value),
     action: SettingsAction.REBUILD_TOP_BAR_BUTTON,
   },
-  "panel-index": {
+  [SettingsKeys.PANEL_INDEX]: {
     property: "panelIndex",
     read: "get_uint",
     transform: createNumericConstraint(PANEL_INDEX),
@@ -259,49 +260,49 @@ export const SETTINGS_SPEC = Object.freeze({
   },
 
   // Interactions
-  "interactions-mouse-action-left": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT]: {
     property: "interactionsMouseActionLeft",
     read: "get_enum",
     fallback: InputActions.TOGGLE_POPUP,
   },
-  "interactions-mouse-action-middle": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE]: {
     property: "interactionsMouseActionMiddle",
     read: "get_enum",
     fallback: InputActions.OPEN_PREFERENCES,
   },
-  "interactions-mouse-action-right": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT]: {
     property: "interactionsMouseActionRight",
     read: "get_enum",
     fallback: InputActions.RAISE_APP,
   },
-  "interactions-mouse-action-double": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE]: {
     property: "interactionsMouseActionDouble",
     read: "get_enum",
     fallback: InputActions.NONE,
   },
-  "interactions-mouse-action-scroll-up": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP]: {
     property: "interactionsMouseActionScrollUp",
     read: "get_enum",
     fallback: InputActions.VOLUME_UP,
   },
-  "interactions-mouse-action-scroll-down": {
+  [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN]: {
     property: "interactionsMouseActionScrollDown",
     read: "get_enum",
     fallback: InputActions.VOLUME_DOWN,
   },
 
   // Others
-  "gnome-shell-hide-media-controls": {
+  [SettingsKeys.GNOME_SHELL_HIDE_MEDIA_CONTROLS]: {
     property: "gnomeShellHideMediaControls",
     read: "get_boolean",
     action: SettingsAction.UPDATE_GNOME_SHELL_MEDIA_CONTROLS,
   },
-  "album-art-cache-enabled": {
+  [SettingsKeys.ALBUM_ART_CACHE_ENABLED]: {
     property: "albumArtCacheEnabled",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_ALBUM_ART,
   },
-  "blocked-apps": {
+  [SettingsKeys.BLOCKED_APPS]: {
     property: "blockedAppIds",
     read: "get_strv",
     transform: normalizeUniqueStrings,

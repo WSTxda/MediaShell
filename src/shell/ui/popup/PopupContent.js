@@ -4,10 +4,10 @@
  *
  * Orchestrates every widget inside the MediaShell popup.
  *
- * PopupContent owns album art, track information, playback controls, the Progress
- * Bar, and app selector components for the currently active media app. It
- * coalesces WidgetFlags into a single update cycle so bursts of MPRIS changes do
- * not rebuild the popup redundantly.
+ * PopupContent owns album art, track information, playback controls, the progress
+ * bar, and app selector components for the active media app. It applies WidgetFlags
+ * immediately while open and accumulates affected regions while closed.
+ * TopBarButton owns idle coalescing for bursts of MPRIS changes.
  */
 
 import Clutter from "gi://Clutter";
@@ -18,6 +18,8 @@ import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
+import { styleClassNames } from "../../utils/styleClasses.js";
 import PopupAlbumArt from "./PopupAlbumArt.js";
 import PopupPlaybackControls from "./PopupPlaybackControls.js";
 import PopupAppSelectorController from "./PopupAppSelectorController.js";
@@ -35,11 +37,14 @@ export default class PopupContent {
     this.pendingWidgetFlags = 0;
     this.appliedPopupOuterWidth = null;
     this.popupItem = new PopupMenu.PopupBaseMenuItem({
-      style_class: "no-padding mediashell-popup-box",
+      style_class: styleClassNames(
+        StyleClasses.NO_PADDING,
+        StyleClasses.POPUP_BOX,
+      ),
       activate: false,
     });
     this.popupItem.set_orientation(Clutter.Orientation.VERTICAL);
-    this.popupItem.remove_style_class_name("popup-menu-item");
+    this.popupItem.remove_style_class_name(StyleClasses.POPUP_MENU_ITEM);
 
     this.appSelectorController = new PopupAppSelectorController(this);
     this.albumArt = new PopupAlbumArt(this);
@@ -90,8 +95,8 @@ export default class PopupContent {
     return this.topBarButton.menu;
   }
 
-  isSameMediaApp(mediaApp) {
-    return this.topBarButton.isSameMediaApp(mediaApp);
+  isActiveMediaApp(mediaApp) {
+    return this.topBarButton.isActiveMediaApp(mediaApp);
   }
 
   selectMediaApp(mediaApp) {

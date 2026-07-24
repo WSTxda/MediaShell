@@ -1,6 +1,6 @@
 /**
  * @file TrackInformationContentController.js
- * @module prefs.groups.TrackInformationContentController
+ * @module prefs.controllers.TrackInformationContentController
  *
  * Coordinates configurable track-information content rows with GSettings.
  *
@@ -11,18 +11,17 @@
 
 import {
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
+  SettingsKeys,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
 } from "../../shared/constants/settings.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
-import { gettext as _ } from "../PreferencesTranslations.js";
+} from "../utils/signalConnections.js";
+import { gettext as _ } from "../translations.js";
 
 const logger = createLogger("TrackInformationContentController");
-const POPUP_CONTENT_KEY = "popup-track-information-content";
-const TOP_BAR_CONTENT_KEY = "top-bar-track-information-content";
 
 function arraysEqual(first, second) {
   return (
@@ -61,16 +60,22 @@ export default class TrackInformationContentController {
     this.syncPopupContentFromSettings();
     this.syncTopBarContentFromSettings();
 
-    this.connectContentRow(this.popupContentRow, POPUP_CONTENT_KEY);
-    this.connectContentRow(this.topBarContentRow, TOP_BAR_CONTENT_KEY);
+    this.connectContentRow(
+      this.popupContentRow,
+      SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT,
+    );
+    this.connectContentRow(
+      this.topBarContentRow,
+      SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT,
+    );
     this.connectOwnedSignal(
       this.settings,
-      `changed::${POPUP_CONTENT_KEY}`,
+      `changed::${SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT}`,
       () => this.syncPopupContentFromSettings(),
     );
     this.connectOwnedSignal(
       this.settings,
-      `changed::${TOP_BAR_CONTENT_KEY}`,
+      `changed::${SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT}`,
       () => this.syncTopBarContentFromSettings(),
     );
   }
@@ -86,7 +91,7 @@ export default class TrackInformationContentController {
   syncPopupContentFromSettings() {
     this.syncContentFromSettings(
       this.popupContentRow,
-      POPUP_CONTENT_KEY,
+      SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT,
       POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
     );
   }
@@ -94,7 +99,7 @@ export default class TrackInformationContentController {
   syncTopBarContentFromSettings() {
     this.syncContentFromSettings(
       this.topBarContentRow,
-      TOP_BAR_CONTENT_KEY,
+      SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT,
       TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
     );
   }

@@ -4,12 +4,12 @@
  *
  * Normalizes untrusted MPRIS values into MediaShell-safe domain state.
  *
- * PlayerProxy feeds raw DBus payloads into these helpers before updating cached
+ * PlayerProxy feeds raw D-Bus payloads into these helpers before updating cached
  * state. Constants and enums stay imported from their owning domain modules so
  * this file only owns MPRIS value normalization and visibility decisions.
  */
 
-import { MPRIS_NO_TRACK_PATH } from "../constants/dbus.js";
+import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "../constants/dbus.js";
 import { MediaAppValidity } from "../enums/app.js";
 import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
 
@@ -52,10 +52,10 @@ export function normalizeLoopStatus(value) {
 export function metadataContainsTrack(metadata) {
   if (!metadata || typeof metadata !== "object") return false;
 
-  const trackId = metadata["mpris:trackid"];
+  const trackId = metadata[MprisMetadataKeys.TRACK_ID];
   if (trackId === MPRIS_NO_TRACK_PATH) return false;
 
-  return Boolean(metadata["xesam:title"] || trackId);
+  return Boolean(metadata[MprisMetadataKeys.TITLE] || trackId);
 }
 
 /**

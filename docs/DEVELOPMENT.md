@@ -1,132 +1,140 @@
 # Development
 
-Use the Node.js and pnpm versions declared in `package.json`. GNOME work also needs GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource tools. Release verification expects `shexli` in `PATH`.
+## Toolchain
+
+Use the Node.js and pnpm versions declared in `package.json`. GNOME development also needs GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource/schema tools. Release verification additionally needs `shexli`.
 
 ```bash
 pnpm install
-pnpm doctor
-pnpm debug
-pnpm check
-pnpm build
-pnpm verify
+pnpm run env:doctor
+pnpm run shell:debug
 ```
 
-`pnpm check` runs source validation, unit tests, resource/schema/D-Bus checks, translation checks, and script syntax. `pnpm build` stages and packs the extension, then validates the generated archive. `pnpm verify` builds the package and runs `shexli`.
+The maintained commands are:
 
-## Where to start
+| Command                  | Purpose                                                                                                  |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `pnpm run check:runtime` | Validate executable code, parsed contracts, tests, assets, translations, and script syntax.              |
+| `pnpm check`             | Run the runtime checks, formatting verification, and the advisory organization audit.                    |
+| `pnpm run audit`         | Report module-header, filename/class, logger-scope, and source-organization drift without failing.       |
+| `pnpm run audit:strict`  | Use the same audit as an explicit cleanup gate.                                                          |
+| `pnpm check:native`      | Run the full check and require the native GLib compilers.                                                |
+| `pnpm build`             | Validate, stage runtime files, compile resources, pack the extension, and inspect the generated archive. |
+| `pnpm verify`            | Build and run `shexli` against the final extension package.                                              |
 
-Start from the owner of the behavior.
+## Validation philosophy
+
+Build failures must point to executable or declarative problems: invalid JavaScript, broken imports, process-boundary violations, lifecycle hazards, mismatched metadata/settings/UI/D-Bus contracts, malformed resources or translations, failing tests, or an invalid package.
+
+Naming preferences, prose wording, file organization, and module documentation belong to the advisory audit. Do not turn cleanup decisions into permanent deny lists, retired-name checks, broad source regexes, or per-refactor build blockers. Add a blocking check only when it validates a stable contract or reproduces a real failure class.
+
+Asset validation parses XML/SVG and decodes PNG container data, including CRCs and the compressed image stream. Translation validation compares source messages with the POT/PO catalogs, checks headers, plural forms, placeholders, and `msgfmt` output.
+
+Automated checks do not prove GNOME actor lifetime, private Shell API compatibility, or behavior of real MPRIS implementations. Those require live testing.
+
+## Code ownership
+
+Start from the owner of the behavior:
 
 - Shell lifecycle and wiring: `src/shell/ExtensionController.js`.
-- MPRIS discovery and active app selection: `src/shell/mpris/MediaAppRegistry.js` and `src/shell/mpris/MediaAppSelectionPolicy.js`.
-- Media-app, browser, and PWA identity: `src/shared/utils/appIdentity.js`, `src/shared/utils/browserIdentity.js`, and `src/shell/services/MediaAppResolver.js`.
-- One MPRIS endpoint: `src/shell/mpris/PlayerProxy.js`.
-- Top bar UI: `src/shell/ui/topBar/TopBarButton.js` and the component beside the feature.
-- Popup UI: `src/shell/ui/popup/PopupContent.js` and the component beside the feature.
-- Preferences: `src/prefs/PreferencesController.js`, `src/prefs/bindings/PreferenceBindings.js`, or the relevant controller under `src/prefs/groups/`.
+- MPRIS discovery and active-media-app selection: `src/shell/mpris/MediaAppRegistry.js` and `src/shell/mpris/mediaAppSelectionPolicy.js`.
+- One MPRIS endpoint: `src/shell/mpris/PlayerProxy.js` and `PositionTracker.js`.
+- Desktop/browser/PWA identity: `src/shared/utils/appIdentity.js`, `browserIdentity.js`, and `src/shell/services/MediaAppResolver.js`.
+- Top bar: `src/shell/ui/topBar/`.
+- Popup: `src/shell/ui/popup/`.
+- Preferences lifecycle and bindings: `src/prefs/PreferencesController.js`, `bindings/`, and the relevant controller or widget.
 
-Keep Shell, Preferences, and Shared code separated. Shared modules must remain toolkit-independent and testable without GNOME.
+Keep the process boundaries strict:
 
-## Naming
+- `src/shared/` contains pure, toolkit-independent values and helpers.
+- `src/shell/` may use GNOME Shell, St, Clutter, Meta, Gio, and GLib.
+- `src/prefs/` may use GTK4, Libadwaita, Gdk, Gio, GLib, and GObject.
+- Shell and Preferences must not import each other.
 
-Use project vocabulary consistently in code, logs, comments, documentation, and visible strings.
+## Vocabulary
 
-- **Panel** configures extension placement in the GNOME panel/top bar area.
-- **Top bar** configures the compact top bar button.
-- **Popup** configures the menu opened from the top bar button.
-- Use **app selector** for active media-app selection. Use chooser terminology only for blocked-app dialogs.
-- Use **media app** for applications exposed in MediaShell UI. Use **player** only for MPRIS Player details, `PlayerProxy`, or protocol names.
-- Use **top bar button** for the clickable Shell actor.
-- Use **progress bar** in user-facing text and `PopupProgressBar` for runtime classes.
+Use one name per project concept while preserving official API and protocol vocabulary.
 
-GSettings keys, schema enum IDs, D-Bus names, CSS classes, and GTypeName strings are stable contracts.
+- **Media app** is an MPRIS endpoint presented by MediaShell. Use `mediaApp`, `MediaApp*`, and `MEDIA_APP_*` according to JavaScript casing.
+- **Available media apps** are eligible for the selector. **Active media app** is the one mounted in the top bar and popup. **Previous active media app** is the historical preference used by the selection policy.
+- **Installed app** or **desktop application** refers to `Gio.AppInfo`, `Shell.App`, and desktop files.
+- **Player** is reserved for the MPRIS Player interface, `PlayerProxy`, and platform API names.
+- **Panel**, **top bar**, and **popup** are different surfaces: placement, compact button, and opened menu.
+- Use **app selector** for switching media apps and **chooser** for selecting an app to block.
+- Use **track information** for rendered fields and **metadata** for the raw MPRIS map and normalization pipeline.
+- Use **album art** for the track image; `mpris:artUrl` remains the protocol key.
+- Use **playback controls** for MediaShell buttons, **media controls** for the broader capability, and **GNOME media controls** for the native Shell controls.
+- Use **keyboard shortcut** for the user feature, **keybinding** for `Main.wm.addKeybinding()`, and **accelerator** for GTK values/widgets.
+- Visible UI uses **Repeat** and **Open app**. Internal `LoopStatus`, `toggleLoop()`, `Raise`, `raise()`, and shipped IDs remain unchanged because they are protocol or stable contracts.
+- Write **D-Bus** in prose. Preserve forms such as `Gio.DBusProxy`, `DBUS_*`, `DbusMethods`, and `dbusProxy`.
+
+GSettings keys, schema enum IDs, D-Bus names, CSS class values, resource URIs, and `GTypeName` strings are stable contracts. Naming cleanup may rename a JavaScript owner key, but must not alter the underlying value.
 
 ## Constants and enums
 
-Use the narrowest module that owns the value:
+Use the narrowest truthful owner:
 
-- `src/shared/constants/timing.js`: timers, polling, retry intervals, grace periods, D-Bus timeouts.
-- `src/shared/constants/limits.js`: cache capacities, payload sizes, and bounded request values.
-- `src/shared/constants/settings.js`: settings defaults, ranges, and reset scopes.
-- `src/shared/constants/dbus.js`: D-Bus names, paths, interfaces, and canonical MPRIS property lists.
-- `src/shared/constants/inputActions.js`: input action descriptors and shortcut keys.
-- `src/shared/constants/playbackControls.js`: transport-control descriptors shared by top bar and popup.
-- `src/shell/constants/actorState.js`: shared Shell actor opacity states.
-- `src/shell/constants/popup.js`: popup-only layout and animation values.
-- `src/shell/constants/visualizer.js`: visualizer layout, timing, and state values.
-- `src/prefs/constants/layout.js`: preferences-only dialog and widget layout values created from JavaScript.
+- cross-process pure contracts and shared tunables belong under `src/shared/constants/`;
+- Shell-only visual/layout values belong under `src/shell/constants/`;
+- Preferences-only policy/layout/style values belong under `src/prefs/constants/`;
+- domain states belong in the closest file under `src/shared/enums/`.
 
-Extract a value when it is a shared contract, belongs to a tunable domain, or is likely to drift. Keep trivial one-off literals inline when that is clearer.
+Centralize shared protocol keys such as MPRIS metadata fields. Keep one-off literals, local algorithm details, and runtime objects such as `Gio.ThemedIcon` instances beside their owner. Do not create a constants module merely because the same generic icon or literal appears twice.
 
-Add enums to the closest domain file under `src/shared/enums/`. Avoid runtime barrel modules because extension review checks JavaScript reachability from `extension.js` and `prefs.js`.
+Use PascalCase filenames for class-owned modules and camelCase filenames for classless modules. Avoid runtime barrel files because the extension package and review tooling rely on explicit reachability from `extension.js` and `prefs.js`.
 
-## Settings
+## Common changes
 
-1. Add the key or enum to `assets/org.gnome.shell.extensions.mediashell.gschema.xml`.
-2. Add runtime mapping to `src/shell/settings/SettingsSpec.js` when Shell code consumes it.
-3. Add a standard binding in `src/prefs/bindings/PreferenceBindings.js`, or use a page controller for compound UI.
-4. Add transforms only when the runtime shape differs from the raw schema value.
-5. Update visible text, translations, tests, and documentation when the user-facing contract changes.
+### Settings
 
-Never reuse an existing key, enum ID, or GTypeName for different semantics.
+1. Update the GSettings schema.
+2. Add the JavaScript key/default/range owner when applicable.
+3. Add the Shell runtime mapping only when Shell consumes the setting.
+4. Add a normal preferences binding or a controller for compound behavior.
+5. Update tests, visible text, translations, and docs when the user contract changes.
 
-## Preferences controllers
+Never reuse a shipped key, enum ID, or `GTypeName` for a new meaning.
 
-Create page-level controllers under `src/prefs/groups/` when a preference needs coordination beyond a simple binding. Use a class name matching the file name and call `createLogger()` with the same scope.
+### Visible strings and translations
 
-Use `SignalConnections.js` when the controller owns signals from several source objects or requires explicit disconnect order. Use direct object lifetime helpers only when the source and owner lifetimes are tightly coupled.
-
-## Code comments and logs
-
-Every JavaScript module must start with a compact JSDoc header containing `@file`, `@module`, a short responsibility summary, and one purpose paragraph. The header complements the contributor documentation: it should say what the module owns and why it exists, not restate every export.
-
-Use inline comments only for lifecycle, signal ownership, async teardown, MPRIS/D-Bus edge cases, GNOME compatibility, private Shell API boundaries, or non-obvious UI behavior. Avoid comments that merely repeat the next line of code.
-
-Browser/PWA resolution must stay evidence-based. Prefer installed desktop-entry metadata, StartupWMClass, and MPRIS/runtime hints over hardcoded browser lists; fall back to the existing identity path when confidence is low. This feature should improve names, icons, blocklist matching, and focus targets without changing the app selector, top bar, popup layout, settings, or visible strings.
-
-Use `createLogger("ClassName")` with a scope that matches the owning class or module. Logs should help diagnose failures and state transitions, not narrate ordinary render flow.
-
-- `debug`: lifecycle details, cache decisions, media-app selection, and recoverable background work.
-- `warn`: recoverable failures that affect a feature or require fallback behavior.
-- `error`: component failures or teardown failures that may leave a feature broken.
-
-## Translations
-
-Visible JavaScript strings use gettext. GtkBuilder strings use `translatable="yes"`. After changing visible text, run:
+JavaScript strings use gettext helpers; GtkBuilder strings use `translatable="yes"`.
 
 ```bash
 pnpm run translations
 pnpm check
 ```
 
-Preserve placeholders, plural forms, source references, and translator comments. Do not erase a translation just because an English string was renamed; preserve it when the meaning is still correct, and leave it empty only when it needs native review.
+Preserve placeholders, plural forms, translator comments, and correct existing translations. Do not invent translator identities in PO headers. Leave a translation empty when native review is genuinely required.
+
+### Comments and logs
+
+Module headers state the local owner and purpose. Inline comments are useful for lifecycle, signal ownership, async teardown, MPRIS/D-Bus edge cases, compatibility, and private APIs—not for repeating the next line.
+
+Logs should expose failures and meaningful state transitions without narrating ordinary rendering. Logger scopes match the owning class or classless module.
 
 ## Live testing
 
-Automated checks do not exercise compositor behavior, Shell actor lifetime, private Shell APIs, or real third-party MPRIS implementations. Test in proportion to risk.
+For runtime or lifecycle changes, test at least:
 
-For playback and lifecycle changes, cover:
-
+- enable, disable, reload, and repeated popup opening;
 - one native media app and one browser-backed session;
-- multiple simultaneous endpoints;
-- app exit and owner replacement;
-- popup reopening and top bar updates;
-- extension reload;
-- rapid play/pause and capability changes;
-- tab changes, page navigation, and short-form media feeds;
-- seeking and volume actions when supported by the endpoint.
+- multiple simultaneous endpoints and app switching/pinning;
+- endpoint exit, owner replacement, and browser tab/navigation changes;
+- play, pause, stop, next, previous, shuffle, repeat, seek, and volume where supported;
+- mouse actions, scroll, touch behavior, and keyboard shortcuts;
+- Preferences opening/closing and the GNOME media-controls patch.
 
-## Debugging
+Use Shell logs when needed:
 
 ```bash
 journalctl --user -f -o cat /usr/bin/gnome-shell
 ```
 
-Record the Shell release, media app, MPRIS bus name, relevant settings, reproduction steps, and the smallest useful log excerpt.
+Record the GNOME release, media app, MPRIS bus name, relevant settings, reproduction steps, and the smallest useful log excerpt.
 
 ## Release
 
-Start from a clean tree:
+From a clean tree:
 
 ```bash
 pnpm check
@@ -134,4 +142,4 @@ pnpm build
 pnpm verify
 ```
 
-Install the package from `dist/builds/`, run live tests for the changed subsystems, and publish only the validated `.shell-extension.zip`.
+Install the package from `dist/builds/`, run the live tests relevant to the change, and publish only the validated `.shell-extension.zip`.

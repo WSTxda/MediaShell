@@ -13,9 +13,8 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import MediaAppResolver, {
-  FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+import { IconNames } from "../../../shared/constants/icons.js";
+import MediaAppResolver from "../../services/MediaAppResolver.js";
 import {
   ACTIVE_OPACITY,
   HIDDEN_OPACITY,
@@ -25,7 +24,9 @@ import {
   POPUP_APP_SELECTOR_REVEAL_DURATION_MS,
   POPUP_APP_SELECTOR_ROW_ANIMATION_MS,
 } from "../../constants/popup.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import { createIcon } from "../../utils/icons.js";
+import { styleClassNames } from "../../utils/styleClasses.js";
 
 function actorContainsDescendant(actor, candidateDescendant) {
   return (
@@ -95,17 +96,17 @@ export default class PopupAppSelectorList {
   }
 
   open() {
-    const mediaApps = this.extensionController.getMediaApps();
+    const mediaApps = this.extensionController.getAvailableMediaApps();
     if (mediaApps.length <= 1) return;
 
     this.revealer = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-app-selector-revealer",
+      styleClass: StyleClasses.POPUP_APP_SELECTOR_REVEALER,
       clipToAllocation: true,
     });
     this.card = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-app-selector-card",
+      styleClass: StyleClasses.POPUP_APP_SELECTOR_CARD,
     });
     this.syncAppSelectorListWidth();
     const resolvedMediaAppRows = resolveMediaAppRows(
@@ -143,7 +144,7 @@ export default class PopupAppSelectorList {
 
   refreshMediaApps() {
     if (!this.revealer) return;
-    const mediaApps = this.extensionController.getMediaApps();
+    const mediaApps = this.extensionController.getAvailableMediaApps();
     if (mediaApps.length <= 1) {
       this.close();
       return;
@@ -186,7 +187,7 @@ export default class PopupAppSelectorList {
         mediaApp.busName,
         mediaApp.identity,
         mediaApp.desktopEntry,
-        mediaApp.isAppPinned(),
+        mediaApp.isPinned,
         resolvedAppKeys[index],
       ]),
     ]);
@@ -203,13 +204,13 @@ export default class PopupAppSelectorList {
   buildMediaAppList(resolvedMediaAppRows) {
     const appList = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-app-selector-list",
+      styleClass: StyleClasses.POPUP_APP_SELECTOR_LIST,
     });
     const coloredClass = this.extensionController.popupAppIconUseColor
-      ? "colored-icon"
-      : "symbolic-icon";
-    const pinnedApp =
-      resolvedMediaAppRows.find(({ mediaApp }) => mediaApp.isAppPinned())
+      ? StyleClasses.COLORED_ICON
+      : StyleClasses.SYMBOLIC_ICON;
+    const pinnedMediaApp =
+      resolvedMediaAppRows.find(({ mediaApp }) => mediaApp.isPinned)
         ?.mediaApp ?? null;
 
     for (const { mediaApp, app } of resolvedMediaAppRows) {
@@ -218,40 +219,47 @@ export default class PopupAppSelectorList {
         mediaApp.identity || _("Unknown app"),
       );
       const appIcon = this.mediaAppResolver.getMediaAppIcon(app);
-      const isCurrent = this.popupContent.isSameMediaApp(mediaApp);
-      const isAppPinned = mediaApp.isAppPinned();
-      const canActivate = pinnedApp == null || isAppPinned;
+      const isActive = this.popupContent.isActiveMediaApp(mediaApp);
+      const isPinned = mediaApp.isPinned;
+      const canSelect = pinnedMediaApp == null || isPinned;
 
       const rowItem = new St.BoxLayout({
-        styleClass: "mediashell-popup-app-selector-row-item",
+        styleClass: StyleClasses.POPUP_APP_SELECTOR_ROW_ITEM,
         xExpand: true,
       });
       const appButton = new St.Button({
-        styleClass: "popup-menu-item mediashell-popup-app-selector-row",
-        opacity: canActivate ? ACTIVE_OPACITY : INACTIVE_OPACITY,
-        reactive: canActivate,
-        trackHover: canActivate,
-        canFocus: canActivate,
+        styleClass: styleClassNames(
+          StyleClasses.POPUP_MENU_ITEM,
+          StyleClasses.POPUP_APP_SELECTOR_ROW,
+        ),
+        opacity: canSelect ? ACTIVE_OPACITY : INACTIVE_OPACITY,
+        reactive: canSelect,
+        trackHover: canSelect,
+        canFocus: canSelect,
         xExpand: true,
       });
       const appContent = new St.BoxLayout({
-        styleClass: "mediashell-popup-app-selector-row-box",
+        styleClass: StyleClasses.POPUP_APP_SELECTOR_ROW_BOX,
         xExpand: true,
       });
       appContent.add_child(
         createIcon(
           {
             gicon: appIcon,
-            styleClass: `popup-menu-icon mediashell-popup-app-selector-app-icon ${coloredClass}`,
+            styleClass: styleClassNames(
+              StyleClasses.POPUP_MENU_ICON,
+              StyleClasses.POPUP_APP_SELECTOR_ROW_APP_ICON,
+              coloredClass,
+            ),
             yAlign: Clutter.ActorAlign.CENTER,
           },
-          FALLBACK_MEDIA_APP_ICON_NAME,
+          IconNames.MEDIA,
         ),
       );
       appContent.add_child(
         new St.Label({
           text: appName,
-          styleClass: "mediashell-popup-app-selector-label",
+          styleClass: StyleClasses.POPUP_APP_SELECTOR_ROW_LABEL,
           yAlign: Clutter.ActorAlign.CENTER,
           xExpand: true,
         }),
@@ -259,40 +267,48 @@ export default class PopupAppSelectorList {
       appContent.add_child(
         createIcon({
           iconName: "object-select-symbolic",
-          styleClass:
-            "popup-menu-icon mediashell-popup-app-selector-check-icon",
-          opacity: isCurrent ? ACTIVE_OPACITY : HIDDEN_OPACITY,
+          styleClass: styleClassNames(
+            StyleClasses.POPUP_MENU_ICON,
+            StyleClasses.POPUP_APP_SELECTOR_ROW_CHECK_ICON,
+          ),
+          opacity: isActive ? ACTIVE_OPACITY : HIDDEN_OPACITY,
           yAlign: Clutter.ActorAlign.CENTER,
         }),
       );
 
       const pinButton = new St.Button({
-        styleClass: "button mediashell-popup-app-selector-pin-button",
-        opacity: canActivate ? ACTIVE_OPACITY : INACTIVE_OPACITY,
-        reactive: canActivate,
-        trackHover: canActivate,
-        canFocus: canActivate,
+        styleClass: styleClassNames(
+          StyleClasses.BUTTON,
+          StyleClasses.POPUP_APP_SELECTOR_ROW_PIN_BUTTON,
+        ),
+        opacity: canSelect ? ACTIVE_OPACITY : INACTIVE_OPACITY,
+        reactive: canSelect,
+        trackHover: canSelect,
+        canFocus: canSelect,
         toggleMode: true,
-        checked: isAppPinned,
+        checked: isPinned,
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
       });
       pinButton.set_child(
         createIcon({
           iconName: "view-pin-symbolic",
-          styleClass: "popup-menu-icon mediashell-popup-app-selector-pin-icon",
+          styleClass: styleClassNames(
+            StyleClasses.POPUP_MENU_ICON,
+            StyleClasses.POPUP_APP_SELECTOR_ROW_PIN_ICON,
+          ),
         }),
       );
       pinButton.connect("clicked", () => {
         const pinStateChanged = this.popupContent.toggleMediaAppPin(mediaApp);
-        if (!pinStateChanged) pinButton.checked = isAppPinned;
+        if (!pinStateChanged) pinButton.checked = isPinned;
         this.refreshMediaApps();
       });
 
       appButton.set_child(appContent);
       appButton.connect("clicked", () => {
-        if (!canActivate) return;
-        if (isCurrent || this.popupContent.selectMediaApp(mediaApp))
+        if (!canSelect) return;
+        if (isActive || this.popupContent.selectMediaApp(mediaApp))
           this.close();
       });
       rowItem.add_child(appButton);

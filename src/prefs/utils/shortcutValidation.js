@@ -1,6 +1,6 @@
 /**
- * @file ShortcutValidation.js
- * @module prefs.utils.ShortcutValidation
+ * @file shortcutValidation.js
+ * @module prefs.utils.shortcutValidation
  *
  * Validates keyboard accelerators entered in the preferences window.
  *
@@ -12,26 +12,7 @@
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 
-/**
- * Plain navigation and mode-switch keyvals that should not be accepted as custom shortcuts.
- *
- * These are either reserved by GTK/Shell navigation, too easy to trigger
- * accidentally, or not meaningful as global media controls.
- */
-const FORBIDDEN_KEYVALS = [
-  Gdk.KEY_Home,
-  Gdk.KEY_Left,
-  Gdk.KEY_Up,
-  Gdk.KEY_Right,
-  Gdk.KEY_Down,
-  Gdk.KEY_Page_Up,
-  Gdk.KEY_Page_Down,
-  Gdk.KEY_End,
-  Gdk.KEY_Tab,
-  Gdk.KEY_KP_Enter,
-  Gdk.KEY_Return,
-  Gdk.KEY_Mode_switch,
-];
+import { FORBIDDEN_SHORTCUT_KEYVALS } from "../constants/input.js";
 
 /**
  * Returns whether a keyval/mask pair can be represented as a GTK accelerator.
@@ -85,6 +66,6 @@ export function isValidBinding(mask, keycode, keyval) {
     !isPlainLetter &&
     !isPlainDigit &&
     !isLanguageCharacter &&
-    !FORBIDDEN_KEYVALS.includes(keyval)
+    !FORBIDDEN_SHORTCUT_KEYVALS.includes(keyval)
   );
 }

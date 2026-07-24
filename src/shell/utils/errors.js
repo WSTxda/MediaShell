@@ -15,7 +15,7 @@ import Gio from "gi://Gio";
  * Returns true when the error is a Gio cancellation error.
  *
  * Use this to distinguish intentional async teardown from real failures.
- * Cancelled operations should be silently dropped; genuine errors should be
+ * Canceled operations should be silently dropped; genuine errors should be
  * logged at warn or error level by the caller.
  *
  * @param {unknown} error - Error object thrown by a GI async operation.

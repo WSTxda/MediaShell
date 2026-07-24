@@ -5,15 +5,15 @@
  * Resolves the semantic play, pause, or stop action for a normalized media-app state.
  *
  * popup and top bar playback controls use this pure helper so they choose the
- * same primary transport action for playing, paused, stopped, and non-pausable
+ * same primary playback action for playing, paused, stopped, and non-pausable
  * MPRIS endpoints while keeping their actor layout separate.
  */
 
 import { PlaybackControls } from "../constants/playbackControls.js";
-import { PlaybackStatus } from "../enums/playback.js";
+import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
 
 /**
- * Selects the primary transport control for a media app.
+ * Selects the primary playback control for a media app.
  *
  * MPRIS apps that are not playing should offer Play when possible. Playing apps
  * normally offer Pause, but endpoints that can control playback while lacking
@@ -44,5 +44,44 @@ export function resolvePlayPauseControl(mediaApp) {
     control: PlaybackControls.PAUSE,
     isReactive: mediaApp.canPause && mediaApp.canControl,
     action: () => mediaApp.pause(),
+  };
+}
+
+/**
+ * Selects the repeat control and active state for a media app.
+ *
+ * @param {object} mediaApp - Normalized PlayerProxy-like media app state.
+ * @returns {{control: object, isReactive: boolean, isActive: boolean, action: Function}} Repeat button state.
+ */
+export function resolveLoopControl(mediaApp) {
+  const control =
+    mediaApp.loopStatus === LoopStatus.NONE
+      ? PlaybackControls.LOOP_NONE
+      : mediaApp.loopStatus === LoopStatus.TRACK
+        ? PlaybackControls.LOOP_TRACK
+        : PlaybackControls.LOOP_PLAYLIST;
+
+  return {
+    control,
+    isReactive: mediaApp.canControl,
+    isActive: control !== PlaybackControls.LOOP_NONE,
+    action: () => mediaApp.toggleLoop(),
+  };
+}
+
+/**
+ * Selects the shuffle control and active state for a media app.
+ *
+ * @param {object} mediaApp - Normalized PlayerProxy-like media app state.
+ * @returns {{control: object, isReactive: boolean, isActive: boolean, action: Function}} Shuffle button state.
+ */
+export function resolveShuffleControl(mediaApp) {
+  return {
+    control: mediaApp.shuffle
+      ? PlaybackControls.SHUFFLE_ON
+      : PlaybackControls.SHUFFLE_OFF,
+    isReactive: mediaApp.canControl,
+    isActive: Boolean(mediaApp.shuffle),
+    action: () => mediaApp.toggleShuffle(),
   };
 }

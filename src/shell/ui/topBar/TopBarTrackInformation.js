@@ -13,6 +13,7 @@
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
 import ScrollingLabel from "../ScrollingLabel.js";
+import { placeActorAtIndex } from "../../utils/actors.js";
 
 /**
  * Renders configurable track metadata inside the GNOME top bar.
@@ -65,14 +66,12 @@ export default class TopBarTrackInformation {
     oldLabel?.destroy();
   }
 
-  attach(index, parentBox) {
-    const parent = this.actor.get_parent();
-    const currentIndex =
-      parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
-    if (currentIndex === index) return;
+  pause() {
+    this.actor?.pauseScrolling();
+  }
 
-    parent?.remove_child(this.actor);
-    parentBox.insert_child_at_index(this.actor, index);
+  resume() {
+    this.actor?.resumeScrolling();
   }
 
   buildTrackInformationText() {
@@ -82,12 +81,8 @@ export default class TopBarTrackInformation {
     );
   }
 
-  pause() {
-    this.actor?.pauseScrolling();
-  }
-
-  resume() {
-    this.actor?.resumeScrolling();
+  attach(index, parentBox) {
+    placeActorAtIndex(this.actor, parentBox, index);
   }
 
   remove() {

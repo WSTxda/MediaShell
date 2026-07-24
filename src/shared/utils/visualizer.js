@@ -10,14 +10,13 @@
  */
 
 import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
+import {
+  TOP_BAR_VISUALIZER_BAR_COUNT,
+  VISUALIZER_BEAT_FREQUENCIES,
+  VISUALIZER_BEAT_PHASES,
+  VISUALIZER_PULSE_SPEEDS,
+} from "../constants/visualizer.js";
 import { VisualizerStyles } from "../enums/visualizer.js";
-
-/** Number of bars rendered by the top-bar visualizer. */
-export const TOP_BAR_VISUALIZER_BAR_COUNT = 4;
-
-const PULSE_SPEEDS = Object.freeze([1.15, 1.7, 1.35, 1.9]);
-const BEATS_FREQUENCIES = Object.freeze([1.5, 2.0, 2.6, 3.2]);
-const BEATS_PHASES = Object.freeze([0, 0.7, 1.4, 2.1]);
 
 /**
  * Clamps user-configured visualizer speed to the supported settings range.
@@ -68,7 +67,8 @@ export function getVisualizerBarLevels(
     if (style === VisualizerStyles.PULSE) {
       const pulse =
         (Math.sin(
-          animationTime * PULSE_SPEEDS[index] * Math.PI * 2 + index * 0.7,
+          animationTime * VISUALIZER_PULSE_SPEEDS[index] * Math.PI * 2 +
+            index * 0.7,
         ) +
           1) /
         2;
@@ -76,8 +76,8 @@ export function getVisualizerBarLevels(
     } else {
       const value =
         (Math.sin(
-          animationTime * BEATS_FREQUENCIES[index] * Math.PI +
-            BEATS_PHASES[index],
+          animationTime * VISUALIZER_BEAT_FREQUENCIES[index] * Math.PI +
+            VISUALIZER_BEAT_PHASES[index],
         ) +
           1) /
         2;

@@ -16,6 +16,7 @@ import St from "gi://St";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TrackInformationFields } from "../../../shared/enums/trackInformation.js";
 import { buildTrackInformationItems } from "../../../shared/utils/metadata.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import ScrollingLabel from "../ScrollingLabel.js";
 
 /**
@@ -53,14 +54,6 @@ export default class PopupTrackInformation {
 
   getTrackInformationWidth() {
     return this.popupContent.getTrackInformationWidth();
-  }
-
-  pause() {
-    for (const label of this.trackInformationLabels) label.pauseScrolling();
-  }
-
-  resume() {
-    for (const label of this.trackInformationLabels) label.resumeScrolling();
   }
 
   render() {
@@ -110,11 +103,19 @@ export default class PopupTrackInformation {
     this.attach();
   }
 
+  pause() {
+    for (const label of this.trackInformationLabels) label.pauseScrolling();
+  }
+
+  resume() {
+    for (const label of this.trackInformationLabels) label.resumeScrolling();
+  }
+
   ensureContainer(width) {
     if (!this.trackInformationBox) {
       this.trackInformationBox = new St.BoxLayout({
         orientation: Clutter.Orientation.VERTICAL,
-        styleClass: "mediashell-popup-track-information",
+        styleClass: StyleClasses.POPUP_TRACK_INFORMATION,
       });
     }
     const widthStyle = this.buildFixedWidthStyle(width);
@@ -156,10 +157,10 @@ export default class PopupTrackInformation {
 
   resolveStyleClass(field) {
     if (field === TrackInformationFields.TITLE)
-      return "mediashell-popup-track-information-title";
+      return StyleClasses.POPUP_TRACK_INFORMATION_TITLE;
     if (field === TrackInformationFields.ARTIST)
-      return "mediashell-popup-track-information-artist";
-    return "mediashell-popup-track-information-album";
+      return StyleClasses.POPUP_TRACK_INFORMATION_ARTIST;
+    return StyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 
   clearFields() {

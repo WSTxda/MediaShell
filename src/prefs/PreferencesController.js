@@ -12,24 +12,19 @@
 
 import Gtk from "gi://Gtk";
 
+import { ResourcePaths } from "../shared/constants/resources.js";
 import { createLogger } from "../shared/utils/log.js";
 import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
-import InteractionsPageController from "./groups/InteractionsPageController.js";
-import TopBarLayoutController from "./groups/TopBarLayoutController.js";
-import TrackInformationContentController from "./groups/TrackInformationContentController.js";
-import OthersPageController from "./groups/OthersPageController.js";
-import PreferenceSensitivityController from "./groups/PreferenceSensitivityController.js";
-import { registerPreferencesResources } from "./resources/PreferencesResourceLoader.js";
+import InteractionsPageController from "./controllers/InteractionsPageController.js";
+import OthersPageController from "./controllers/OthersPageController.js";
+import PreferenceSensitivityController from "./controllers/PreferenceSensitivityController.js";
+import TopBarLayoutController from "./controllers/TopBarLayoutController.js";
+import TrackInformationContentController from "./controllers/TrackInformationContentController.js";
+import { PREFERENCE_PAGE_IDS } from "./constants/ui.js";
+import { registerPreferencesResources } from "./resources/preferencesResourceLoader.js";
 
 const logger = createLogger("PreferencesController");
-const PREFERENCE_PAGE_IDS = [
-  "page-popup",
-  "page-top-bar",
-  "page-panel",
-  "page-interactions",
-  "page-others",
-];
 
 /**
  * Builds and owns the full Libadwaita preferences window.
@@ -46,14 +41,12 @@ export default class PreferencesController {
   async init() {
     registerPreferencesResources(this.preferencesInstance.path);
     const { ensurePreferenceWidgetsRegistered } =
-      await import("./widgets/WidgetRegistry.js");
+      await import("./widgets/widgetRegistry.js");
     if (this.isDestroyed) return;
     ensurePreferenceWidgetsRegistered();
 
     this.settings = this.preferencesInstance.getSettings();
-    this.builder = Gtk.Builder.new_from_resource(
-      "/org/gnome/shell/extensions/mediashell/ui/prefs.ui",
-    );
+    this.builder = Gtk.Builder.new_from_resource(ResourcePaths.PREFERENCES_UI);
 
     for (const pageId of PREFERENCE_PAGE_IDS) {
       const page = this.builder.get_object(pageId);

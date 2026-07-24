@@ -4,7 +4,7 @@
  *
  * Normalizes one MPRIS player into stable state, commands, and signals.
  *
- * Each proxy owns the DBus proxies, cached player properties, metadata
+ * Each proxy owns the D-Bus proxies, cached player properties, metadata
  * stabilization, position tracking, and command forwarding for one bus name.
  * The lifecycle is asynchronous because browser-backed MPRIS endpoints can
  * publish a bus before their properties are ready.
@@ -31,11 +31,19 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import {
+  DbusPropertiesMethods,
   MPRIS_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
+  MprisMetadataKeys,
+  MprisPlayerMethods,
+  MprisPlayerProperties,
+  MprisPlayerSignals,
+  MprisRootMethods,
+  MprisRootProperties,
   PLAYER_PROPERTIES,
   ROOT_PROPERTIES,
 } from "../../shared/constants/dbus.js";
+import { MediaAppStateProperties } from "../../shared/constants/mediaApp.js";
 import { MediaAppValidity } from "../../shared/enums/app.js";
 import { LoopStatus, PlaybackStatus } from "../../shared/enums/playback.js";
 import {
@@ -65,19 +73,19 @@ function normalizeMetadataRevisionValue(value) {
 
 function getMetadataRevision(metadata) {
   return [
-    metadata?.["mpris:trackid"],
-    metadata?.["mpris:length"],
-    metadata?.["mpris:artUrl"],
-    metadata?.["xesam:url"],
-    metadata?.["xesam:title"],
-    metadata?.["xesam:artist"],
-    metadata?.["xesam:album"],
-    metadata?.["xesam:albumArtist"],
-    metadata?.["xesam:genre"],
-    metadata?.["xesam:contentCreated"],
-    metadata?.["xesam:composer"],
-    metadata?.["xesam:discNumber"],
-    metadata?.["xesam:trackNumber"],
+    metadata?.[MprisMetadataKeys.TRACK_ID],
+    metadata?.[MprisMetadataKeys.LENGTH],
+    metadata?.[MprisMetadataKeys.ART_URL],
+    metadata?.[MprisMetadataKeys.URL],
+    metadata?.[MprisMetadataKeys.TITLE],
+    metadata?.[MprisMetadataKeys.ARTIST],
+    metadata?.[MprisMetadataKeys.ALBUM],
+    metadata?.[MprisMetadataKeys.ALBUM_ARTIST],
+    metadata?.[MprisMetadataKeys.GENRE],
+    metadata?.[MprisMetadataKeys.CONTENT_CREATED],
+    metadata?.[MprisMetadataKeys.COMPOSER],
+    metadata?.[MprisMetadataKeys.DISC_NUMBER],
+    metadata?.[MprisMetadataKeys.TRACK_NUMBER],
   ]
     .map((value) => String(normalizeMetadataRevisionValue(value) ?? ""))
     .join("\u0001");
@@ -90,7 +98,7 @@ export default class PlayerProxy {
   constructor(busName, mprisProxyFactory) {
     this.busName = busName;
     this.mprisProxyFactory = mprisProxyFactory;
-    this.appPinned = false;
+    this.pinned = false;
     this.isMediaAppInvalid = true;
     this.isDestroyed = false;
     this.propertyChangeListeners = new Map();
@@ -161,7 +169,7 @@ export default class PlayerProxy {
     );
 
     const seekedSignalId = playerProxy.connectSignal(
-      "Seeked",
+      MprisPlayerSignals.SEEKED,
       (_proxy, _sender, [positionMicroseconds]) => {
         this.positionTracker.handleSeeked(positionMicroseconds);
       },
@@ -229,7 +237,7 @@ export default class PlayerProxy {
     for (const [property, value] of Object.entries(changed)) {
       if (
         interfaceName === MPRIS_PLAYER_IFACE_NAME &&
-        property === "Metadata"
+        property === MprisPlayerProperties.METADATA
       ) {
         acceptedMetadataChange =
           this.applyMetadataUpdate(value) || acceptedMetadataChange;
@@ -246,7 +254,7 @@ export default class PlayerProxy {
       // cache entry to the UI.
       if (
         interfaceName === MPRIS_PLAYER_IFACE_NAME &&
-        property === "Metadata"
+        property === MprisPlayerProperties.METADATA
       ) {
         this.refreshMetadata().catch((error) => {
           if (!isCancellationError(error))
@@ -268,16 +276,21 @@ export default class PlayerProxy {
       property in changed || invalidated.has(property);
     if (
       interfaceName === MPRIS_IFACE_NAME &&
-      (hasChanged("Identity") || hasChanged("DesktopEntry"))
+      (hasChanged(MprisRootProperties.IDENTITY) ||
+        hasChanged(MprisRootProperties.DESKTOP_ENTRY))
     )
       this.validateMediaApp();
 
     if (interfaceName !== MPRIS_PLAYER_IFACE_NAME) return;
 
     if (acceptedMetadataChange) this.positionTracker.resetForTrackChange();
-    if (hasChanged("PlaybackStatus") || hasChanged("Rate"))
+    if (
+      hasChanged(MprisPlayerProperties.PLAYBACK_STATUS) ||
+      hasChanged(MprisPlayerProperties.RATE)
+    )
       this.positionTracker.updatePlaybackState(this.playbackStatus, this.rate);
-    if (hasChanged("PlaybackStatus")) this.validateMediaApp();
+    if (hasChanged(MprisPlayerProperties.PLAYBACK_STATUS))
+      this.validateMediaApp();
   }
 
   pollForInitialMetadata() {
@@ -286,7 +299,7 @@ export default class PlayerProxy {
     // Initialization polling:
     // Some MPRIS players export their bus name before proxy properties are
     // populated. Poll at a bounded interval until metadata appears or the
-    // timeout expires instead of trusting the initial DBus cache.
+    // timeout expires instead of trusting the initial D-Bus cache.
     let pollCount = 0;
     let remaining = Math.ceil(
       MPRIS_INIT_TIMEOUT_MS / MPRIS_INIT_POLL_INTERVAL_MS,
@@ -341,8 +354,11 @@ export default class PlayerProxy {
     if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy)
       return false;
     const result = await this.propertiesProxy.call(
-      "Get",
-      new GLib.Variant("(ss)", [MPRIS_PLAYER_IFACE_NAME, "Metadata"]),
+      DbusPropertiesMethods.GET,
+      new GLib.Variant("(ss)", [
+        MPRIS_PLAYER_IFACE_NAME,
+        MprisPlayerProperties.METADATA,
+      ]),
       Gio.DBusCallFlags.NONE,
       DBUS_CALL_TIMEOUT_MS,
       this.operationCancellable,
@@ -350,7 +366,10 @@ export default class PlayerProxy {
     if (this.isDestroyed || !this.playerProxy) return false;
 
     const variant = result.get_child_value(0).get_variant();
-    this.playerProxy.set_cached_property("Metadata", variant);
+    this.playerProxy.set_cached_property(
+      MprisPlayerProperties.METADATA,
+      variant,
+    );
     const metadata = this.unpackMetadata(variant.recursiveUnpack());
     if (this.applyMetadataUpdate(metadata))
       this.positionTracker?.resetForTrackChange();
@@ -376,8 +395,8 @@ export default class PlayerProxy {
       return false;
     }
 
-    this.storeProperty("Metadata", metadata);
-    this.emitPropertyChanged("Metadata", metadata);
+    this.storeProperty(MprisPlayerProperties.METADATA, metadata);
+    this.emitPropertyChanged(MprisPlayerProperties.METADATA, metadata);
     this.validateMediaApp();
     return true;
   }
@@ -437,7 +456,10 @@ export default class PlayerProxy {
     if (this.isMediaAppInvalid && !isInvalid)
       logger.debug("First valid track received for", this.busName);
     this.isMediaAppInvalid = isInvalid;
-    this.emitPropertyChanged("IsMediaAppInvalid", isInvalid);
+    this.emitPropertyChanged(
+      MediaAppStateProperties.IS_MEDIA_APP_INVALID,
+      isInvalid,
+    );
   }
 
   unpackMetadata(metadata) {
@@ -470,29 +492,31 @@ export default class PlayerProxy {
 
   storeProperty(property, value) {
     const normalized =
-      property === "Metadata" ? this.unpackMetadata(value) : value;
+      property === MprisPlayerProperties.METADATA
+        ? this.unpackMetadata(value)
+        : value;
     this.state[property] = normalized;
-    if (property === "Metadata") {
+    if (property === MprisPlayerProperties.METADATA) {
       this.metadataRevision = getMetadataRevision(normalized);
       this.hasCurrentTrackMetadata = metadataContainsTrack(normalized);
     }
     return normalized;
   }
 
-  pinApp() {
-    if (this.appPinned) return;
-    this.appPinned = true;
-    this.emitPropertyChanged("IsPinned", true);
+  pin() {
+    if (this.pinned) return;
+    this.pinned = true;
+    this.emitPropertyChanged(MediaAppStateProperties.IS_PINNED, true);
   }
 
-  unpinApp() {
-    if (!this.appPinned) return;
-    this.appPinned = false;
-    this.emitPropertyChanged("IsPinned", false);
+  unpin() {
+    if (!this.pinned) return;
+    this.pinned = false;
+    this.emitPropertyChanged(MediaAppStateProperties.IS_PINNED, false);
   }
 
-  isAppPinned() {
-    return this.appPinned;
+  get isPinned() {
+    return this.pinned;
   }
 
   get playbackStatus() {
@@ -578,25 +602,38 @@ export default class PlayerProxy {
   }
 
   set loopStatus(value) {
-    this.setProperty("LoopStatus", new GLib.Variant("s", value));
+    this.setProperty(
+      MprisPlayerProperties.LOOP_STATUS,
+      new GLib.Variant("s", value),
+    );
   }
   set rate(value) {
     if (!Number.isFinite(value)) return;
     const minimum = this.minimumRate;
     const maximum = Math.max(minimum, this.maximumRate);
     const rate = Math.min(maximum, Math.max(minimum, value));
-    if (rate !== 0) this.setProperty("Rate", new GLib.Variant("d", rate));
+    if (rate !== 0)
+      this.setProperty(MprisPlayerProperties.RATE, new GLib.Variant("d", rate));
   }
   set shuffle(value) {
-    this.setProperty("Shuffle", new GLib.Variant("b", value));
+    this.setProperty(
+      MprisPlayerProperties.SHUFFLE,
+      new GLib.Variant("b", value),
+    );
   }
   set volume(value) {
     if (!Number.isFinite(value)) return;
-    this.setProperty("Volume", new GLib.Variant("d", Math.max(0, value)));
+    this.setProperty(
+      MprisPlayerProperties.VOLUME,
+      new GLib.Variant("d", Math.max(0, value)),
+    );
   }
   set fullscreen(value) {
     if (this.canSetFullscreen)
-      this.setRootProperty("Fullscreen", new GLib.Variant("b", value));
+      this.setRootProperty(
+        MprisRootProperties.FULLSCREEN,
+        new GLib.Variant("b", value),
+      );
   }
 
   /**
@@ -612,7 +649,7 @@ export default class PlayerProxy {
    * @param {GLib.Variant|null} parameters - Method parameters, or null for no-args calls.
    * @param {string} logKey - Stable key for warning deduplication.
    * @param {string} logMessage - Human-readable warning prefix.
-   * @returns {Promise<void>} Resolves after the call succeeds, is cancelled, or is logged.
+   * @returns {Promise<void>} Resolves after the call succeeds, is canceled, or is logged.
    */
   async #callProxy(proxy, method, parameters, logKey, logMessage) {
     if (this.isDestroyed || !proxy) return;
@@ -634,7 +671,7 @@ export default class PlayerProxy {
     if (!this.canControl) return;
     await this.#callProxy(
       this.propertiesProxy,
-      "Set",
+      DbusPropertiesMethods.SET,
       new GLib.Variant("(ssv)", [MPRIS_PLAYER_IFACE_NAME, property, value]),
       `set-property:${this.busName}:${property}`,
       `Failed to set MPRIS property ${property}`,
@@ -644,7 +681,7 @@ export default class PlayerProxy {
   async setRootProperty(property, value) {
     await this.#callProxy(
       this.propertiesProxy,
-      "Set",
+      DbusPropertiesMethods.SET,
       new GLib.Variant("(ssv)", [MPRIS_IFACE_NAME, property, value]),
       `set-root-property:${this.busName}:${property}`,
       `Failed to set MPRIS root property ${property}`,
@@ -673,24 +710,27 @@ export default class PlayerProxy {
   }
 
   next() {
-    if (this.canControl && this.canGoNext) return this.callPlayer("Next");
+    if (this.canControl && this.canGoNext)
+      return this.callPlayer(MprisPlayerMethods.NEXT);
   }
   previous() {
     if (this.canControl && this.canGoPrevious)
-      return this.callPlayer("Previous");
+      return this.callPlayer(MprisPlayerMethods.PREVIOUS);
   }
   pause() {
-    if (this.canControl && this.canPause) return this.callPlayer("Pause");
+    if (this.canControl && this.canPause)
+      return this.callPlayer(MprisPlayerMethods.PAUSE);
   }
   playPause() {
     if (this.canControl && (this.canPlay || this.canPause))
-      return this.callPlayer("PlayPause");
+      return this.callPlayer(MprisPlayerMethods.PLAY_PAUSE);
   }
   stop() {
-    if (this.canControl) return this.callPlayer("Stop");
+    if (this.canControl) return this.callPlayer(MprisPlayerMethods.STOP);
   }
   play() {
-    if (this.canControl && this.canPlay) return this.callPlayer("Play");
+    if (this.canControl && this.canPlay)
+      return this.callPlayer(MprisPlayerMethods.PLAY);
   }
   setPosition(trackId, positionMicroseconds) {
     if (
@@ -701,7 +741,7 @@ export default class PlayerProxy {
     )
       return;
     return this.callPlayer(
-      "SetPosition",
+      MprisPlayerMethods.SET_POSITION,
       new GLib.Variant("(ox)", [
         String(trackId),
         Math.max(0, Math.trunc(positionMicroseconds)),
@@ -711,14 +751,17 @@ export default class PlayerProxy {
 
   openUri(uri) {
     if (this.canControl && uri)
-      return this.callPlayer("OpenUri", new GLib.Variant("(s)", [uri]));
+      return this.callPlayer(
+        MprisPlayerMethods.OPEN_URI,
+        new GLib.Variant("(s)", [uri]),
+      );
   }
 
   raise() {
-    if (this.canRaise) return this.callRoot("Raise");
+    if (this.canRaise) return this.callRoot(MprisRootMethods.RAISE);
   }
   quit() {
-    if (this.canQuit) return this.callRoot("Quit");
+    if (this.canQuit) return this.callRoot(MprisRootMethods.QUIT);
   }
 
   toggleLoop() {

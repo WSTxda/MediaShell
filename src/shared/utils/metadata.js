@@ -10,18 +10,19 @@
  * outside GNOME Shell.
  */
 
+import { MprisMetadataKeys } from "../constants/dbus.js";
 import { TrackInformationFields } from "../enums/trackInformation.js";
 
 const METADATA_FIELD_KEYS = Object.freeze({
-  [TrackInformationFields.TITLE]: "xesam:title",
-  [TrackInformationFields.ARTIST]: "xesam:artist",
-  [TrackInformationFields.ALBUM]: "xesam:album",
-  [TrackInformationFields.ALBUM_ARTIST]: "xesam:albumArtist",
-  [TrackInformationFields.GENRE]: "xesam:genre",
-  [TrackInformationFields.CONTENT_CREATED]: "xesam:contentCreated",
-  [TrackInformationFields.COMPOSER]: "xesam:composer",
-  [TrackInformationFields.DISC_NUMBER]: "xesam:discNumber",
-  [TrackInformationFields.TRACK_NUMBER]: "xesam:trackNumber",
+  [TrackInformationFields.TITLE]: MprisMetadataKeys.TITLE,
+  [TrackInformationFields.ARTIST]: MprisMetadataKeys.ARTIST,
+  [TrackInformationFields.ALBUM]: MprisMetadataKeys.ALBUM,
+  [TrackInformationFields.ALBUM_ARTIST]: MprisMetadataKeys.ALBUM_ARTIST,
+  [TrackInformationFields.GENRE]: MprisMetadataKeys.GENRE,
+  [TrackInformationFields.CONTENT_CREATED]: MprisMetadataKeys.CONTENT_CREATED,
+  [TrackInformationFields.COMPOSER]: MprisMetadataKeys.COMPOSER,
+  [TrackInformationFields.DISC_NUMBER]: MprisMetadataKeys.DISC_NUMBER,
+  [TrackInformationFields.TRACK_NUMBER]: MprisMetadataKeys.TRACK_NUMBER,
 });
 
 function sanitizeSingleLineText(value) {

@@ -68,20 +68,20 @@ MediaShell is a GNOME extension that adds media controls to your top bar. Click 
 
 #### App selector
 
-- The app selector in the popup switches between any active media app.
+- The app selector in the popup switches between available media apps.
 - The pin feature keeps a media app selected while it is playing, but this selection does not save across shell restarts.
-- You can raise or quit an app's window if its MPRIS implementation supports it.
+- You can bring an app to the front or quit it if its MPRIS implementation supports the action.
 - Block apps that you don't want MediaShell to detect, without affecting their MPRIS service.
 
 #### Album art
 
-- Supports local and remote artwork with a configurable corner radius.
+- Supports local and remote album art with a configurable corner radius.
 - Optional disk cache for faster loads, adjustable from settings.
 
 #### Mouse and keyboard
 
 - Left, middle, and right click actions as well as scroll actions on the top bar button.
-- Global keyboard shortcuts for playback, volume, app selection, raising or quitting, opening the popup, and accessing settings.
+- Global keyboard shortcuts for playback, volume, app selection, bringing an app to the front, quitting, opening the popup, and accessing settings.
 
 #### Layout
 
@@ -95,10 +95,10 @@ MediaShell is a GNOME extension that adds media controls to your top bar. Click 
 - An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
 
 > [!IMPORTANT]
-> Available controls depend on the features provided by each media app through MPRIS. Seeking, shuffle, repeat, volume, artwork, and application actions may not be supported by every app.
+> Available controls depend on the features provided by each media app through MPRIS. Seeking, shuffle, repeat, volume, album art, and app actions may not be supported by every app.
 
 > [!NOTE]
-> Browsers decide how each website appears to GNOME. MediaShell follows what the browser reports, so web players can appear, change, or disappear when you switch tabs, navigate pages, or move playback between websites.
+> Browsers decide how each website appears to GNOME. MediaShell follows what the browser reports, so browser media sessions can appear, change, or disappear when you switch tabs, navigate pages, or move playback between websites.
 
 ## Download
 
@@ -119,25 +119,17 @@ gnome-extensions enable mediashell@wstxda.github.com
 
 ## Development
 
-Use the Node.js and pnpm versions listed in `package.json`, along with GJS, GNU gettext, GLib development tools, GNOME Shell, and `gnome-extensions`. Release verification also expects `shexli` in `PATH`.
+Use the Node.js and pnpm versions declared in `package.json`. GNOME development also requires GJS, GNU gettext, GLib tools, GNOME Shell, and `gnome-extensions`; release verification uses `shexli`.
 
 ```bash
 pnpm install
-pnpm doctor
+pnpm run env:doctor
 pnpm check
 pnpm build
 pnpm verify
 ```
 
-The generated extension package is saved to `dist/builds/`. `pnpm build` validates source and package contents; `pnpm verify` runs the full release-oriented path, including `shexli` against the generated archive.
-
-From the repository root, inspect or install the generated package with the full path:
-
-```bash
-pnpm run check:package
-pnpm run check:shexli
-gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip
-```
+The generated extension package is written to `dist/builds/`. See the development and contribution guides for check tiers, architecture, translations, and live testing.
 
 ### Documentation
 

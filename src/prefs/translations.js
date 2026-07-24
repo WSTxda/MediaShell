@@ -1,6 +1,6 @@
 /**
- * @file PreferencesTranslations.js
- * @module prefs.PreferencesTranslations
+ * @file translations.js
+ * @module prefs.translations
  *
  * Applies translatable labels and descriptions to the preferences UI.
  *

@@ -1,20 +1,21 @@
 /**
- * @file PreferencesResourceLoader.js
- * @module prefs.resources.PreferencesResourceLoader
+ * @file preferencesResourceLoader.js
+ * @module prefs.resources.preferencesResourceLoader
  *
- * Registers and unregisters compiled resources used by the preferences process.
+ * Registers compiled resources used by the preferences process.
  *
- * The loader keeps GtkBuilder templates, images, and other bundled assets
- * available while the preferences window is open. It mirrors the Shell-side
- * resource registry but is scoped to the GTK preferences process.
+ * The loader keeps GtkBuilder templates and other bundled assets available for
+ * the lifetime of the GTK preferences process. Registration is intentionally
+ * idempotent and has no per-window unregister step.
  */
 
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
+import { COMPILED_RESOURCE_FILENAME } from "../../shared/constants/resources.js";
 import { createLogger } from "../../shared/utils/log.js";
 
-const logger = createLogger("PreferencesResourceLoader");
+const logger = createLogger("preferencesResourceLoader");
 let registeredResource = null;
 
 /**
@@ -33,7 +34,7 @@ export function registerPreferencesResources(extensionPath) {
 
   const resourcePath = GLib.build_filenamev([
     extensionPath,
-    "org.gnome.shell.extensions.mediashell.gresource",
+    COMPILED_RESOURCE_FILENAME,
   ]);
   registeredResource = Gio.resource_load(resourcePath);
   Gio.resources_register(registeredResource);

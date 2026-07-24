@@ -13,8 +13,12 @@
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
-import Graphene from "gi://Graphene";
 import Gtk from "gi://Gtk";
+
+import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { ResourceUris } from "../../shared/constants/resources.js";
+import { moveArrayItem } from "../../shared/utils/collections.js";
+import { createDragTexture } from "../utils/dragAndDrop.js";
 
 /**
  * Custom preferences group for ordering top bar elements with drag and drop.
@@ -50,14 +54,8 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
       )
         return false;
 
-      const sourceValue = this.elementOrder[index];
       const targetIndex = targetRow.get_index();
-      this.elementOrder.splice(
-        targetIndex > index ? targetIndex + 1 : targetIndex,
-        0,
-        sourceValue,
-      );
-      this.elementOrder.splice(index > targetIndex ? index + 1 : index, 1);
+      if (!moveArrayItem(this.elementOrder, index, targetIndex)) return false;
       this.notify("element-order");
       this.listBox.drag_unhighlight_row();
       this.listBox.invalidate_sort();
@@ -99,7 +97,7 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
       return Gdk.ContentProvider.new_for_value(value);
     });
     dragSource.connect("drag-begin", (source) => {
-      source.set_icon(this.snapshotRow(source.widget), dragX, dragY);
+      source.set_icon(createDragTexture(source.widget), dragX, dragY);
     });
     dropController.connect("enter", (controller) => {
       this.listBox.drag_highlight_row(controller.widget);
@@ -108,28 +106,12 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     row.add_controller(dragSource);
     row.add_controller(dropController);
   }
-
-  snapshotRow(row) {
-    const width = row.get_allocated_width();
-    const height = row.get_allocated_height();
-    const paintable = new Gtk.WidgetPaintable({ widget: row });
-    const snapshot = new Gtk.Snapshot();
-    paintable.snapshot(snapshot, width, height);
-    // GSK texture rendering expects explicit Graphene.Rect bounds for the row snapshot
-    const rect = new Graphene.Rect();
-    rect.init(0, 0, width, height);
-    return row
-      .get_native()
-      .get_renderer()
-      .render_texture(snapshot.to_node(), rect);
-  }
 }
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellTopBarElementOrderGroup",
-    Template:
-      "resource:///org/gnome/shell/extensions/mediashell/ui/top-bar-element-order.ui",
+    GTypeName: GTypeNames.TOP_BAR_ELEMENT_ORDER_GROUP,
+    Template: ResourceUris.TOP_BAR_ELEMENT_ORDER_UI,
     InternalChildren: [
       "lb-top-bar-element-order",
       "row-app-icon",

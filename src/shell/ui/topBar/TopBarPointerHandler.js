@@ -5,7 +5,7 @@
  * Installs pointer gestures for the non-playback regions of the top bar button.
  *
  * The handler translates mouse, touch, and scroll input into configured
- * InputActions while keeping transport-button clicks isolated from top bar
+ * InputActions while keeping playback control clicks isolated from top bar
  * activation. It owns every signal, gesture, and delayed primary-activation
  * timeout installed for pointer handling and tears them down independently of
  * the top bar widget layout.
@@ -58,7 +58,7 @@ export default class TopBarPointerHandler {
     if (typeof Clutter.ClickGesture !== "undefined") {
       // GNOME 49+ removed the older Clutter click/tap action classes. GNOME 50 moved
       // PanelMenu.Button primary activation to ClickGesture. Install explicit
-      // gestures on the non-playback area only, so transport buttons keep
+      // gestures on the non-playback area only, so playback control buttons keep
       // ownership of their clicks without a hit-test.
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_PRIMARY, () =>
         this.#handlePrimaryActivation(),
@@ -67,13 +67,13 @@ export default class TopBarPointerHandler {
         const mouseAction =
           this.extensionController.interactionsMouseActionMiddle;
         if (mouseAction !== InputActions.NONE)
-          this.#executeMouseAction(mouseAction);
+          this.#executeInputAction(mouseAction);
       });
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_SECONDARY, () => {
         const mouseAction =
           this.extensionController.interactionsMouseActionRight;
         if (mouseAction !== InputActions.NONE)
-          this.#executeMouseAction(mouseAction);
+          this.#executeInputAction(mouseAction);
       });
     } else {
       // GNOME 47–48: use button-press-event / scroll-event signals.
@@ -96,7 +96,7 @@ export default class TopBarPointerHandler {
 
         if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
 
-        this.#executeMouseAction(mouseAction);
+        this.#executeInputAction(mouseAction);
         return Clutter.EVENT_STOP;
       });
 
@@ -121,7 +121,7 @@ export default class TopBarPointerHandler {
 
       if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
 
-      this.#executeMouseAction(mouseAction);
+      this.#executeInputAction(mouseAction);
       return Clutter.EVENT_STOP;
     });
   }
@@ -174,7 +174,7 @@ export default class TopBarPointerHandler {
       this.extensionController.interactionsMouseActionDouble ===
       InputActions.NONE
     ) {
-      this.#executeMouseAction(
+      this.#executeInputAction(
         this.extensionController.interactionsMouseActionLeft,
       );
       return;
@@ -186,7 +186,7 @@ export default class TopBarPointerHandler {
         250,
         () => {
           this.primaryActivationTimeoutId = null;
-          this.#executeMouseAction(
+          this.#executeInputAction(
             this.extensionController.interactionsMouseActionLeft,
           );
           return GLib.SOURCE_REMOVE;
@@ -195,14 +195,14 @@ export default class TopBarPointerHandler {
     } else {
       GLib.Source.remove(this.primaryActivationTimeoutId);
       this.primaryActivationTimeoutId = null;
-      this.#executeMouseAction(
+      this.#executeInputAction(
         this.extensionController.interactionsMouseActionDouble,
       );
     }
   }
 
-  #executeMouseAction(mouseAction) {
-    this.extensionController.executeInputAction(mouseAction);
+  #executeInputAction(inputAction) {
+    this.extensionController.executeInputAction(inputAction);
   }
 
   destroy() {

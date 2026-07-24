@@ -3,10 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-04 19:00-0300\n"
-"PO-Revision-Date: 2026-07-03 02:30-0300\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2026-07-25 13:54-0300\n"
+"PO-Revision-Date: 2026-07-24 20:32-0300\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,18 +17,18 @@ msgstr "Über MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME extension that adds media controls to your top "
-"bar. Click the icon to open a popup featuring album art, playback controls, "
-"and an app selector for any app currently playing media. The top bar widget "
-"and popup use the GNOME UI toolkit, and preferences are built with "
-"GTK4 and Libadwaita to match the rest of the desktop."
+"MediaShell is a GNOME extension that adds media controls to your top bar. "
+"Click the icon to open a popup featuring album art, playback controls, and "
+"an app selector for any app currently playing media. The top bar widget and "
+"popup use the GNOME UI toolkit, and preferences are built with GTK4 and "
+"Libadwaita to match the rest of the desktop."
 msgstr ""
 "MediaShell ist eine GNOME-Erweiterung, die Mediensteuerungen zu deiner "
 "oberen Leiste hinzufügt. Klicke auf das Symbol, um ein Popup mit Albumcover, "
 "Wiedergabesteuerungen und einer App-Auswahl für jede App zu öffnen, die "
 "gerade Medien wiedergibt. Das Widget in der oberen Leiste und das Popup "
-"verwenden das UI-Toolkit von GNOME, und die Einstellungen sind mit "
-"GTK4 und Libadwaita erstellt, damit sie zum restlichen Desktop passen."
+"verwenden das UI-Toolkit von GNOME, und die Einstellungen sind mit GTK4 und "
+"Libadwaita erstellt, damit sie zum restlichen Desktop passen."
 
 #: src/prefs/about/AboutDialogController.js:106
 msgid "Donate"
@@ -44,84 +42,84 @@ msgstr "Entwickelt von"
 msgid "View all..."
 msgstr "Alle anzeigen..."
 
-#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
+#: src/prefs/controllers/InteractionsPageController.js:45
+#: assets/ui/prefs.ui:162 assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
 msgid "Shuffle"
 msgstr "Zufall"
 
-#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
+#: src/prefs/controllers/InteractionsPageController.js:49
+#: assets/ui/prefs.ui:172 assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
 msgid "Previous track"
 msgstr "Vorheriger Titel"
 
-#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
+#: src/prefs/controllers/InteractionsPageController.js:53
+#: assets/ui/prefs.ui:182 assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
 msgid "Play / pause"
 msgstr "Wiedergabe / Pause"
 
-#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
-#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
+#: src/prefs/controllers/InteractionsPageController.js:57
+#: assets/ui/prefs.ui:192 assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
 msgid "Next track"
 msgstr "Nächster Titel"
 
-#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
+#: src/prefs/controllers/InteractionsPageController.js:60
+#: assets/ui/prefs.ui:202 assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
 msgid "Repeat"
 msgstr "Wiederholung"
 
-#: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
-#: assets/ui/prefs.ui:786
+#: src/prefs/controllers/InteractionsPageController.js:61
+#: assets/ui/prefs.ui:537 assets/ui/prefs.ui:786
 msgid "Volume up"
 msgstr "Lautstärke erhöhen"
 
-#: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
-#: assets/ui/prefs.ui:787
+#: src/prefs/controllers/InteractionsPageController.js:62
+#: assets/ui/prefs.ui:554 assets/ui/prefs.ui:787
 msgid "Volume down"
 msgstr "Lautstärke verringern"
 
-#: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
+#: src/prefs/controllers/InteractionsPageController.js:63 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
 msgid "Popup"
 msgstr "Pop-up"
 
-#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
-#: assets/ui/prefs.ui:789
+#: src/prefs/controllers/InteractionsPageController.js:65
+#: assets/ui/prefs.ui:588 assets/ui/prefs.ui:789
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:790
+#: src/prefs/controllers/InteractionsPageController.js:69
+#: assets/ui/prefs.ui:605 assets/ui/prefs.ui:790
 msgid "Open app"
 msgstr "App öffnen"
 
-#: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:791
+#: src/prefs/controllers/InteractionsPageController.js:72
+#: assets/ui/prefs.ui:622 assets/ui/prefs.ui:791
 msgid "Quit app"
 msgstr "App beenden"
 
-#: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
-#: assets/ui/prefs.ui:792
+#: src/prefs/controllers/InteractionsPageController.js:73
+#: assets/ui/prefs.ui:639 assets/ui/prefs.ui:792
 msgid "Switch app"
 msgstr "App wechseln"
 
-#: src/prefs/groups/InteractionsPageController.js:75
+#: src/prefs/controllers/InteractionsPageController.js:78
 msgid "Playback"
 msgstr "Wiedergabe"
 
-#: src/prefs/groups/InteractionsPageController.js:76
+#: src/prefs/controllers/InteractionsPageController.js:79
 msgid "Audio"
 msgstr "Audio"
 
-#: src/prefs/groups/InteractionsPageController.js:77 assets/ui/prefs.ui:138
-#: assets/ui/prefs.ui:378
+#: src/prefs/controllers/InteractionsPageController.js:80
+#: assets/ui/prefs.ui:138 assets/ui/prefs.ui:378
 msgid "Apps"
 msgstr "Apps"
 
-#: src/prefs/groups/InteractionsPageController.js:78
+#: src/prefs/controllers/InteractionsPageController.js:81
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: src/prefs/groups/InteractionsPageController.js:156
+#: src/prefs/controllers/InteractionsPageController.js:159
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -131,194 +129,181 @@ msgstr ""
 "Drücken Sie Enter zum Speichern.\n"
 "Drücken Sie die Rücktaste, um die Tastenkombination zu löschen."
 
-#: src/prefs/groups/InteractionsPageController.js:164
+#: src/prefs/controllers/InteractionsPageController.js:167
 msgid "Press a shortcut"
 msgstr "Tastenkombination drücken"
 
-#: src/prefs/groups/InteractionsPageController.js:266
+#: src/prefs/controllers/InteractionsPageController.js:269
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Tastenkürzel wird bereits von %s verwendet"
 
-#: src/prefs/groups/InteractionsPageController.js:286 assets/ui/prefs.ui:443
+#: src/prefs/controllers/InteractionsPageController.js:289
+#: assets/ui/prefs.ui:443
 msgid "Keyboard shortcuts"
 msgstr "Tastenkürzel"
 
-#: src/prefs/groups/InteractionsPageController.js:309
+#: src/prefs/controllers/InteractionsPageController.js:312
 msgid "Not set"
 msgstr "Nicht festgelegt"
 
-#: src/prefs/groups/InteractionsPageController.js:337
+#: src/prefs/controllers/InteractionsPageController.js:340
 msgid "Reset keyboard shortcuts?"
 msgstr "Tastenkürzel zurücksetzen?"
 
-#: src/prefs/groups/InteractionsPageController.js:338
+#: src/prefs/controllers/InteractionsPageController.js:341
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Alle Tastenkürzel werden deaktiviert."
 
-#: src/prefs/groups/InteractionsPageController.js:341
-#: src/prefs/groups/OthersPageController.js:125
-#: src/prefs/widgets/BlockedAppChooserDialog.js:66
+#: src/prefs/controllers/InteractionsPageController.js:344
+#: src/prefs/controllers/OthersPageController.js:133
+#: src/prefs/widgets/BlockedAppChooserDialog.js:68
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/prefs/groups/InteractionsPageController.js:342
-#: src/prefs/groups/OthersPageController.js:98
+#: src/prefs/controllers/InteractionsPageController.js:345
+#: src/prefs/controllers/OthersPageController.js:106
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: src/prefs/groups/InteractionsPageController.js:361
+#: src/prefs/controllers/InteractionsPageController.js:364
 msgid "Keyboard shortcuts reset"
 msgstr "Tastenkürzel zurückgesetzt"
 
-#: src/prefs/groups/TrackInformationContentController.js:59
-msgid "by"
-msgstr "von"
-
-#: src/prefs/groups/OthersPageController.js:84
+#: src/prefs/controllers/OthersPageController.js:90
 msgid "Reset all settings"
 msgstr "Alle Einstellungen zurücksetzen"
 
-#: src/prefs/groups/OthersPageController.js:96
+#: src/prefs/controllers/OthersPageController.js:104
 msgid "Reset all settings?"
 msgstr "Alle Einstellungen zurücksetzen?"
 
-#: src/prefs/groups/OthersPageController.js:97
+#: src/prefs/controllers/OthersPageController.js:105
 msgid "Every MediaShell preference will return to its default value."
 msgstr ""
 "Alle MediaShell-Einstellungen werden auf ihre Standardwerte zurückgesetzt."
 
-#: src/prefs/groups/OthersPageController.js:108
+#: src/prefs/controllers/OthersPageController.js:116
 msgid "Settings reset"
 msgstr "Einstellungen zurückgesetzt"
 
-#: src/prefs/groups/OthersPageController.js:116
+#: src/prefs/controllers/OthersPageController.js:124
 msgid "Clear the cache?"
 msgstr "Zwischenspeicher leeren?"
 
-#: src/prefs/groups/OthersPageController.js:117
+#: src/prefs/controllers/OthersPageController.js:125
 msgid "Cached content will be downloaded again when needed."
 msgstr ""
 "Der zwischengespeicherte Inhalt wird bei Bedarf erneut heruntergeladen."
 
-#: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:749
+#: src/prefs/controllers/OthersPageController.js:126 assets/ui/prefs.ui:749
 msgid "Clear cache"
 msgstr "Zwischenspeicher leeren"
 
-#: src/prefs/groups/OthersPageController.js:168
+#: src/prefs/controllers/OthersPageController.js:176
 msgid "Cache cleared"
 msgstr "Zwischenspeicher geleert"
 
-#: src/prefs/groups/OthersPageController.js:181
+#: src/prefs/controllers/OthersPageController.js:189
 msgid "Could not clear the cache"
 msgstr "Zwischenspeicher konnte nicht geleert werden"
 
-#: src/prefs/groups/OthersPageController.js:190
+#: src/prefs/controllers/OthersPageController.js:199
 #, javascript-format
-msgid "%d cover — %s"
-msgid_plural "%d covers — %s"
-msgstr[0] "%d Cover — %s"
-msgstr[1] "%d Cover — %s"
+msgid "%d cached image — %s"
+msgid_plural "%d cached images — %s"
+msgstr[0] "%d zwischengespeichertes Bild — %s"
+msgstr[1] "%d zwischengespeicherte Bilder — %s"
 
-#: src/prefs/widgets/BlockedAppsGroup.js:102
-msgid "No apps are blocked"
-msgstr "Keine Apps sind blockiert"
+#: src/prefs/controllers/TrackInformationContentController.js:58
+msgid "by"
+msgstr "von"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:44
+#: src/prefs/widgets/BlockedAppChooserDialog.js:46
 msgid "Select an app to block"
 msgstr "App zum Blockieren auswählen"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:69
-#: src/prefs/widgets/BlockedAppChooserDialog.js:85
+#: src/prefs/widgets/BlockedAppChooserDialog.js:71
+#: src/prefs/widgets/BlockedAppChooserDialog.js:87
 msgid "Search apps"
 msgstr "Anwendungen suchen"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:72
+#: src/prefs/widgets/BlockedAppChooserDialog.js:74
 msgid "Select"
 msgstr "Auswählen"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:105
+#: src/prefs/widgets/BlockedAppChooserDialog.js:107
 msgid "No apps found"
 msgstr "Keine Anwendungen gefunden"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:23
+#: src/prefs/widgets/BlockedAppsGroup.js:105
+msgid "No apps are blocked"
+msgstr "Keine Apps sind blockiert"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:27
 msgid "Title"
 msgstr "Titel"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:24
+#: src/prefs/widgets/TrackInformationContentRow.js:28
 msgid "Artist"
 msgstr "Interpret"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:25
+#: src/prefs/widgets/TrackInformationContentRow.js:29
 msgid "Album"
 msgstr "Album"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:26
+#: src/prefs/widgets/TrackInformationContentRow.js:30
 msgid "Album artist"
 msgstr "Albuminterpret"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:27
+#: src/prefs/widgets/TrackInformationContentRow.js:31
 msgid "Genre"
 msgstr "Genre"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:28
+#: src/prefs/widgets/TrackInformationContentRow.js:32
 msgid "Composer"
 msgstr "Komponist"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:29
+#: src/prefs/widgets/TrackInformationContentRow.js:33
 msgid "Year"
 msgstr "Jahr"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:30
+#: src/prefs/widgets/TrackInformationContentRow.js:34
 msgid "Disc"
 msgstr "CD"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:31
+#: src/prefs/widgets/TrackInformationContentRow.js:35
 msgid "Track"
 msgstr "Titel"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:79
+#: src/prefs/widgets/TrackInformationContentRow.js:83
 msgid "No track information fields added"
 msgstr "Keine Felder für Titelinformationen hinzugefügt"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:99
+#: src/prefs/widgets/TrackInformationContentRow.js:103
 msgid "Custom text"
 msgstr "Benutzerdefinierter Text"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:123
+#: src/prefs/widgets/TrackInformationContentRow.js:127
 msgid "Remove"
 msgstr "Entfernen"
 
-#: src/shell/ui/popup/PopupAppSelectorList.js:218
-#: src/shell/ui/popup/PopupAppSelectorButton.js:85
+#: src/shell/ui/popup/PopupAppSelectorButton.js:87
+#: src/shell/ui/popup/PopupAppSelectorList.js:219
 msgid "Unknown app"
 msgstr "Unbekannte App"
 
-#: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
-msgstr "Elementreihenfolge"
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked apps"
+msgstr "Blockierte Apps"
 
-#: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
-msgstr ""
-"Elemente innerhalb der Schaltfläche der oberen Leiste per Ziehen neu anordnen"
+#: assets/ui/blocked-apps.ui:7
+msgid "Blocked apps are ignored and hidden by the extension"
+msgstr "Blockierte Apps werden von der Erweiterung ignoriert und ausgeblendet"
 
-#: assets/ui/top-bar-element-order.ui:16 assets/ui/prefs.ui:382
-msgid "App icon"
-msgstr "App-Symbol"
-
-#: assets/ui/top-bar-element-order.ui:27 assets/ui/prefs.ui:59
-#: assets/ui/prefs.ui:279
-msgid "Track information"
-msgstr "Titelinformationen"
-
-#: assets/ui/top-bar-element-order.ui:38 assets/ui/prefs.ui:214
-msgid "Visualizer"
-msgstr "Visualisierer"
-
-#: assets/ui/top-bar-element-order.ui:49 assets/ui/prefs.ui:157
-msgid "Playback controls"
-msgstr "Wiedergabesteuerung"
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Hinzufügen"
 
 #: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
@@ -359,6 +344,11 @@ msgstr "Eckenradius"
 #: assets/ui/prefs.ui:43
 msgid "0 disables rounded corners"
 msgstr "0 deaktiviert abgerundete Ecken"
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track information"
+msgstr "Titelinformationen"
 
 #: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
 msgid "Show track information"
@@ -420,9 +410,17 @@ msgstr "Vollfarbiges Symbol der Medien-App verwenden"
 msgid "Top bar"
 msgstr "Obere Leiste"
 
+#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
+msgid "Playback controls"
+msgstr "Wiedergabesteuerung"
+
 #: assets/ui/prefs.ui:158
 msgid "Show playback controls"
 msgstr "Wiedergabesteuerung anzeigen"
+
+#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr "Visualisierer"
 
 #: assets/ui/prefs.ui:215
 msgid "Show the animated playback indicator"
@@ -473,6 +471,10 @@ msgstr "Breite sperren"
 #: assets/ui/prefs.ui:299
 msgid "Keep the configured width for short text"
 msgstr "Die konfigurierte Breite beibehalten, wenn der Inhalt kürzer ist"
+
+#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
+msgid "App icon"
+msgstr "App-Symbol"
 
 #: assets/ui/prefs.ui:383
 msgid "Show the app icon"
@@ -604,12 +606,14 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Festlegen, wie MediaShell in GNOME integriert wird"
 
 #: assets/ui/prefs.ui:732
-msgid "Hide media controls"
-msgstr "Mediensteuerung ausblenden"
+msgid "Hide GNOME media controls"
+msgstr "GNOME-Mediensteuerung ausblenden"
 
 #: assets/ui/prefs.ui:733
-msgid "Remove the default media controls from the notification list"
-msgstr "Standard-Mediensteuerung aus der Benachrichtigungsliste ausblenden"
+msgid "Remove GNOME's default media controls from the notification list"
+msgstr ""
+"GNOMEs standardmäßige Mediensteuerung aus der Benachrichtigungsliste "
+"entfernen"
 
 #: assets/ui/prefs.ui:740
 msgid "Cache"
@@ -635,6 +639,15 @@ msgstr "Erweiterungseinstellungen"
 msgid "None"
 msgstr "Keine"
 
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element order"
+msgstr "Elementreihenfolge"
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr ""
+"Elemente innerhalb der Schaltfläche der oberen Leiste per Ziehen neu anordnen"
+
 #: assets/ui/track-information-content-row.ui:10
 msgid "Missing information"
 msgstr "Fehlende Informationen"
@@ -658,15 +671,3 @@ msgstr "Feld hinzufügen"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Text hinzufügen"
-
-#: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
-msgstr "Blockierte Apps"
-
-#: assets/ui/blocked-apps.ui:7
-msgid "Blocked apps are ignored and hidden by the extension"
-msgstr "Blockierte Apps werden von der Erweiterung ignoriert und ausgeblendet"
-
-#: assets/ui/blocked-apps.ui:17
-msgid "Add"
-msgstr "Hinzufügen"

@@ -4,7 +4,7 @@
  *
  * Builds tolerant text indexes for application and preference search.
  *
- * InstalledAppCatalog uses these helpers to compare names, desktop IDs, and
+ * installedAppCatalog uses these helpers to compare names, desktop IDs, and
  * aliases without being sensitive to accents, punctuation, or case. Pure helpers
  * keep search behavior testable outside GTK and GNOME Shell.
  */

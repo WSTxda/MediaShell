@@ -4,7 +4,7 @@
  *
  * Creates and updates Shell icons using MediaShell's common St.Icon conventions.
  *
- * Top-bar and popup playback controls use this utility so icon creation, themed
+ * Top bar and popup playback controls use this utility so icon creation, themed
  * fallback handling, and GIcon updates remain consistent. Individual control renderers can update icons without constructing raw St.Icon
  * objects themselves.
  */

@@ -2,25 +2,26 @@
  * @file PopupAppSelectorButton.js
  * @module shell.ui.popup.PopupAppSelectorButton
  *
- * Renders one selectable media-app row inside the popup app selector.
+ * Renders the popup app-selector trigger for the active media app.
  *
- * PopupAppSelectorList creates one button per visible app and supplies the icon,
- * title, active state, and pin state. The button owns only its actor structure;
- * selection and pinning are handled by the list/controller above it.
+ * The trigger displays the active media app and opens PopupAppSelectorList when
+ * multiple media apps are available. It owns its actors and click action; row
+ * selection and pinning remain the list/controller responsibility.
  */
 
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import MediaAppResolver, {
-  FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+import { IconNames } from "../../../shared/constants/icons.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
+import MediaAppResolver from "../../services/MediaAppResolver.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { installPrimaryClickAction } from "../../utils/pointerActions.js";
+import { styleClassNames } from "../../utils/styleClasses.js";
 
 /**
- * Renders one selectable media-app row inside the popup app selector.
+ * Renders the popup app-selector trigger for the active media app.
  */
 export default class PopupAppSelectorButton {
   constructor(popupContent, onActivate) {
@@ -57,22 +58,23 @@ export default class PopupAppSelectorButton {
     this.ensureActors();
 
     const hasMultipleMediaApps =
-      this.extensionController.getMediaApps().length > 1;
+      this.extensionController.getAvailableMediaApps().length > 1;
     if (hasMultipleMediaApps !== this.hasMultipleMediaApps) {
       this.hasMultipleMediaApps = hasMultipleMediaApps;
       this.button.reactive = hasMultipleMediaApps;
       this.button.trackHover = hasMultipleMediaApps;
       this.button.canFocus = hasMultipleMediaApps;
       this.expandIcon.visible = hasMultipleMediaApps;
-      if (hasMultipleMediaApps) this.button.add_style_class_name("button");
-      else this.button.remove_style_class_name("button");
+      if (hasMultipleMediaApps)
+        this.button.add_style_class_name(StyleClasses.BUTTON);
+      else this.button.remove_style_class_name(StyleClasses.BUTTON);
     }
 
     const identity = this.mediaApp.identity;
     const desktopEntry = this.mediaApp.desktopEntry;
     const coloredClass = this.extensionController.popupAppIconUseColor
-      ? "colored-icon"
-      : "symbolic-icon";
+      ? StyleClasses.COLORED_ICON
+      : StyleClasses.SYMBOLIC_ICON;
     const renderKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;
     if (renderKey !== this.renderKey) {
       const app = this.mediaAppResolver.resolveMediaApp(
@@ -87,10 +89,14 @@ export default class PopupAppSelectorButton {
       setGIcon(
         this.icon,
         this.mediaAppResolver.getMediaAppIcon(app),
-        FALLBACK_MEDIA_APP_ICON_NAME,
+        IconNames.MEDIA,
       );
       this.icon.set_style_class_name(
-        `popup-menu-icon mediashell-popup-app-selector-icon ${coloredClass}`,
+        styleClassNames(
+          StyleClasses.POPUP_MENU_ICON,
+          StyleClasses.POPUP_APP_SELECTOR_TRIGGER_ICON,
+          coloredClass,
+        ),
       );
       this.renderKey =
         app && this.mediaAppResolver.hasResolvedMediaAppIcon(app)
@@ -108,29 +114,38 @@ export default class PopupAppSelectorButton {
 
     this.container = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-apps",
+      styleClass: StyleClasses.POPUP_APP_SELECTOR_CONTAINER,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.button = new St.BoxLayout({
-      styleClass: "quick-menu-toggle mediashell-popup-app-selector",
+      styleClass: styleClassNames(
+        StyleClasses.QUICK_MENU_TOGGLE,
+        StyleClasses.POPUP_APP_SELECTOR_TRIGGER,
+      ),
       xAlign: Clutter.ActorAlign.CENTER,
       reactive: true,
       trackHover: true,
     });
     this.icon = createIcon({
-      styleClass:
-        "popup-menu-icon mediashell-popup-app-selector-icon symbolic-icon",
+      styleClass: styleClassNames(
+        StyleClasses.POPUP_MENU_ICON,
+        StyleClasses.POPUP_APP_SELECTOR_TRIGGER_ICON,
+        StyleClasses.SYMBOLIC_ICON,
+      ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.label = new St.Label({
-      styleClass: "mediashell-popup-app-label",
+      styleClass: StyleClasses.POPUP_APP_SELECTOR_TRIGGER_LABEL,
       yAlign: Clutter.ActorAlign.CENTER,
       xAlign: Clutter.ActorAlign.CENTER,
       xExpand: true,
     });
     this.expandIcon = createIcon({
       iconName: "go-next-symbolic",
-      styleClass: "popup-menu-icon mediashell-popup-app-expand-icon",
+      styleClass: styleClassNames(
+        StyleClasses.POPUP_MENU_ICON,
+        StyleClasses.POPUP_APP_SELECTOR_TRIGGER_EXPAND_ICON,
+      ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.installClickAction();
@@ -144,7 +159,7 @@ export default class PopupAppSelectorButton {
     this.disconnectButtonClickAction = installPrimaryClickAction(
       this.button,
       () => this.onActivate?.(),
-      () => this.extensionController.getMediaApps().length > 1,
+      () => this.extensionController.getAvailableMediaApps().length > 1,
     );
   }
 

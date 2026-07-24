@@ -19,6 +19,7 @@ import {
   MPRIS_OBJECT_PATH,
   MPRIS_PLAYER_IFACE_NAME,
 } from "../../shared/constants/dbus.js";
+import { ResourceUris } from "../../shared/constants/resources.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
 
@@ -30,10 +31,6 @@ Gio._promisify(
 Gio._promisify(Gio.DBusProxy, "new", "new_finish");
 
 const logger = createLogger("MprisProxyFactory");
-const MPRIS_INTROSPECTION_XML_URI =
-  "resource:///org/gnome/shell/extensions/mediashell/dbus/mprisNode.xml";
-const DBUS_WATCH_INTROSPECTION_XML_URI =
-  "resource:///org/gnome/shell/extensions/mediashell/dbus/watchNode.xml";
 async function readXmlResource(uri, cancellable) {
   const [bytes] =
     await Gio.File.new_for_uri(uri).load_contents_async(cancellable);
@@ -42,8 +39,8 @@ async function readXmlResource(uri, cancellable) {
 
 async function loadMprisIntrospectionData(cancellable) {
   const [mprisIntrospectionXml, dbusWatchIntrospectionXml] = await Promise.all([
-    readXmlResource(MPRIS_INTROSPECTION_XML_URI, cancellable),
-    readXmlResource(DBUS_WATCH_INTROSPECTION_XML_URI, cancellable),
+    readXmlResource(ResourceUris.MPRIS_INTROSPECTION, cancellable),
+    readXmlResource(ResourceUris.DBUS_WATCH_INTROSPECTION, cancellable),
   ]);
   const mprisNodeInfo = Gio.DBusNodeInfo.new_for_xml(mprisIntrospectionXml);
   const dbusWatchNodeInfo = Gio.DBusNodeInfo.new_for_xml(

@@ -15,6 +15,9 @@ import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { StyleClasses } from "../constants/styleClasses.js";
+
 /**
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
  */
@@ -40,7 +43,7 @@ class ScrollingLabel extends St.ScrollView {
     super({
       hscrollbarPolicy: St.PolicyType.NEVER,
       vscrollbarPolicy: St.PolicyType.NEVER,
-      styleClass: "mediashell-scrolling-label",
+      styleClass: StyleClasses.SCROLLING_LABEL,
     });
     const defaultParams = {
       direction: Clutter.TimelineDirection.FORWARD,
@@ -76,6 +79,7 @@ class ScrollingLabel extends St.ScrollView {
       this.handleMappedLifecycleChange.bind(this),
     );
     this.scrollCompletedSignalId = null;
+    this.initializationSourceId = null;
     this.initialPauseSourceId = null;
     this.cyclePauseSourceId = null;
     this.adjustmentInitializationSourceId = null;
@@ -165,6 +169,7 @@ class ScrollingLabel extends St.ScrollView {
     );
     this.label.text = `${originalText} `;
     this.label.clutterText.ellipsize = Pango.EllipsizeMode.NONE;
+    this.clearAdjustmentInitializationSource();
     this.adjustmentInitializationSourceId = GLib.idle_add(
       GLib.PRIORITY_DEFAULT_IDLE,
       () => {
@@ -197,6 +202,30 @@ class ScrollingLabel extends St.ScrollView {
     this.createScrollAnimation(adjustment, originalText);
   }
 
+  clearInitializationSource() {
+    if (this.initializationSourceId === null) return;
+    GLib.Source.remove(this.initializationSourceId);
+    this.initializationSourceId = null;
+  }
+
+  clearAdjustmentInitializationSource() {
+    if (this.adjustmentInitializationSourceId === null) return;
+    GLib.Source.remove(this.adjustmentInitializationSourceId);
+    this.adjustmentInitializationSourceId = null;
+  }
+
+  clearInitialPauseSource() {
+    if (this.initialPauseSourceId === null) return;
+    GLib.Source.remove(this.initialPauseSourceId);
+    this.initialPauseSourceId = null;
+  }
+
+  clearCyclePauseSource() {
+    if (this.cyclePauseSourceId === null) return;
+    GLib.Source.remove(this.cyclePauseSourceId);
+    this.cyclePauseSourceId = null;
+  }
+
   createScrollAnimation(adjustment, originalText) {
     if (this.animationMappedSignalId !== null) {
       this.disconnect(this.animationMappedSignalId);
@@ -212,19 +241,9 @@ class ScrollingLabel extends St.ScrollView {
       adjustment.remove_transition("scroll");
       this.scrollTransition = null;
     }
-    if (this.adjustmentInitializationSourceId !== null) {
-      GLib.Source.remove(this.adjustmentInitializationSourceId);
-      this.adjustmentInitializationSourceId = null;
-    }
-
-    if (this.initialPauseSourceId !== null) {
-      GLib.Source.remove(this.initialPauseSourceId);
-      this.initialPauseSourceId = null;
-    }
-    if (this.cyclePauseSourceId !== null) {
-      GLib.Source.remove(this.cyclePauseSourceId);
-      this.cyclePauseSourceId = null;
-    }
+    this.clearAdjustmentInitializationSource();
+    this.clearInitialPauseSource();
+    this.clearCyclePauseSource();
 
     // Keep explicit GObject.Value wrappers so Clutter.Interval receives typed values
     const initialValue = new GObject.Value();
@@ -270,9 +289,7 @@ class ScrollingLabel extends St.ScrollView {
         this.resetScrollPosition(adjustment);
 
         if (this.scrollPauseMilliseconds > 0) {
-          if (this.cyclePauseSourceId !== null) {
-            GLib.Source.remove(this.cyclePauseSourceId);
-          }
+          this.clearCyclePauseSource();
           this.cyclePauseSourceId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             this.scrollPauseMilliseconds,
@@ -403,25 +420,10 @@ class ScrollingLabel extends St.ScrollView {
       this.lifecycleMappedSignalId = null;
     }
 
-    if (this.initializationSourceId !== null) {
-      GLib.Source.remove(this.initializationSourceId);
-      this.initializationSourceId = null;
-    }
-
-    if (this.adjustmentInitializationSourceId !== null) {
-      GLib.Source.remove(this.adjustmentInitializationSourceId);
-      this.adjustmentInitializationSourceId = null;
-    }
-
-    if (this.initialPauseSourceId !== null) {
-      GLib.Source.remove(this.initialPauseSourceId);
-      this.initialPauseSourceId = null;
-    }
-
-    if (this.cyclePauseSourceId !== null) {
-      GLib.Source.remove(this.cyclePauseSourceId);
-      this.cyclePauseSourceId = null;
-    }
+    this.clearInitializationSource();
+    this.clearAdjustmentInitializationSource();
+    this.clearInitialPauseSource();
+    this.clearCyclePauseSource();
 
     super.destroy();
   }
@@ -429,7 +431,7 @@ class ScrollingLabel extends St.ScrollView {
 
 const RegisteredScrollingLabel = GObject.registerClass(
   {
-    GTypeName: "MediaShellScrollingLabel",
+    GTypeName: GTypeNames.SCROLLING_LABEL,
   },
   ScrollingLabel,
 );

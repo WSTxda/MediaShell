@@ -15,31 +15,33 @@ import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
+import { GTypeNames } from "../../shared/constants/gtypes.js";
 import {
   buildSearchIndex,
   matchesSearchTokens,
   tokenizeSearchQuery,
 } from "../../shared/utils/search.js";
-import { gettext as _ } from "../PreferencesTranslations.js";
+import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,
   LARGE_DIALOG_WIDTH,
   SEARCH_DELAY_MS,
 } from "../constants/layout.js";
+import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import {
   getAppIcon,
   getAppId,
   getAppName,
   getAppSearchAliases,
   listInstalledApps,
-} from "../utils/InstalledAppCatalog.js";
+} from "../services/installedAppCatalog.js";
 
 /**
  * Presents a searchable dialog for selecting installed apps to block.
  */
 class BlockedAppChooserDialog extends Adw.Dialog {
   _init(params = {}) {
-    const { excludedAppIds = [], ...dialogParams } = params;
+    const { blockedAppIds = [], ...dialogParams } = params;
     super._init({
       title: _("Select an app to block"),
       content_width: LARGE_DIALOG_WIDTH,
@@ -47,7 +49,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       ...dialogParams,
     });
 
-    this.excludedAppIds = new Set(excludedAppIds);
+    this.blockedAppIds = new Set(blockedAppIds);
     this.selectionResolver = null;
     this.selectionPromise = null;
     this.appInfoMonitor = Gio.AppInfoMonitor.get();
@@ -72,7 +74,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       label: _("Select"),
       sensitive: false,
     });
-    this.selectButton.add_css_class("suggested-action");
+    this.selectButton.add_css_class(PreferencesStyleClasses.SUGGESTED_ACTION);
 
     const endActions = new Gtk.Box({ spacing: 6 });
     endActions.append(this.searchButton);
@@ -100,13 +102,13 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       margin_end: 12,
       margin_bottom: 12,
     });
-    this.listBox.add_css_class("boxed-list");
+    this.listBox.add_css_class(PreferencesStyleClasses.BOXED_LIST);
     const emptyLabel = new Gtk.Label({
       label: _("No apps found"),
       margin_top: 24,
       margin_bottom: 24,
     });
-    emptyLabel.add_css_class("dim-label");
+    emptyLabel.add_css_class(PreferencesStyleClasses.DIM_LABEL);
     this.listBox.set_placeholder(emptyLabel);
     this.listBox.set_filter_func((row) => this.matchesSearch(row));
 
@@ -164,7 +166,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
     // endpoints can legitimately reference NoDisplay or desktop-filtered
     // launchers, and those apps still need to be blockable.
     const installedApps = listInstalledApps()
-      .filter((app) => !this.excludedAppIds.has(getAppId(app)))
+      .filter((app) => !this.blockedAppIds.has(getAppId(app)))
       .sort((first, second) =>
         getAppName(first).localeCompare(getAppName(second)),
       );
@@ -292,6 +294,6 @@ class BlockedAppChooserDialog extends Adw.Dialog {
 }
 
 export default GObject.registerClass(
-  { GTypeName: "MediaShellBlockedAppChooserDialog" },
+  { GTypeName: GTypeNames.BLOCKED_APP_CHOOSER_DIALOG },
   BlockedAppChooserDialog,
 );

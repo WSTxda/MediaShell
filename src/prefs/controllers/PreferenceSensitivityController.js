@@ -1,6 +1,6 @@
 /**
  * @file PreferenceSensitivityController.js
- * @module prefs.groups.PreferenceSensitivityController
+ * @module prefs.controllers.PreferenceSensitivityController
  *
  * Keeps dependent preferences sensitive only when their parent toggles allow them.
  *
@@ -13,7 +13,7 @@ import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
+} from "../utils/signalConnections.js";
 
 const logger = createLogger("PreferenceSensitivityController");
 

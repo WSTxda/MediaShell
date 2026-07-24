@@ -11,8 +11,9 @@
 
 import { extractChromiumPwaAppIds } from "./browserIdentity.js";
 
+import { MPRIS_PREFIX } from "../constants/dbus.js";
+
 const DESKTOP_FILE_SUFFIX = ".desktop";
-const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 const EPHEMERAL_BUS_SEGMENT_PATTERN =
   /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;
 
@@ -76,9 +77,9 @@ function addBrowserIdentityHints(hints, ...values) {
 
 function addBusNameHints(hints, busName) {
   const normalizedBusName = normalizeInput(busName);
-  if (!normalizedBusName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
+  if (!normalizedBusName.startsWith(MPRIS_PREFIX)) return;
 
-  const busSuffix = normalizedBusName.slice(MPRIS_BUS_NAME_PREFIX.length);
+  const busSuffix = normalizedBusName.slice(MPRIS_PREFIX.length);
   addLookupHint(hints, busSuffix);
 
   const segments = busSuffix.split(".").filter(Boolean);

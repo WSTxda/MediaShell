@@ -1,6 +1,6 @@
 /**
  * @file InteractionsPageController.js
- * @module prefs.groups.InteractionsPageController
+ * @module prefs.controllers.InteractionsPageController
  *
  * Drives the interactions shortcut editor page in the preferences window.
  *
@@ -20,24 +20,24 @@ import {
   KEYBOARD_SHORTCUT_KEYS,
 } from "../../shared/constants/inputActions.js";
 import { createLogger } from "../../shared/utils/log.js";
-import { gettext as _ } from "../PreferencesTranslations.js";
+import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,
   LARGE_DIALOG_WIDTH,
   SHORTCUT_DIALOG_WIDTH,
   TOAST_TIMEOUT_SECONDS,
 } from "../constants/layout.js";
+import { SHORTCUT_SECTION_ORDER } from "../constants/input.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
+} from "../utils/signalConnections.js";
 import {
   isValidAccelerator,
   isValidBinding,
-} from "../utils/ShortcutValidation.js";
+} from "../utils/shortcutValidation.js";
 
 const logger = createLogger("InteractionsPageController");
-const SECTION_ORDER = Object.freeze(["playback", "audio", "interface", "apps"]);
 
 function createActionCopy() {
   return Object.freeze({
@@ -65,7 +65,10 @@ function createActionCopy() {
       title: _("Preferences"),
       section: "interface",
     }),
-    "raise-app": Object.freeze({ title: _("Open app"), section: "apps" }),
+    "raise-app": Object.freeze({
+      title: _("Open app"),
+      section: "apps",
+    }),
     "quit-app": Object.freeze({ title: _("Quit app"), section: "apps" }),
     "switch-app": Object.freeze({ title: _("Switch app"), section: "apps" }),
   });
@@ -291,7 +294,7 @@ export default class InteractionsPageController {
     toolbarView.add_top_bar(new Adw.HeaderBar());
     const page = new Adw.PreferencesPage();
 
-    for (const sectionId of SECTION_ORDER) {
+    for (const sectionId of SHORTCUT_SECTION_ORDER) {
       const group = new Adw.PreferencesGroup({
         title: this.sectionCopy[sectionId],
       });

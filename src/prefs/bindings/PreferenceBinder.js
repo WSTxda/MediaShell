@@ -2,14 +2,14 @@
  * @file PreferenceBinder.js
  * @module prefs.bindings.PreferenceBinder
  *
- * Binds GSettings keys to preference widgets declared in PreferenceBindings.
+ * Binds GSettings keys to preference widgets declared in preferenceBindings.
  *
  * The binder owns direct Gio.Settings bindings and the custom conversion hooks
  * required by widgets that cannot use a simple property binding. It also tracks
  * owned signal connections so preference teardown disconnects every callback in
  * a deterministic order.
  *
- * @see src/prefs/bindings/PreferenceBindings.js
+ * @see src/prefs/bindings/preferenceBindings.js
  */
 
 import Gio from "gi://Gio";
@@ -18,13 +18,13 @@ import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
-import { PREFERENCE_WIDGET_BINDINGS } from "./PreferenceBindings.js";
+} from "../utils/signalConnections.js";
+import { PREFERENCE_WIDGET_BINDINGS } from "./preferenceBindings.js";
 
 const logger = createLogger("PreferenceBinder");
 
 /**
- * Binds GSettings keys to preference widgets declared in PreferenceBindings.
+ * Binds GSettings keys to preference widgets declared in preferenceBindings.
  */
 export default class PreferenceBinder {
   constructor(settings, builder) {

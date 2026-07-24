@@ -10,7 +10,7 @@
  */
 
 import { createLogger } from "../../shared/utils/log.js";
-import { SETTINGS_SPEC } from "./SettingsSpec.js";
+import { SETTINGS_SPEC } from "./settingsSpec.js";
 
 const logger = createLogger("SettingsStore");
 

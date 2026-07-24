@@ -1,6 +1,6 @@
 /**
  * @file TopBarLayoutController.js
- * @module prefs.groups.TopBarLayoutController
+ * @module prefs.controllers.TopBarLayoutController
  *
  * Coordinates custom preference widgets that edit top bar layout.
  *
@@ -9,16 +9,18 @@
  * controller because both popup and top bar use the same configurable editor.
  */
 
-import { TOP_BAR_ELEMENT_ORDER_DEFAULT } from "../../shared/constants/settings.js";
+import {
+  SettingsKeys,
+  TOP_BAR_ELEMENT_ORDER_DEFAULT,
+} from "../../shared/constants/settings.js";
 import { normalizeOrderedValues } from "../../shared/utils/format.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
+} from "../utils/signalConnections.js";
 
 const logger = createLogger("TopBarLayoutController");
-const TOP_BAR_ELEMENT_ORDER_KEY = "top-bar-element-order";
 
 function arraysEqual(first, second) {
   return (
@@ -51,22 +53,25 @@ export default class TopBarLayoutController {
         if (
           !arraysEqual(
             elementOrder,
-            this.settings.get_strv(TOP_BAR_ELEMENT_ORDER_KEY),
+            this.settings.get_strv(SettingsKeys.TOP_BAR_ELEMENT_ORDER),
           )
         )
-          this.settings.set_strv(TOP_BAR_ELEMENT_ORDER_KEY, elementOrder);
+          this.settings.set_strv(
+            SettingsKeys.TOP_BAR_ELEMENT_ORDER,
+            elementOrder,
+          );
       },
     );
     this.connectOwnedSignal(
       this.settings,
-      `changed::${TOP_BAR_ELEMENT_ORDER_KEY}`,
+      `changed::${SettingsKeys.TOP_BAR_ELEMENT_ORDER}`,
       () => this.syncElementOrderFromSettings(),
     );
   }
 
   syncElementOrderFromSettings() {
     const elementOrder = normalizeOrderedValues(
-      this.settings.get_strv(TOP_BAR_ELEMENT_ORDER_KEY),
+      this.settings.get_strv(SettingsKeys.TOP_BAR_ELEMENT_ORDER),
       TOP_BAR_ELEMENT_ORDER_DEFAULT,
     );
     if (!arraysEqual(elementOrder, this.topBarElementOrderGroup.elementOrder))

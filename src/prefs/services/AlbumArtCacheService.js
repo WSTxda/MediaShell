@@ -1,6 +1,6 @@
 /**
  * @file AlbumArtCacheService.js
- * @module prefs.utils.AlbumArtCacheService
+ * @module prefs.services.AlbumArtCacheService
  *
  * Provides preferences-side maintenance for the album-art cache directory.
  *
@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { ALBUM_ART_CACHE_DIRECTORY_NAME } from "../../shared/constants/settings.js";
+import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { createLogger } from "../../shared/utils/log.js";
 
 Gio._promisify(Gio.File.prototype, "delete_async", "delete_finish");
@@ -30,6 +30,20 @@ Gio._promisify(Gio.FileEnumerator.prototype, "close_async", "close_finish");
 
 const logger = createLogger("AlbumArtCacheService");
 
+function isFileNotFoundError(error) {
+  return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND));
+}
+
+async function deleteCacheFile(file, cancellable) {
+  try {
+    await file.delete_async(GLib.PRIORITY_DEFAULT, cancellable);
+  } catch (error) {
+    // The Shell process may replace or discard a cache entry after the
+    // preferences process enumerates it. The desired result is already met.
+    if (!isFileNotFoundError(error)) throw error;
+  }
+}
+
 /**
  * Provides preferences-side maintenance for the album-art cache directory.
  */
@@ -40,10 +54,7 @@ export default class AlbumArtCacheService {
 
   get albumArtCacheDirectory() {
     return Gio.File.new_for_path(
-      GLib.build_filenamev([
-        GLib.get_user_cache_dir(),
-        ALBUM_ART_CACHE_DIRECTORY_NAME,
-      ]),
+      GLib.build_filenamev([GLib.get_user_cache_dir(), EXTENSION_UUID]),
     );
   }
 
@@ -53,18 +64,18 @@ export default class AlbumArtCacheService {
         this.albumArtCacheOperationCancellable,
       )
     )
-      return { coverCount: 0, totalBytes: 0 };
+      return { cachedImageCount: 0, totalBytes: 0 };
 
-    let coverCount = 0;
+    let cachedImageCount = 0;
     let totalBytes = 0;
     await this.forEachAlbumArtCacheBatch((entries) => {
       for (const { info } of entries) {
         if (info.get_file_type() !== Gio.FileType.REGULAR) continue;
-        coverCount++;
+        cachedImageCount++;
         totalBytes += info.get_size();
       }
     });
-    return { coverCount, totalBytes };
+    return { cachedImageCount, totalBytes };
   }
 
   async clearAlbumArtCache() {
@@ -76,16 +87,14 @@ export default class AlbumArtCacheService {
       return;
 
     await this.forEachAlbumArtCacheBatch(async (entries) => {
-      const results = await Promise.allSettled(
-        entries.map(({ file }) =>
-          file.delete_async(
-            GLib.PRIORITY_DEFAULT,
-            this.albumArtCacheOperationCancellable,
-          ),
+      const cacheFiles = entries.filter(
+        ({ info }) => info.get_file_type() === Gio.FileType.REGULAR,
+      );
+      await Promise.all(
+        cacheFiles.map(({ file }) =>
+          deleteCacheFile(file, this.albumArtCacheOperationCancellable),
         ),
       );
-      const failure = results.find((result) => result.status === "rejected");
-      if (failure) throw failure.reason;
     });
   }
 
@@ -123,7 +132,7 @@ export default class AlbumArtCacheService {
   }
 
   destroy() {
-    // Keep the cancelled object referenced so an operation that resumes after
+    // Keep the canceled object referenced so an operation that resumes after
     // an await cannot silently continue with a null cancellable.
     this.albumArtCacheOperationCancellable.cancel();
   }

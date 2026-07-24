@@ -40,8 +40,8 @@ import {
 import {
   getVisualizerBarLevels,
   normalizeVisualizerSpeed,
-  TOP_BAR_VISUALIZER_BAR_COUNT,
 } from "../src/shared/utils/visualizer.js";
+import { TOP_BAR_VISUALIZER_BAR_COUNT } from "../src/shared/constants/visualizer.js";
 import { VisualizerStyles } from "../src/shared/enums/visualizer.js";
 
 test("platform policy is the exact supported baseline", () => {
@@ -216,7 +216,7 @@ test("visualizer styles produce bounded fixed-size levels", () => {
 });
 
 test("MPRIS values are normalized to specification-safe defaults", async () => {
-  const { MPRIS_NO_TRACK_PATH } =
+  const { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } =
     await import("../src/shared/constants/dbus.js");
   const { MediaAppValidity } = await import("../src/shared/enums/app.js");
   const { LoopStatus, PlaybackStatus } =
@@ -237,17 +237,19 @@ test("MPRIS values are normalized to specification-safe defaults", async () => {
   assert.equal(normalizeLoopStatus("Invalid"), LoopStatus.NONE);
   assert.equal(
     metadataContainsTrack({
-      "mpris:trackid": MPRIS_NO_TRACK_PATH,
-      "xesam:title": "Stale",
+      [MprisMetadataKeys.TRACK_ID]: MPRIS_NO_TRACK_PATH,
+      [MprisMetadataKeys.TITLE]: "Stale",
     }),
     false,
   );
   assert.equal(
-    metadataContainsTrack({ "mpris:trackid": "/org/example/track/1" }),
+    metadataContainsTrack({
+      [MprisMetadataKeys.TRACK_ID]: "/org/example/track/1",
+    }),
     true,
   );
   assert.equal(
-    metadataContainsTrack({ "xesam:title": "Track without id" }),
+    metadataContainsTrack({ [MprisMetadataKeys.TITLE]: "Track without id" }),
     true,
   );
   assert.equal(metadataContainsTrack({}), false);

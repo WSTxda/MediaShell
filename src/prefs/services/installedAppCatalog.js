@@ -1,6 +1,6 @@
 /**
- * @file InstalledAppCatalog.js
- * @module prefs.utils.InstalledAppCatalog
+ * @file installedAppCatalog.js
+ * @module prefs.services.installedAppCatalog
  *
  * Builds the searchable installed-application catalog used by blocked-app preferences.
  *
@@ -15,9 +15,11 @@ import { IconNames } from "../../shared/constants/icons.js";
 import { buildBrowserIdentityAliases } from "../../shared/utils/browserIdentity.js";
 import { createLogger } from "../../shared/utils/log.js";
 
-const logger = createLogger("InstalledAppCatalog");
-const FALLBACK_NAMES = Object.freeze([IconNames.APP, IconNames.MISSING]);
-const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names(FALLBACK_NAMES);
+const logger = createLogger("installedAppCatalog");
+const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names([
+  IconNames.APP,
+  IconNames.MISSING,
+]);
 
 function readAppStringSafely(app, getterName, logKey) {
   try {

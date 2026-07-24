@@ -18,7 +18,6 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
-import { IconNames } from "../../shared/constants/icons.js";
 import { resolveBrowserIdentityCandidate } from "../../shared/utils/browserIdentity.js";
 import { APP_RESOLVER_CACHE_LIMIT } from "../../shared/constants/limits.js";
 import { APP_RESOLVER_MISS_CACHE_TTL_MS } from "../../shared/constants/timing.js";
@@ -32,8 +31,6 @@ import {
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("MediaAppResolver");
-
-export const FALLBACK_MEDIA_APP_ICON_NAME = IconNames.MEDIA;
 
 function createAppCacheKey(identity, desktopEntry, busName) {
   return `${String(desktopEntry ?? "")}\u0000${String(identity ?? "")}\u0000${String(busName ?? "")}`;

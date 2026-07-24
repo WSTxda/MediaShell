@@ -22,7 +22,7 @@ import {
   ALBUM_ART_READ_CHUNK_BYTES,
   ALBUM_ART_REQUEST_TIMEOUT_SECONDS,
 } from "../../shared/constants/limits.js";
-import { ALBUM_ART_CACHE_DIRECTORY_NAME } from "../../shared/constants/settings.js";
+import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
 
@@ -44,7 +44,7 @@ Gio._promisify(Gio.InputStream.prototype, "close_async", "close_finish");
 const logger = createLogger("AlbumArtLoader");
 const albumArtCacheDirectoryPath = GLib.build_filenamev([
   GLib.get_user_cache_dir(),
-  ALBUM_ART_CACHE_DIRECTORY_NAME,
+  EXTENSION_UUID,
 ]);
 
 function createAlbumArtCacheKey(albumArtUri) {

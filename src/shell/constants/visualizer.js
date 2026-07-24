@@ -21,5 +21,8 @@ export const VISUALIZER_BAR_HEIGHT = 14;
 /** Base animation timeline duration before the user speed multiplier is applied. */
 export const VISUALIZER_TIMELINE_DURATION_MS = 1000;
 
+/** Minimum time between visualizer redraws, targeting 30 frames per second. */
+export const VISUALIZER_FRAME_INTERVAL_MS = Math.round(1000 / 30);
+
 /** Bar level used when playback is idle but the visualizer remains visible. */
 export const VISUALIZER_IDLE_LEVEL = 0.22;

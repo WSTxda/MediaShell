@@ -20,7 +20,7 @@ import {
 } from "./shared/constants/platform.js";
 import { createLogger } from "./shared/utils/log.js";
 import PreferencesController from "./prefs/PreferencesController.js";
-import { initializePreferencesTranslations } from "./prefs/PreferencesTranslations.js";
+import { initializePreferencesTranslations } from "./prefs/translations.js";
 
 const logger = createLogger("MediaShellPreferences");
 

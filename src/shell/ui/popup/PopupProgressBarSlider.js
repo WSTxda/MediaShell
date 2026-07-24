@@ -15,11 +15,13 @@ import St from "gi://St";
 
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
+import { GTypeNames } from "../../../shared/constants/gtypes.js";
 import { formatDurationMilliseconds } from "../../../shared/utils/format.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 
 /**
  * Provides the popup seek slider and animated progress bar value.
@@ -28,7 +30,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
   constructor() {
     super({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-progress-bar",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR,
     });
     this.playbackRate = 1;
     this.shouldResumeAfterDrag = false;
@@ -37,16 +39,16 @@ class PopupProgressBarSlider extends St.BoxLayout {
 
     this.slider = new Slider.Slider(0);
     this.timeLabelsBox = new St.BoxLayout({
-      styleClass: "mediashell-popup-progress-bar-time",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME,
     });
     this.elapsedLabel = new St.Label({
-      styleClass: "mediashell-popup-progress-bar-time-label",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.START,
     });
     this.trackDurationLabel = new St.Label({
-      styleClass: "mediashell-popup-progress-bar-time-label",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.END,
@@ -248,7 +250,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellPopupProgressBarSlider",
+    GTypeName: GTypeNames.POPUP_PROGRESS_BAR_SLIDER,
     Signals: {
       "seek-requested": {
         param_types: [GObject.TYPE_INT64],

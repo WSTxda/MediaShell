@@ -12,11 +12,15 @@
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
-import Graphene from "gi://Graphene";
 import Gtk from "gi://Gtk";
-import { gettext as _ } from "../PreferencesTranslations.js";
+import { gettext as _ } from "../translations.js";
 
+import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { ResourceUris } from "../../shared/constants/resources.js";
 import { TrackInformationFields } from "../../shared/enums/trackInformation.js";
+import { moveArrayItem } from "../../shared/utils/collections.js";
+import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+import { createDragTexture } from "../utils/dragAndDrop.js";
 
 function createTranslatedFields() {
   return Object.freeze({
@@ -122,8 +126,8 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
       margin_bottom: 10,
       tooltip_text: _("Remove"),
     });
-    removeButton.add_css_class("flat");
-    removeButton.add_css_class("circular");
+    removeButton.add_css_class(PreferencesStyleClasses.FLAT);
+    removeButton.add_css_class(PreferencesStyleClasses.CIRCULAR);
     removeButton.connect("clicked", () => {
       this.contentItems.splice(row.contentIndex, 1);
       this.notify("content-items");
@@ -139,7 +143,7 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
       content: Gdk.ContentProvider.new_for_value(value),
     });
     dragSource.connect("prepare", (source, x, y) => {
-      source.set_icon(this.snapshotRow(source.widget), x, y);
+      source.set_icon(createDragTexture(source.widget), x, y);
       return source.content;
     });
     row.add_controller(dragSource);
@@ -155,19 +159,8 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
   }
 
   moveContentItem(sourceIndex, targetIndex) {
-    if (
-      !Number.isInteger(sourceIndex) ||
-      !Number.isInteger(targetIndex) ||
-      sourceIndex < 0 ||
-      targetIndex < 0 ||
-      sourceIndex >= this.contentItems.length ||
-      targetIndex >= this.contentItems.length ||
-      sourceIndex === targetIndex
-    )
+    if (!moveArrayItem(this.contentItems, sourceIndex, targetIndex))
       return false;
-
-    const [sourceValue] = this.contentItems.splice(sourceIndex, 1);
-    this.contentItems.splice(targetIndex, 0, sourceValue);
     this.notify("content-items");
     this.render();
     return true;
@@ -189,27 +182,12 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
       this.notify("content-items");
     });
   }
-
-  snapshotRow(row) {
-    const width = row.get_allocated_width();
-    const height = row.get_allocated_height();
-    const paintable = new Gtk.WidgetPaintable({ widget: row });
-    const snapshot = new Gtk.Snapshot();
-    paintable.snapshot(snapshot, width, height);
-    const rect = new Graphene.Rect();
-    rect.init(0, 0, width, height);
-    return row
-      .get_native()
-      .get_renderer()
-      .render_texture(snapshot.to_node(), rect);
-  }
 }
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellTrackInformationContentRow",
-    Template:
-      "resource:///org/gnome/shell/extensions/mediashell/ui/track-information-content-row.ui",
+    GTypeName: GTypeNames.TRACK_INFORMATION_CONTENT_ROW,
+    Template: ResourceUris.TRACK_INFORMATION_CONTENT_ROW_UI,
     InternalChildren: ["btn-add-field", "btn-add-text"],
     Properties: {
       "content-items": GObject.ParamSpec.jsobject(

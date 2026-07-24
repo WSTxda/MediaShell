@@ -13,9 +13,9 @@ import test from "node:test";
 
 import { PlaybackStatus } from "../src/shared/enums/playback.js";
 import {
-  selectActiveMediaApp,
-  selectNextMediaApp,
-} from "../src/shell/mpris/MediaAppSelectionPolicy.js";
+  chooseActiveMediaApp,
+  chooseNextMediaApp,
+} from "../src/shell/mpris/mediaAppSelectionPolicy.js";
 
 function mediaApp(
   busName,
@@ -26,11 +26,13 @@ function mediaApp(
     busName,
     playbackStatus,
     isMediaAppInvalid: invalid,
-    isAppPinned: () => pinned,
+    get isPinned() {
+      return pinned;
+    },
   };
 }
 
-test("active media app priority is pinned, playing, current, paused, then first valid", () => {
+test("active media app priority is pinned, playing, previously active, paused, then first valid", () => {
   const stopped = mediaApp("stopped", PlaybackStatus.STOPPED);
   const current = mediaApp("current", PlaybackStatus.STOPPED);
   const paused = mediaApp("paused", PlaybackStatus.PAUSED);
@@ -42,23 +44,23 @@ test("active media app priority is pinned, playing, current, paused, then first 
   });
 
   assert.equal(
-    selectActiveMediaApp(
+    chooseActiveMediaApp(
       [invalidPinned, stopped, current, paused, playing, pinned],
       "current",
     ),
     pinned,
   );
   assert.equal(
-    selectActiveMediaApp([stopped, current, paused, playing], "current"),
+    chooseActiveMediaApp([stopped, current, paused, playing], "current"),
     playing,
   );
   assert.equal(
-    selectActiveMediaApp([stopped, current, paused], "current"),
+    chooseActiveMediaApp([stopped, current, paused], "current"),
     current,
   );
-  assert.equal(selectActiveMediaApp([stopped, paused]), paused);
-  assert.equal(selectActiveMediaApp([stopped]), stopped);
-  assert.equal(selectActiveMediaApp([invalidPinned]), null);
+  assert.equal(chooseActiveMediaApp([stopped, paused]), paused);
+  assert.equal(chooseActiveMediaApp([stopped]), stopped);
+  assert.equal(chooseActiveMediaApp([invalidPinned]), null);
 });
 
 test("next media app cycles deterministically", () => {
@@ -66,8 +68,8 @@ test("next media app cycles deterministically", () => {
   const second = mediaApp("second", PlaybackStatus.STOPPED);
   const third = mediaApp("third", PlaybackStatus.STOPPED);
 
-  assert.equal(selectNextMediaApp([first]), null);
-  assert.equal(selectNextMediaApp([first, second, third], first), second);
-  assert.equal(selectNextMediaApp([first, second, third], third), first);
-  assert.equal(selectNextMediaApp([first, second, third], null), first);
+  assert.equal(chooseNextMediaApp([first]), null);
+  assert.equal(chooseNextMediaApp([first, second, third], first), second);
+  assert.equal(chooseNextMediaApp([first, second, third], third), first);
+  assert.equal(chooseNextMediaApp([first, second, third], null), first);
 });

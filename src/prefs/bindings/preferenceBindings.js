@@ -1,0 +1,259 @@
+/**
+ * @file preferenceBindings.js
+ * @module prefs.bindings.preferenceBindings
+ *
+ * Declares the mapping from preferences widgets to GSettings keys.
+ *
+ * Each entry names a GtkBuilder object ID, the setting key it controls, and the
+ * widget property used for binding. PreferenceBinder consumes this table as the
+ * source of truth for automatic settings synchronization.
+ */
+
+import { SettingsKeys } from "../../shared/constants/settings.js";
+
+const POPUP_BINDINGS = Object.freeze([
+  [SettingsKeys.POPUP_WIDTH, "sp-popup-width", "value"],
+  [SettingsKeys.POPUP_ALBUM_ART_SHOW, "er-popup-album-art", "enable-expansion"],
+  [
+    SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS,
+    "sp-popup-album-art-corner-radius",
+    "value",
+  ],
+  [
+    SettingsKeys.POPUP_TRACK_INFORMATION_SHOW,
+    "er-popup-track-information",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
+    "sr-popup-progress-bar-show",
+    "active",
+  ],
+  [
+    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED,
+    "sw-popup-track-information-scroll-enabled",
+    "active",
+  ],
+  [
+    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED,
+    "sp-popup-track-information-scroll-speed",
+    "value",
+  ],
+  [
+    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
+    "sp-popup-track-information-scroll-pause-time",
+    "value",
+  ],
+  [
+    SettingsKeys.POPUP_APP_ICON_USE_COLOR,
+    "sr-popup-app-icon-use-color",
+    "active",
+  ],
+]);
+
+const TOP_BAR_BINDINGS = Object.freeze([
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW,
+    "er-top-bar-track-information",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH,
+    "sp-top-bar-track-information-width",
+    "value",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK,
+    "sr-top-bar-track-information-width-lock",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED,
+    "sw-top-bar-track-information-scroll-enabled",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED,
+    "sp-top-bar-track-information-scroll-speed",
+    "value",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
+    "sp-top-bar-track-information-scroll-pause-time",
+    "value",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
+    "er-top-bar-playback-controls",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
+    "sr-top-bar-playback-controls-shuffle-show",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
+    "sr-top-bar-playback-controls-previous-track-show",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
+    "sr-top-bar-playback-controls-play-pause-show",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
+    "sr-top-bar-playback-controls-next-track-show",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW,
+    "sr-top-bar-playback-controls-repeat-show",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_APP_ICON_SHOW,
+    "er-top-bar-app-icon",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
+    "sr-top-bar-app-icon-use-color",
+    "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_SHOW,
+    "er-top-bar-visualizer",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_STYLE,
+    "cr-top-bar-visualizer-style",
+    "selected",
+  ],
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_SPEED,
+    "sp-top-bar-visualizer-speed",
+    "value",
+  ],
+]);
+
+const PANEL_BINDINGS = Object.freeze([
+  [SettingsKeys.PANEL_POSITION, "cr-panel-position", "selected"],
+  [SettingsKeys.PANEL_INDEX, "sp-panel-index", "value"],
+]);
+
+const INTERACTIONS_BINDINGS = Object.freeze([
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE,
+    "sl-interactions-shortcut-toggle-shuffle",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_PREVIOUS_TRACK,
+    "sl-interactions-shortcut-previous-track",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_PLAY_PAUSE,
+    "sl-interactions-shortcut-play-pause",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_NEXT_TRACK,
+    "sl-interactions-shortcut-next-track",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_LOOP,
+    "sl-interactions-shortcut-toggle-loop",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_UP,
+    "sl-interactions-shortcut-volume-up",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_DOWN,
+    "sl-interactions-shortcut-volume-down",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,
+    "sl-interactions-shortcut-toggle-popup",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_OPEN_PREFERENCES,
+    "sl-interactions-shortcut-open-preferences",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_RAISE_APP,
+    "sl-interactions-shortcut-raise-app",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_QUIT_APP,
+    "sl-interactions-shortcut-quit-app",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_APP,
+    "sl-interactions-shortcut-switch-app",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT,
+    "cr-interactions-left-click",
+    "selected",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE,
+    "cr-interactions-middle-click",
+    "selected",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT,
+    "cr-interactions-right-click",
+    "selected",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE,
+    "cr-interactions-double-click",
+    "selected",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP,
+    "cr-interactions-scroll-up",
+    "selected",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN,
+    "cr-interactions-scroll-down",
+    "selected",
+  ],
+]);
+
+const OTHERS_BINDINGS = Object.freeze([
+  [
+    SettingsKeys.GNOME_SHELL_HIDE_MEDIA_CONTROLS,
+    "sr-gnome-shell-hide-media-controls",
+    "active",
+  ],
+  [
+    SettingsKeys.ALBUM_ART_CACHE_ENABLED,
+    "sr-album-art-cache-enabled",
+    "active",
+  ],
+]);
+
+export const PREFERENCE_WIDGET_BINDINGS = Object.freeze([
+  ...POPUP_BINDINGS,
+  ...TOP_BAR_BINDINGS,
+  ...PANEL_BINDINGS,
+  ...INTERACTIONS_BINDINGS,
+  ...OTHERS_BINDINGS,
+]);

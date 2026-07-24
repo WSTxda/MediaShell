@@ -33,8 +33,9 @@ export default class PopupAppSelectorController {
 
   render() {
     this.appSelectorButton.render();
-    if (this.popupContent.extensionController.getMediaApps().length <= 1)
-      this.appSelectorList.close();
+    const availableMediaAppCount =
+      this.popupContent.extensionController.getAvailableMediaApps().length;
+    if (availableMediaAppCount <= 1) this.appSelectorList.close();
     else if (this.appSelectorList.isOpen)
       this.appSelectorList.refreshMediaApps();
   }

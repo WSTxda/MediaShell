@@ -1,6 +1,6 @@
 /**
  * @file OthersPageController.js
- * @module prefs.groups.OthersPageController
+ * @module prefs.controllers.OthersPageController
  *
  * Coordinates the preferences page for system integration and blocked apps.
  *
@@ -13,14 +13,16 @@
 import Adw from "gi://Adw";
 import GLib from "gi://GLib";
 
+import { SettingsKeys } from "../../shared/constants/settings.js";
 import { createLogger } from "../../shared/utils/log.js";
-import { gettext as _, ngettext } from "../PreferencesTranslations.js";
+import { gettext as _, ngettext } from "../translations.js";
 import { TOAST_TIMEOUT_SECONDS } from "../constants/layout.js";
-import AlbumArtCacheService from "../utils/AlbumArtCacheService.js";
+import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+import AlbumArtCacheService from "../services/AlbumArtCacheService.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/SignalConnections.js";
+} from "../utils/signalConnections.js";
 
 const logger = createLogger("OthersPageController");
 
@@ -52,14 +54,14 @@ export default class OthersPageController {
     this.createResetSettingsRow();
 
     this.blockedAppsGroup.setBlockedAppIds(
-      this.settings.get_strv("blocked-apps"),
+      this.settings.get_strv(SettingsKeys.BLOCKED_APPS),
     );
     this.connectOwnedSignal(
       this.blockedAppsGroup,
       "notify::blocked-app-ids",
       () => {
         this.settings.set_strv(
-          "blocked-apps",
+          SettingsKeys.BLOCKED_APPS,
           this.blockedAppsGroup.blockedAppIds,
         );
       },
@@ -67,14 +69,18 @@ export default class OthersPageController {
     this.connectOwnedSignal(this.clearAlbumArtCacheButton, "clicked", () =>
       this.presentClearAlbumArtCacheConfirmation(),
     );
-    this.connectOwnedSignal(this.settings, "changed::blocked-apps", () => {
-      const blockedAppIds = this.settings.get_strv("blocked-apps");
-      if (
-        JSON.stringify(blockedAppIds) !==
-        JSON.stringify(this.blockedAppsGroup.blockedAppIds)
-      )
-        this.blockedAppsGroup.setBlockedAppIds(blockedAppIds);
-    });
+    this.connectOwnedSignal(
+      this.settings,
+      `changed::${SettingsKeys.BLOCKED_APPS}`,
+      () => {
+        const blockedAppIds = this.settings.get_strv(SettingsKeys.BLOCKED_APPS);
+        if (
+          JSON.stringify(blockedAppIds) !==
+          JSON.stringify(this.blockedAppsGroup.blockedAppIds)
+        )
+          this.blockedAppsGroup.setBlockedAppIds(blockedAppIds);
+      },
+    );
     this.updateAlbumArtCacheStatsSubtitle();
   }
 
@@ -84,7 +90,9 @@ export default class OthersPageController {
       title: _("Reset all settings"),
       start_icon_name: "edit-undo-symbolic",
     });
-    this.resetSettingsRow.add_css_class("destructive-action");
+    this.resetSettingsRow.add_css_class(
+      PreferencesStyleClasses.DESTRUCTIVE_ACTION,
+    );
     this.resetGroup.add(this.resetSettingsRow);
     this.connectOwnedSignal(this.resetSettingsRow, "activated", () =>
       this.presentResetSettingsConfirmation(),
@@ -186,22 +194,26 @@ export default class OthersPageController {
     }
   }
 
-  formatAlbumArtCacheStats(coverCount, totalBytes) {
-    const format = ngettext("%d cover — %s", "%d covers — %s", coverCount);
-    return format.format(coverCount, GLib.format_size(totalBytes));
+  formatAlbumArtCacheStats(cachedImageCount, totalBytes) {
+    const format = ngettext(
+      "%d cached image — %s",
+      "%d cached images — %s",
+      cachedImageCount,
+    );
+    return format.format(cachedImageCount, GLib.format_size(totalBytes));
   }
 
   async updateAlbumArtCacheStatsSubtitle() {
     const albumArtCacheViewGeneration = ++this.albumArtCacheViewGeneration;
     try {
-      const { coverCount, totalBytes } =
+      const { cachedImageCount, totalBytes } =
         await this.albumArtCacheService.getAlbumArtCacheStats();
       if (
         !this.isDestroyed &&
         albumArtCacheViewGeneration === this.albumArtCacheViewGeneration
       )
         this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(
-          coverCount,
+          cachedImageCount,
           totalBytes,
         );
     } catch (error) {

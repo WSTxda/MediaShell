@@ -5,7 +5,7 @@
  * Renders popup playback, shuffle, and repeat controls for the active media app.
  *
  * PopupContent delegates button creation and sensitivity updates to this class so
- * transport-control state stays separate from the progress bar and track information widgets.
+ * playback control state stays separate from the progress bar and track information widgets.
  * The component consumes shared PlaybackControls descriptors for stable button names.
  */
 
@@ -13,14 +13,19 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
-import { LoopStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
-import { resolvePlayPauseControl } from "../../../shared/utils/playbackControlState.js";
+import {
+  resolveLoopControl,
+  resolvePlayPauseControl,
+  resolveShuffleControl,
+} from "../../../shared/utils/playbackControlState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import { createIcon, setIconName } from "../../utils/icons.js";
+import { styleClassNames } from "../../utils/styleClasses.js";
 
 function getPopupPlaybackControlIndex(controlName) {
   if (
@@ -56,53 +61,30 @@ export default class PopupPlaybackControls {
     return this.playbackControlsBox;
   }
 
-  // widgetFlags controls which buttons need updating; no parent positioning needed
   render(widgetFlags) {
     this.ensureActors();
     const mediaApp = this.mediaApp;
 
-    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_SHUFFLE) {
-      this.updatePlaybackControl(
-        mediaApp.shuffle
-          ? PlaybackControls.SHUFFLE_ON
-          : PlaybackControls.SHUFFLE_OFF,
-        mediaApp.canControl,
-        () => mediaApp.toggleShuffle(),
-      );
-    }
+    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_SHUFFLE) this.renderShuffle();
     if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_PREVIOUS) {
-      this.updatePlaybackControl(
-        PlaybackControls.PREVIOUS,
-        mediaApp.canGoPrevious && mediaApp.canControl,
-        () => mediaApp.previous(),
-      );
+      this.updatePlaybackControl({
+        control: PlaybackControls.PREVIOUS,
+        isReactive: mediaApp.canGoPrevious && mediaApp.canControl,
+        action: () => mediaApp.previous(),
+      });
     }
     if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE)
-      this.updatePlayPause(mediaApp);
+      this.renderPlayPause();
     if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_NEXT) {
-      this.updatePlaybackControl(
-        PlaybackControls.NEXT,
-        mediaApp.canGoNext && mediaApp.canControl,
-        () => mediaApp.next(),
-      );
+      this.updatePlaybackControl({
+        control: PlaybackControls.NEXT,
+        isReactive: mediaApp.canGoNext && mediaApp.canControl,
+        action: () => mediaApp.next(),
+      });
     }
-    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_LOOP) {
-      const loopControlDefinition =
-        mediaApp.loopStatus === LoopStatus.NONE
-          ? PlaybackControls.LOOP_NONE
-          : mediaApp.loopStatus === LoopStatus.TRACK
-            ? PlaybackControls.LOOP_TRACK
-            : PlaybackControls.LOOP_PLAYLIST;
-      this.updatePlaybackControl(
-        loopControlDefinition,
-        mediaApp.canControl,
-        () => mediaApp.toggleLoop(),
-      );
-    }
+    if (widgetFlags & WidgetFlags.POPUP_PLAYBACK_LOOP) this.renderRepeat();
 
-    if (!this.playbackControlsBox.get_parent()) {
-      this.popupItem.add_child(this.playbackControlsBox);
-    }
+    this.attach();
   }
 
   ensureActors() {
@@ -110,80 +92,91 @@ export default class PopupPlaybackControls {
 
     this.playbackControlsBox = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-playback-controls",
+      styleClass: StyleClasses.POPUP_PLAYBACK_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.primaryPlaybackControlsBox = new St.BoxLayout({
-      styleClass: "mediashell-popup-primary-controls",
+      styleClass: StyleClasses.POPUP_PRIMARY_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.secondaryPlaybackControlsBox = new St.BoxLayout({
-      styleClass: "mediashell-popup-secondary-controls",
+      styleClass: StyleClasses.POPUP_SECONDARY_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.playbackControlsBox.add_child(this.primaryPlaybackControlsBox);
     this.playbackControlsBox.add_child(this.secondaryPlaybackControlsBox);
   }
 
-  updatePlayPause(mediaApp) {
-    const { control, isReactive, action } = resolvePlayPauseControl(mediaApp);
-    this.updatePlaybackControl(control, isReactive, action);
+  renderShuffle() {
+    this.updatePlaybackControl(resolveShuffleControl(this.mediaApp));
   }
 
-  updatePlaybackControl(controlDefinition, isReactive, onClick) {
+  renderPlayPause() {
+    this.updatePlaybackControl(resolvePlayPauseControl(this.mediaApp));
+  }
+
+  renderRepeat() {
+    this.updatePlaybackControl(resolveLoopControl(this.mediaApp));
+  }
+
+  updatePlaybackControl({
+    control: controlDefinition,
+    isReactive,
+    action,
+    isActive = false,
+  }) {
     const controlName = controlDefinition.name;
     const isPrimaryTransport = controlName === PlaybackControls.PLAY.name;
     const isSecondary =
       controlName === PlaybackControls.LOOP_NONE.name ||
       controlName === PlaybackControls.SHUFFLE_ON.name;
-    const isActive =
-      controlDefinition === PlaybackControls.LOOP_TRACK ||
-      controlDefinition === PlaybackControls.LOOP_PLAYLIST ||
-      controlDefinition === PlaybackControls.SHUFFLE_ON;
     const targetControlsBox = isSecondary
       ? this.secondaryPlaybackControlsBox
       : this.primaryPlaybackControlsBox;
 
-    let control = this.controlButtons.get(controlName);
-    if (!control) {
-      const styleClasses = [
-        "button",
-        "mediashell-popup-control-button",
+    let controlState = this.controlButtons.get(controlName);
+    if (!controlState) {
+      const buttonStyleClass = styleClassNames(
+        StyleClasses.BUTTON,
+        StyleClasses.POPUP_CONTROL_BUTTON,
         isPrimaryTransport
-          ? "mediashell-popup-control-button-primary"
-          : "mediashell-popup-control-button-circular",
-        isSecondary ? "mediashell-popup-control-button-state" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
+          ? StyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
+          : StyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
+        isSecondary ? StyleClasses.POPUP_CONTROL_BUTTON_STATE : null,
+      );
       const button = new St.Button({
         name: controlName,
-        styleClass: styleClasses,
+        styleClass: buttonStyleClass,
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
         toggleMode: isSecondary,
       });
       const icon = createIcon({
-        styleClass: "popup-menu-icon mediashell-popup-control-icon",
+        styleClass: styleClassNames(
+          StyleClasses.POPUP_MENU_ICON,
+          StyleClasses.POPUP_CONTROL_ICON,
+        ),
       });
-      control = { button, icon, onClick };
+      controlState = { button, icon, action };
       button.set_child(icon);
       button.connect("clicked", () => {
-        if (control.button.reactive) control.onClick?.();
+        if (controlState.button.reactive) controlState.action?.();
       });
-      this.controlButtons.set(controlName, control);
+      this.controlButtons.set(controlName, controlState);
     }
 
-    control.onClick = onClick;
-    setIconName(control.icon, controlDefinition.iconName);
-    control.button.trackHover = isReactive;
-    control.button.opacity = isReactive ? ACTIVE_OPACITY : INACTIVE_OPACITY;
-    control.button.reactive = isReactive;
-    control.button.canFocus = isReactive;
-    control.button.checked = isActive;
+    controlState.action = action;
+    setIconName(controlState.icon, controlDefinition.iconName);
+    controlState.button.trackHover = isReactive;
+    controlState.button.opacity = isReactive
+      ? ACTIVE_OPACITY
+      : INACTIVE_OPACITY;
+    controlState.button.reactive = isReactive;
+    controlState.button.canFocus = isReactive;
+    controlState.button.checked = isActive;
     this.placePlaybackControl(
       targetControlsBox,
-      control.button,
+      controlState.button,
       getPopupPlaybackControlIndex(controlName),
     );
   }
@@ -203,6 +196,11 @@ export default class PopupPlaybackControls {
 
     button.get_parent()?.remove_child(button);
     targetControlsBox.insert_child_at_index(button, Math.max(0, targetIndex));
+  }
+
+  attach() {
+    if (!this.playbackControlsBox.get_parent())
+      this.popupItem.add_child(this.playbackControlsBox);
   }
 
   destroy() {

@@ -4,7 +4,7 @@
  *
  * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
  *
- * PopupContent delegates cover art to this component so async file/network loads
+ * PopupContent delegates album art to this component so async file/network loads
  * are isolated from the rest of the popup. The component cancels stale loads by
  * generation, decodes images into Shell textures, and falls back to a themed icon.
  */
@@ -15,10 +15,12 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+import { MprisMetadataKeys } from "../../../shared/constants/dbus.js";
 import { IconNames } from "../../../shared/constants/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/popup.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
@@ -80,17 +82,6 @@ export default class PopupAlbumArt {
     this.loadingAlbumArtKey = null;
   }
 
-  remove() {
-    this.cancelAlbumArtLoad();
-    this.loadedAlbumArtKey = null;
-    if (!this.albumArtFrame) return;
-
-    this.albumArtFrame.get_parent()?.remove_child(this.albumArtFrame);
-    this.albumArtFrame.destroy();
-    this.albumArtFrame = null;
-    this.albumArtImage = null;
-  }
-
   async render() {
     const metadata = this.mediaApp.metadata;
     const width = this.getAlbumArtWidth();
@@ -102,8 +93,8 @@ export default class PopupAlbumArt {
     const radius = Math.min(configuredRadius, Math.round(width / 2));
     const albumArtKey = [
       this.mediaApp.busName,
-      metadata["mpris:artUrl"] ?? "",
-      metadata["xesam:url"] ?? "",
+      metadata[MprisMetadataKeys.ART_URL] ?? "",
+      metadata[MprisMetadataKeys.URL] ?? "",
       width,
       radius,
       this.extensionController.albumArtCacheEnabled,
@@ -190,16 +181,19 @@ export default class PopupAlbumArt {
   async resolveAlbumArtSource(metadata, loadCancellable) {
     let fallbackIcon = null;
     let albumArtSource = await this.tryLoadAlbumArt(
-      metadata["mpris:artUrl"],
+      metadata[MprisMetadataKeys.ART_URL],
       loadCancellable,
       "MPRIS album art",
     );
-    if (albumArtSource || !metadata["xesam:url"])
+    if (albumArtSource || !metadata[MprisMetadataKeys.URL])
       return { albumArtSource, fallbackIcon };
 
     let trackUri;
     try {
-      trackUri = GLib.Uri.parse(metadata["xesam:url"], GLib.UriFlags.NONE);
+      trackUri = GLib.Uri.parse(
+        metadata[MprisMetadataKeys.URL],
+        GLib.UriFlags.NONE,
+      );
     } catch (error) {
       logger.debugOnce(
         `track-uri:${this.mediaApp.busName}`,
@@ -341,9 +335,9 @@ export default class PopupAlbumArt {
         : squarePixbuf;
 
     this.albumArtImage.content = null;
-    this.albumArtImage.remove_style_class_name("button");
+    this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
     this.albumArtImage.remove_style_class_name(
-      "mediashell-popup-album-art-fallback",
+      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
     );
     setGIcon(this.albumArtImage, renderPixbuf, IconNames.MEDIA);
     this.albumArtImage.set_icon_size(imageSize);
@@ -357,7 +351,7 @@ export default class PopupAlbumArt {
 
     this.albumArtImage = createIcon(
       {
-        styleClass: "mediashell-popup-album-art",
+        styleClass: StyleClasses.POPUP_ALBUM_ART,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -366,7 +360,7 @@ export default class PopupAlbumArt {
       IconNames.MEDIA,
     );
     this.albumArtFrame = new St.Bin({
-      styleClass: "mediashell-popup-album-art-frame",
+      styleClass: StyleClasses.POPUP_ALBUM_ART_FRAME,
       xExpand: false,
       yExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
@@ -406,9 +400,9 @@ export default class PopupAlbumArt {
     this.albumArtImage.content = null;
     // Reuse the Shell's native button surface so the empty album-art fallback follows
     // the active light/dark theme instead of relying on a fixed gray.
-    this.albumArtImage.add_style_class_name("button");
+    this.albumArtImage.add_style_class_name(StyleClasses.BUTTON);
     this.albumArtImage.add_style_class_name(
-      "mediashell-popup-album-art-fallback",
+      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
     );
     setGIcon(
       this.albumArtImage,
@@ -428,6 +422,17 @@ export default class PopupAlbumArt {
         this.appSelectorActor,
       );
     else this.popupItem.add_child(this.albumArtFrame);
+  }
+
+  remove() {
+    this.cancelAlbumArtLoad();
+    this.loadedAlbumArtKey = null;
+    if (!this.albumArtFrame) return;
+
+    this.albumArtFrame.get_parent()?.remove_child(this.albumArtFrame);
+    this.albumArtFrame.destroy();
+    this.albumArtFrame = null;
+    this.albumArtImage = null;
   }
 
   isCurrentAlbumArtLoad(loadGeneration, loadCancellable, albumArtKey) {

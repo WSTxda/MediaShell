@@ -3,10 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-04 19:00-0300\n"
-"PO-Revision-Date: 2026-07-03 02:30-0300\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2026-07-25 13:54-0300\n"
+"PO-Revision-Date: 2026-07-24 20:32-0300\n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,18 +17,18 @@ msgstr "O aplikácii MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME extension that adds media controls to your top "
-"bar. Click the icon to open a popup featuring album art, playback controls, "
-"and an app selector for any app currently playing media. The top bar widget "
-"and popup use the GNOME UI toolkit, and preferences are built with "
-"GTK4 and Libadwaita to match the rest of the desktop."
+"MediaShell is a GNOME extension that adds media controls to your top bar. "
+"Click the icon to open a popup featuring album art, playback controls, and "
+"an app selector for any app currently playing media. The top bar widget and "
+"popup use the GNOME UI toolkit, and preferences are built with GTK4 and "
+"Libadwaita to match the rest of the desktop."
 msgstr ""
-"MediaShell je rozšírenie GNOME, ktoré pridáva ovládanie médií do "
-"hornej lišty. Kliknutím na ikonu otvoríte vyskakovacie okno s obalom albumu, "
+"MediaShell je rozšírenie GNOME, ktoré pridáva ovládanie médií do hornej "
+"lišty. Kliknutím na ikonu otvoríte vyskakovacie okno s obalom albumu, "
 "ovládacími prvkami prehrávania a výberom aplikácií pre každú aplikáciu, "
 "ktorá práve prehráva médiá. Widget hornej lišty a vyskakovacie okno "
-"používajú nástrojovú sadu používateľského rozhrania GNOME a predvoľby "
-"sú vytvorené pomocou GTK4 a Libadwaita, aby zapadli do zvyšku pracovného "
+"používajú nástrojovú sadu používateľského rozhrania GNOME a predvoľby sú "
+"vytvorené pomocou GTK4 a Libadwaita, aby zapadli do zvyšku pracovného "
 "prostredia."
 
 #: src/prefs/about/AboutDialogController.js:106
@@ -45,84 +43,84 @@ msgstr "Vyvinul"
 msgid "View all..."
 msgstr "Zobraziť všetko..."
 
-#: src/prefs/groups/InteractionsPageController.js:45 assets/ui/prefs.ui:162
-#: assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
+#: src/prefs/controllers/InteractionsPageController.js:45
+#: assets/ui/prefs.ui:162 assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
 msgid "Shuffle"
 msgstr "Náhodne"
 
-#: src/prefs/groups/InteractionsPageController.js:49 assets/ui/prefs.ui:172
-#: assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
+#: src/prefs/controllers/InteractionsPageController.js:49
+#: assets/ui/prefs.ui:172 assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
 msgid "Previous track"
 msgstr "Predchádzajúca skladba"
 
-#: src/prefs/groups/InteractionsPageController.js:53 assets/ui/prefs.ui:182
-#: assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
+#: src/prefs/controllers/InteractionsPageController.js:53
+#: assets/ui/prefs.ui:182 assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
 msgid "Play / pause"
 msgstr "Prehrať / Pozastaviť"
 
-#: src/prefs/groups/InteractionsPageController.js:57 assets/ui/prefs.ui:192
-#: assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
+#: src/prefs/controllers/InteractionsPageController.js:57
+#: assets/ui/prefs.ui:192 assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
 msgid "Next track"
 msgstr "Nasledujúca skladba"
 
-#: src/prefs/groups/InteractionsPageController.js:60 assets/ui/prefs.ui:202
-#: assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
+#: src/prefs/controllers/InteractionsPageController.js:60
+#: assets/ui/prefs.ui:202 assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
 msgid "Repeat"
 msgstr "Opakovanie"
 
-#: src/prefs/groups/InteractionsPageController.js:61 assets/ui/prefs.ui:537
-#: assets/ui/prefs.ui:786
+#: src/prefs/controllers/InteractionsPageController.js:61
+#: assets/ui/prefs.ui:537 assets/ui/prefs.ui:786
 msgid "Volume up"
 msgstr "Zvýšiť hlasitosť"
 
-#: src/prefs/groups/InteractionsPageController.js:62 assets/ui/prefs.ui:554
-#: assets/ui/prefs.ui:787
+#: src/prefs/controllers/InteractionsPageController.js:62
+#: assets/ui/prefs.ui:554 assets/ui/prefs.ui:787
 msgid "Volume down"
 msgstr "Znížiť hlasitosť"
 
-#: src/prefs/groups/InteractionsPageController.js:63 assets/ui/prefs.ui:4
+#: src/prefs/controllers/InteractionsPageController.js:63 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
 msgid "Popup"
 msgstr "Vyskakovacie okno"
 
-#: src/prefs/groups/InteractionsPageController.js:65 assets/ui/prefs.ui:588
-#: assets/ui/prefs.ui:789
+#: src/prefs/controllers/InteractionsPageController.js:65
+#: assets/ui/prefs.ui:588 assets/ui/prefs.ui:789
 msgid "Preferences"
 msgstr "Nastavenia"
 
-#: src/prefs/groups/InteractionsPageController.js:68 assets/ui/prefs.ui:605
-#: assets/ui/prefs.ui:790
+#: src/prefs/controllers/InteractionsPageController.js:69
+#: assets/ui/prefs.ui:605 assets/ui/prefs.ui:790
 msgid "Open app"
 msgstr "Otvoriť aplikáciu"
 
-#: src/prefs/groups/InteractionsPageController.js:69 assets/ui/prefs.ui:622
-#: assets/ui/prefs.ui:791
+#: src/prefs/controllers/InteractionsPageController.js:72
+#: assets/ui/prefs.ui:622 assets/ui/prefs.ui:791
 msgid "Quit app"
 msgstr "Ukončiť aplikáciu"
 
-#: src/prefs/groups/InteractionsPageController.js:70 assets/ui/prefs.ui:639
-#: assets/ui/prefs.ui:792
+#: src/prefs/controllers/InteractionsPageController.js:73
+#: assets/ui/prefs.ui:639 assets/ui/prefs.ui:792
 msgid "Switch app"
 msgstr "Prepnúť aplikáciu"
 
-#: src/prefs/groups/InteractionsPageController.js:75
+#: src/prefs/controllers/InteractionsPageController.js:78
 msgid "Playback"
 msgstr "Prehrávanie"
 
-#: src/prefs/groups/InteractionsPageController.js:76
+#: src/prefs/controllers/InteractionsPageController.js:79
 msgid "Audio"
 msgstr "Zvuk"
 
-#: src/prefs/groups/InteractionsPageController.js:77 assets/ui/prefs.ui:138
-#: assets/ui/prefs.ui:378
+#: src/prefs/controllers/InteractionsPageController.js:80
+#: assets/ui/prefs.ui:138 assets/ui/prefs.ui:378
 msgid "Apps"
 msgstr "Aplikácie"
 
-#: src/prefs/groups/InteractionsPageController.js:78
+#: src/prefs/controllers/InteractionsPageController.js:81
 msgid "Interface"
 msgstr "Rozhranie"
 
-#: src/prefs/groups/InteractionsPageController.js:156
+#: src/prefs/controllers/InteractionsPageController.js:159
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -132,192 +130,180 @@ msgstr ""
 "Stlačením Enter uložíte.\n"
 "Stlačením Backspace skratku vymažete."
 
-#: src/prefs/groups/InteractionsPageController.js:164
+#: src/prefs/controllers/InteractionsPageController.js:167
 msgid "Press a shortcut"
 msgstr "Stlačte klávesovú skratku"
 
-#: src/prefs/groups/InteractionsPageController.js:266
+#: src/prefs/controllers/InteractionsPageController.js:269
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Skratku už používa %s"
 
-#: src/prefs/groups/InteractionsPageController.js:286 assets/ui/prefs.ui:443
+#: src/prefs/controllers/InteractionsPageController.js:289
+#: assets/ui/prefs.ui:443
 msgid "Keyboard shortcuts"
 msgstr "Klávesové skratky"
 
-#: src/prefs/groups/InteractionsPageController.js:309
+#: src/prefs/controllers/InteractionsPageController.js:312
 msgid "Not set"
 msgstr "Nenastavené"
 
-#: src/prefs/groups/InteractionsPageController.js:337
+#: src/prefs/controllers/InteractionsPageController.js:340
 msgid "Reset keyboard shortcuts?"
 msgstr "Obnoviť klávesové skratky?"
 
-#: src/prefs/groups/InteractionsPageController.js:338
+#: src/prefs/controllers/InteractionsPageController.js:341
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Všetky klávesové skratky budú vypnuté."
 
-#: src/prefs/groups/InteractionsPageController.js:341
-#: src/prefs/groups/OthersPageController.js:125
-#: src/prefs/widgets/BlockedAppChooserDialog.js:66
+#: src/prefs/controllers/InteractionsPageController.js:344
+#: src/prefs/controllers/OthersPageController.js:133
+#: src/prefs/widgets/BlockedAppChooserDialog.js:68
 msgid "Cancel"
 msgstr "Zrušiť"
 
-#: src/prefs/groups/InteractionsPageController.js:342
-#: src/prefs/groups/OthersPageController.js:98
+#: src/prefs/controllers/InteractionsPageController.js:345
+#: src/prefs/controllers/OthersPageController.js:106
 msgid "Reset"
 msgstr "Obnoviť"
 
-#: src/prefs/groups/InteractionsPageController.js:361
+#: src/prefs/controllers/InteractionsPageController.js:364
 msgid "Keyboard shortcuts reset"
 msgstr "Klávesové skratky boli obnovené"
 
-#: src/prefs/groups/TrackInformationContentController.js:59
-msgid "by"
-msgstr "od"
-
-#: src/prefs/groups/OthersPageController.js:84
+#: src/prefs/controllers/OthersPageController.js:90
 msgid "Reset all settings"
 msgstr "Obnoviť všetky nastavenia"
 
-#: src/prefs/groups/OthersPageController.js:96
+#: src/prefs/controllers/OthersPageController.js:104
 msgid "Reset all settings?"
 msgstr "Obnoviť všetky nastavenia?"
 
-#: src/prefs/groups/OthersPageController.js:97
+#: src/prefs/controllers/OthersPageController.js:105
 msgid "Every MediaShell preference will return to its default value."
 msgstr "Všetky nastavenia MediaShell sa vrátia na predvolené hodnoty."
 
-#: src/prefs/groups/OthersPageController.js:108
+#: src/prefs/controllers/OthersPageController.js:116
 msgid "Settings reset"
 msgstr "Nastavenia obnovené"
 
-#: src/prefs/groups/OthersPageController.js:116
+#: src/prefs/controllers/OthersPageController.js:124
 msgid "Clear the cache?"
 msgstr "Vymazať vyrovnávaciu pamäť?"
 
-#: src/prefs/groups/OthersPageController.js:117
+#: src/prefs/controllers/OthersPageController.js:125
 msgid "Cached content will be downloaded again when needed."
 msgstr "Obsah vo vyrovnávacej pamäti sa v prípade potreby znova stiahne."
 
-#: src/prefs/groups/OthersPageController.js:118 assets/ui/prefs.ui:749
+#: src/prefs/controllers/OthersPageController.js:126 assets/ui/prefs.ui:749
 msgid "Clear cache"
 msgstr "Vymazať vyrovnávaciu pamäť"
 
-#: src/prefs/groups/OthersPageController.js:168
+#: src/prefs/controllers/OthersPageController.js:176
 msgid "Cache cleared"
 msgstr "Vyrovnávacia pamäť bola vymazaná"
 
-#: src/prefs/groups/OthersPageController.js:181
+#: src/prefs/controllers/OthersPageController.js:189
 msgid "Could not clear the cache"
 msgstr "Vyrovnávaciu pamäť sa nepodarilo vymazať"
 
-#: src/prefs/groups/OthersPageController.js:190
+#: src/prefs/controllers/OthersPageController.js:199
 #, javascript-format
-msgid "%d cover — %s"
-msgid_plural "%d covers — %s"
-msgstr[0] "%d obal — %s"
-msgstr[1] "%d obaly — %s"
-msgstr[2] "%d obalov — %s"
+msgid "%d cached image — %s"
+msgid_plural "%d cached images — %s"
+msgstr[0] "%d obrázok vo vyrovnávacej pamäti — %s"
+msgstr[1] "%d obrázky vo vyrovnávacej pamäti — %s"
+msgstr[2] "%d obrázkov vo vyrovnávacej pamäti — %s"
 
-#: src/prefs/widgets/BlockedAppsGroup.js:102
-msgid "No apps are blocked"
-msgstr "Žiadne aplikácie nie sú blokované"
+#: src/prefs/controllers/TrackInformationContentController.js:58
+msgid "by"
+msgstr "od"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:44
+#: src/prefs/widgets/BlockedAppChooserDialog.js:46
 msgid "Select an app to block"
 msgstr "Vybrať aplikáciu na blokovanie"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:69
-#: src/prefs/widgets/BlockedAppChooserDialog.js:85
+#: src/prefs/widgets/BlockedAppChooserDialog.js:71
+#: src/prefs/widgets/BlockedAppChooserDialog.js:87
 msgid "Search apps"
 msgstr "Hľadať aplikácie"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:72
+#: src/prefs/widgets/BlockedAppChooserDialog.js:74
 msgid "Select"
 msgstr "Vybrať"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:105
+#: src/prefs/widgets/BlockedAppChooserDialog.js:107
 msgid "No apps found"
 msgstr "Nenašli sa žiadne aplikácie"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:23
+#: src/prefs/widgets/BlockedAppsGroup.js:105
+msgid "No apps are blocked"
+msgstr "Žiadne aplikácie nie sú blokované"
+
+#: src/prefs/widgets/TrackInformationContentRow.js:27
 msgid "Title"
 msgstr "Názov"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:24
+#: src/prefs/widgets/TrackInformationContentRow.js:28
 msgid "Artist"
 msgstr "Interpret"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:25
+#: src/prefs/widgets/TrackInformationContentRow.js:29
 msgid "Album"
 msgstr "Album"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:26
+#: src/prefs/widgets/TrackInformationContentRow.js:30
 msgid "Album artist"
 msgstr "Interpret albumu"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:27
+#: src/prefs/widgets/TrackInformationContentRow.js:31
 msgid "Genre"
 msgstr "Žáner"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:28
+#: src/prefs/widgets/TrackInformationContentRow.js:32
 msgid "Composer"
 msgstr "Skladateľ"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:29
+#: src/prefs/widgets/TrackInformationContentRow.js:33
 msgid "Year"
 msgstr "Rok"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:30
+#: src/prefs/widgets/TrackInformationContentRow.js:34
 msgid "Disc"
 msgstr "Disk"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:31
+#: src/prefs/widgets/TrackInformationContentRow.js:35
 msgid "Track"
 msgstr "Skladba"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:79
+#: src/prefs/widgets/TrackInformationContentRow.js:83
 msgid "No track information fields added"
 msgstr "Neboli pridané žiadne polia informácií o skladbe"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:99
+#: src/prefs/widgets/TrackInformationContentRow.js:103
 msgid "Custom text"
 msgstr "Vlastný text"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:123
+#: src/prefs/widgets/TrackInformationContentRow.js:127
 msgid "Remove"
 msgstr "Odstrániť"
 
-#: src/shell/ui/popup/PopupAppSelectorList.js:218
-#: src/shell/ui/popup/PopupAppSelectorButton.js:85
+#: src/shell/ui/popup/PopupAppSelectorButton.js:87
+#: src/shell/ui/popup/PopupAppSelectorList.js:219
 msgid "Unknown app"
 msgstr "Neznáma aplikácia"
 
-#: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
-msgstr "Poradie prvkov"
+#: assets/ui/blocked-apps.ui:6
+msgid "Blocked apps"
+msgstr "Blokované aplikácie"
 
-#: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
-msgstr "Potiahnutím zmeňte poradie prvkov v tlačidle hornej lišty"
+#: assets/ui/blocked-apps.ui:7
+msgid "Blocked apps are ignored and hidden by the extension"
+msgstr "Blokované aplikácie sú rozšírením ignorované a skryté"
 
-#: assets/ui/top-bar-element-order.ui:16 assets/ui/prefs.ui:382
-msgid "App icon"
-msgstr "Ikona aplikácie"
-
-#: assets/ui/top-bar-element-order.ui:27 assets/ui/prefs.ui:59
-#: assets/ui/prefs.ui:279
-msgid "Track information"
-msgstr "Informácie o skladbe"
-
-#: assets/ui/top-bar-element-order.ui:38 assets/ui/prefs.ui:214
-msgid "Visualizer"
-msgstr "Vizualizér"
-
-#: assets/ui/top-bar-element-order.ui:49 assets/ui/prefs.ui:157
-msgid "Playback controls"
-msgstr "Ovládacie prvky prehrávania"
+#: assets/ui/blocked-apps.ui:17
+msgid "Add"
+msgstr "Pridať"
 
 #: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
 msgid "Layout"
@@ -358,6 +344,11 @@ msgstr "Polomer rohov"
 #: assets/ui/prefs.ui:43
 msgid "0 disables rounded corners"
 msgstr "0 vypne zaoblenie rohov"
+
+#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
+#: assets/ui/top-bar-element-order.ui:27
+msgid "Track information"
+msgstr "Informácie o skladbe"
 
 #: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
 msgid "Show track information"
@@ -419,9 +410,17 @@ msgstr "Použiť plnofarebnú ikonu mediálnej aplikácie"
 msgid "Top bar"
 msgstr "Horná lišta"
 
+#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
+msgid "Playback controls"
+msgstr "Ovládacie prvky prehrávania"
+
 #: assets/ui/prefs.ui:158
 msgid "Show playback controls"
 msgstr "Zobraziť ovládanie prehrávania"
+
+#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
+msgid "Visualizer"
+msgstr "Vizualizér"
 
 #: assets/ui/prefs.ui:215
 msgid "Show the animated playback indicator"
@@ -472,6 +471,10 @@ msgstr "Uzamknúť šírku"
 #: assets/ui/prefs.ui:299
 msgid "Keep the configured width for short text"
 msgstr "Zachovať nastavenú šírku, keď je obsah kratší"
+
+#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
+msgid "App icon"
+msgstr "Ikona aplikácie"
 
 #: assets/ui/prefs.ui:383
 msgid "Show the app icon"
@@ -601,12 +604,12 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Nastavte, ako sa MediaShell integruje s GNOME"
 
 #: assets/ui/prefs.ui:732
-msgid "Hide media controls"
-msgstr "Skryť ovládanie médií"
+msgid "Hide GNOME media controls"
+msgstr "Skryť ovládanie médií GNOME"
 
 #: assets/ui/prefs.ui:733
-msgid "Remove the default media controls from the notification list"
-msgstr "Skryť predvolené ovládanie médií zo zoznamu oznámení"
+msgid "Remove GNOME's default media controls from the notification list"
+msgstr "Odstrániť predvolené ovládanie médií GNOME zo zoznamu oznámení"
 
 #: assets/ui/prefs.ui:740
 msgid "Cache"
@@ -632,6 +635,14 @@ msgstr "Nastavenia rozšírenia"
 msgid "None"
 msgstr "Žiadna"
 
+#: assets/ui/top-bar-element-order.ui:6
+msgid "Element order"
+msgstr "Poradie prvkov"
+
+#: assets/ui/top-bar-element-order.ui:7
+msgid "Drag to reorder elements inside the top bar button"
+msgstr "Potiahnutím zmeňte poradie prvkov v tlačidle hornej lišty"
+
 #: assets/ui/track-information-content-row.ui:10
 msgid "Missing information"
 msgstr "Chýbajúce informácie"
@@ -655,15 +666,3 @@ msgstr "Pridať pole"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Pridať text"
-
-#: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
-msgstr "Blokované aplikácie"
-
-#: assets/ui/blocked-apps.ui:7
-msgid "Blocked apps are ignored and hidden by the extension"
-msgstr "Blokované aplikácie sú rozšírením ignorované a skryté"
-
-#: assets/ui/blocked-apps.ui:17
-msgid "Add"
-msgstr "Pridať"

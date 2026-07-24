@@ -2,20 +2,22 @@
  * @file TopBarAppIcon.js
  * @module shell.ui.topBar.TopBarAppIcon
  *
- * Displays the active media application's icon in the GNOME top bar.
+ * Displays the active media app's icon in the GNOME top bar.
  *
  * TopBarButton owns this component and supplies the resolved Shell app or themed
  * fallback icon. The component keeps icon actor creation and updates separate
  * from track text, visualizer, and playback control layout.
  */
 
-import MediaAppResolver, {
-  FALLBACK_MEDIA_APP_ICON_NAME,
-} from "../../services/MediaAppResolver.js";
+import { IconNames } from "../../../shared/constants/icons.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
+import MediaAppResolver from "../../services/MediaAppResolver.js";
+import { placeActorAtIndex } from "../../utils/actors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
+import { styleClassNames } from "../../utils/styleClasses.js";
 
 /**
- * Displays the active media application's icon in the GNOME top bar.
+ * Displays the active media app's icon in the GNOME top bar.
  */
 export default class TopBarAppIcon {
   constructor(topBarButton) {
@@ -49,7 +51,7 @@ export default class TopBarAppIcon {
       setGIcon(
         this.actor,
         this.mediaAppResolver.getMediaAppIcon(app),
-        FALLBACK_MEDIA_APP_ICON_NAME,
+        IconNames.MEDIA,
       );
       // Do not memoize a transient miss: Shell may associate a browser
       // window with its desktop app shortly after MPRIS appears.
@@ -69,9 +71,15 @@ export default class TopBarAppIcon {
 
     this.actor = createIcon(
       {
-        styleClass: `system-status-icon no-margin ${useColoredIcon ? "colored-icon" : "symbolic-icon"}`,
+        styleClass: styleClassNames(
+          StyleClasses.SYSTEM_STATUS_ICON,
+          StyleClasses.NO_MARGIN,
+          useColoredIcon
+            ? StyleClasses.COLORED_ICON
+            : StyleClasses.SYMBOLIC_ICON,
+        ),
       },
-      FALLBACK_MEDIA_APP_ICON_NAME,
+      IconNames.MEDIA,
     );
     this.iconKey = null;
     this.usesColoredIcon = useColoredIcon;
@@ -87,13 +95,7 @@ export default class TopBarAppIcon {
   }
 
   attach(index, parentBox) {
-    const parent = this.actor.get_parent();
-    const currentIndex =
-      parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
-    if (currentIndex === index) return;
-
-    parent?.remove_child(this.actor);
-    parentBox.insert_child_at_index(this.actor, index);
+    placeActorAtIndex(this.actor, parentBox, index);
   }
 
   remove() {

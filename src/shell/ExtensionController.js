@@ -82,11 +82,12 @@ export default class ExtensionController {
       if (!this.isCurrentLifecycleGeneration(lifecycleGeneration)) return;
 
       this.mediaAppRegistry = new MediaAppRegistry(this.mprisProxyFactory, {
-        onMediaAppsChanged: () =>
+        onAvailableMediaAppsChanged: () =>
           this.topBarButton?.requestWidgetUpdate(
             WidgetFlags.POPUP_APP_SELECTOR,
           ),
-        onActiveMediaAppChanged: (mediaApp) => this.setActiveMediaApp(mediaApp),
+        onActiveMediaAppChanged: (mediaApp) =>
+          this.handleActiveMediaAppChanged(mediaApp),
       });
       this.mediaAppRegistry.blockedAppIds = new Set(this.blockedAppIds);
       await this.mediaAppRegistry.init();
@@ -133,10 +134,10 @@ export default class ExtensionController {
   rebuildTopBarButton() {
     const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
     this.destroyTopBarButton();
-    if (mediaApp) this.setActiveMediaApp(mediaApp);
+    if (mediaApp) this.handleActiveMediaAppChanged(mediaApp);
   }
 
-  setActiveMediaApp(mediaApp) {
+  handleActiveMediaAppChanged(mediaApp) {
     if (!this.enabled) return;
 
     if (!mediaApp) {
@@ -160,12 +161,12 @@ export default class ExtensionController {
     logger.debug("Created top bar button for", mediaApp.busName);
   }
 
-  getMediaApps() {
-    return this.mediaAppRegistry?.getMediaApps() ?? [];
+  getAvailableMediaApps() {
+    return this.mediaAppRegistry?.getAvailableMediaApps() ?? [];
   }
 
   selectMediaApp(mediaApp) {
-    return this.mediaAppRegistry?.activateMediaApp(mediaApp) ?? false;
+    return this.mediaAppRegistry?.selectMediaApp(mediaApp) ?? false;
   }
 
   switchMediaApp() {

@@ -11,6 +11,7 @@
  */
 
 import { InputActions } from "../enums/input.js";
+import { SettingsKeys } from "./settings.js";
 
 /**
  * Runtime action descriptors shared by keyboard shortcuts and pointer gestures.
@@ -24,62 +25,62 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
   Object.freeze({
     id: "toggle-shuffle",
     action: InputActions.TOGGLE_SHUFFLE,
-    shortcutKey: "interactions-shortcut-toggle-shuffle",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE,
   }),
   Object.freeze({
     id: "previous-track",
     action: InputActions.PREVIOUS_TRACK,
-    shortcutKey: "interactions-shortcut-previous-track",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_PREVIOUS_TRACK,
   }),
   Object.freeze({
     id: "play-pause",
     action: InputActions.PLAY_PAUSE,
-    shortcutKey: "interactions-shortcut-play-pause",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_PLAY_PAUSE,
   }),
   Object.freeze({
     id: "next-track",
     action: InputActions.NEXT_TRACK,
-    shortcutKey: "interactions-shortcut-next-track",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_NEXT_TRACK,
   }),
   Object.freeze({
     id: "toggle-loop",
     action: InputActions.TOGGLE_LOOP,
-    shortcutKey: "interactions-shortcut-toggle-loop",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_LOOP,
   }),
   Object.freeze({
     id: "volume-up",
     action: InputActions.VOLUME_UP,
-    shortcutKey: "interactions-shortcut-volume-up",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_UP,
   }),
   Object.freeze({
     id: "volume-down",
     action: InputActions.VOLUME_DOWN,
-    shortcutKey: "interactions-shortcut-volume-down",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_DOWN,
   }),
   Object.freeze({
     id: "toggle-popup",
     action: InputActions.TOGGLE_POPUP,
-    shortcutKey: "interactions-shortcut-toggle-popup",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,
   }),
   Object.freeze({
     id: "open-preferences",
     action: InputActions.OPEN_PREFERENCES,
-    shortcutKey: "interactions-shortcut-open-preferences",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_OPEN_PREFERENCES,
   }),
   Object.freeze({
     id: "raise-app",
     action: InputActions.RAISE_APP,
-    shortcutKey: "interactions-shortcut-raise-app",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_RAISE_APP,
   }),
   Object.freeze({
     id: "quit-app",
     action: InputActions.QUIT_APP,
-    shortcutKey: "interactions-shortcut-quit-app",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_QUIT_APP,
   }),
   Object.freeze({
     id: "switch-app",
     action: InputActions.SWITCH_APP,
-    shortcutKey: "interactions-shortcut-switch-app",
+    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_APP,
   }),
 ]);
 

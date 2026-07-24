@@ -4,7 +4,7 @@
  *
  * Enum values describing how a settings change affects runtime components.
  *
- * SettingsSpec assigns these actions to individual GSettings keys, and
+ * SETTINGS_SPEC assigns these actions to individual GSettings keys, and
  * ExtensionController uses them to decide whether to rebuild UI, patch GNOME Shell
  * media controls, refresh blocked apps, or update shortcuts.
  */

@@ -729,8 +729,8 @@
         <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
           <object class="AdwSwitchRow" id="sr-gnome-shell-hide-media-controls">
-            <property name="title" translatable="yes">Hide media controls</property>
-            <property name="subtitle" translatable="yes">Remove the default media controls from the notification list</property>
+            <property name="title" translatable="yes">Hide GNOME media controls</property>
+            <property name="subtitle" translatable="yes">Remove GNOME's default media controls from the notification list</property>
           </object>
         </child>
       </object>

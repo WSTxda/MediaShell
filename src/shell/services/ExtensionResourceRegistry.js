@@ -12,6 +12,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
+import { COMPILED_RESOURCE_FILENAME } from "../../shared/constants/resources.js";
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("ExtensionResourceRegistry");
@@ -31,7 +32,7 @@ export default class ExtensionResourceRegistry {
     try {
       const resourcePath = GLib.build_filenamev([
         this.extensionPath,
-        "org.gnome.shell.extensions.mediashell.gresource",
+        COMPILED_RESOURCE_FILENAME,
       ]);
       this.resource = Gio.resource_load(resourcePath);
       Gio.resources_register(this.resource);

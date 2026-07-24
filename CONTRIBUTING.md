@@ -1,72 +1,58 @@
 # Contributing
 
-Thanks for helping improve MediaShell. Keep changes focused, test the affected Shell and Preferences paths, and update translations or documentation only when user-visible behavior, strings, architecture, or contributor workflow changes.
+Thanks for helping improve MediaShell. Keep changes focused, work in the layer that owns the behavior, and test the affected GNOME Shell, Preferences, and MPRIS paths.
 
 ## Workflow
 
-1. Install the declared development dependencies:
-
 ```bash
 pnpm install
-```
-
-2. Check the local GNOME development environment:
-
-```bash
-pnpm doctor
-```
-
-3. Start a live development session:
-
-```bash
-pnpm debug
-```
-
-4. Make a focused change. Prefer small, reviewable commits over broad cleanup.
-5. Run the maintained validation suite:
-
-```bash
+pnpm run env:doctor
+pnpm run shell:debug
 pnpm check
-```
-
-6. Build the extension package before opening a pull request:
-
-```bash
 pnpm build
 ```
 
-`pnpm build` validates source, stages the runtime tree, compiles resources, creates the `.shell-extension.zip`, and validates the archive contents. For release or EGO-facing changes, install `shexli` and run:
+Use `pnpm run check:runtime` for the executable/declarative validation tier and `pnpm run audit` for advisory organization diagnostics. `pnpm run audit:strict` is only for cleanup work that intentionally treats those conventions as a gate.
+
+For release, packaging, compatibility, or EGO-facing changes, also run:
 
 ```bash
 pnpm verify
 ```
 
+The generated extension package is under `dist/builds/` and must be installed and tested in GNOME before submission.
+
+## Change scope
+
+- Keep `src/shared/`, `src/shell/`, and `src/prefs/` within their documented process boundaries.
+- Preserve shipped GSettings keys, enum IDs, D-Bus names, resource paths, CSS class values, and `GTypeName` strings unless the change includes an explicit compatibility plan.
+- Prefer a small truthful local implementation over aliases, generic abstraction, or a new constants module for a one-off detail.
+- Update module headers, comments, documentation, and logs only when ownership or behavior actually changes.
+- Do not add permanent check rules for temporary cleanup vocabulary or formatting preferences.
+
+See [Architecture](docs/ARCHITECTURE.md) for ownership and [Development](docs/DEVELOPMENT.md) for naming, validation, and live-test guidance.
+
 ## Pull requests
 
-Describe the behavior changed, the affected GNOME Shell or MPRIS scenario, and the live checks performed. Include focused logs when lifecycle, D-Bus, private Shell API, or media-app resolution failures are relevant.
+Describe:
 
-Follow the process boundaries in [Architecture](docs/ARCHITECTURE.md) and the validation guidance in [Development](docs/DEVELOPMENT.md). For packaging or compatibility changes, include the `pnpm check`, `pnpm build`, `pnpm verify`, and packaged live-test results in the pull request notes.
+- the behavior or contract changed;
+- the affected GNOME Shell/MPRIS scenario;
+- automated commands run;
+- live tests performed and GNOME versions used;
+- relevant logs for lifecycle, D-Bus, private API, or identity-resolution problems.
+
+Keep commits reviewable and avoid mixing unrelated cleanup with functional changes.
 
 ## Translations
 
-The translation template lives at `assets/locale/mediashell@wstxda.github.com.pot`. Translate it with Gtranslator, Poedit, or another gettext-aware editor and submit the updated `.po` file.
-
-When a visible string changes:
+The template is `assets/locale/mediashell@wstxda.github.com.pot`. Use a gettext-aware editor and, after changing visible text, run:
 
 ```bash
 pnpm run translations
 pnpm check
 ```
 
-Preserve placeholders, plural forms, source references, and translator comments. Do not remove an existing translation unless the English source text changed meaning and the old translation is no longer correct. If a new string cannot be translated confidently, leave `msgstr ""` so a native speaker can review it.
+Preserve placeholders, plural forms, source references, and translator comments. Do not invent translator names or addresses. Leave a translation empty when it needs native review rather than guessing.
 
-JavaScript strings must use gettext helpers. GtkBuilder strings must use `translatable="yes"`. Avoid changing GSettings key names, enum IDs, GTypeName strings, CSS classes, or D-Bus names for translation purposes; those are code contracts.
-
-## Scope and review notes
-
-- Keep Shell runtime, Preferences, and Shared changes in their owning layers.
-- Use project vocabulary consistently: Panel, top bar, popup, app selector, track information, playback controls, progress bar, visualizer, and media app.
-- Use `player` only for MPRIS Player details, `PlayerProxy`, or protocol names.
-- Keep the compact `@file` / `@module` header accurate when creating or moving JavaScript modules.
-- Add inline comments when they explain lifecycle, signal ownership, teardown, MPRIS edge cases, compatibility, or non-obvious UI behavior.
-- Keep logs useful for diagnosis; do not add noisy render-flow narration.
+JavaScript visible strings use gettext helpers. GtkBuilder strings use `translatable="yes"`. Code contracts are not translatable.

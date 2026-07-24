@@ -5,14 +5,18 @@
  * Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
  *
  * PlayerProxy delegates position state here so UI components can ask for a live
- * estimate without polling DBus on every frame. The tracker anchors the last
+ * estimate without polling D-Bus on every frame. The tracker anchors the last
  * known position to GLib monotonic time and refreshes on seek or track changes.
  */
 
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { MPRIS_PLAYER_IFACE_NAME } from "../../shared/constants/dbus.js";
+import {
+  DbusPropertiesMethods,
+  MPRIS_PLAYER_IFACE_NAME,
+  MprisPlayerProperties,
+} from "../../shared/constants/dbus.js";
 import { DBUS_CALL_TIMEOUT_MS } from "../../shared/constants/timing.js";
 import { MAX_REASONABLE_TRACK_DURATION_MICROSECONDS } from "../../shared/constants/limits.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
@@ -140,8 +144,11 @@ export default class PositionTracker {
 
   async readPositionMicroseconds(refreshGeneration) {
     const result = await this.propertiesProxy.call(
-      "Get",
-      new GLib.Variant("(ss)", [MPRIS_PLAYER_IFACE_NAME, "Position"]),
+      DbusPropertiesMethods.GET,
+      new GLib.Variant("(ss)", [
+        MPRIS_PLAYER_IFACE_NAME,
+        MprisPlayerProperties.POSITION,
+      ]),
       Gio.DBusCallFlags.NONE,
       DBUS_CALL_TIMEOUT_MS,
       this.operationCancellable,

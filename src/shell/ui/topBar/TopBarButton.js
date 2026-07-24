@@ -16,6 +16,12 @@ import St from "gi://St";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 
 import {
+  MprisPlayerProperties,
+  MprisRootProperties,
+} from "../../../shared/constants/dbus.js";
+import { GTypeNames } from "../../../shared/constants/gtypes.js";
+import { MediaAppStateProperties } from "../../../shared/constants/mediaApp.js";
+import {
   APP_RESOLUTION_RETRY_DELAY_MS,
   APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../../shared/constants/timing.js";
@@ -23,6 +29,7 @@ import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TopBarElements } from "../../../shared/enums/topBar.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/PopupContent.js";
 import TopBarPlaybackControls from "./TopBarPlaybackControls.js";
 import TopBarPointerHandler from "./TopBarPointerHandler.js";
@@ -31,7 +38,6 @@ import TopBarTrackInformation from "./TopBarTrackInformation.js";
 import TopBarVisualizer from "./TopBarVisualizer.js";
 
 const logger = createLogger("TopBarButton");
-const MEDIA_APP_WIDGET_FLAGS = WidgetFlags.TOP_BAR | WidgetFlags.POPUP;
 
 /**
  * Owns the MediaShell top bar button, popup menu, and top bar widget orchestration.
@@ -62,7 +68,7 @@ class TopBarButton extends PanelMenu.Button {
     this.updateWidgets(WidgetFlags.ALL);
     this.scheduleAppResolutionRetry();
     this.pointerHandler.install();
-    this.menu.box.add_style_class_name("mediashell-popup-container");
+    this.menu.box.add_style_class_name(StyleClasses.POPUP_CONTAINER);
   }
 
   vfunc_event() {
@@ -70,7 +76,7 @@ class TopBarButton extends PanelMenu.Button {
   }
 
   setMediaApp(mediaApp) {
-    if (!mediaApp || this.isSameMediaApp(mediaApp)) return;
+    if (!mediaApp || this.isActiveMediaApp(mediaApp)) return;
     logger.debug("Switched active media app", mediaApp.busName);
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
@@ -80,11 +86,11 @@ class TopBarButton extends PanelMenu.Button {
     // The configured element order has not changed. Reconcile the new
     // app in place so feed hand-offs do not unparent and reinsert every
     // top bar actor.
-    this.updateWidgets(MEDIA_APP_WIDGET_FLAGS);
+    this.updateWidgets(WidgetFlags.ALL);
     this.scheduleAppResolutionRetry();
   }
 
-  isSameMediaApp(mediaApp) {
+  isActiveMediaApp(mediaApp) {
     return Boolean(
       this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName,
     );
@@ -214,7 +220,9 @@ class TopBarButton extends PanelMenu.Button {
   ensureTopBarLayout() {
     if (this.topBarBox) return;
 
-    this.topBarBox = new St.BoxLayout({ styleClass: "mediashell-top-bar-box" });
+    this.topBarBox = new St.BoxLayout({
+      styleClass: StyleClasses.TOP_BAR_BOX,
+    });
     this.topBarActionBoxBefore = this.createTopBarActionBox();
     this.topBarActionBoxAfter = this.createTopBarActionBox();
     this.topBarBox.add_child(this.topBarActionBoxBefore);
@@ -223,7 +231,7 @@ class TopBarButton extends PanelMenu.Button {
 
   createTopBarActionBox() {
     return new St.BoxLayout({
-      styleClass: "mediashell-top-bar-action-box",
+      styleClass: StyleClasses.TOP_BAR_ACTION_BOX,
       reactive: true,
       trackHover: false,
     });
@@ -267,7 +275,7 @@ class TopBarButton extends PanelMenu.Button {
   }
 
   addMediaAppPropertyListeners() {
-    this.addMediaAppPropertyListener("Metadata", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.METADATA, () => {
       this.queueMetadataWidgetUpdate();
     });
     const updateAppIdentity = () => {
@@ -276,70 +284,82 @@ class TopBarButton extends PanelMenu.Button {
       );
       this.scheduleAppResolutionRetry();
     };
-    this.addMediaAppPropertyListener("Identity", updateAppIdentity);
-    this.addMediaAppPropertyListener("DesktopEntry", updateAppIdentity);
-    this.addMediaAppPropertyListener("PlaybackStatus", () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
-          WidgetFlags.TOP_BAR_VISUALIZER |
-          WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE |
-          WidgetFlags.POPUP_PROGRESS_BAR,
-      );
-      if (this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-        this.topBarTrackInformation.pause();
-        this.popupContent.pause();
-      } else {
-        this.topBarTrackInformation.resume();
-        this.popupContent.resume();
-      }
-    });
-    this.addMediaAppPropertyListener("CanPlay", () => {
+    this.addMediaAppPropertyListener(
+      MprisRootProperties.IDENTITY,
+      updateAppIdentity,
+    );
+    this.addMediaAppPropertyListener(
+      MprisRootProperties.DESKTOP_ENTRY,
+      updateAppIdentity,
+    );
+    this.addMediaAppPropertyListener(
+      MprisPlayerProperties.PLAYBACK_STATUS,
+      () => {
+        this.requestWidgetUpdate(
+          WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
+            WidgetFlags.TOP_BAR_VISUALIZER |
+            WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE |
+            WidgetFlags.POPUP_PROGRESS_BAR,
+        );
+        if (this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
+          this.topBarTrackInformation.pause();
+          this.popupContent.pause();
+        } else {
+          this.topBarTrackInformation.resume();
+          this.popupContent.resume();
+        }
+      },
+    );
+    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
           WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE,
       );
     });
-    this.addMediaAppPropertyListener("CanPause", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
           WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE,
       );
     });
-    this.addMediaAppPropertyListener("CanSeek", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_PROGRESS_BAR);
     });
-    this.addMediaAppPropertyListener("CanGoNext", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_NEXT | WidgetFlags.POPUP_PLAYBACK_NEXT,
       );
     });
-    this.addMediaAppPropertyListener("CanGoPrevious", () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS |
-          WidgetFlags.POPUP_PLAYBACK_PREVIOUS,
-      );
-    });
-    this.addMediaAppPropertyListener("CanControl", () => {
+    this.addMediaAppPropertyListener(
+      MprisPlayerProperties.CAN_GO_PREVIOUS,
+      () => {
+        this.requestWidgetUpdate(
+          WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS |
+            WidgetFlags.POPUP_PLAYBACK_PREVIOUS,
+        );
+      },
+    );
+    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS |
           WidgetFlags.POPUP_PLAYBACK_CONTROLS,
       );
     });
-    this.addMediaAppPropertyListener("Shuffle", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE |
           WidgetFlags.POPUP_PLAYBACK_SHUFFLE,
       );
     });
-    this.addMediaAppPropertyListener("LoopStatus", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_LOOP,
       );
     });
-    this.addMediaAppPropertyListener("IsPinned", () => {
+    this.addMediaAppPropertyListener(MediaAppStateProperties.IS_PINNED, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_APP_SELECTOR);
     });
-    this.addMediaAppPropertyListener("Rate", () => {
+    this.addMediaAppPropertyListener(MprisPlayerProperties.RATE, () => {
       this.popupContent.setPlaybackRate(this.mediaApp.rate);
     });
     const observedMediaApp = this.mediaApp;
@@ -491,6 +511,6 @@ class TopBarButton extends PanelMenu.Button {
 }
 
 export default GObject.registerClass(
-  { GTypeName: "MediaShellTopBarButton" },
+  { GTypeName: GTypeNames.TOP_BAR_BUTTON },
   TopBarButton,
 );
