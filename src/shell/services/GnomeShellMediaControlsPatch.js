@@ -37,17 +37,13 @@ export default class GnomeShellMediaControlsPatch {
     this.isHidden = false;
     if (!isHidden) {
       const restoreGeneration = this.restoreGeneration;
-      this.restoreCurrentGnomeShellMediaControls(restoreGeneration)
-        .then(() => {
-          if (!this.isDestroyed && restoreGeneration === this.restoreGeneration)
-            logger.debug("Restored GNOME Shell media controls");
-        })
-        .catch((error) =>
+      void this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
+        (error) =>
           logger.warn(
             "Failed to restore current GNOME Shell media controls",
             error,
           ),
-        );
+      );
       return;
     }
 
@@ -68,7 +64,6 @@ export default class GnomeShellMediaControlsPatch {
     );
     this.isHidden = true;
     this.removeCurrentGnomeShellMediaControls();
-    logger.debug("Hid GNOME Shell media controls");
   }
 
   getGnomeShellMediaSourceClass() {

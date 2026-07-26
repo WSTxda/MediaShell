@@ -20,7 +20,6 @@ import {
   MPRIS_PLAYER_IFACE_NAME,
 } from "../../shared/constants/dbus.js";
 import { ResourceUris } from "../../shared/constants/resources.js";
-import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(
@@ -30,7 +29,6 @@ Gio._promisify(
 );
 Gio._promisify(Gio.DBusProxy, "new", "new_finish");
 
-const logger = createLogger("MprisProxyFactory");
 async function readXmlResource(uri, cancellable) {
   const [bytes] =
     await Gio.File.new_for_uri(uri).load_contents_async(cancellable);
@@ -67,7 +65,6 @@ async function loadMprisIntrospectionData(cancellable) {
   )
     throw new Error("The bundled D-Bus introspection data is incomplete");
 
-  logger.debug("Loaded bundled MPRIS introspection data");
   return introspectionData;
 }
 
@@ -177,6 +174,7 @@ export default class MprisProxyFactory {
   }
 
   destroy() {
+    if (this.isDestroyed) return;
     this.isDestroyed = true;
     this.initializationGeneration++;
     this.initializationCancellable?.cancel();

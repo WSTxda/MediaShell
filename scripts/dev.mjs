@@ -2,11 +2,10 @@
  * @file dev.mjs
  * @module scripts.dev
  *
- * Runs MediaShell development validation, audits, and package inspection.
+ * Runs MediaShell validation through a small set of executable release gates.
  *
- * Runtime checks guard executable contracts used by GNOME Shell. Formatting
- * and organization audits remain explicit developer tools and do not make a
- * production build fail for non-behavioral preferences.
+ * Runtime gates protect source, lifecycle, declarative assets, translations,
+ * and tests. Formatting and organization remain explicit developer diagnostics.
  */
 
 import { runAudit } from "./dev/audit.mjs";
@@ -19,37 +18,71 @@ import {
   checkEntryPointContracts,
   checkImportsAndBoundaries,
   checkJavaScriptSyntax,
+  checkModuleLiveness,
+  checkMprisPropertyHydration,
   checkSourceStructure,
 } from "./dev/javascript.mjs";
 import { EXTENSION_PACKAGE, checkPackage } from "./dev/package.mjs";
+import { checkPlaybackContracts } from "./dev/playback.mjs";
 
-async function runCheck(label, check) {
+async function runGate(label, check) {
   console.log(`\n==> ${label}`);
   await check();
 }
 
-async function checkRuntime() {
-  const checks = [
-    ["JavaScript syntax", checkJavaScriptSyntax],
-    ["imports and process boundaries", checkImportsAndBoundaries],
-    ["runtime API safety", checkSourceStructure],
-    ["entry-point lifecycle", checkEntryPointContracts],
-    ["extension metadata", checkExtensionContracts],
-    ["settings and UI contracts", checkSettingsContracts],
-  ];
+async function checkSourceGraph() {
+  await checkJavaScriptSyntax();
+  await checkImportsAndBoundaries();
+  await checkModuleLiveness();
+}
 
-  for (const [label, check] of checks) await runCheck(label, check);
+async function checkRuntimeSafety() {
+  await checkMprisPropertyHydration();
+  await checkSourceStructure();
+  await checkEntryPointContracts();
+  runCommand("behavioral contracts", process.execPath, ["--test"]);
+}
 
-  runCommand("unit tests", process.execPath, ["--test"]);
-  runCommand("parsed assets and translations", "python3", [
+async function checkDeclarativeContracts() {
+  await checkExtensionContracts();
+  await checkSettingsContracts();
+  await checkPlaybackContracts();
+}
+
+function checkAssetsAndTranslations() {
+  runCommand("parsed assets", "python3", [
     "scripts/dev/assets.py",
+    "--check-resources",
+  ]);
+  runCommand("translations", "python3", [
+    "scripts/dev/assets.py",
+    "--check-translations",
   ]);
   runCommand("development script syntax", "bash", [
     "-n",
     "scripts/development.sh",
   ]);
+}
 
-  console.log(`\nAll ${checks.length + 3} runtime validation groups passed.`);
+async function checkRuntime() {
+  const gates = [
+    ["source graph", checkSourceGraph],
+    ["runtime safety", checkRuntimeSafety],
+    ["declarative contracts", checkDeclarativeContracts],
+    ["assets and translations", checkAssetsAndTranslations],
+  ];
+  for (const [label, check] of gates) await runGate(label, check);
+  console.log(`\nAll ${gates.length} runtime validation gates passed.`);
+}
+
+async function checkNativeCompilation() {
+  await runGate("native compilation", () =>
+    runCommand("GNOME and gettext toolchain", "python3", [
+      "scripts/dev/assets.py",
+      "--check-native",
+    ]),
+  );
+  console.log("\nNative compilation gate passed.");
 }
 
 async function checkDevelopment() {
@@ -59,7 +92,7 @@ async function checkDevelopment() {
     "--check",
     ".",
   ]);
-  await runCheck("organization audit", runAudit);
+  await runGate("organization audit", runAudit);
   console.log("\nDevelopment checks passed.");
 }
 
@@ -68,6 +101,7 @@ const [command = "check", argument] = process.argv.slice(2);
 try {
   if (command === "check") await checkDevelopment();
   else if (command === "runtime") await checkRuntime();
+  else if (command === "native") await checkNativeCompilation();
   else if (command === "audit")
     await runAudit({ strict: argument === "--strict" });
   else if (command === "package")
@@ -75,7 +109,7 @@ try {
   else
     throw new Error(
       `Unknown command: ${command}\n` +
-        "Use 'check', 'runtime', 'audit [--strict]', or 'package [zip]'.",
+        "Use 'check', 'runtime', 'native', 'audit [--strict]', or 'package [zip]'.",
     );
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

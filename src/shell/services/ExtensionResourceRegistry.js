@@ -36,7 +36,6 @@ export default class ExtensionResourceRegistry {
       ]);
       this.resource = Gio.resource_load(resourcePath);
       Gio.resources_register(this.resource);
-      logger.debug("Registered extension resources");
     } catch (error) {
       logger.warn(
         "Failed to load compiled resources; extension will use theme fallbacks",
@@ -51,9 +50,8 @@ export default class ExtensionResourceRegistry {
 
     try {
       Gio.resources_unregister(this.resource);
-      logger.debug("Unregistered extension resources");
     } catch (error) {
-      logger.debug("Resources were already unavailable during teardown", error);
+      logger.warn("Failed to unregister compiled resources", error);
     }
     this.resource = null;
     this.extensionPath = null;

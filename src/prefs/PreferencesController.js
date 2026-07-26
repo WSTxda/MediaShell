@@ -18,6 +18,7 @@ import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
 import InteractionsPageController from "./controllers/InteractionsPageController.js";
 import OthersPageController from "./controllers/OthersPageController.js";
+import PopupLayoutController from "./controllers/PopupLayoutController.js";
 import PreferenceSensitivityController from "./controllers/PreferenceSensitivityController.js";
 import TopBarLayoutController from "./controllers/TopBarLayoutController.js";
 import TrackInformationContentController from "./controllers/TrackInformationContentController.js";
@@ -58,6 +59,7 @@ export default class PreferencesController {
     this.preferenceBinder.bindAllPreferences();
 
     this.ownedControllers = [
+      new PopupLayoutController(this.settings),
       new PreferenceSensitivityController(this.builder),
       new TopBarLayoutController(this.settings, this.builder),
       new TrackInformationContentController(this.settings, this.builder),
@@ -82,7 +84,6 @@ export default class PreferencesController {
       this.destroy();
       return false;
     });
-    logger.debug("Preferences window initialized");
   }
 
   destroy() {
@@ -92,11 +93,8 @@ export default class PreferencesController {
     if (this.preferencesWindow && this.closeSignalId !== null) {
       try {
         this.preferencesWindow.disconnect(this.closeSignalId);
-      } catch (error) {
-        logger.debug(
-          "Preferences close signal was already disconnected",
-          error,
-        );
+      } catch {
+        // Window disposal may remove the close signal before controller teardown.
       }
     }
     this.closeSignalId = null;
@@ -105,7 +103,7 @@ export default class PreferencesController {
       try {
         controller.destroy();
       } catch (error) {
-        logger.warn("A preferences controller failed during teardown", error);
+        logger.warn(`Failed to destroy ${controller.constructor.name}`, error);
       }
     }
     this.ownedControllers.length = 0;
@@ -120,6 +118,5 @@ export default class PreferencesController {
     this.builder = null;
     this.preferencesWindow = null;
     this.preferencesInstance = null;
-    logger.debug("Preferences window destroyed");
   }
 }

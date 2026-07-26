@@ -34,7 +34,6 @@ import {
   DbusPropertiesMethods,
   MPRIS_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
-  MprisMetadataKeys,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
@@ -53,6 +52,11 @@ import {
   MPRIS_INIT_TIMEOUT_MS,
 } from "../../shared/constants/timing.js";
 import { finiteNumberOr } from "../../shared/utils/format.js";
+import { normalizeAppIdentityHint } from "../../shared/utils/appIdentity.js";
+import {
+  createMprisMetadataRevision,
+  normalizeMprisMetadata,
+} from "../../shared/utils/metadata.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
   metadataContainsTrack,
@@ -60,36 +64,31 @@ import {
   normalizePlaybackStatus,
   resolveMediaAppValidity,
 } from "../../shared/utils/mpris.js";
-import { isCancellationError } from "../utils/errors.js";
+import { normalizePlaybackRateRange } from "../../shared/utils/playbackRate.js";
+import {
+  matchesMprisOwnerSnapshot,
+  resolveMprisOwnerTransition,
+} from "../../shared/utils/mprisOwner.js";
+import { resolvePlaybackPositionTrackContext } from "../../shared/utils/playbackPosition.js";
+import {
+  MprisOperationReasons,
+  mprisOperationCancelled,
+  mprisOperationFailed,
+  mprisOperationSucceeded,
+  mprisOperationUnsupported,
+} from "../../shared/utils/mprisOperationResult.js";
+import { getOperationErrorName, isCancellationError } from "../utils/errors.js";
 import PositionTracker from "./PositionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("PlayerProxy");
-
-function normalizeMetadataRevisionValue(value) {
-  return Array.isArray(value) ? value.join("\u0000") : value;
-}
-
-function getMetadataRevision(metadata) {
-  return [
-    metadata?.[MprisMetadataKeys.TRACK_ID],
-    metadata?.[MprisMetadataKeys.LENGTH],
-    metadata?.[MprisMetadataKeys.ART_URL],
-    metadata?.[MprisMetadataKeys.URL],
-    metadata?.[MprisMetadataKeys.TITLE],
-    metadata?.[MprisMetadataKeys.ARTIST],
-    metadata?.[MprisMetadataKeys.ALBUM],
-    metadata?.[MprisMetadataKeys.ALBUM_ARTIST],
-    metadata?.[MprisMetadataKeys.GENRE],
-    metadata?.[MprisMetadataKeys.CONTENT_CREATED],
-    metadata?.[MprisMetadataKeys.COMPOSER],
-    metadata?.[MprisMetadataKeys.DISC_NUMBER],
-    metadata?.[MprisMetadataKeys.TRACK_NUMBER],
-  ]
-    .map((value) => String(normalizeMetadataRevisionValue(value) ?? ""))
-    .join("\u0001");
-}
+const LOOP_STATUS_ORDER = Object.freeze([
+  LoopStatus.NONE,
+  LoopStatus.PLAYLIST,
+  LoopStatus.TRACK,
+]);
+const LOOP_STATUS_VALUES = new Set(LOOP_STATUS_ORDER);
 
 /**
  * Normalizes one MPRIS player into stable state, commands, and signals.
@@ -108,11 +107,14 @@ export default class PlayerProxy {
     this.pollSourceId = null;
     this.metadataInvalidationSourceId = null;
     this.metadataRefreshPromise = null;
+    this.metadataRefreshOwnerGeneration = null;
     this.hasPresentedTrackMetadata = false;
     this.hasCurrentTrackMetadata = false;
     // Normalize proxy variants once; UI getters are intentionally allocation-free.
     this.state = Object.create(null);
     this.metadataRevision = "";
+    this.nameOwner = null;
+    this.ownerGeneration = 0;
   }
 
   async init() {
@@ -136,11 +138,16 @@ export default class PlayerProxy {
     this.rootProxy = rootProxy;
     this.playerProxy = playerProxy;
     this.propertiesProxy = propertiesProxy;
+    this.adoptCurrentNameOwner(undefined, { refreshState: false });
     this.hydrateState(rootProxy, ROOT_PROPERTIES);
     this.hydrateState(playerProxy, PLAYER_PROPERTIES);
     this.positionTracker = new PositionTracker(
       propertiesProxy,
       this.operationCancellable,
+    );
+    this.positionTracker.updateTrackContext(
+      resolvePlaybackPositionTrackContext(this.metadata),
+      { refresh: false },
     );
 
     this.connectProxySignal(
@@ -193,6 +200,34 @@ export default class PlayerProxy {
     }
   }
 
+  resetStateForOwnerChange() {
+    const identity = this.state[MprisRootProperties.IDENTITY];
+    const desktopEntry = this.state[MprisRootProperties.DESKTOP_ENTRY];
+    const metadata = this.metadata;
+    const hasStableMetadata = metadataContainsTrack(metadata);
+
+    this.cancelMetadataInvalidation();
+    this.state = Object.create(null);
+    if (identity !== undefined)
+      this.state[MprisRootProperties.IDENTITY] = identity;
+    if (desktopEntry !== undefined)
+      this.state[MprisRootProperties.DESKTOP_ENTRY] = desktopEntry;
+    if (hasStableMetadata)
+      this.state[MprisPlayerProperties.METADATA] = metadata;
+
+    this.metadataRevision = hasStableMetadata
+      ? createMprisMetadataRevision(metadata)
+      : "";
+    this.hasCurrentTrackMetadata = false;
+    this.hasPresentedTrackMetadata ||= hasStableMetadata;
+    this.positionTracker?.resetForOwnerChange();
+  }
+
+  emitHydratedState() {
+    for (const property of [...ROOT_PROPERTIES, ...PLAYER_PROPERTIES])
+      this.emitPropertyChanged(property, this.state[property]);
+  }
+
   connectProxySignal(proxy, signal, callback) {
     const signalId = proxy.connect(signal, callback);
     this.proxySignalConnections.push({ proxy, signalId, isDbusSignal: false });
@@ -233,14 +268,12 @@ export default class PlayerProxy {
     const changed = changedVariant.recursiveUnpack();
     const invalidated = new Set(invalidatedProperties ?? []);
 
-    let acceptedMetadataChange = false;
     for (const [property, value] of Object.entries(changed)) {
       if (
         interfaceName === MPRIS_PLAYER_IFACE_NAME &&
         property === MprisPlayerProperties.METADATA
       ) {
-        acceptedMetadataChange =
-          this.applyMetadataUpdate(value) || acceptedMetadataChange;
+        this.applyMetadataUpdate(value);
         continue;
       }
 
@@ -283,7 +316,6 @@ export default class PlayerProxy {
 
     if (interfaceName !== MPRIS_PLAYER_IFACE_NAME) return;
 
-    if (acceptedMetadataChange) this.positionTracker.resetForTrackChange();
     if (
       hasChanged(MprisPlayerProperties.PLAYBACK_STATUS) ||
       hasChanged(MprisPlayerProperties.RATE)
@@ -304,7 +336,6 @@ export default class PlayerProxy {
     let remaining = Math.ceil(
       MPRIS_INIT_TIMEOUT_MS / MPRIS_INIT_POLL_INTERVAL_MS,
     );
-    logger.debug("MPRIS initialization polling started for", this.busName);
     this.pollSourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       MPRIS_INIT_POLL_INTERVAL_MS,
@@ -314,10 +345,6 @@ export default class PlayerProxy {
           this.hasCurrentTrackMetadata ||
           --remaining < 0
         ) {
-          if (this.hasCurrentTrackMetadata)
-            logger.debug(
-              `MPRIS proxy initialized after ${pollCount} polls for ${this.busName}`,
-            );
           this.pollSourceId = null;
           return GLib.SOURCE_REMOVE;
         }
@@ -340,17 +367,32 @@ export default class PlayerProxy {
   refreshMetadata() {
     if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy)
       return Promise.resolve(false);
-    if (this.metadataRefreshPromise) return this.metadataRefreshPromise;
 
-    const promise = this.readMetadata().finally(() => {
-      if (this.metadataRefreshPromise === promise)
+    const operationOwner = this.readCurrentNameOwner(this.propertiesProxy);
+    if (!operationOwner) return Promise.resolve(false);
+    this.adoptCurrentNameOwner(operationOwner);
+    const operationOwnerGeneration = this.ownerGeneration;
+    if (
+      this.metadataRefreshPromise &&
+      this.metadataRefreshOwnerGeneration === operationOwnerGeneration
+    )
+      return this.metadataRefreshPromise;
+
+    const promise = this.readMetadata(
+      operationOwner,
+      operationOwnerGeneration,
+    ).finally(() => {
+      if (this.metadataRefreshPromise === promise) {
         this.metadataRefreshPromise = null;
+        this.metadataRefreshOwnerGeneration = null;
+      }
     });
     this.metadataRefreshPromise = promise;
+    this.metadataRefreshOwnerGeneration = operationOwnerGeneration;
     return promise;
   }
 
-  async readMetadata() {
+  async readMetadata(operationOwner, operationOwnerGeneration) {
     if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy)
       return false;
     const result = await this.propertiesProxy.call(
@@ -365,19 +407,30 @@ export default class PlayerProxy {
     );
     if (this.isDestroyed || !this.playerProxy) return false;
 
+    const currentOwner = this.readCurrentNameOwner(this.propertiesProxy);
+    if (
+      !matchesMprisOwnerSnapshot(
+        operationOwner,
+        operationOwnerGeneration,
+        currentOwner,
+        this.ownerGeneration,
+      )
+    ) {
+      if (currentOwner) this.adoptCurrentNameOwner(currentOwner);
+      return false;
+    }
+
     const variant = result.get_child_value(0).get_variant();
     this.playerProxy.set_cached_property(
       MprisPlayerProperties.METADATA,
       variant,
     );
-    const metadata = this.unpackMetadata(variant.recursiveUnpack());
-    if (this.applyMetadataUpdate(metadata))
-      this.positionTracker?.resetForTrackChange();
+    this.applyMetadataUpdate(variant);
     return true;
   }
 
   applyMetadataUpdate(metadataValue) {
-    const metadata = this.unpackMetadata(metadataValue);
+    const metadata = normalizeMprisMetadata(metadataValue);
     const hasTrackMetadata = metadataContainsTrack(metadata);
     this.hasCurrentTrackMetadata = hasTrackMetadata;
 
@@ -389,13 +442,16 @@ export default class PlayerProxy {
       return false;
     }
 
-    const revision = getMetadataRevision(metadata);
+    const revision = createMprisMetadataRevision(metadata);
     if (revision === this.metadataRevision) {
       this.validateMediaApp();
       return false;
     }
 
-    this.storeProperty(MprisPlayerProperties.METADATA, metadata);
+    this.storeNormalizedMetadata(metadata, revision);
+    this.positionTracker?.updateTrackContext(
+      resolvePlaybackPositionTrackContext(metadata),
+    );
     this.emitPropertyChanged(MprisPlayerProperties.METADATA, metadata);
     this.validateMediaApp();
     return true;
@@ -428,7 +484,6 @@ export default class PlayerProxy {
     // must not restart the timer indefinitely; real metadata or a non-stopped
     // playback state cancels it above.
     if (this.metadataInvalidationSourceId !== null) return;
-    logger.debug("Empty-stopped grace period started for", this.busName);
     this.metadataInvalidationSourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
@@ -453,8 +508,6 @@ export default class PlayerProxy {
 
   setMediaAppInvalid(isInvalid) {
     if (isInvalid === this.isMediaAppInvalid) return;
-    if (this.isMediaAppInvalid && !isInvalid)
-      logger.debug("First valid track received for", this.busName);
     this.isMediaAppInvalid = isInvalid;
     this.emitPropertyChanged(
       MediaAppStateProperties.IS_MEDIA_APP_INVALID,
@@ -462,17 +515,11 @@ export default class PlayerProxy {
     );
   }
 
-  unpackMetadata(metadata) {
-    if (!metadata) return {};
-    if (typeof metadata.recursiveUnpack === "function")
-      return metadata.recursiveUnpack();
-    if (typeof metadata !== "object" || Array.isArray(metadata)) return {};
-
-    const unpacked = {};
-    for (const [key, value] of Object.entries(metadata))
-      unpacked[key] =
-        value?.recursiveUnpack?.() ?? value?.deepUnpack?.() ?? value;
-    return unpacked;
+  storeNormalizedMetadata(metadata, revision = null) {
+    this.state[MprisPlayerProperties.METADATA] = metadata;
+    this.metadataRevision = revision ?? createMprisMetadataRevision(metadata);
+    this.hasCurrentTrackMetadata = metadataContainsTrack(metadata);
+    return metadata;
   }
 
   readCachedProperty(proxy, property, fallback = undefined) {
@@ -491,16 +538,60 @@ export default class PlayerProxy {
   }
 
   storeProperty(property, value) {
-    const normalized =
-      property === MprisPlayerProperties.METADATA
-        ? this.unpackMetadata(value)
-        : value;
-    this.state[property] = normalized;
-    if (property === MprisPlayerProperties.METADATA) {
-      this.metadataRevision = getMetadataRevision(normalized);
-      this.hasCurrentTrackMetadata = metadataContainsTrack(normalized);
+    if (property === MprisPlayerProperties.METADATA)
+      return this.storeNormalizedMetadata(normalizeMprisMetadata(value));
+
+    this.state[property] = value;
+    return value;
+  }
+
+  hasPlayerProperty(property) {
+    return Boolean(
+      this.state &&
+      Object.hasOwn(this.state, property) &&
+      this.state[property] !== undefined,
+    );
+  }
+
+  readCurrentNameOwner(preferredProxy = null) {
+    for (const proxy of [
+      preferredProxy,
+      this.rootProxy,
+      this.playerProxy,
+      this.propertiesProxy,
+    ]) {
+      if (typeof proxy?.get_name_owner !== "function") continue;
+      const nameOwner = proxy.get_name_owner();
+      if (nameOwner) return nameOwner;
     }
-    return normalized;
+    return null;
+  }
+
+  adoptCurrentNameOwner(
+    nameOwner = this.readCurrentNameOwner(),
+    { refreshState = true } = {},
+  ) {
+    const transition = resolveMprisOwnerTransition(this.nameOwner, nameOwner);
+    if (this.isDestroyed || !transition.hasOwner) return false;
+    if (!transition.changed) return true;
+
+    this.nameOwner = transition.owner;
+    this.ownerGeneration++;
+    if (refreshState) {
+      this.resetStateForOwnerChange();
+      if (this.rootProxy) this.hydrateState(this.rootProxy, ROOT_PROPERTIES);
+      if (this.playerProxy)
+        this.hydrateState(this.playerProxy, PLAYER_PROPERTIES);
+      this.positionTracker?.updateTrackContext(
+        resolvePlaybackPositionTrackContext(this.metadata),
+        { refresh: false },
+      );
+      this.positionTracker?.updatePlaybackState(this.playbackStatus, this.rate);
+      this.emitHydratedState();
+      this.validateMediaApp();
+      this.pollForInitialMetadata();
+    }
+    return true;
   }
 
   pin() {
@@ -546,14 +637,10 @@ export default class PlayerProxy {
     return this.positionTracker?.getEstimatedPositionMicroseconds() ?? 0;
   }
   get minimumRate() {
-    return finiteNumberOr(this.state.MinimumRate, 1, {
-      minimum: Number.EPSILON,
-    });
+    return finiteNumberOr(this.state.MinimumRate, 1);
   }
   get maximumRate() {
-    return finiteNumberOr(this.state.MaximumRate, 1, {
-      minimum: Number.EPSILON,
-    });
+    return finiteNumberOr(this.state.MaximumRate, 1);
   }
   get canGoNext() {
     return Boolean(this.state.CanGoNext);
@@ -573,6 +660,19 @@ export default class PlayerProxy {
   get canControl() {
     return Boolean(this.state.CanControl);
   }
+  get canSetLoopStatus() {
+    return this.hasPlayerProperty(MprisPlayerProperties.LOOP_STATUS);
+  }
+  get canSetPlaybackRate() {
+    return (
+      this.hasPlayerProperty(MprisPlayerProperties.RATE) &&
+      this.hasPlayerProperty(MprisPlayerProperties.MINIMUM_RATE) &&
+      this.hasPlayerProperty(MprisPlayerProperties.MAXIMUM_RATE)
+    );
+  }
+  get canSetShuffle() {
+    return this.hasPlayerProperty(MprisPlayerProperties.SHUFFLE);
+  }
   get canQuit() {
     return Boolean(this.state.CanQuit);
   }
@@ -582,94 +682,111 @@ export default class PlayerProxy {
   get canRaise() {
     return Boolean(this.state.CanRaise);
   }
-  get canSetFullscreen() {
-    return Boolean(this.state.CanSetFullscreen);
-  }
   get desktopEntry() {
-    return String(this.state.DesktopEntry ?? "");
-  }
-  get hasTrackList() {
-    return Boolean(this.state.HasTrackList);
+    return normalizeAppIdentityHint(this.state.DesktopEntry);
   }
   get identity() {
-    return String(this.state.Identity ?? "");
-  }
-  get supportedMimeTypes() {
-    return this.state.SupportedMimeTypes ?? [];
-  }
-  get supportedUriSchemes() {
-    return this.state.SupportedUriSchemes ?? [];
+    return normalizeAppIdentityHint(this.state.Identity);
   }
 
   set loopStatus(value) {
-    this.setProperty(
-      MprisPlayerProperties.LOOP_STATUS,
-      new GLib.Variant("s", value),
-    );
+    void this.setLoopStatus(value);
   }
   set rate(value) {
-    if (!Number.isFinite(value)) return;
-    const minimum = this.minimumRate;
-    const maximum = Math.max(minimum, this.maximumRate);
-    const rate = Math.min(maximum, Math.max(minimum, value));
-    if (rate !== 0)
-      this.setProperty(MprisPlayerProperties.RATE, new GLib.Variant("d", rate));
+    void this.setPlaybackRate(value);
   }
   set shuffle(value) {
-    this.setProperty(
-      MprisPlayerProperties.SHUFFLE,
-      new GLib.Variant("b", value),
-    );
+    void this.setShuffle(value);
   }
   set volume(value) {
-    if (!Number.isFinite(value)) return;
-    this.setProperty(
-      MprisPlayerProperties.VOLUME,
-      new GLib.Variant("d", Math.max(0, value)),
-    );
+    void this.setVolume(value);
   }
-  set fullscreen(value) {
-    if (this.canSetFullscreen)
-      this.setRootProperty(
-        MprisRootProperties.FULLSCREEN,
-        new GLib.Variant("b", value),
-      );
+
+  #guardPlayerOperation(isSupported = true) {
+    if (this.isDestroyed)
+      return mprisOperationCancelled(MprisOperationReasons.DESTROYED);
+    if (!this.canControl || !isSupported)
+      return mprisOperationUnsupported(MprisOperationReasons.CAPABILITY);
+    return null;
+  }
+
+  #guardRootOperation(isSupported = true) {
+    if (this.isDestroyed)
+      return mprisOperationCancelled(MprisOperationReasons.DESTROYED);
+    if (!isSupported)
+      return mprisOperationUnsupported(MprisOperationReasons.CAPABILITY);
+    return null;
   }
 
   /**
-   * Calls a D-Bus method on the given proxy, drops cancellation errors, and logs genuine failures.
+   * Calls one D-Bus method and returns a lifecycle-safe operation result.
    *
-   * PlayerProxy uses this helper for both root and Player-interface calls so
-   * disable-time cancellations stay silent while real MPRIS/D-Bus failures are
-   * logged once per stable key. The helper also centralizes the call timeout and
-   * operation cancellable used by all outbound proxy calls.
+   * No command is retried: a playback call may already have reached the remote
+   * endpoint even when the reply is lost. Cancellation during destroy is an
+   * expected local outcome and is never logged as a warning.
    *
    * @param {Gio.DBusProxy|null} proxy - Proxy that owns the method call.
    * @param {string} method - D-Bus method name.
-   * @param {GLib.Variant|null} parameters - Method parameters, or null for no-args calls.
-   * @param {string} logKey - Stable key for warning deduplication.
+   * @param {GLib.Variant|null} parameters - Method parameters, or null.
+   * @param {string} logKey - Stable warning-deduplication key.
    * @param {string} logMessage - Human-readable warning prefix.
-   * @returns {Promise<void>} Resolves after the call succeeds, is canceled, or is logged.
+   * @returns {Promise<object>} Explicit MPRIS operation result.
    */
   async #callProxy(proxy, method, parameters, logKey, logMessage) {
-    if (this.isDestroyed || !proxy) return;
-    await proxy
-      .call(
+    if (this.isDestroyed)
+      return mprisOperationCancelled(MprisOperationReasons.DESTROYED);
+    if (!proxy) {
+      logger.warnOnce(logKey, logMessage, this.busName, "proxy unavailable");
+      return mprisOperationFailed(MprisOperationReasons.MISSING_PROXY);
+    }
+
+    try {
+      const operationOwner = this.readCurrentNameOwner(proxy);
+      if (!operationOwner) {
+        logger.warnOnce(logKey, logMessage, this.busName, "no D-Bus owner");
+        return mprisOperationFailed(MprisOperationReasons.NO_OWNER);
+      }
+      this.adoptCurrentNameOwner(operationOwner);
+      const operationOwnerGeneration = this.ownerGeneration;
+
+      await proxy.call(
         method,
         parameters,
         Gio.DBusCallFlags.NONE,
         DBUS_CALL_TIMEOUT_MS,
         this.operationCancellable,
-      )
-      .catch((error) => {
-        if (isCancellationError(error)) return;
-        logger.warnOnce(logKey, logMessage, this.busName, error);
-      });
+      );
+      if (this.isDestroyed)
+        return mprisOperationCancelled(MprisOperationReasons.DESTROYED);
+
+      const currentOwner = this.readCurrentNameOwner(proxy);
+      if (
+        !matchesMprisOwnerSnapshot(
+          operationOwner,
+          operationOwnerGeneration,
+          currentOwner,
+          this.ownerGeneration,
+        )
+      ) {
+        if (currentOwner) this.adoptCurrentNameOwner(currentOwner);
+        return mprisOperationCancelled(MprisOperationReasons.OWNER_CHANGED);
+      }
+      return mprisOperationSucceeded();
+    } catch (error) {
+      if (isCancellationError(error))
+        return mprisOperationCancelled(MprisOperationReasons.CANCELLED);
+
+      const errorName = getOperationErrorName(error);
+      logger.warnOnce(logKey, logMessage, this.busName, error);
+      return mprisOperationFailed(MprisOperationReasons.DBUS_ERROR, errorName);
+    }
   }
 
-  async setProperty(property, value) {
-    if (!this.canControl) return;
-    await this.#callProxy(
+  async #setProperty(property, value) {
+    if (typeof property !== "string" || !value)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
+    return this.#callProxy(
       this.propertiesProxy,
       DbusPropertiesMethods.SET,
       new GLib.Variant("(ssv)", [MPRIS_PLAYER_IFACE_NAME, property, value]),
@@ -678,19 +795,8 @@ export default class PlayerProxy {
     );
   }
 
-  async setRootProperty(property, value) {
-    await this.#callProxy(
-      this.propertiesProxy,
-      DbusPropertiesMethods.SET,
-      new GLib.Variant("(ssv)", [MPRIS_IFACE_NAME, property, value]),
-      `set-root-property:${this.busName}:${property}`,
-      `Failed to set MPRIS root property ${property}`,
-    );
-  }
-
-  async callPlayer(method, parameters = null) {
-    if (!this.canControl) return;
-    await this.#callProxy(
+  async #callPlayer(method, parameters = null) {
+    return this.#callProxy(
       this.playerProxy,
       method,
       parameters,
@@ -699,8 +805,8 @@ export default class PlayerProxy {
     );
   }
 
-  async callRoot(method) {
-    await this.#callProxy(
+  async #callRoot(method) {
+    return this.#callProxy(
       this.rootProxy,
       method,
       null,
@@ -709,38 +815,66 @@ export default class PlayerProxy {
     );
   }
 
-  next() {
-    if (this.canControl && this.canGoNext)
-      return this.callPlayer(MprisPlayerMethods.NEXT);
+  async next() {
+    const guardResult = this.#guardPlayerOperation(this.canGoNext);
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.NEXT);
   }
-  previous() {
-    if (this.canControl && this.canGoPrevious)
-      return this.callPlayer(MprisPlayerMethods.PREVIOUS);
+
+  async previous() {
+    const guardResult = this.#guardPlayerOperation(this.canGoPrevious);
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.PREVIOUS);
   }
-  pause() {
-    if (this.canControl && this.canPause)
-      return this.callPlayer(MprisPlayerMethods.PAUSE);
+
+  async pause() {
+    const guardResult = this.#guardPlayerOperation(this.canPause);
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.PAUSE);
   }
-  playPause() {
-    if (this.canControl && (this.canPlay || this.canPause))
-      return this.callPlayer(MprisPlayerMethods.PLAY_PAUSE);
+
+  async playPause() {
+    const guardResult = this.#guardPlayerOperation(
+      this.canPlay || this.canPause,
+    );
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.PLAY_PAUSE);
   }
-  stop() {
-    if (this.canControl) return this.callPlayer(MprisPlayerMethods.STOP);
+
+  async stop() {
+    const guardResult = this.#guardPlayerOperation();
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.STOP);
   }
-  play() {
-    if (this.canControl && this.canPlay)
-      return this.callPlayer(MprisPlayerMethods.PLAY);
+
+  async play() {
+    const guardResult = this.#guardPlayerOperation(this.canPlay);
+    if (guardResult) return guardResult;
+    return this.#callPlayer(MprisPlayerMethods.PLAY);
   }
-  setPosition(trackId, positionMicroseconds) {
-    if (
-      !this.canControl ||
-      !this.canSeek ||
-      !trackId ||
-      !Number.isFinite(positionMicroseconds)
-    )
-      return;
-    return this.callPlayer(
+
+  async seek(offsetMicroseconds) {
+    const guardResult = this.#guardPlayerOperation(this.canSeek);
+    if (guardResult) return guardResult;
+    if (!Number.isFinite(offsetMicroseconds))
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
+    const offset = Math.trunc(offsetMicroseconds);
+    if (offset === 0)
+      return mprisOperationSucceeded(MprisOperationReasons.ALREADY_CURRENT);
+    return this.#callPlayer(
+      MprisPlayerMethods.SEEK,
+      new GLib.Variant("(x)", [offset]),
+    );
+  }
+
+  async setPosition(trackId, positionMicroseconds) {
+    const guardResult = this.#guardPlayerOperation(this.canSeek);
+    if (guardResult) return guardResult;
+    if (!trackId || !Number.isFinite(positionMicroseconds))
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
+    return this.#callPlayer(
       MprisPlayerMethods.SET_POSITION,
       new GLib.Variant("(ox)", [
         String(trackId),
@@ -749,31 +883,96 @@ export default class PlayerProxy {
     );
   }
 
-  openUri(uri) {
-    if (this.canControl && uri)
-      return this.callPlayer(
-        MprisPlayerMethods.OPEN_URI,
-        new GLib.Variant("(s)", [uri]),
-      );
+  async setPlaybackRate(value) {
+    const guardResult = this.#guardPlayerOperation(this.canSetPlaybackRate);
+    if (guardResult) return guardResult;
+    if (!Number.isFinite(value) || value <= 0)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
+    const { minimumRate, maximumRate } = normalizePlaybackRateRange(
+      this.minimumRate,
+      this.maximumRate,
+    );
+    const rate = Math.min(maximumRate, Math.max(minimumRate, value));
+    if (rate <= 0)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+    if (rate === this.rate)
+      return mprisOperationSucceeded(MprisOperationReasons.ALREADY_CURRENT);
+    return this.#setProperty(
+      MprisPlayerProperties.RATE,
+      new GLib.Variant("d", rate),
+    );
   }
 
-  raise() {
-    if (this.canRaise) return this.callRoot(MprisRootMethods.RAISE);
-  }
-  quit() {
-    if (this.canQuit) return this.callRoot(MprisRootMethods.QUIT);
-  }
-
-  toggleLoop() {
-    if (!this.canControl) return;
-    const statuses = [LoopStatus.NONE, LoopStatus.PLAYLIST, LoopStatus.TRACK];
-    const current = statuses.indexOf(this.loopStatus);
-    this.loopStatus =
-      statuses[(current + 1 + statuses.length) % statuses.length];
+  async setLoopStatus(value) {
+    const guardResult = this.#guardPlayerOperation(this.canSetLoopStatus);
+    if (guardResult) return guardResult;
+    if (!LOOP_STATUS_VALUES.has(value))
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+    if (value === this.loopStatus)
+      return mprisOperationSucceeded(MprisOperationReasons.ALREADY_CURRENT);
+    return this.#setProperty(
+      MprisPlayerProperties.LOOP_STATUS,
+      new GLib.Variant("s", value),
+    );
   }
 
-  toggleShuffle() {
-    if (this.canControl) this.shuffle = !this.shuffle;
+  async setShuffle(value) {
+    const guardResult = this.#guardPlayerOperation(this.canSetShuffle);
+    if (guardResult) return guardResult;
+    if (typeof value !== "boolean")
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+    if (value === this.shuffle)
+      return mprisOperationSucceeded(MprisOperationReasons.ALREADY_CURRENT);
+    return this.#setProperty(
+      MprisPlayerProperties.SHUFFLE,
+      new GLib.Variant("b", value),
+    );
+  }
+
+  async setVolume(value) {
+    const guardResult = this.#guardPlayerOperation();
+    if (guardResult) return guardResult;
+    if (!Number.isFinite(value))
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
+    const volume = Math.max(0, value);
+    if (volume === this.volume)
+      return mprisOperationSucceeded(MprisOperationReasons.ALREADY_CURRENT);
+    return this.#setProperty(
+      MprisPlayerProperties.VOLUME,
+      new GLib.Variant("d", volume),
+    );
+  }
+
+  async raise() {
+    const guardResult = this.#guardRootOperation(this.canRaise);
+    if (guardResult) return guardResult;
+    return this.#callRoot(MprisRootMethods.RAISE);
+  }
+
+  async quit() {
+    const guardResult = this.#guardRootOperation(this.canQuit);
+    if (guardResult) return guardResult;
+    return this.#callRoot(MprisRootMethods.QUIT);
+  }
+
+  async toggleLoop() {
+    const guardResult = this.#guardPlayerOperation(this.canSetLoopStatus);
+    if (guardResult) return guardResult;
+
+    const current = LOOP_STATUS_ORDER.indexOf(this.loopStatus);
+    return this.setLoopStatus(
+      LOOP_STATUS_ORDER[
+        (current + 1 + LOOP_STATUS_ORDER.length) % LOOP_STATUS_ORDER.length
+      ],
+    );
+  }
+
+  async toggleShuffle() {
+    const guardResult = this.#guardPlayerOperation(this.canSetShuffle);
+    if (guardResult) return guardResult;
+    return this.setShuffle(!this.shuffle);
   }
 
   onPositionChanged(callback) {
@@ -835,13 +1034,8 @@ export default class PlayerProxy {
       try {
         if (isDbusSignal) proxy.disconnectSignal(signalId);
         else proxy.disconnect(signalId);
-      } catch (error) {
-        // The remote owner may already have disappeared.
-        logger.debug(
-          "An MPRIS signal was already disconnected",
-          this.busName,
-          error,
-        );
+      } catch {
+        // The proxy or remote owner may already be disposed during teardown.
       }
     }
     this.proxySignalConnections.length = 0;
@@ -852,6 +1046,8 @@ export default class PlayerProxy {
     this.hasCurrentTrackMetadata = false;
     this.rootProxy = null;
     this.playerProxy = null;
+    this.nameOwner = null;
+    this.ownerGeneration++;
     this.propertiesProxy = null;
     this.positionTracker = null;
     this.mprisProxyFactory = null;

@@ -2,86 +2,170 @@
  * @file playbackControlState.js
  * @module shared.utils.playbackControlState
  *
- * Resolves the semantic play, pause, or stop action for a normalized media-app state.
+ * Resolves one logical playback control into pure presentation and action data.
  *
- * popup and top bar playback controls use this pure helper so they choose the
- * same primary playback action for playing, paused, stopped, and non-pausable
- * MPRIS endpoints while keeping their actor layout separate.
+ * Popup and topbar consume the same result while retaining separate actors and
+ * styling. The resolver never captures a live PlayerProxy in a callback; Shell
+ * execution is delegated to the playback-control executor.
  */
 
-import { PlaybackControls } from "../constants/playbackControls.js";
+import {
+  PlaybackControlActions,
+  PlaybackControlDefinitions,
+  PlaybackControlIds,
+} from "../constants/playbackControls.js";
 import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
+import { canChangePlaybackRate, formatPlaybackRate } from "./playbackRate.js";
 
-/**
- * Selects the primary playback control for a media app.
- *
- * MPRIS apps that are not playing should offer Play when possible. Playing apps
- * normally offer Pause, but endpoints that can control playback while lacking
- * `CanPause` fall back to Stop. Returning the action callback with the descriptor
- * keeps popup and top bar behavior identical without sharing button actors.
- *
- * @param {object} mediaApp - Normalized PlayerProxy-like media app state.
- * @returns {{control: object, isReactive: boolean, action: Function}} Button descriptor, sensitivity, and action.
- */
-export function resolvePlayPauseControl(mediaApp) {
+function createControlState(
+  control,
+  iconName,
+  isReactive,
+  action,
+  isActive = false,
+  labelText = "",
+) {
+  return {
+    control,
+    iconName,
+    labelText: String(labelText ?? ""),
+    isReactive: Boolean(isReactive),
+    isActive: Boolean(isActive),
+    action,
+  };
+}
+
+function resolvePlayPauseState(mediaApp) {
+  const control = PlaybackControlDefinitions.PLAY_PAUSE;
+
   if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-    return {
-      control: PlaybackControls.PLAY,
-      isReactive: mediaApp.canPlay && mediaApp.canControl,
-      action: () => mediaApp.play(),
-    };
+    return createControlState(
+      control,
+      control.icons.PLAY,
+      mediaApp.canPlay && mediaApp.canControl,
+      PlaybackControlActions.PLAY,
+    );
   }
 
   if (mediaApp.canControl && !mediaApp.canPause) {
-    return {
-      control: PlaybackControls.STOP,
-      isReactive: mediaApp.canControl,
-      action: () => mediaApp.stop(),
-    };
+    return createControlState(
+      control,
+      control.icons.STOP,
+      true,
+      PlaybackControlActions.STOP,
+    );
   }
 
-  return {
-    control: PlaybackControls.PAUSE,
-    isReactive: mediaApp.canPause && mediaApp.canControl,
-    action: () => mediaApp.pause(),
-  };
-}
-
-/**
- * Selects the repeat control and active state for a media app.
- *
- * @param {object} mediaApp - Normalized PlayerProxy-like media app state.
- * @returns {{control: object, isReactive: boolean, isActive: boolean, action: Function}} Repeat button state.
- */
-export function resolveLoopControl(mediaApp) {
-  const control =
-    mediaApp.loopStatus === LoopStatus.NONE
-      ? PlaybackControls.LOOP_NONE
-      : mediaApp.loopStatus === LoopStatus.TRACK
-        ? PlaybackControls.LOOP_TRACK
-        : PlaybackControls.LOOP_PLAYLIST;
-
-  return {
+  return createControlState(
     control,
-    isReactive: mediaApp.canControl,
-    isActive: control !== PlaybackControls.LOOP_NONE,
-    action: () => mediaApp.toggleLoop(),
-  };
+    control.icons.PAUSE,
+    mediaApp.canPause && mediaApp.canControl,
+    PlaybackControlActions.PAUSE,
+  );
+}
+
+function resolveRepeatState(mediaApp) {
+  const control = PlaybackControlDefinitions.REPEAT;
+  const isTrack = mediaApp.loopStatus === LoopStatus.TRACK;
+  const isPlaylist = mediaApp.loopStatus === LoopStatus.PLAYLIST;
+  const iconName = isTrack
+    ? control.icons.TRACK
+    : isPlaylist
+      ? control.icons.PLAYLIST
+      : control.icons.NONE;
+
+  return createControlState(
+    control,
+    iconName,
+    mediaApp.canControl && mediaApp.canSetLoopStatus,
+    PlaybackControlActions.TOGGLE_REPEAT,
+    isTrack || isPlaylist,
+  );
+}
+
+function resolveShuffleState(mediaApp) {
+  const control = PlaybackControlDefinitions.SHUFFLE;
+  const isActive = Boolean(mediaApp.shuffle);
+
+  return createControlState(
+    control,
+    isActive ? control.icons.ON : control.icons.OFF,
+    mediaApp.canControl && mediaApp.canSetShuffle,
+    PlaybackControlActions.TOGGLE_SHUFFLE,
+    isActive,
+  );
+}
+
+function resolveSpeedState(mediaApp) {
+  const control = PlaybackControlDefinitions.SPEED;
+  return createControlState(
+    control,
+    null,
+    mediaApp.canControl &&
+      mediaApp.canSetPlaybackRate &&
+      canChangePlaybackRate(mediaApp.minimumRate, mediaApp.maximumRate),
+    PlaybackControlActions.CYCLE_SPEED,
+    false,
+    formatPlaybackRate(mediaApp.rate),
+  );
 }
 
 /**
- * Selects the shuffle control and active state for a media app.
+ * Resolves one logical playback control for a normalized media-app state.
  *
- * @param {object} mediaApp - Normalized PlayerProxy-like media app state.
- * @returns {{control: object, isReactive: boolean, isActive: boolean, action: Function}} Shuffle button state.
+ * @param {object} mediaApp - Normalized PlayerProxy-like state.
+ * @param {string} controlId - One value from PlaybackControlIds.
+ * @returns {{control: object, iconName: string|null, labelText: string,
+ *   isReactive: boolean, isActive: boolean, action: string}} Pure control state.
+ * @throws {TypeError} When an unknown logical control ID is supplied.
  */
-export function resolveShuffleControl(mediaApp) {
-  return {
-    control: mediaApp.shuffle
-      ? PlaybackControls.SHUFFLE_ON
-      : PlaybackControls.SHUFFLE_OFF,
-    isReactive: mediaApp.canControl,
-    isActive: Boolean(mediaApp.shuffle),
-    action: () => mediaApp.toggleShuffle(),
-  };
+export function resolvePlaybackControlState(mediaApp, controlId) {
+  switch (controlId) {
+    case PlaybackControlIds.SHUFFLE:
+      return resolveShuffleState(mediaApp);
+    case PlaybackControlIds.SEEK_BACKWARD: {
+      const control = PlaybackControlDefinitions.SEEK_BACKWARD;
+      return createControlState(
+        control,
+        control.icons.DEFAULT,
+        mediaApp.canSeek && mediaApp.canControl,
+        PlaybackControlActions.SEEK_BACKWARD,
+      );
+    }
+    case PlaybackControlIds.PREVIOUS: {
+      const control = PlaybackControlDefinitions.PREVIOUS;
+      return createControlState(
+        control,
+        control.icons.DEFAULT,
+        mediaApp.canGoPrevious && mediaApp.canControl,
+        PlaybackControlActions.PREVIOUS,
+      );
+    }
+    case PlaybackControlIds.PLAY_PAUSE:
+      return resolvePlayPauseState(mediaApp);
+    case PlaybackControlIds.NEXT: {
+      const control = PlaybackControlDefinitions.NEXT;
+      return createControlState(
+        control,
+        control.icons.DEFAULT,
+        mediaApp.canGoNext && mediaApp.canControl,
+        PlaybackControlActions.NEXT,
+      );
+    }
+    case PlaybackControlIds.SEEK_FORWARD: {
+      const control = PlaybackControlDefinitions.SEEK_FORWARD;
+      return createControlState(
+        control,
+        control.icons.DEFAULT,
+        mediaApp.canSeek && mediaApp.canControl,
+        PlaybackControlActions.SEEK_FORWARD,
+      );
+    }
+    case PlaybackControlIds.REPEAT:
+      return resolveRepeatState(mediaApp);
+    case PlaybackControlIds.SPEED:
+      return resolveSpeedState(mediaApp);
+    default:
+      throw new TypeError(`Unknown playback control: ${String(controlId)}`);
+  }
 }

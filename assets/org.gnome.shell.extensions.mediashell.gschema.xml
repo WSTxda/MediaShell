@@ -15,6 +15,12 @@
     <value nick="RAISE_APP"        value="10" />
     <value nick="QUIT_APP"         value="11" />
     <value nick="SWITCH_APP"       value="12" />
+    <value nick="SEEK_BACKWARD"    value="13" />
+    <value nick="SEEK_FORWARD"     value="14" />
+    <!-- Legacy rate-action nicks remain readable but are no longer executable. -->
+    <value nick="RATE_DECREASE"     value="15" />
+    <value nick="RATE_INCREASE"     value="16" />
+    <value nick="RATE_RESET"        value="17" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
@@ -51,6 +57,33 @@
     </key>
     <key name="popup-progress-bar-show" type="b">
       <default>true</default>
+    </key>
+    <key name="popup-playback-controls-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-shuffle-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-seek-backward-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="popup-playback-controls-previous-track-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-play-pause-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-next-track-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-seek-forward-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="popup-playback-controls-repeat-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-speed-show" type="b">
+      <default>false</default>
     </key>
     <key name="popup-track-information-scroll-enabled" type="b">
       <default>false</default>
@@ -115,6 +148,9 @@
     <key name="top-bar-playback-controls-shuffle-show" type="b">
       <default>false</default>
     </key>
+    <key name="top-bar-playback-controls-seek-backward-show" type="b">
+      <default>false</default>
+    </key>
     <key name="top-bar-playback-controls-previous-track-show" type="b">
       <default>true</default>
     </key>
@@ -123,6 +159,9 @@
     </key>
     <key name="top-bar-playback-controls-next-track-show" type="b">
       <default>true</default>
+    </key>
+    <key name="top-bar-playback-controls-seek-forward-show" type="b">
+      <default>false</default>
     </key>
     <key name="top-bar-playback-controls-repeat-show" type="b">
       <default>false</default>
@@ -155,6 +194,12 @@
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-toggle-loop" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-seek-backward" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-seek-forward" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-volume-up" type="as">

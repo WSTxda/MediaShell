@@ -1,0 +1,36 @@
+/**
+ * @file popupLayout.js
+ * @module shared.utils.popupLayout
+ *
+ * Resolves popup layout constraints without importing Shell or Preferences
+ * toolkits. Both processes consume the same width decision without duplicating
+ * layout policy.
+ */
+
+import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../constants/popup.js";
+import { POPUP_WIDTH } from "../constants/settings.js";
+
+/**
+ * Resolves the effective popup width for the configured transport controls.
+ *
+ * @param {unknown} configuredWidth - Persisted popup width.
+ * @param {boolean} showSeekBackward - Whether backward seek is visible.
+ * @param {boolean} showSeekForward - Whether forward seek is visible.
+ * @returns {number} Effective popup width in pixels.
+ */
+export function resolvePopupWidth(
+  configuredWidth,
+  showSeekBackward,
+  showSeekForward,
+) {
+  const numericWidth = Number(configuredWidth);
+  const width = Number.isFinite(numericWidth)
+    ? Math.min(
+        POPUP_WIDTH.MAX,
+        Math.max(POPUP_WIDTH.MIN, Math.trunc(numericWidth)),
+      )
+    : POPUP_WIDTH.DEFAULT;
+  return showSeekBackward || showSeekForward
+    ? Math.max(width, POPUP_SEEK_CONTROLS_MIN_WIDTH)
+    : width;
+}

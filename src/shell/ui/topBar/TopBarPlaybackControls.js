@@ -2,41 +2,35 @@
  * @file TopBarPlaybackControls.js
  * @module shell.ui.topBar.TopBarPlaybackControls
  *
- * Renders compact playback controls inside the top bar button.
+ * Renders configurable playback controls inside the top bar.
  *
- * TopBarButton owns this component and asks it to update button visibility and
- * sensitivity from the active PlayerProxy. The renderer consumes shared
- * PlaybackControls descriptors so popup and top bar action names stay aligned.
+ * TopBarButton owns surface visibility. This renderer owns top-bar actors and
+ * delegates state and execution to the shared playback-control domain.
  */
 
 import Clutter from "gi://Clutter";
 import St from "gi://St";
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { PlaybackControls } from "../../../shared/constants/playbackControls.js";
-import { WidgetFlags } from "../../../shared/enums/widget.js";
-import {
-  resolveLoopControl,
-  resolvePlayPauseControl,
-  resolveShuffleControl,
-} from "../../../shared/utils/playbackControlState.js";
+import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
+import { resolvePlaybackControlState } from "../../../shared/utils/playbackControlState.js";
+import { resolvePlaybackControlSurfaceUpdates } from "../../../shared/utils/playbackControlSurfaceState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
 import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../../constants/playbackControls.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { createIcon, setIconName } from "../../utils/icons.js";
+import { executePlaybackControlAction } from "../../mpris/playbackControlExecutor.js";
+import { reconcileActorOrder } from "../../utils/actors.js";
+import { updatePlaybackControlButton } from "../../utils/playbackControlButton.js";
+import {
+  createPlaybackControlContent,
+  updatePlaybackControlContent,
+} from "../../utils/playbackControlContent.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
-function getPlaybackControlIconOpacity(isReactive, isStateControl, isActive) {
-  if (!isReactive) return INACTIVE_OPACITY;
-  if (isStateControl && !isActive) return INACTIVE_OPACITY;
-  return ACTIVE_OPACITY;
-}
-
-/**
- * Renders compact playback controls inside the top bar button.
- */
+/** Renders configurable playback controls inside the top bar. */
 export default class TopBarPlaybackControls {
   constructor(topBarButton) {
     this.topBarButton = topBarButton;
@@ -44,167 +38,126 @@ export default class TopBarPlaybackControls {
     this.controlButtons = new Map();
   }
 
+  get extensionController() {
+    return this.topBarButton.extensionController;
+  }
+
+  get mediaApp() {
+    return this.topBarButton.mediaApp;
+  }
+
   render(widgetFlags) {
     this.ensureActor();
+    const updates = resolvePlaybackControlSurfaceUpdates(
+      this.extensionController,
+      PlaybackControlSurfaces.TOP_BAR,
+      widgetFlags,
+    );
+    for (const { controlId, isVisible } of updates)
+      this.renderOptionalControl(isVisible, controlId);
 
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE)
-      this.renderShuffle();
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS) {
-      this.renderOptionalControl(
-        this.topBarButton.extensionController
-          .topBarPlaybackControlsPreviousTrackShow,
-        PlaybackControls.PREVIOUS,
-        this.topBarButton.mediaApp.canGoPrevious &&
-          this.topBarButton.mediaApp.canControl,
-        () => this.topBarButton.mediaApp.previous(),
-      );
+    if (this.controlButtons.size === 0) {
+      this.remove();
+      return;
     }
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE)
-      this.renderPlayPause();
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_NEXT) {
-      this.renderOptionalControl(
-        this.topBarButton.extensionController
-          .topBarPlaybackControlsNextTrackShow,
-        PlaybackControls.NEXT,
-        this.topBarButton.mediaApp.canGoNext &&
-          this.topBarButton.mediaApp.canControl,
-        () => this.topBarButton.mediaApp.next(),
-      );
-    }
-    if (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_REPEAT) this.renderRepeat();
 
-    // Partial MPRIS updates must never use the configured absolute index of
-    // one control in isolation. Reconcile the complete visible row once so
-    // play/pause and capability changes cannot temporarily shuffle actors.
     this.reconcileOrder();
     this.attach();
   }
 
   ensureActor() {
-    if (!this.actor) {
-      this.actor = new St.BoxLayout({
-        name: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
-        styleClass: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
-      });
-    }
+    if (this.actor) return;
+
+    this.actor = new St.BoxLayout({
+      name: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
+      styleClass: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
+    });
   }
 
-  renderOptionalControl(isVisible, controlDefinition, isReactive, action) {
-    if (isVisible)
-      this.updatePlaybackControl(controlDefinition, isReactive, action);
-    else this.removePlaybackControl(controlDefinition);
-  }
-
-  renderShuffle() {
-    if (
-      !this.topBarButton.extensionController.topBarPlaybackControlsShuffleShow
-    ) {
-      this.removePlaybackControl(PlaybackControls.SHUFFLE_ON);
+  renderOptionalControl(isVisible, controlId) {
+    if (!isVisible) {
+      this.removePlaybackControl(controlId);
       return;
     }
 
-    const { control, isReactive, action, isActive } = resolveShuffleControl(
-      this.topBarButton.mediaApp,
+    this.updatePlaybackControl(
+      resolvePlaybackControlState(this.mediaApp, controlId),
     );
-    this.updatePlaybackControl(control, isReactive, action, isActive);
   }
 
-  renderPlayPause() {
-    if (
-      !this.topBarButton.extensionController.topBarPlaybackControlsPlayPauseShow
-    ) {
-      this.removePlaybackControl(PlaybackControls.PLAY);
-      return;
-    }
+  updatePlaybackControl(controlState) {
+    const {
+      control: controlDefinition,
+      iconName,
+      labelText,
+      isReactive,
+      action,
+      isActive,
+    } = controlState;
 
-    const { control, isReactive, action } = resolvePlayPauseControl(
-      this.topBarButton.mediaApp,
-    );
-    this.updatePlaybackControl(control, isReactive, action);
-  }
-
-  renderRepeat() {
-    if (
-      !this.topBarButton.extensionController.topBarPlaybackControlsRepeatShow
-    ) {
-      this.removePlaybackControl(PlaybackControls.LOOP_NONE);
-      return;
-    }
-
-    const { control, isReactive, action, isActive } = resolveLoopControl(
-      this.topBarButton.mediaApp,
-    );
-    this.updatePlaybackControl(control, isReactive, action, isActive);
-  }
-
-  updatePlaybackControl(
-    controlDefinition,
-    isReactive,
-    action,
-    isActive = false,
-  ) {
-    let control = this.controlButtons.get(controlDefinition.name);
-    if (!control) {
-      const isStateControl =
-        controlDefinition.name === PlaybackControls.LOOP_NONE.name ||
-        controlDefinition.name === PlaybackControls.SHUFFLE_ON.name;
+    let buttonState = this.controlButtons.get(controlDefinition.id);
+    if (!buttonState) {
       const button = new St.Button({
-        name: controlDefinition.name,
+        name: controlDefinition.actorName,
         styleClass: StyleClasses.TOP_BAR_CONTROL_BUTTON,
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
-        canFocus: false,
-        trackHover: false,
-        toggleMode: isStateControl,
+        toggleMode: controlDefinition.isStateControl,
       });
-      const icon = createIcon({
-        styleClass: styleClassNames(
+      const content = createPlaybackControlContent(controlDefinition, {
+        iconStyleClass: styleClassNames(
           StyleClasses.SYSTEM_STATUS_ICON,
           StyleClasses.NO_MARGIN,
           StyleClasses.TOP_BAR_CONTROL_ICON,
         ),
+        labelStyleClass: styleClassNames(
+          StyleClasses.NO_MARGIN,
+          StyleClasses.TOP_BAR_CONTROL_LABEL,
+        ),
       });
-      const signalId = button.connect("clicked", () => control.action?.());
-      control = { button, icon, signalId, action };
-      button.set_child(icon);
-      this.controlButtons.set(controlDefinition.name, control);
+      buttonState = { button, content, signalId: 0, action: null };
+      buttonState.signalId = button.connect("clicked", () => {
+        if (!buttonState.button.reactive) return;
+        void executePlaybackControlAction(this.mediaApp, buttonState.action);
+      });
+      button.set_child(content.actor);
+      this.controlButtons.set(controlDefinition.id, buttonState);
     }
 
-    control.action = action;
-    setIconName(control.icon, controlDefinition.iconName);
-    control.button.opacity = ACTIVE_OPACITY;
-    control.button.reactive = isReactive;
-    control.button.checked = isActive;
-    control.icon.opacity = getPlaybackControlIconOpacity(
+    buttonState.action = action;
+    updatePlaybackControlContent(buttonState.content, { iconName, labelText });
+    updatePlaybackControlButton(
+      buttonState.button,
+      this.mediaApp,
+      controlState,
+      _,
+    );
+    buttonState.button.opacity = ACTIVE_OPACITY;
+    buttonState.content.actor.opacity = getContentOpacity(
       isReactive,
-      control.button.toggleMode,
+      controlDefinition.isStateControl,
       isActive,
     );
   }
 
   reconcileOrder() {
-    const orderedActors = TOP_BAR_PLAYBACK_CONTROL_ORDER.map(
-      (name) => this.controlButtons.get(name)?.button,
-    ).filter(Boolean);
-
-    for (let index = 0; index < orderedActors.length; index++) {
-      const actor = orderedActors[index];
-      const children = this.actor.get_children();
-      if (children[index] === actor) continue;
-
-      actor.get_parent()?.remove_child(actor);
-      this.actor.insert_child_at_index(actor, index);
-    }
+    reconcileActorOrder(
+      this.actor,
+      TOP_BAR_PLAYBACK_CONTROL_ORDER.map(
+        (controlId) => this.controlButtons.get(controlId)?.button,
+      ),
+    );
   }
 
-  removePlaybackControl(controlDefinition) {
-    const control = this.controlButtons.get(controlDefinition.name);
-    if (!control) return;
-    control.button.disconnect(control.signalId);
-    control.button.get_parent()?.remove_child(control.button);
-    control.button.destroy();
-    control.action = null;
-    this.controlButtons.delete(controlDefinition.name);
+  removePlaybackControl(controlId) {
+    const controlState = this.controlButtons.get(controlId);
+    if (!controlState) return;
+
+    controlState.button.disconnect(controlState.signalId);
+    controlState.button.get_parent()?.remove_child(controlState.button);
+    controlState.button.destroy();
+    controlState.action = null;
+    this.controlButtons.delete(controlId);
   }
 
   attach() {
@@ -226,8 +179,9 @@ export default class TopBarPlaybackControls {
 
   remove() {
     if (!this.actor) return;
-    for (const name of [...this.controlButtons.keys()])
-      this.removePlaybackControl({ name });
+
+    for (const controlId of [...this.controlButtons.keys()])
+      this.removePlaybackControl(controlId);
     this.actor.get_parent()?.remove_child(this.actor);
     this.actor.destroy();
     this.actor = null;
@@ -237,4 +191,10 @@ export default class TopBarPlaybackControls {
     this.remove();
     this.topBarButton = null;
   }
+}
+
+function getContentOpacity(isReactive, isStateControl, isActive) {
+  if (!isReactive) return INACTIVE_OPACITY;
+  if (isStateControl && !isActive) return INACTIVE_OPACITY;
+  return ACTIVE_OPACITY;
 }

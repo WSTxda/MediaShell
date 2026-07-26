@@ -18,19 +18,16 @@ export const LOG_ONCE_CACHE_LIMIT = 256;
 /** Maximum number of resolved media-app identity entries retained by MediaAppResolver. */
 export const APP_RESOLVER_CACHE_LIMIT = 128;
 
+/** Maximum total size of persistent album-art cache files; currently 128 MiB. */
+export const ALBUM_ART_CACHE_MAX_BYTES = 128 * 1024 * 1024;
+
 // --- Album art I/O limits ---
 
-/** Maximum accepted album art file or response size in bytes; currently 16 MB. */
+/** Maximum accepted album art file or response size in bytes; currently 16 MiB. */
 export const ALBUM_ART_MAX_BYTES = 16 * 1024 * 1024;
 
-/** Chunk size used while streaming album art from a local file or remote response. */
+/** Chunk size used while streaming a remote album-art response. */
 export const ALBUM_ART_READ_CHUNK_BYTES = 64 * 1024;
 
 /** HTTP timeout for remote album-art requests, in seconds. */
 export const ALBUM_ART_REQUEST_TIMEOUT_SECONDS = 15;
-
-// --- Position and track duration limits ---
-
-/** Maximum reasonable track duration in microseconds (24 hours). */
-export const MAX_REASONABLE_TRACK_DURATION_MICROSECONDS =
-  24 * 60 * 60 * 1000 * 1000;

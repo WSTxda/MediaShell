@@ -11,7 +11,7 @@
   "scripts": {
     "check": "node scripts/dev.mjs check",
     "check:runtime": "node scripts/dev.mjs runtime",
-    "check:native": "MEDIASHELL_REQUIRE_NATIVE_TOOLS=1 node scripts/dev.mjs check",
+    "check:native": "pnpm run check:runtime && node scripts/dev.mjs native",
     "check:package": "node scripts/dev.mjs package",
     "audit": "node scripts/dev.mjs audit",
     "audit:strict": "node scripts/dev.mjs audit --strict",

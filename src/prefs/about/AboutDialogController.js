@@ -13,7 +13,6 @@
 import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
-import { gettext as _ } from "../translations.js";
 
 import {
   EXTENSION_ICON_NAME,
@@ -21,6 +20,7 @@ import {
   PROJECT_URLS,
 } from "../../shared/constants/project.js";
 import { createLogger } from "../../shared/utils/log.js";
+import { gettext as _ } from "../translations.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 
 const logger = createLogger("AboutDialogController");
@@ -95,7 +95,7 @@ export default class AboutDialogController {
       developer_name: "WSTxda",
       version: String(metadataVersion ?? fallbackVersion ?? ""),
       comments: _(
-        "MediaShell is a GNOME extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.",
+        "MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media players. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.",
       ),
       issue_url: PROJECT_URLS.ISSUES,
       copyright: "Copyright (c) 2026 WSTxda",
@@ -108,11 +108,7 @@ export default class AboutDialogController {
       "WSTxda https://github.com/WSTxda",
     ]);
     aboutDialog.add_credit_section("Media Controls", [
-      "Sakith B. https://github.com/sakithb",
-      "Christian Lauinger https://github.com/ChrisLauinger77",
-      "Winston Ma https://github.com/winstonma",
-      "Ahmet Oğuzhan Kökülü https://github.com/Oguzhankokulu",
-      `${_("View all...")} ${PROJECT_URLS.MEDIA_CONTROLS_CONTRIBUTORS}`,
+      `GitHub ${PROJECT_URLS.MEDIA_CONTROLS}`,
     ]);
     aboutDialog.present(this.preferencesWindow);
   }
@@ -121,8 +117,8 @@ export default class AboutDialogController {
     if (this.aboutButton && this.aboutButtonSignalId !== null) {
       try {
         this.aboutButton.disconnect(this.aboutButtonSignalId);
-      } catch (error) {
-        logger.debug("About button signal was already disconnected", error);
+      } catch {
+        // The preferences window may dispose the button before controller teardown.
       }
     }
     this.aboutButtonSignalId = null;

@@ -2,11 +2,11 @@
  * @file PositionTracker.js
  * @module shell.mpris.PositionTracker
  *
- * Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
+ * Tracks MPRIS position using exact reads, Seeked signals, and bounded projection.
  *
- * PlayerProxy delegates position state here so UI components can ask for a live
- * estimate without polling D-Bus on every frame. The tracker anchors the last
- * known position to GLib monotonic time and refreshes on seek or track changes.
+ * PlayerProxy delegates position state here so UI components can render a live
+ * estimate without polling D-Bus. Pure calculation stays in shared utilities;
+ * this class owns Gio calls, clock snapshots, listener delivery, and lifecycle.
  */
 
 import Gio from "gi://Gio";
@@ -18,35 +18,48 @@ import {
   MprisPlayerProperties,
 } from "../../shared/constants/dbus.js";
 import { DBUS_CALL_TIMEOUT_MS } from "../../shared/constants/timing.js";
-import { MAX_REASONABLE_TRACK_DURATION_MICROSECONDS } from "../../shared/constants/limits.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { createLogger } from "../../shared/utils/log.js";
+import {
+  normalizePlaybackPositionMicroseconds,
+  normalizePositionPlaybackRate,
+  normalizeTrackDurationMicroseconds,
+  resolvePlaybackPositionEstimate,
+} from "../../shared/utils/playbackPosition.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("PositionTracker");
 
-function normalizePositionMicroseconds(value) {
-  const position = Number(value);
-  return Number.isFinite(position) ? Math.max(0, position) : 0;
-}
+const DEFAULT_CLOCK = Object.freeze({
+  getMonotonicTime: () => GLib.get_monotonic_time(),
+  getRealTime: () => GLib.get_real_time(),
+});
 
-// Position interpolation:
-// MPRIS does not push live position updates. Track the last known Position
-// together with GLib.get_monotonic_time() and estimate the current value during
-// UI updates instead of polling D-Bus for every animation frame.
 /**
- * Tracks MPRIS position using explicit reads, Seeked signals, and monotonic-time estimation.
+ * Tracks MPRIS position using explicit reads, Seeked signals, and clock projection.
  */
 export default class PositionTracker {
-  constructor(propertiesProxy, operationCancellable = null) {
+  constructor(propertiesProxy, operationCancellable = null, clock = {}) {
     this.propertiesProxy = propertiesProxy;
     this.operationCancellable = operationCancellable;
+    this.getMonotonicTime =
+      typeof clock.getMonotonicTime === "function"
+        ? clock.getMonotonicTime
+        : DEFAULT_CLOCK.getMonotonicTime;
+    this.getRealTime =
+      typeof clock.getRealTime === "function"
+        ? clock.getRealTime
+        : DEFAULT_CLOCK.getRealTime;
     this.positionMicroseconds = 0;
+    this.durationMicroseconds = null;
+    this.trackIdentity = null;
     this.playbackRate = 1;
     this.playbackStatus = PlaybackStatus.STOPPED;
-    this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
+    const clockSnapshot = this.readClockSnapshot();
+    this.anchorMonotonicMicroseconds = clockSnapshot.monotonicMicroseconds;
+    this.anchorRealMicroseconds = clockSnapshot.realMicroseconds;
     this.positionChangeListeners = new Map();
     this.nextPositionChangeListenerId = 1;
     this.isDestroyed = false;
@@ -54,59 +67,133 @@ export default class PositionTracker {
     this.positionRefreshPromise = null;
   }
 
-  updatePlaybackState(playbackStatus, playbackRate) {
-    const currentPositionMicroseconds = this.getEstimatedPositionMicroseconds();
-    this.positionMicroseconds = currentPositionMicroseconds;
-    this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
-    this.playbackStatus = playbackStatus ?? PlaybackStatus.STOPPED;
-    this.playbackRate =
-      Number.isFinite(playbackRate) && playbackRate > 0 ? playbackRate : 1;
-
-    if (this.playbackStatus !== PlaybackStatus.PLAYING)
-      this.refreshPosition().catch((error) => {
-        if (!isCancellationError(error))
-          logger.debugOnce(
-            "idle-position-refresh",
-            "Position refresh failed while playback was idle",
-            error,
-          );
-      });
+  readClockSnapshot() {
+    return {
+      monotonicMicroseconds: Number(this.getMonotonicTime?.()),
+      realMicroseconds: Number(this.getRealTime?.()),
+    };
   }
 
-  resetForTrackChange() {
-    this.positionMicroseconds = 0;
-    this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
-    this.emitPositionChanged(0);
-    this.refreshPosition(true).catch((error) => {
-      if (!isCancellationError(error))
-        logger.debugOnce(
-          "track-position-refresh",
-          "Initial position refresh failed for a new track",
-          error,
-        );
+  resolveCurrentEstimate() {
+    const clockSnapshot = this.readClockSnapshot();
+    return resolvePlaybackPositionEstimate({
+      positionMicroseconds: this.positionMicroseconds,
+      durationMicroseconds: this.durationMicroseconds,
+      playbackStatus: this.playbackStatus,
+      playbackRate: this.playbackRate,
+      anchorMonotonicMicroseconds: this.anchorMonotonicMicroseconds,
+      currentMonotonicMicroseconds: clockSnapshot.monotonicMicroseconds,
+      anchorRealMicroseconds: this.anchorRealMicroseconds,
+      currentRealMicroseconds: clockSnapshot.realMicroseconds,
+    });
+  }
+
+  setPositionAnchor(
+    positionMicroseconds,
+    { emit = false, invalidatePendingRefresh = true } = {},
+  ) {
+    if (invalidatePendingRefresh) {
+      this.positionRefreshGeneration++;
+      this.positionRefreshPromise = null;
+    }
+
+    this.positionMicroseconds = normalizePlaybackPositionMicroseconds(
+      positionMicroseconds,
+      this.durationMicroseconds,
+    );
+    const clockSnapshot = this.readClockSnapshot();
+    this.anchorMonotonicMicroseconds = clockSnapshot.monotonicMicroseconds;
+    this.anchorRealMicroseconds = clockSnapshot.realMicroseconds;
+    if (emit) this.emitPositionChanged(this.positionMicroseconds);
+    return this.positionMicroseconds;
+  }
+
+  updatePlaybackState(playbackStatus, playbackRate) {
+    if (this.isDestroyed) return;
+
+    const nextPlaybackStatus = playbackStatus ?? PlaybackStatus.STOPPED;
+    const nextPlaybackRate = normalizePositionPlaybackRate(playbackRate);
+    if (
+      nextPlaybackStatus === this.playbackStatus &&
+      nextPlaybackRate === this.playbackRate
+    ) {
+      if (
+        this.playbackStatus !== PlaybackStatus.PLAYING &&
+        !this.positionRefreshPromise
+      )
+        this.requestPositionRefresh("idle-playback-state");
+      return;
+    }
+
+    const estimate = this.resolveCurrentEstimate();
+    this.setPositionAnchor(estimate.positionMicroseconds);
+    this.playbackStatus = nextPlaybackStatus;
+    this.playbackRate = nextPlaybackRate;
+
+    if (
+      estimate.shouldRefresh ||
+      this.playbackStatus !== PlaybackStatus.PLAYING
+    )
+      this.requestPositionRefresh("playback-state");
+  }
+
+  updateTrackContext(
+    { identity = null, durationMicroseconds = null } = {},
+    { refresh = true } = {},
+  ) {
+    if (this.isDestroyed) return false;
+
+    const nextIdentity = identity == null ? null : String(identity);
+    const nextDurationMicroseconds =
+      normalizeTrackDurationMicroseconds(durationMicroseconds);
+    const trackChanged = nextIdentity !== this.trackIdentity;
+    this.trackIdentity = nextIdentity;
+    this.durationMicroseconds = nextDurationMicroseconds;
+
+    if (!trackChanged) {
+      const boundedPositionMicroseconds = normalizePlaybackPositionMicroseconds(
+        this.positionMicroseconds,
+        this.durationMicroseconds,
+      );
+      if (boundedPositionMicroseconds !== this.positionMicroseconds)
+        this.setPositionAnchor(boundedPositionMicroseconds, { emit: true });
+      return false;
+    }
+
+    this.setPositionAnchor(0, { emit: true });
+    if (refresh) this.requestPositionRefresh("track-change", true);
+    return true;
+  }
+
+  resetForOwnerChange() {
+    if (this.isDestroyed) return;
+
+    this.positionRefreshGeneration++;
+    this.positionRefreshPromise = null;
+    this.trackIdentity = null;
+    this.durationMicroseconds = null;
+    this.playbackRate = 1;
+    this.playbackStatus = PlaybackStatus.STOPPED;
+    this.setPositionAnchor(0, {
+      emit: true,
+      invalidatePendingRefresh: false,
     });
   }
 
   handleSeeked(positionMicroseconds) {
-    this.positionMicroseconds =
-      normalizePositionMicroseconds(positionMicroseconds);
-    this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
-    this.emitPositionChanged(this.positionMicroseconds);
+    if (this.isDestroyed) return;
+    this.setPositionAnchor(positionMicroseconds, { emit: true });
   }
 
   getEstimatedPositionMicroseconds() {
-    if (this.playbackStatus !== PlaybackStatus.PLAYING)
-      return this.positionMicroseconds;
+    if (this.isDestroyed) return this.positionMicroseconds;
 
-    const elapsedMicroseconds =
-      GLib.get_monotonic_time() - this.anchorMonotonicMicroseconds;
-    return Math.min(
-      MAX_REASONABLE_TRACK_DURATION_MICROSECONDS,
-      Math.max(
-        0,
-        this.positionMicroseconds + elapsedMicroseconds * this.playbackRate,
-      ),
-    );
+    const estimate = this.resolveCurrentEstimate();
+    if (estimate.shouldRefresh)
+      this.requestPositionRefresh(
+        estimate.clockDiscontinuity ? "clock-discontinuity" : "stale-estimate",
+      );
+    return estimate.positionMicroseconds;
   }
 
   async getPositionMicroseconds() {
@@ -115,8 +202,7 @@ export default class PositionTracker {
     } catch (error) {
       if (isCancellationError(error))
         return this.getEstimatedPositionMicroseconds();
-      // The monotonic estimate remains useful while a media app is busy or
-      // disappearing from D-Bus, so a transient read failure is non-fatal.
+      // A transient read failure must not blank a still-useful local estimate.
       logger.debugOnce(
         "estimated-position",
         "Using estimated position after a D-Bus read failed",
@@ -126,8 +212,21 @@ export default class PositionTracker {
     return this.getEstimatedPositionMicroseconds();
   }
 
+  requestPositionRefresh(reason, force = false) {
+    void this.refreshPosition(force).catch((error) => {
+      if (!isCancellationError(error))
+        logger.debugOnce(
+          `position-refresh:${reason}`,
+          "Exact MPRIS position refresh failed",
+          reason,
+          error,
+        );
+    });
+  }
+
   refreshPosition(force = false) {
-    if (this.isDestroyed) return Promise.resolve(this.positionMicroseconds);
+    if (this.isDestroyed || !this.propertiesProxy)
+      return Promise.resolve(this.positionMicroseconds);
     if (this.positionRefreshPromise && !force)
       return this.positionRefreshPromise;
 
@@ -143,7 +242,11 @@ export default class PositionTracker {
   }
 
   async readPositionMicroseconds(refreshGeneration) {
-    const result = await this.propertiesProxy.call(
+    const propertiesProxy = this.propertiesProxy;
+    const operationCancellable = this.operationCancellable;
+    if (!propertiesProxy) return this.positionMicroseconds;
+
+    const result = await propertiesProxy.call(
       DbusPropertiesMethods.GET,
       new GLib.Variant("(ss)", [
         MPRIS_PLAYER_IFACE_NAME,
@@ -151,7 +254,7 @@ export default class PositionTracker {
       ]),
       Gio.DBusCallFlags.NONE,
       DBUS_CALL_TIMEOUT_MS,
-      this.operationCancellable,
+      operationCancellable,
     );
 
     if (
@@ -161,11 +264,10 @@ export default class PositionTracker {
       return this.positionMicroseconds;
 
     const value = result.get_child_value(0).get_variant();
-    this.positionMicroseconds = normalizePositionMicroseconds(
-      value.recursiveUnpack(),
-    );
-    this.anchorMonotonicMicroseconds = GLib.get_monotonic_time();
-    return this.positionMicroseconds;
+    return this.setPositionAnchor(value.recursiveUnpack(), {
+      emit: true,
+      invalidatePendingRefresh: false,
+    });
   }
 
   onPositionChanged(callback) {
@@ -190,11 +292,14 @@ export default class PositionTracker {
   }
 
   destroy() {
+    if (this.isDestroyed) return;
     this.isDestroyed = true;
     this.positionRefreshGeneration++;
     this.positionChangeListeners.clear();
     this.positionRefreshPromise = null;
     this.operationCancellable = null;
     this.propertiesProxy = null;
+    this.getMonotonicTime = null;
+    this.getRealTime = null;
   }
 }

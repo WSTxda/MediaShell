@@ -19,7 +19,6 @@ import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
 } from "../../shared/constants/inputActions.js";
-import { createLogger } from "../../shared/utils/log.js";
 import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,
@@ -37,12 +36,14 @@ import {
   isValidBinding,
 } from "../utils/shortcutValidation.js";
 
-const logger = createLogger("InteractionsPageController");
-
 function createActionCopy() {
   return Object.freeze({
     "toggle-shuffle": Object.freeze({
       title: _("Shuffle"),
+      section: "playback",
+    }),
+    "seek-backward": Object.freeze({
+      title: _("Seek backward"),
       section: "playback",
     }),
     "previous-track": Object.freeze({
@@ -55,6 +56,10 @@ function createActionCopy() {
     }),
     "next-track": Object.freeze({
       title: _("Next track"),
+      section: "playback",
+    }),
+    "seek-forward": Object.freeze({
+      title: _("Seek forward"),
       section: "playback",
     }),
     "toggle-loop": Object.freeze({ title: _("Repeat"), section: "playback" }),
@@ -73,6 +78,7 @@ function createActionCopy() {
     "switch-app": Object.freeze({ title: _("Switch app"), section: "apps" }),
   });
 }
+
 function createSectionCopy() {
   return Object.freeze({
     playback: _("Playback"),
@@ -379,12 +385,7 @@ export default class InteractionsPageController {
     this.shortcutsOverviewDialog?.force_close();
     this.resetConfirmationDialog?.force_close();
 
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug(
-        "A keyboard shortcut signal was already disconnected",
-        error,
-      );
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
     this.overviewShortcutLabels.clear();
     this.activeEditorSession = null;
     this.shortcutsOverviewDialog = null;

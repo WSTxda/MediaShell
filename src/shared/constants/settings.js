@@ -22,6 +22,20 @@ export const SettingsKeys = Object.freeze({
   POPUP_TRACK_INFORMATION_SHOW: "popup-track-information-show",
   POPUP_TRACK_INFORMATION_CONTENT: "popup-track-information-content",
   POPUP_PROGRESS_BAR_SHOW: "popup-progress-bar-show",
+  POPUP_PLAYBACK_CONTROLS_SHOW: "popup-playback-controls-show",
+  POPUP_PLAYBACK_CONTROLS_SHUFFLE_SHOW: "popup-playback-controls-shuffle-show",
+  POPUP_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW:
+    "popup-playback-controls-seek-backward-show",
+  POPUP_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW:
+    "popup-playback-controls-previous-track-show",
+  POPUP_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW:
+    "popup-playback-controls-play-pause-show",
+  POPUP_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW:
+    "popup-playback-controls-next-track-show",
+  POPUP_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW:
+    "popup-playback-controls-seek-forward-show",
+  POPUP_PLAYBACK_CONTROLS_REPEAT_SHOW: "popup-playback-controls-repeat-show",
+  POPUP_PLAYBACK_CONTROLS_SPEED_SHOW: "popup-playback-controls-speed-show",
   POPUP_TRACK_INFORMATION_SCROLL_ENABLED:
     "popup-track-information-scroll-enabled",
   POPUP_TRACK_INFORMATION_SCROLL_SPEED: "popup-track-information-scroll-speed",
@@ -29,9 +43,10 @@ export const SettingsKeys = Object.freeze({
     "popup-track-information-scroll-pause-time",
   POPUP_APP_ICON_USE_COLOR: "popup-app-icon-use-color",
 
-  TOP_BAR_TRACK_INFORMATION_SHOW: "top-bar-track-information-show",
+  // Historical schema IDs remain the persisted track-information width contract.
   TOP_BAR_TRACK_INFORMATION_WIDTH: "top-bar-track-information-width",
   TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK: "top-bar-track-information-width-lock",
+  TOP_BAR_TRACK_INFORMATION_SHOW: "top-bar-track-information-show",
   TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED:
     "top-bar-track-information-scroll-enabled",
   TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED:
@@ -47,12 +62,16 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_PLAYBACK_CONTROLS_SHOW: "top-bar-playback-controls-show",
   TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW:
     "top-bar-playback-controls-shuffle-show",
+  TOP_BAR_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW:
+    "top-bar-playback-controls-seek-backward-show",
   TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW:
     "top-bar-playback-controls-previous-track-show",
   TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW:
     "top-bar-playback-controls-play-pause-show",
   TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW:
     "top-bar-playback-controls-next-track-show",
+  TOP_BAR_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW:
+    "top-bar-playback-controls-seek-forward-show",
   TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW:
     "top-bar-playback-controls-repeat-show",
   TOP_BAR_ELEMENT_ORDER: "top-bar-element-order",
@@ -61,9 +80,11 @@ export const SettingsKeys = Object.freeze({
   PANEL_INDEX: "panel-index",
 
   INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE: "interactions-shortcut-toggle-shuffle",
+  INTERACTIONS_SHORTCUT_SEEK_BACKWARD: "interactions-shortcut-seek-backward",
   INTERACTIONS_SHORTCUT_PREVIOUS_TRACK: "interactions-shortcut-previous-track",
   INTERACTIONS_SHORTCUT_PLAY_PAUSE: "interactions-shortcut-play-pause",
   INTERACTIONS_SHORTCUT_NEXT_TRACK: "interactions-shortcut-next-track",
+  INTERACTIONS_SHORTCUT_SEEK_FORWARD: "interactions-shortcut-seek-forward",
   INTERACTIONS_SHORTCUT_TOGGLE_LOOP: "interactions-shortcut-toggle-loop",
   INTERACTIONS_SHORTCUT_VOLUME_UP: "interactions-shortcut-volume-up",
   INTERACTIONS_SHORTCUT_VOLUME_DOWN: "interactions-shortcut-volume-down",
@@ -108,7 +129,7 @@ export const TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
   "ARTIST",
 ]);
 
-/** Bounds and default width for the top bar track information area, in pixels. */
+/** Bounds and default width for top bar track information, in pixels. */
 export const TOP_BAR_TRACK_INFORMATION_WIDTH = Object.freeze({
   MIN: 0,
   MAX: 1000,

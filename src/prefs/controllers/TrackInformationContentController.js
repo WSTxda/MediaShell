@@ -14,14 +14,11 @@ import {
   SettingsKeys,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
 } from "../../shared/constants/settings.js";
-import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
 import { gettext as _ } from "../translations.js";
-
-const logger = createLogger("TrackInformationContentController");
 
 function arraysEqual(first, second) {
   return (
@@ -118,12 +115,7 @@ export default class TrackInformationContentController {
   }
 
   destroy() {
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug(
-        "A track information content preference signal was already disconnected",
-        error,
-      );
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
     this.popupContentRow = null;
     this.topBarContentRow = null;
     this.settings = null;

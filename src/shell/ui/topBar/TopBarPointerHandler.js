@@ -17,9 +17,6 @@ import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 
 import { InputActions } from "../../../shared/enums/input.js";
-import { createLogger } from "../../../shared/utils/log.js";
-
-const logger = createLogger("TopBarPointerHandler");
 
 /**
  * Installs pointer gestures for the non-playback regions of the top bar button.
@@ -131,12 +128,8 @@ export default class TopBarPointerHandler {
     this.pointerActionCleanups.push(() => {
       try {
         actor.disconnect(signalId);
-      } catch (error) {
-        logger.debug(
-          "Pointer signal was already disconnected",
-          signalName,
-          error,
-        );
+      } catch {
+        // Actor disposal may remove pointer signals before handler teardown.
       }
     });
   }
@@ -152,17 +145,13 @@ export default class TopBarPointerHandler {
     this.pointerActionCleanups.push(() => {
       try {
         gesture.disconnect(signalId);
-      } catch (error) {
-        logger.debug(
-          "Pointer gesture signal was already disconnected",
-          mouseButton,
-          error,
-        );
+      } catch {
+        // Gesture disposal may remove its signal before handler teardown.
       }
       try {
         actor.remove_action(gesture);
-      } catch (error) {
-        logger.debug("Pointer gesture was already removed", mouseButton, error);
+      } catch {
+        // Removing an action is idempotent after actor disposal.
       }
     });
   }

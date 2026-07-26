@@ -19,7 +19,7 @@ import {
  *
  * @returns {Promise<string[]>} Human-readable diagnostics.
  */
-export async function collectAuditDiagnostics() {
+async function collectAuditDiagnostics() {
   const diagnostics = await Promise.all([
     inspectModuleDocumentationAndNaming(),
     inspectSourceConventions(),

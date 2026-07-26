@@ -9,10 +9,66 @@
  * source of truth for automatic settings synchronization.
  */
 
+import { PlaybackControlIds } from "../../shared/constants/playbackControls.js";
+import {
+  PlaybackControlSurfaceDefinitions,
+  PlaybackControlSurfaces,
+} from "../../shared/constants/playbackControlSurfaces.js";
 import { SettingsKeys } from "../../shared/constants/settings.js";
+
+const PLAYBACK_CONTROL_WIDGET_SUFFIXES = Object.freeze({
+  [PlaybackControlIds.SHUFFLE]: "shuffle-show",
+  [PlaybackControlIds.SEEK_BACKWARD]: "seek-backward-show",
+  [PlaybackControlIds.PREVIOUS]: "previous-track-show",
+  [PlaybackControlIds.PLAY_PAUSE]: "play-pause-show",
+  [PlaybackControlIds.NEXT]: "next-track-show",
+  [PlaybackControlIds.SEEK_FORWARD]: "seek-forward-show",
+  [PlaybackControlIds.REPEAT]: "repeat-show",
+  [PlaybackControlIds.SPEED]: "speed-show",
+});
+
+function createPlaybackControlBindingSet(surface) {
+  const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
+  return Object.freeze({
+    show: Object.freeze([
+      show.settingKey,
+      `er-${surface}-playback-controls`,
+      "enable-expansion",
+    ]),
+    controls: Object.freeze(
+      Object.fromEntries(
+        controls.map(({ controlId, settingKey }) => [
+          controlId,
+          Object.freeze([
+            settingKey,
+            `sr-${surface}-playback-controls-${PLAYBACK_CONTROL_WIDGET_SUFFIXES[controlId]}`,
+            "active",
+          ]),
+        ]),
+      ),
+    ),
+  });
+}
+
+const POPUP_PLAYBACK_CONTROL_BINDINGS = createPlaybackControlBindingSet(
+  PlaybackControlSurfaces.POPUP,
+);
+const TOP_BAR_PLAYBACK_CONTROL_BINDINGS = createPlaybackControlBindingSet(
+  PlaybackControlSurfaces.TOP_BAR,
+);
 
 const POPUP_BINDINGS = Object.freeze([
   [SettingsKeys.POPUP_WIDTH, "sp-popup-width", "value"],
+  POPUP_PLAYBACK_CONTROL_BINDINGS.show,
+  ...Object.entries(POPUP_PLAYBACK_CONTROL_BINDINGS.controls)
+    .filter(([controlId]) => controlId !== PlaybackControlIds.SPEED)
+    .map(([, binding]) => binding),
+  [
+    SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
+    "sr-popup-progress-bar-show",
+    "active",
+  ],
+  POPUP_PLAYBACK_CONTROL_BINDINGS.controls[PlaybackControlIds.SPEED],
   [SettingsKeys.POPUP_ALBUM_ART_SHOW, "er-popup-album-art", "enable-expansion"],
   [
     SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS,
@@ -23,11 +79,6 @@ const POPUP_BINDINGS = Object.freeze([
     SettingsKeys.POPUP_TRACK_INFORMATION_SHOW,
     "er-popup-track-information",
     "enable-expansion",
-  ],
-  [
-    SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
-    "sr-popup-progress-bar-show",
-    "active",
   ],
   [
     SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED,
@@ -53,11 +104,6 @@ const POPUP_BINDINGS = Object.freeze([
 
 const TOP_BAR_BINDINGS = Object.freeze([
   [
-    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW,
-    "er-top-bar-track-information",
-    "enable-expansion",
-  ],
-  [
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH,
     "sp-top-bar-track-information-width",
     "value",
@@ -66,6 +112,28 @@ const TOP_BAR_BINDINGS = Object.freeze([
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK,
     "sr-top-bar-track-information-width-lock",
     "active",
+  ],
+  TOP_BAR_PLAYBACK_CONTROL_BINDINGS.show,
+  ...Object.values(TOP_BAR_PLAYBACK_CONTROL_BINDINGS.controls),
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_SHOW,
+    "er-top-bar-visualizer",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_STYLE,
+    "cr-top-bar-visualizer-style",
+    "selected",
+  ],
+  [
+    SettingsKeys.TOP_BAR_VISUALIZER_SPEED,
+    "sp-top-bar-visualizer-speed",
+    "value",
+  ],
+  [
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW,
+    "er-top-bar-track-information",
+    "enable-expansion",
   ],
   [
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED,
@@ -83,36 +151,6 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
-    "er-top-bar-playback-controls",
-    "enable-expansion",
-  ],
-  [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
-    "sr-top-bar-playback-controls-shuffle-show",
-    "active",
-  ],
-  [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
-    "sr-top-bar-playback-controls-previous-track-show",
-    "active",
-  ],
-  [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
-    "sr-top-bar-playback-controls-play-pause-show",
-    "active",
-  ],
-  [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
-    "sr-top-bar-playback-controls-next-track-show",
-    "active",
-  ],
-  [
-    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW,
-    "sr-top-bar-playback-controls-repeat-show",
-    "active",
-  ],
-  [
     SettingsKeys.TOP_BAR_APP_ICON_SHOW,
     "er-top-bar-app-icon",
     "enable-expansion",
@@ -121,21 +159,6 @@ const TOP_BAR_BINDINGS = Object.freeze([
     SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
     "sr-top-bar-app-icon-use-color",
     "active",
-  ],
-  [
-    SettingsKeys.TOP_BAR_VISUALIZER_SHOW,
-    "er-top-bar-visualizer",
-    "enable-expansion",
-  ],
-  [
-    SettingsKeys.TOP_BAR_VISUALIZER_STYLE,
-    "cr-top-bar-visualizer-style",
-    "selected",
-  ],
-  [
-    SettingsKeys.TOP_BAR_VISUALIZER_SPEED,
-    "sp-top-bar-visualizer-speed",
-    "value",
   ],
 ]);
 
@@ -151,6 +174,11 @@ const INTERACTIONS_BINDINGS = Object.freeze([
     "accelerator",
   ],
   [
+    SettingsKeys.INTERACTIONS_SHORTCUT_SEEK_BACKWARD,
+    "sl-interactions-shortcut-seek-backward",
+    "accelerator",
+  ],
+  [
     SettingsKeys.INTERACTIONS_SHORTCUT_PREVIOUS_TRACK,
     "sl-interactions-shortcut-previous-track",
     "accelerator",
@@ -163,6 +191,11 @@ const INTERACTIONS_BINDINGS = Object.freeze([
   [
     SettingsKeys.INTERACTIONS_SHORTCUT_NEXT_TRACK,
     "sl-interactions-shortcut-next-track",
+    "accelerator",
+  ],
+  [
+    SettingsKeys.INTERACTIONS_SHORTCUT_SEEK_FORWARD,
+    "sl-interactions-shortcut-seek-forward",
     "accelerator",
   ],
   [
@@ -208,32 +241,32 @@ const INTERACTIONS_BINDINGS = Object.freeze([
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT,
     "cr-interactions-left-click",
-    "selected",
+    "input-action-selected",
   ],
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE,
     "cr-interactions-middle-click",
-    "selected",
+    "input-action-selected",
   ],
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT,
     "cr-interactions-right-click",
-    "selected",
+    "input-action-selected",
   ],
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE,
     "cr-interactions-double-click",
-    "selected",
+    "input-action-selected",
   ],
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP,
     "cr-interactions-scroll-up",
-    "selected",
+    "input-action-selected",
   ],
   [
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN,
     "cr-interactions-scroll-down",
-    "selected",
+    "input-action-selected",
   ],
 ]);
 

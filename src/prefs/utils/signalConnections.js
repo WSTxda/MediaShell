@@ -35,22 +35,17 @@ export function connectOwnedSignal(
 /**
  * Disconnects every signal stored by connectOwnedSignal().
  *
- * Disconnect failures are passed to the caller because disposed GTK objects can
- * throw during teardown; page controllers decide whether that should be logged or
- * ignored in their context.
+ * GTK may dispose a source object before its page controller. Disconnect is
+ * therefore best-effort and intentionally quiet during idempotent teardown.
  *
  * @param {Array<{object: object, signalId: number}>} ownedSignalConnections - Mutable ownership list.
- * @param {(error: unknown) => void} logDisconnectedSignal - Failure logger.
  */
-export function disconnectOwnedSignals(
-  ownedSignalConnections,
-  logDisconnectedSignal,
-) {
+export function disconnectOwnedSignals(ownedSignalConnections) {
   for (const { object, signalId } of ownedSignalConnections) {
     try {
       object.disconnect(signalId);
-    } catch (error) {
-      logDisconnectedSignal(error);
+    } catch {
+      // The source object may already be disposed by the preferences window.
     }
   }
   ownedSignalConnections.length = 0;

@@ -4,8 +4,8 @@
  *
  * Provides focused actor-parenting operations shared by Shell UI components.
  *
- * Top bar components use this helper to preserve actor identity while
- * reconciling configured element order, avoiding repeated remove/insert logic.
+ * Shell UI components use these helpers to preserve actor identity while
+ * reconciling semantic order, avoiding repeated remove/insert implementations.
  */
 
 /**
@@ -25,4 +25,21 @@ export function placeActorAtIndex(actor, parent, index) {
   currentParent?.remove_child(actor);
   parent.insert_child_at_index(actor, index);
   return true;
+}
+
+/**
+ * Reconciles a filtered actor sequence into exact contiguous order.
+ *
+ * Renderers provide actors in semantic order and may include null entries for
+ * controls that are currently hidden. Existing actors are reparented in place.
+ *
+ * @param {object} parent - Target actor container.
+ * @param {Array<object|null|undefined>} orderedActors - Actors in desired order.
+ */
+export function reconcileActorOrder(parent, orderedActors) {
+  let targetIndex = 0;
+  for (const actor of orderedActors) {
+    if (!actor) continue;
+    placeActorAtIndex(actor, parent, targetIndex++);
+  }
 }

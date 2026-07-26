@@ -29,6 +29,23 @@ export const MPRIS_INIT_POLL_INTERVAL_MS = 750;
 /** Timeout for individual D-Bus method calls on MPRIS proxies. */
 export const DBUS_CALL_TIMEOUT_MS = 1000;
 
+/**
+ * Maximum age of a locally projected MPRIS position before an exact refresh is requested.
+ *
+ * Projection remains available for responsive rendering, but a sparse exact read
+ * re-anchors long-running or resumed sessions without introducing a polling loop.
+ */
+export const POSITION_ESTIMATE_MAX_AGE_MICROSECONDS = 30 * 1000 * 1000;
+
+/**
+ * Maximum tolerated divergence between monotonic and wall-clock elapsed time.
+ *
+ * GLib documents that the monotonic clock may or may not tick while suspended.
+ * A larger divergence marks the local position anchor as discontinuous and forces
+ * one exact MPRIS Position read.
+ */
+export const POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS = 2 * 1000 * 1000;
+
 /** Timeout for the initial D-Bus ListNames discovery call. */
 export const DBUS_LIST_NAMES_TIMEOUT_MS = 2000;
 

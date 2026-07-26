@@ -14,6 +14,12 @@
 
 import Gio from "gi://Gio";
 
+import {
+  MOUSE_ACTION_INDEX_BY_VALUE,
+  MOUSE_ACTION_VALUES,
+  normalizeInputAction,
+} from "../../shared/constants/inputActions.js";
+import { InputActions } from "../../shared/enums/input.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
@@ -37,41 +43,24 @@ export default class PreferenceBinder {
   bindAllPreferences() {
     for (const [key, widgetId, property] of PREFERENCE_WIDGET_BINDINGS)
       this.bindPreferenceWidget(key, widgetId, property);
-    logger.debug(
-      "Bound preference settings",
-      PREFERENCE_WIDGET_BINDINGS.length,
-    );
   }
 
   bindPreferenceWidget(key, widgetId, property) {
-    // GSettings key: `key` from PREFERENCE_WIDGET_BINDINGS
     const widget = this.builder.get_object(widgetId);
     if (!widget) throw new Error(`Preferences widget not found: ${widgetId}`);
 
     if (property === "selected") {
-      widget.selected = this.readEnumIndex(key);
-      this.connectOwnedSignal(widget, "notify::selected", () => {
-        if (this.readEnumIndex(key) !== widget.selected)
-          this.writeEnumIndex(key, widget.selected);
-      });
-      this.connectOwnedSignal(this.settings, `changed::${key}`, () => {
-        const selectedIndex = this.readEnumIndex(key);
-        if (widget.selected !== selectedIndex) widget.selected = selectedIndex;
-      });
+      this.bindEnumIndex(key, widget);
+      return;
+    }
+
+    if (property === "input-action-selected") {
+      this.bindInputAction(key, widget);
       return;
     }
 
     if (property === "accelerator") {
-      widget.accelerator = this.readAccelerator(key);
-      this.connectOwnedSignal(widget, "notify::accelerator", () => {
-        const current = this.readAccelerator(key);
-        if (current !== widget.accelerator)
-          this.writeAccelerator(key, widget.accelerator);
-      });
-      this.connectOwnedSignal(this.settings, `changed::${key}`, () => {
-        const value = this.readAccelerator(key);
-        if (widget.accelerator !== value) widget.accelerator = value;
-      });
+      this.bindAccelerator(key, widget);
       return;
     }
 
@@ -79,6 +68,50 @@ export default class PreferenceBinder {
       Gio.SettingsBindFlags.DEFAULT | Gio.SettingsBindFlags.NO_SENSITIVITY;
     this.settings.bind(key, widget, property, flags);
     this.nativeSettingsBindings.push({ widget, property });
+  }
+
+  bindEnumIndex(key, widget) {
+    widget.selected = this.readEnumIndex(key);
+    this.connectOwnedSignal(widget, "notify::selected", () => {
+      if (this.readEnumIndex(key) !== widget.selected)
+        this.writeEnumIndex(key, widget.selected);
+    });
+    this.connectOwnedSignal(this.settings, `changed::${key}`, () => {
+      const selectedIndex = this.readEnumIndex(key);
+      if (widget.selected !== selectedIndex) widget.selected = selectedIndex;
+    });
+  }
+
+  bindInputAction(key, widget) {
+    const syncFromSetting = () => {
+      const action = normalizeInputAction(
+        this.readEnumIndex(key),
+        InputActions.NONE,
+      );
+      const selected = MOUSE_ACTION_INDEX_BY_VALUE[action] ?? 0;
+      if (widget.selected !== selected) widget.selected = selected;
+      if (this.readEnumIndex(key) !== action) this.writeEnumIndex(key, action);
+    };
+
+    syncFromSetting();
+    this.connectOwnedSignal(widget, "notify::selected", () => {
+      const action = MOUSE_ACTION_VALUES[widget.selected] ?? InputActions.NONE;
+      if (this.readEnumIndex(key) !== action) this.writeEnumIndex(key, action);
+    });
+    this.connectOwnedSignal(this.settings, `changed::${key}`, syncFromSetting);
+  }
+
+  bindAccelerator(key, widget) {
+    widget.accelerator = this.readAccelerator(key);
+    this.connectOwnedSignal(widget, "notify::accelerator", () => {
+      const current = this.readAccelerator(key);
+      if (current !== widget.accelerator)
+        this.writeAccelerator(key, widget.accelerator);
+    });
+    this.connectOwnedSignal(this.settings, `changed::${key}`, () => {
+      const value = this.readAccelerator(key);
+      if (widget.accelerator !== value) widget.accelerator = value;
+    });
   }
 
   readEnumIndex(key) {
@@ -123,15 +156,13 @@ export default class PreferenceBinder {
   }
 
   destroy() {
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug("A preferences signal was already disconnected", error);
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
 
     for (const { widget, property } of this.nativeSettingsBindings) {
       try {
         Gio.Settings.unbind(widget, property);
-      } catch (error) {
-        logger.debug("A native GSettings binding was already removed", error);
+      } catch {
+        // Widget disposal may remove native bindings before binder teardown.
       }
     }
     this.nativeSettingsBindings.length = 0;

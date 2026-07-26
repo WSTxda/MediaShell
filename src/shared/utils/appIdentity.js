@@ -17,8 +17,18 @@ const DESKTOP_FILE_SUFFIX = ".desktop";
 const EPHEMERAL_BUS_SEGMENT_PATTERN =
   /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;
 
-function normalizeInput(value) {
-  return String(value ?? "").trim();
+/**
+ * Normalizes one MPRIS identity or desktop-entry hint for display and lookup.
+ *
+ * @param {unknown} value - Raw MPRIS identity value.
+ * @returns {string} Safe single-line string, or an empty string.
+ */
+export function normalizeAppIdentityHint(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -28,7 +38,7 @@ function normalizeInput(value) {
  * @returns {string} Identifier without a desktop-file suffix.
  */
 export function stripDesktopFileSuffix(value) {
-  const normalizedValue = normalizeInput(value);
+  const normalizedValue = normalizeAppIdentityHint(value);
   return normalizedValue.toLowerCase().endsWith(DESKTOP_FILE_SUFFIX)
     ? normalizedValue.slice(0, -DESKTOP_FILE_SUFFIX.length)
     : normalizedValue;
@@ -76,7 +86,7 @@ function addBrowserIdentityHints(hints, ...values) {
 }
 
 function addBusNameHints(hints, busName) {
-  const normalizedBusName = normalizeInput(busName);
+  const normalizedBusName = normalizeAppIdentityHint(busName);
   if (!normalizedBusName.startsWith(MPRIS_PREFIX)) return;
 
   const busSuffix = normalizedBusName.slice(MPRIS_PREFIX.length);

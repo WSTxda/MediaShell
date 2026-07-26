@@ -6,7 +6,7 @@
  *
  * The controller owns rows that cannot be represented by a simple settings
  * binding, including the album-art cache action, the blocked-app list, and
- * The Hide GNOME media controls row. Page-specific maintenance and confirmation
+ * the Hide GNOME media controls row. Page-specific maintenance and confirmation
  * flows stay out of the global PreferencesController.
  */
 
@@ -239,9 +239,7 @@ export default class OthersPageController {
     this.albumArtCacheViewGeneration++;
     for (const dialog of this.openDialogs) dialog.force_close();
     this.openDialogs.clear();
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug("A preferences signal was already disconnected", error);
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
     this.blockedAppsGroup?.destroy();
     this.albumArtCacheService.destroy();
     this.albumArtCacheService = null;

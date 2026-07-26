@@ -12,13 +12,21 @@
 
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import { VOLUME_STEP } from "../shared/constants/inputActions.js";
+import {
+  PLAYBACK_ACTION_BY_INPUT_ACTION,
+  VOLUME_STEP,
+} from "../shared/constants/inputActions.js";
 import { InputActions } from "../shared/enums/input.js";
 import { SettingsAction } from "../shared/enums/settings.js";
 import { WidgetFlags } from "../shared/enums/widget.js";
 import { createLogger } from "../shared/utils/log.js";
+import {
+  MprisOperationReasons,
+  mprisOperationUnsupported,
+} from "../shared/utils/mprisOperationResult.js";
 import MprisProxyFactory from "./mpris/MprisProxyFactory.js";
 import MediaAppRegistry from "./mpris/MediaAppRegistry.js";
+import { executePlaybackControlAction } from "./mpris/playbackControlExecutor.js";
 import GlobalShortcutsService from "./services/GlobalShortcutsService.js";
 import GnomeShellMediaControlsPatch from "./services/GnomeShellMediaControlsPatch.js";
 import AlbumArtLoader from "./services/AlbumArtLoader.js";
@@ -56,7 +64,6 @@ export default class ExtensionController {
 
     this.enabled = true;
     const lifecycleGeneration = ++this.lifecycleGeneration;
-    logger.debug("Starting extension services");
 
     try {
       this.extensionResourceRegistry.register();
@@ -92,8 +99,6 @@ export default class ExtensionController {
       this.mediaAppRegistry.blockedAppIds = new Set(this.blockedAppIds);
       await this.mediaAppRegistry.init();
       if (!this.isCurrentLifecycleGeneration(lifecycleGeneration)) return;
-
-      logger.debug("Extension enabled");
     } catch (error) {
       logger.error("Failed to enable the extension", error);
       this.destroy();
@@ -158,7 +163,6 @@ export default class ExtensionController {
       this.panelIndex,
       this.panelPosition,
     );
-    logger.debug("Created top bar button for", mediaApp.busName);
   }
 
   getAvailableMediaApps() {
@@ -187,31 +191,19 @@ export default class ExtensionController {
 
   executeInputAction(inputAction) {
     const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
+    const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
+    if (playbackAction)
+      return executePlaybackControlAction(mediaApp, playbackAction);
 
     switch (inputAction) {
-      case InputActions.TOGGLE_SHUFFLE:
-        mediaApp?.toggleShuffle();
-        break;
-      case InputActions.PREVIOUS_TRACK:
-        mediaApp?.previous();
-        break;
-      case InputActions.PLAY_PAUSE:
-        mediaApp?.playPause();
-        break;
-      case InputActions.NEXT_TRACK:
-        mediaApp?.next();
-        break;
-      case InputActions.TOGGLE_LOOP:
-        mediaApp?.toggleLoop();
-        break;
       case InputActions.VOLUME_UP:
-        if (mediaApp)
-          mediaApp.volume = Math.min(mediaApp.volume + VOLUME_STEP, 1);
-        break;
+        return mediaApp
+          ? mediaApp.setVolume(Math.min(mediaApp.volume + VOLUME_STEP, 1))
+          : mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
       case InputActions.VOLUME_DOWN:
-        if (mediaApp)
-          mediaApp.volume = Math.max(mediaApp.volume - VOLUME_STEP, 0);
-        break;
+        return mediaApp
+          ? mediaApp.setVolume(Math.max(mediaApp.volume - VOLUME_STEP, 0))
+          : mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
       case InputActions.TOGGLE_POPUP:
         this.togglePopup();
         break;
@@ -219,11 +211,15 @@ export default class ExtensionController {
         this.openPreferences();
         break;
       case InputActions.RAISE_APP:
-        mediaApp?.raise();
-        break;
+        return (
+          mediaApp?.raise() ??
+          mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET)
+        );
       case InputActions.QUIT_APP:
-        mediaApp?.quit();
-        break;
+        return (
+          mediaApp?.quit() ??
+          mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET)
+        );
       case InputActions.SWITCH_APP:
         this.switchMediaApp();
         break;
@@ -242,10 +238,6 @@ export default class ExtensionController {
     if (!topBarButton) return;
 
     try {
-      logger.debug(
-        "Destroying top bar button for",
-        topBarButton.mediaApp?.busName ?? "unknown",
-      );
       topBarButton.destroy();
     } catch (error) {
       logger.error("Failed to destroy the top bar button cleanly", error);
@@ -267,7 +259,6 @@ export default class ExtensionController {
   destroy() {
     if (!this.enabled && !this.extensionResourceRegistry) return;
 
-    logger.debug("Extension disable started");
     this.enabled = false;
     this.lifecycleGeneration++;
 
@@ -277,7 +268,7 @@ export default class ExtensionController {
     this.destroyTopBarButton();
     this.destroyOwnedComponent("mediaAppRegistry");
     this.destroyOwnedComponent("mprisProxyFactory");
-    AlbumArtLoader.getInstance().destroy();
+    AlbumArtLoader.destroyInstance();
     MediaAppResolver.getInstance().clearCaches();
     clearIconCache();
     this.destroyOwnedComponent("gnomeShellMediaControlsPatch");
@@ -285,6 +276,5 @@ export default class ExtensionController {
     this.settings = null;
     this.destroyOwnedComponent("extensionResourceRegistry");
     this.extensionInstance = null;
-    logger.debug("Extension disable finished");
   }
 }

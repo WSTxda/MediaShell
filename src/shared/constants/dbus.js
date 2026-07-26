@@ -85,8 +85,8 @@ export const MprisPlayerMethods = Object.freeze({
   PLAY_PAUSE: "PlayPause",
   STOP: "Stop",
   PLAY: "Play",
+  SEEK: "Seek",
   SET_POSITION: "SetPosition",
-  OPEN_URI: "OpenUri",
 });
 
 /** Player-interface signals consumed by MediaShell. */
@@ -99,14 +99,9 @@ export const MprisPlayerSignals = Object.freeze({
 /** Root-interface property names consumed by MediaShell. */
 export const MprisRootProperties = Object.freeze({
   CAN_QUIT: "CanQuit",
-  FULLSCREEN: "Fullscreen",
-  CAN_SET_FULLSCREEN: "CanSetFullscreen",
   CAN_RAISE: "CanRaise",
-  HAS_TRACK_LIST: "HasTrackList",
   IDENTITY: "Identity",
   DESKTOP_ENTRY: "DesktopEntry",
-  SUPPORTED_URI_SCHEMES: "SupportedUriSchemes",
-  SUPPORTED_MIME_TYPES: "SupportedMimeTypes",
 });
 
 /** Player-interface property names consumed by MediaShell. */
@@ -131,9 +126,8 @@ export const MprisPlayerProperties = Object.freeze({
 /**
  * Root-interface properties cached by PlayerProxy.
  *
- * The list mirrors the values MediaShell needs for app identity, raising/quitting
- * support, and root capability checks. Add properties here only when the runtime
- * actually consumes them.
+ * The list mirrors the values MediaShell needs for app identity and raise/quit
+ * capability checks. Add properties here only when the runtime consumes them.
  */
 export const ROOT_PROPERTIES = Object.freeze(
   Object.values(MprisRootProperties),

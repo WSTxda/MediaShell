@@ -10,7 +10,6 @@
  */
 
 import { MprisMetadataKeys } from "../../../shared/constants/dbus.js";
-import { MAX_REASONABLE_TRACK_DURATION_MICROSECONDS } from "../../../shared/constants/limits.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import PopupProgressBarSlider from "./PopupProgressBarSlider.js";
@@ -120,7 +119,7 @@ export default class PopupProgressBar {
     const hasValidLength =
       Number.isFinite(trackDurationMicroseconds) &&
       trackDurationMicroseconds > 0 &&
-      trackDurationMicroseconds < MAX_REASONABLE_TRACK_DURATION_MICROSECONDS;
+      trackDurationMicroseconds <= Number.MAX_SAFE_INTEGER;
     const hasValidPosition =
       Number.isFinite(positionMicroseconds) && positionMicroseconds >= 0;
     if (!hasValidLength || !hasValidPosition) {

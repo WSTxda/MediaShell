@@ -13,9 +13,6 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { COMPILED_RESOURCE_FILENAME } from "../../shared/constants/resources.js";
-import { createLogger } from "../../shared/utils/log.js";
-
-const logger = createLogger("preferencesResourceLoader");
 let registeredResource = null;
 
 /**
@@ -38,6 +35,5 @@ export function registerPreferencesResources(extensionPath) {
   ]);
   registeredResource = Gio.resource_load(resourcePath);
   Gio.resources_register(registeredResource);
-  logger.debug("Registered preference resources");
   return registeredResource;
 }

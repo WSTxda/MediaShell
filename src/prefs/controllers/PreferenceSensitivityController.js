@@ -9,13 +9,10 @@
  * persistent values; it only mirrors current settings into widget sensitivity.
  */
 
-import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
-
-const logger = createLogger("PreferenceSensitivityController");
 
 /**
  * Keeps dependent preferences sensitive only when their parent toggles allow them.
@@ -131,12 +128,7 @@ export default class PreferenceSensitivityController {
   }
 
   destroy() {
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug(
-        "A preference sensitivity signal was already disconnected",
-        error,
-      );
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
     this.builder = null;
     this.topBarTrackInformationRow = null;
     this.topBarTrackInformationScrollEnabledRow = null;

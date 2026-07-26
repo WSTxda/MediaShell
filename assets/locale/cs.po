@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-25 13:54-0300\n"
-"PO-Revision-Date: 2026-07-24 20:32-0300\n"
+"POT-Creation-Date: 2026-07-29 13:48-0300\n"
+"PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,18 +17,18 @@ msgstr "O aplikaci MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
 msgid ""
-"MediaShell is a GNOME extension that adds media controls to your top bar. "
-"Click the icon to open a popup featuring album art, playback controls, and "
-"an app selector for any app currently playing media. The top bar widget and "
-"popup use the GNOME UI toolkit, and preferences are built with GTK4 and "
-"Libadwaita to match the rest of the desktop."
+"MediaShell is a GNOME Shell extension that adds configurable MPRIS media "
+"controls to the top bar. Its customizable popup displays album art, track "
+"information, playback controls, and a selector for switching between active "
+"media players. The top bar and popup can be configured independently, while "
+"GTK4 and Libadwaita preferences provide a consistent GNOME experience."
 msgstr ""
-"MediaShell je rozšíření GNOME u, které přidává ovládání médií do horní "
-"lišty. Kliknutím na ikonu otevřete vyskakovací okno s obalem alba, ovládáním "
-"přehrávání a výběrem aplikace pro libovolnou aplikaci, která právě přehrává "
-"média. Widget horní lišty a vyskakovací okno používají sadu nástrojů "
-"uživatelského rozhraní GNOME a předvolby jsou vytvořeny pomocí GTK4 a "
-"Libadwaita, aby zapadaly do zbytku pracovního prostředí."
+"MediaShell je rozšíření GNOME Shell, které přidává do horní lišty "
+"nastavitelné ovládací prvky médií MPRIS. Jeho přizpůsobitelné vyskakovací "
+"okno zobrazuje obal alba, informace o skladbě, ovládání přehrávání a volič "
+"pro přepínání mezi aktivními přehrávači médií. Horní lištu a vyskakovací "
+"okno lze nastavit nezávisle, zatímco předvolby vytvořené pomocí GTK4 a "
+"Libadwaita zajišťují jednotné prostředí GNOME."
 
 #: src/prefs/about/AboutDialogController.js:106
 msgid "Donate"
@@ -38,88 +38,101 @@ msgstr "Přispět"
 msgid "Developed by"
 msgstr "Vyvinul"
 
-#: src/prefs/about/AboutDialogController.js:115
-msgid "View all..."
-msgstr "Zobrazit vše..."
-
-#: src/prefs/controllers/InteractionsPageController.js:45
-#: assets/ui/prefs.ui:162 assets/ui/prefs.ui:452 assets/ui/prefs.ui:781
+#: src/prefs/controllers/InteractionsPageController.js:42
+#: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
+#: assets/ui/prefs.ui:266 assets/ui/prefs.ui:556 assets/ui/prefs.ui:919
 msgid "Shuffle"
 msgstr "Náhodně"
 
-#: src/prefs/controllers/InteractionsPageController.js:49
-#: assets/ui/prefs.ui:172 assets/ui/prefs.ui:469 assets/ui/prefs.ui:782
+#: src/prefs/controllers/InteractionsPageController.js:46
+#: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:573 assets/ui/prefs.ui:920
+msgid "Seek backward"
+msgstr "Posunout zpět"
+
+#: src/prefs/controllers/InteractionsPageController.js:50
+#: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:590 assets/ui/prefs.ui:921
 msgid "Previous track"
 msgstr "Předchozí skladba"
 
-#: src/prefs/controllers/InteractionsPageController.js:53
-#: assets/ui/prefs.ui:182 assets/ui/prefs.ui:486 assets/ui/prefs.ui:783
+#: src/prefs/controllers/InteractionsPageController.js:54
+#: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:607 assets/ui/prefs.ui:922
 msgid "Play / pause"
 msgstr "Přehrát / Pozastavit"
 
-#: src/prefs/controllers/InteractionsPageController.js:57
-#: assets/ui/prefs.ui:192 assets/ui/prefs.ui:503 assets/ui/prefs.ui:784
+#: src/prefs/controllers/InteractionsPageController.js:58
+#: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:624 assets/ui/prefs.ui:923
 msgid "Next track"
 msgstr "Následující skladba"
 
-#: src/prefs/controllers/InteractionsPageController.js:60
-#: assets/ui/prefs.ui:202 assets/ui/prefs.ui:520 assets/ui/prefs.ui:785
+#: src/prefs/controllers/InteractionsPageController.js:62
+#: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:641 assets/ui/prefs.ui:924
+msgid "Seek forward"
+msgstr "Posunout vpřed"
+
+#: src/prefs/controllers/InteractionsPageController.js:65
+#: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:658 assets/ui/prefs.ui:925
 msgid "Repeat"
 msgstr "Opakování"
 
-#: src/prefs/controllers/InteractionsPageController.js:61
-#: assets/ui/prefs.ui:537 assets/ui/prefs.ui:786
+#: src/prefs/controllers/InteractionsPageController.js:66
+#: assets/ui/prefs.ui:675 assets/ui/prefs.ui:926
 msgid "Volume up"
 msgstr "Zvýšit hlasitost"
 
-#: src/prefs/controllers/InteractionsPageController.js:62
-#: assets/ui/prefs.ui:554 assets/ui/prefs.ui:787
+#: src/prefs/controllers/InteractionsPageController.js:67
+#: assets/ui/prefs.ui:692 assets/ui/prefs.ui:927
 msgid "Volume down"
 msgstr "Snížit hlasitost"
 
-#: src/prefs/controllers/InteractionsPageController.js:63 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:571 assets/ui/prefs.ui:788
+#: src/prefs/controllers/InteractionsPageController.js:68 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:709 assets/ui/prefs.ui:928
 msgid "Popup"
 msgstr "Vyskakovací okno"
 
-#: src/prefs/controllers/InteractionsPageController.js:65
-#: assets/ui/prefs.ui:588 assets/ui/prefs.ui:789
+#: src/prefs/controllers/InteractionsPageController.js:70
+#: assets/ui/prefs.ui:726 assets/ui/prefs.ui:929
 msgid "Preferences"
 msgstr "Předvolby"
 
-#: src/prefs/controllers/InteractionsPageController.js:69
-#: assets/ui/prefs.ui:605 assets/ui/prefs.ui:790
+#: src/prefs/controllers/InteractionsPageController.js:74
+#: assets/ui/prefs.ui:743 assets/ui/prefs.ui:930
 msgid "Open app"
 msgstr "Otevřít aplikaci"
 
-#: src/prefs/controllers/InteractionsPageController.js:72
-#: assets/ui/prefs.ui:622 assets/ui/prefs.ui:791
+#: src/prefs/controllers/InteractionsPageController.js:77
+#: assets/ui/prefs.ui:760 assets/ui/prefs.ui:931
 msgid "Quit app"
 msgstr "Ukončit aplikaci"
 
-#: src/prefs/controllers/InteractionsPageController.js:73
-#: assets/ui/prefs.ui:639 assets/ui/prefs.ui:792
+#: src/prefs/controllers/InteractionsPageController.js:78
+#: assets/ui/prefs.ui:777 assets/ui/prefs.ui:932
 msgid "Switch app"
 msgstr "Přepnout aplikaci"
 
-#: src/prefs/controllers/InteractionsPageController.js:78
+#: src/prefs/controllers/InteractionsPageController.js:84
 msgid "Playback"
 msgstr "Přehrávání"
 
-#: src/prefs/controllers/InteractionsPageController.js:79
+#: src/prefs/controllers/InteractionsPageController.js:85
 msgid "Audio"
 msgstr "Zvuk"
 
-#: src/prefs/controllers/InteractionsPageController.js:80
-#: assets/ui/prefs.ui:138 assets/ui/prefs.ui:378
+#: src/prefs/controllers/InteractionsPageController.js:86
+#: assets/ui/prefs.ui:222 assets/ui/prefs.ui:482
 msgid "Apps"
 msgstr "Aplikace"
 
-#: src/prefs/controllers/InteractionsPageController.js:81
+#: src/prefs/controllers/InteractionsPageController.js:87
 msgid "Interface"
 msgstr "Rozhraní"
 
-#: src/prefs/controllers/InteractionsPageController.js:159
+#: src/prefs/controllers/InteractionsPageController.js:165
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
@@ -129,44 +142,44 @@ msgstr ""
 "Stisknutím Enter uložíte.\n"
 "Stisknutím Backspace zkratku vymažete."
 
-#: src/prefs/controllers/InteractionsPageController.js:167
+#: src/prefs/controllers/InteractionsPageController.js:173
 msgid "Press a shortcut"
 msgstr "Stiskněte klávesovou zkratku"
 
-#: src/prefs/controllers/InteractionsPageController.js:269
+#: src/prefs/controllers/InteractionsPageController.js:275
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Zkratku již používá %s"
 
-#: src/prefs/controllers/InteractionsPageController.js:289
-#: assets/ui/prefs.ui:443
+#: src/prefs/controllers/InteractionsPageController.js:295
+#: assets/ui/prefs.ui:547
 msgid "Keyboard shortcuts"
 msgstr "Klávesové zkratky"
 
-#: src/prefs/controllers/InteractionsPageController.js:312
+#: src/prefs/controllers/InteractionsPageController.js:318
 msgid "Not set"
 msgstr "Nenastaveno"
 
-#: src/prefs/controllers/InteractionsPageController.js:340
+#: src/prefs/controllers/InteractionsPageController.js:346
 msgid "Reset keyboard shortcuts?"
 msgstr "Obnovit klávesové zkratky?"
 
-#: src/prefs/controllers/InteractionsPageController.js:341
+#: src/prefs/controllers/InteractionsPageController.js:347
 msgid "Every keyboard shortcut will be disabled."
 msgstr "Všechny klávesové zkratky budou vypnuty."
 
-#: src/prefs/controllers/InteractionsPageController.js:344
+#: src/prefs/controllers/InteractionsPageController.js:350
 #: src/prefs/controllers/OthersPageController.js:133
 #: src/prefs/widgets/BlockedAppChooserDialog.js:68
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: src/prefs/controllers/InteractionsPageController.js:345
+#: src/prefs/controllers/InteractionsPageController.js:351
 #: src/prefs/controllers/OthersPageController.js:106
 msgid "Reset"
 msgstr "Obnovit"
 
-#: src/prefs/controllers/InteractionsPageController.js:364
+#: src/prefs/controllers/InteractionsPageController.js:370
 msgid "Keyboard shortcuts reset"
 msgstr "Klávesové zkratky byly obnoveny"
 
@@ -194,7 +207,7 @@ msgstr "Vyčistit mezipaměť?"
 msgid "Cached content will be downloaded again when needed."
 msgstr "Obsah v mezipaměti bude v případě potřeby znovu stažen."
 
-#: src/prefs/controllers/OthersPageController.js:126 assets/ui/prefs.ui:749
+#: src/prefs/controllers/OthersPageController.js:126 assets/ui/prefs.ui:887
 msgid "Clear cache"
 msgstr "Vyčistit mezipaměť"
 
@@ -214,7 +227,7 @@ msgstr[0] "%d obrázek v mezipaměti — %s"
 msgstr[1] "%d obrázky v mezipaměti — %s"
 msgstr[2] "%d obrázků v mezipaměti — %s"
 
-#: src/prefs/controllers/TrackInformationContentController.js:58
+#: src/prefs/controllers/TrackInformationContentController.js:55
 msgid "by"
 msgstr "od"
 
@@ -272,6 +285,7 @@ msgid "Disc"
 msgstr "Disk"
 
 #: src/prefs/widgets/TrackInformationContentRow.js:35
+#: src/shared/utils/playbackControlAccessibility.js:58
 msgid "Track"
 msgstr "Skladba"
 
@@ -286,6 +300,30 @@ msgstr "Vlastní text"
 #: src/prefs/widgets/TrackInformationContentRow.js:127
 msgid "Remove"
 msgstr "Odebrat"
+
+#: src/shared/utils/playbackControlAccessibility.js:47
+msgid "Play"
+msgstr "Přehrát"
+
+#: src/shared/utils/playbackControlAccessibility.js:48
+msgid "Pause"
+msgstr "Pozastavit"
+
+#: src/shared/utils/playbackControlAccessibility.js:49
+msgid "Stop"
+msgstr "Zastavit"
+
+#: src/shared/utils/playbackControlAccessibility.js:60
+msgid "Playlist"
+msgstr "Seznam skladeb"
+
+#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:918
+msgid "None"
+msgstr "Žádná"
+
+#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:109
+msgid "Playback speed"
+msgstr "Rychlost přehrávání"
 
 #: src/shell/ui/popup/PopupAppSelectorButton.js:87
 #: src/shell/ui/popup/PopupAppSelectorList.js:219
@@ -304,11 +342,11 @@ msgstr "Blokované aplikace jsou rozšířením ignorovány a skryty"
 msgid "Add"
 msgstr "Přidat"
 
-#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:153
+#: assets/ui/prefs.ui:8 assets/ui/prefs.ui:237
 msgid "Layout"
 msgstr "Rozvržení"
 
-#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:284
+#: assets/ui/prefs.ui:11 assets/ui/prefs.ui:240
 msgid "Width"
 msgstr "Šířka"
 
@@ -316,56 +354,69 @@ msgstr "Šířka"
 msgid "Total width in pixels"
 msgstr "Celková šířka v pixelech"
 
-#: assets/ui/prefs.ui:25
+#: assets/ui/prefs.ui:26 assets/ui/prefs.ui:261
+#: assets/ui/top-bar-element-order.ui:49
+msgid "Playback controls"
+msgstr "Ovládací prvky přehrávání"
+
+#: assets/ui/prefs.ui:27 assets/ui/prefs.ui:262
+msgid "Show playback controls"
+msgstr "Zobrazit ovládání přehrávání"
+
+#: assets/ui/prefs.ui:103
 msgid "Progress bar"
 msgstr "Ukazatel průběhu"
 
-#: assets/ui/prefs.ui:26
+#: assets/ui/prefs.ui:104
 msgid "Show the current playback position"
 msgstr "Zobrazit aktuální pozici přehrávání"
 
-#: assets/ui/prefs.ui:33 assets/ui/prefs.ui:275
+#: assets/ui/prefs.ui:110
+msgid "Show the playback speed switch"
+msgstr "Zobrazit přepínač rychlosti přehrávání"
+
+#: assets/ui/prefs.ui:117 assets/ui/prefs.ui:399
 msgid "Metadata"
 msgstr "Metadata"
 
-#: assets/ui/prefs.ui:37
+#: assets/ui/prefs.ui:121
 msgid "Album art"
 msgstr "Obal alba"
 
-#: assets/ui/prefs.ui:38
+#: assets/ui/prefs.ui:122
 msgid "Show album art"
 msgstr "Zobrazit obal alba"
 
-#: assets/ui/prefs.ui:42
+#: assets/ui/prefs.ui:126
 msgid "Corner radius"
 msgstr "Poloměr rohů"
 
-#: assets/ui/prefs.ui:43
+#: assets/ui/prefs.ui:127
 msgid "0 disables rounded corners"
 msgstr "0 vypne zaoblení rohů"
 
-#: assets/ui/prefs.ui:59 assets/ui/prefs.ui:279
+#: assets/ui/prefs.ui:143 assets/ui/prefs.ui:403
 #: assets/ui/top-bar-element-order.ui:27
 msgid "Track information"
 msgstr "Informace o skladbě"
 
-#: assets/ui/prefs.ui:60 assets/ui/prefs.ui:280
+#: assets/ui/prefs.ui:144 assets/ui/prefs.ui:404
 msgid "Show track information"
 msgstr "Zobrazit informace o skladbě"
 
-#: assets/ui/prefs.ui:64 assets/ui/prefs.ui:304
+#: assets/ui/prefs.ui:148 assets/ui/prefs.ui:408
 msgid "Scroll track information"
 msgstr "Posouvat informace o skladbě"
 
-#: assets/ui/prefs.ui:65 assets/ui/prefs.ui:305
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:409
 msgid "Scroll overflowing track information"
 msgstr "Posouvat informace o skladbě, které se nevejdou"
 
-#: assets/ui/prefs.ui:69 assets/ui/prefs.ui:309
+#: assets/ui/prefs.ui:153 assets/ui/prefs.ui:413
 msgid "Scrolling performance"
 msgstr "Výkon posouvání"
 
-#: assets/ui/prefs.ui:76 assets/ui/prefs.ui:316
+#: assets/ui/prefs.ui:160 assets/ui/prefs.ui:420
 msgid ""
 "Continuous text scrolling may increase CPU and GPU usage, and animation may "
 "be less smooth on very low-end hardware."
@@ -373,63 +424,67 @@ msgstr ""
 "Nepřetržité posouvání textu může zvýšit využití procesoru a grafické karty a "
 "na velmi slabém hardwaru může být animace méně plynulá."
 
-#: assets/ui/prefs.ui:99 assets/ui/prefs.ui:339
+#: assets/ui/prefs.ui:183 assets/ui/prefs.ui:443
 msgid "Scroll speed"
 msgstr "Rychlost posouvání"
 
-#: assets/ui/prefs.ui:100 assets/ui/prefs.ui:340
+#: assets/ui/prefs.ui:184 assets/ui/prefs.ui:444
 msgid "Higher values scroll faster"
 msgstr "Vyšší hodnoty posouvají rychleji"
 
-#: assets/ui/prefs.ui:113 assets/ui/prefs.ui:353
+#: assets/ui/prefs.ui:197 assets/ui/prefs.ui:457
 msgid "Scroll pause"
 msgstr "Pozastavení posouvání"
 
-#: assets/ui/prefs.ui:114 assets/ui/prefs.ui:354
+#: assets/ui/prefs.ui:198 assets/ui/prefs.ui:458
 msgid "Seconds before scrolling starts again"
 msgstr "Počet sekund před zahájením nebo opětovným spuštěním posouvání"
 
-#: assets/ui/prefs.ui:129 assets/ui/prefs.ui:369
+#: assets/ui/prefs.ui:213 assets/ui/prefs.ui:473
 msgid "Track information content"
 msgstr "Obsah informací o skladbě"
 
-#: assets/ui/prefs.ui:130 assets/ui/prefs.ui:370
+#: assets/ui/prefs.ui:214 assets/ui/prefs.ui:474
 msgid "Choose and reorder track information"
 msgstr "Vyberte a změňte pořadí informací o skladbě"
 
-#: assets/ui/prefs.ui:141 assets/ui/prefs.ui:387
+#: assets/ui/prefs.ui:225 assets/ui/prefs.ui:491
 msgid "Colored app icon"
 msgstr "Barevná ikona aplikace"
 
-#: assets/ui/prefs.ui:142 assets/ui/prefs.ui:388
+#: assets/ui/prefs.ui:226 assets/ui/prefs.ui:492
 msgid "Use the media app's full-color icon"
 msgstr "Použít plnobarevnou ikonu mediální aplikace"
 
-#: assets/ui/prefs.ui:149
+#: assets/ui/prefs.ui:233
 msgid "Top bar"
 msgstr "Horní lišta"
 
-#: assets/ui/prefs.ui:157 assets/ui/top-bar-element-order.ui:49
-msgid "Playback controls"
-msgstr "Ovládací prvky přehrávání"
+#: assets/ui/prefs.ui:241
+msgid "Maximum width in pixels; 0 uses available space"
+msgstr "Maximální šířka v pixelech; 0 použije veškerý dostupný prostor"
 
-#: assets/ui/prefs.ui:158
-msgid "Show playback controls"
-msgstr "Zobrazit ovládání přehrávání"
+#: assets/ui/prefs.ui:254
+msgid "Lock width"
+msgstr "Uzamknout šířku"
 
-#: assets/ui/prefs.ui:214 assets/ui/top-bar-element-order.ui:38
+#: assets/ui/prefs.ui:255
+msgid "Keep the configured width for short text"
+msgstr "Zachovat nastavenou šířku, když je obsah kratší"
+
+#: assets/ui/prefs.ui:338 assets/ui/top-bar-element-order.ui:38
 msgid "Visualizer"
 msgstr "Vizualizér"
 
-#: assets/ui/prefs.ui:215
+#: assets/ui/prefs.ui:339
 msgid "Show the animated playback indicator"
 msgstr "Zobrazit animovaný indikátor přehrávání"
 
-#: assets/ui/prefs.ui:221
+#: assets/ui/prefs.ui:345
 msgid "Visualizer performance"
 msgstr "Výkon vizualizéru"
 
-#: assets/ui/prefs.ui:228
+#: assets/ui/prefs.ui:352
 msgid ""
 "The visualizer redraws continuously while media is playing. This may "
 "increase CPU and GPU usage, and animation may be less smooth on very low-end "
@@ -438,200 +493,185 @@ msgstr ""
 "Vizualizér se během přehrávání médií průběžně překresluje. To může zvýšit "
 "využití CPU a GPU a animace může být na velmi slabém hardwaru méně plynulá."
 
-#: assets/ui/prefs.ui:244
+#: assets/ui/prefs.ui:368
 msgid "Style"
 msgstr "Styl"
 
-#: assets/ui/prefs.ui:248
+#: assets/ui/prefs.ui:372
 msgid "Beats"
 msgstr "Rytmy"
 
-#: assets/ui/prefs.ui:249
+#: assets/ui/prefs.ui:373
 msgid "Pulse"
 msgstr "Pulz"
 
-#: assets/ui/prefs.ui:257
+#: assets/ui/prefs.ui:381
 msgid "Animation speed"
 msgstr "Rychlost animace"
 
-#: assets/ui/prefs.ui:258
+#: assets/ui/prefs.ui:382
 msgid "Higher values animate faster"
 msgstr "Vyšší hodnoty zrychlují animaci"
 
-#: assets/ui/prefs.ui:285
-msgid "Maximum width in pixels; 0 uses available space"
-msgstr "Maximální šířka v pixelech; 0 použije veškerý dostupný prostor"
-
-#: assets/ui/prefs.ui:298
-msgid "Lock width"
-msgstr "Uzamknout šířku"
-
-#: assets/ui/prefs.ui:299
-msgid "Keep the configured width for short text"
-msgstr "Zachovat nastavenou šířku, když je obsah kratší"
-
-#: assets/ui/prefs.ui:382 assets/ui/top-bar-element-order.ui:16
+#: assets/ui/prefs.ui:486 assets/ui/top-bar-element-order.ui:16
 msgid "App icon"
 msgstr "Ikona aplikace"
 
-#: assets/ui/prefs.ui:383
+#: assets/ui/prefs.ui:487
 msgid "Show the app icon"
 msgstr "Zobrazit ikonu aplikace"
 
-#: assets/ui/prefs.ui:397
+#: assets/ui/prefs.ui:501
 msgid "Panel"
 msgstr "Panel"
 
-#: assets/ui/prefs.ui:401
+#: assets/ui/prefs.ui:505
 msgid "Extension placement"
 msgstr "Umístění rozšíření"
 
-#: assets/ui/prefs.ui:402
+#: assets/ui/prefs.ui:506
 msgid "Choose where the extension appears"
 msgstr "Zvolte, kde se rozšíření zobrazí"
 
-#: assets/ui/prefs.ui:405
+#: assets/ui/prefs.ui:509
 msgid "Position"
 msgstr "Pozice"
 
-#: assets/ui/prefs.ui:406
+#: assets/ui/prefs.ui:510
 msgid "Section where the extension appears in the top bar"
 msgstr "Sekce horní lišty, ve které se rozšíření zobrazuje"
 
-#: assets/ui/prefs.ui:410
+#: assets/ui/prefs.ui:514
 msgid "Left"
 msgstr "Vlevo"
 
-#: assets/ui/prefs.ui:411
+#: assets/ui/prefs.ui:515
 msgid "Center"
 msgstr "Uprostřed"
 
-#: assets/ui/prefs.ui:412
+#: assets/ui/prefs.ui:516
 msgid "Right"
 msgstr "Vpravo"
 
-#: assets/ui/prefs.ui:420
+#: assets/ui/prefs.ui:524
 msgid "Index"
 msgstr "Index"
 
-#: assets/ui/prefs.ui:421
+#: assets/ui/prefs.ui:525
 msgid "Order among items in the same top bar section"
 msgstr "Pořadí mezi položkami ve stejné části horní lišty"
 
-#: assets/ui/prefs.ui:439
+#: assets/ui/prefs.ui:543
 msgid "Interactions"
 msgstr "Interakce"
 
-#: assets/ui/prefs.ui:444
+#: assets/ui/prefs.ui:548
 msgid "Assign global keyboard shortcuts to media actions"
 msgstr "Přiřaďte mediálním akcím globální klávesové zkratky"
 
-#: assets/ui/prefs.ui:447
+#: assets/ui/prefs.ui:551
 msgid "Shortcut assignments"
 msgstr "Přiřazení klávesových zkratek"
 
-#: assets/ui/prefs.ui:448
+#: assets/ui/prefs.ui:552
 msgid "Configure each keyboard action"
 msgstr "Nastavit každou akci klávesnice"
 
-#: assets/ui/prefs.ui:460 assets/ui/prefs.ui:477 assets/ui/prefs.ui:494
-#: assets/ui/prefs.ui:511 assets/ui/prefs.ui:528 assets/ui/prefs.ui:545
-#: assets/ui/prefs.ui:562 assets/ui/prefs.ui:579 assets/ui/prefs.ui:596
-#: assets/ui/prefs.ui:613 assets/ui/prefs.ui:630 assets/ui/prefs.ui:647
+#: assets/ui/prefs.ui:564 assets/ui/prefs.ui:581 assets/ui/prefs.ui:598
+#: assets/ui/prefs.ui:615 assets/ui/prefs.ui:632 assets/ui/prefs.ui:649
+#: assets/ui/prefs.ui:666 assets/ui/prefs.ui:683 assets/ui/prefs.ui:700
+#: assets/ui/prefs.ui:717 assets/ui/prefs.ui:734 assets/ui/prefs.ui:751
+#: assets/ui/prefs.ui:768 assets/ui/prefs.ui:785
 msgid "Set"
 msgstr "Nastavit"
 
-#: assets/ui/prefs.ui:657
+#: assets/ui/prefs.ui:795
 msgid "Shortcut overview"
 msgstr "Přehled zkratek"
 
-#: assets/ui/prefs.ui:658
+#: assets/ui/prefs.ui:796
 msgid "View all assigned shortcuts"
 msgstr "Zobrazit všechny přiřazené zkratky"
 
-#: assets/ui/prefs.ui:663
+#: assets/ui/prefs.ui:801
 msgid "View"
 msgstr "Zobrazit"
 
-#: assets/ui/prefs.ui:671
+#: assets/ui/prefs.ui:809
 msgid "Reset keyboard shortcuts"
 msgstr "Obnovit klávesové zkratky"
 
-#: assets/ui/prefs.ui:682
+#: assets/ui/prefs.ui:820
 msgid "Mouse actions"
 msgstr "Akce myši"
 
-#: assets/ui/prefs.ui:683
+#: assets/ui/prefs.ui:821
 msgid "Assign actions to clicks and scrolling on the top bar button"
 msgstr "Přiřaďte akce kliknutím a posouváním na tlačítku horní lišty"
 
-#: assets/ui/prefs.ui:686
+#: assets/ui/prefs.ui:824
 msgid "Left click / tap"
 msgstr "Kliknutí levým tlačítkem / Klepnutí"
 
-#: assets/ui/prefs.ui:692
+#: assets/ui/prefs.ui:830
 msgid "Middle click"
 msgstr "Prostřední klik"
 
-#: assets/ui/prefs.ui:698
+#: assets/ui/prefs.ui:836
 msgid "Right click"
 msgstr "Pravý klik"
 
-#: assets/ui/prefs.ui:704
+#: assets/ui/prefs.ui:842
 msgid "Double click / tap"
 msgstr "Dvojité kliknutí / Klepnutí"
 
-#: assets/ui/prefs.ui:710
+#: assets/ui/prefs.ui:848
 msgid "Scroll up"
 msgstr "Posunout nahoru"
 
-#: assets/ui/prefs.ui:716
+#: assets/ui/prefs.ui:854
 msgid "Scroll down"
 msgstr "Posunout dolů"
 
-#: assets/ui/prefs.ui:724
+#: assets/ui/prefs.ui:862
 msgid "Others"
 msgstr "Ostatní"
 
-#: assets/ui/prefs.ui:728
+#: assets/ui/prefs.ui:866
 msgid "System"
 msgstr "Systém"
 
-#: assets/ui/prefs.ui:729
+#: assets/ui/prefs.ui:867
 msgid "Control how MediaShell integrates with GNOME"
 msgstr "Nastavte, jak se MediaShell integruje s GNOME"
 
-#: assets/ui/prefs.ui:732
+#: assets/ui/prefs.ui:870
 msgid "Hide GNOME media controls"
 msgstr "Skrýt ovládání médií GNOME"
 
-#: assets/ui/prefs.ui:733
+#: assets/ui/prefs.ui:871
 msgid "Remove GNOME's default media controls from the notification list"
 msgstr "Odebrat výchozí ovládání médií GNOME ze seznamu oznámení"
 
-#: assets/ui/prefs.ui:740
+#: assets/ui/prefs.ui:878
 msgid "Cache"
 msgstr "Mezipaměť"
 
-#: assets/ui/prefs.ui:741
+#: assets/ui/prefs.ui:879
 msgid "Store content on disk to load it faster"
 msgstr "Ukládat obsah na disk, aby se načítal rychleji"
 
-#: assets/ui/prefs.ui:744
+#: assets/ui/prefs.ui:882
 msgid "Store album art"
 msgstr "Ukládat obaly alb"
 
-#: assets/ui/prefs.ui:759
+#: assets/ui/prefs.ui:897
 msgid "Clear"
 msgstr "Vymazat"
 
-#: assets/ui/prefs.ui:774
+#: assets/ui/prefs.ui:912
 msgid "Extension settings"
 msgstr "Nastavení rozšíření"
-
-#: assets/ui/prefs.ui:780
-msgid "None"
-msgstr "Žádná"
 
 #: assets/ui/top-bar-element-order.ui:6
 msgid "Element order"

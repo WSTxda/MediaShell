@@ -28,7 +28,6 @@ export default class SettingsStore {
       this.readSettingIntoTarget(key, spec);
       const signalId = this.settings.connect(`changed::${key}`, () => {
         const value = this.readSettingIntoTarget(key, spec);
-        logger.debug(`Setting changed: ${key} = ${String(value)}`);
         this.onSettingChanged?.(key, value, spec);
       });
       this.settingChangeSignalIds.push(signalId);
@@ -45,6 +44,8 @@ export default class SettingsStore {
       value = this.readFallbackValue(key, spec);
     }
 
+    const rawValue = value;
+
     try {
       if (spec.transform) value = spec.transform(value);
     } catch (error) {
@@ -54,6 +55,14 @@ export default class SettingsStore {
       );
       value = this.readFallbackValue(key, spec);
       if (spec.transform) value = spec.transform(value);
+    }
+
+    if (spec.write && !Object.is(rawValue, value)) {
+      try {
+        this.settings[spec.write](key, value);
+      } catch (error) {
+        logger.warn(`Failed to repair setting ${key}`, error);
+      }
     }
 
     this.settingsTarget[spec.property] = value;
@@ -88,11 +97,8 @@ export default class SettingsStore {
     for (const signalId of this.settingChangeSignalIds) {
       try {
         this.settings.disconnect(signalId);
-      } catch (error) {
-        logger.debug(
-          "A settings signal was already disconnected during teardown",
-          error,
-        );
+      } catch {
+        // Gio.Settings may dispose handlers before the owner finishes teardown.
       }
     }
     this.settingChangeSignalIds.length = 0;

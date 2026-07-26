@@ -4,12 +4,10 @@
  *
  * Resolves MPRIS identity hints to installed desktop applications.
  *
- * The service owns bounded Shell.App and Gio.AppInfo caches so repeated track
- * changes do not force desktop database scans. Unresolved lookups are cached
- * with a short TTL to avoid repeated desktop database scans while still
- * allowing re-resolution when the desktop file appears later.
- * ExtensionController clears the singleton on disable to release stale
- * Shell.App references.
+ * The service owns bounded Shell.App and Gio.AppInfo caches. Misses use a
+ * short TTL so unresolved browser/PWA identities can be retried when desktop
+ * metadata appears later. ExtensionController clears the singleton on disable
+ * to release stale Shell.App references.
  *
  * @see src/shared/utils/appIdentity.js
  */
@@ -180,11 +178,6 @@ function resolveBrowserIdentityApp(mediaIdentity, entries) {
     ) ?? null;
   if (!entry) return null;
 
-  logger.debug(
-    "Resolved browser/PWA media app identity",
-    match.descriptor.desktopId,
-    `reason=${match.reason}`,
-  );
   return entry.app;
 }
 
@@ -429,11 +422,6 @@ export default class MediaAppResolver {
     // Misses are deliberately not cached. Browser endpoints can appear before
     // Shell.AppSystem has associated their desktop app, so a later UI refresh
     // must be able to resolve the real icon instead of retaining a fallback.
-    logger.debugOnce(
-      `no-shell-app:${appCacheKey}`,
-      "No Shell app matched the MPRIS identity",
-      desktopEntry || identity || busName || "unknown",
-    );
     return null;
   }
 
@@ -552,15 +540,6 @@ export default class MediaAppResolver {
     const appCacheKey = createAppCacheKey(identity, desktopEntry, busName);
 
     if (this.#isRecentMiss(appCacheKey)) return null;
-
-    if (
-      this.#shellAppCache.has(appCacheKey) ||
-      this.#appInfoCache.has(appCacheKey)
-    ) {
-      logger.debug("App resolver cache hit for", busName);
-    } else {
-      logger.debug("App resolver cache miss, resolving", busName);
-    }
 
     const app =
       this.resolveShellMediaApp(identity, desktopEntry, busName) ??

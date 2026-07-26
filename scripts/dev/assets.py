@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import ast
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -20,9 +19,16 @@ ROOT = Path(__file__).resolve().parents[2]
 ASSETS = ROOT / "assets"
 LOCALE_DIR = ASSETS / "locale"
 POT = LOCALE_DIR / "mediashell@wstxda.github.com.pot"
-REQUIRE_NATIVE_TOOLS = os.environ.get("MEDIASHELL_REQUIRE_NATIVE_TOOLS") == "1"
+PACKAGE_JSON = ROOT / "package.json"
 PLACEHOLDER_RE = re.compile(r"%(?:\d+\$)?[A-Za-z]|\{[A-Za-z_][A-Za-z0-9_]*\}")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+NATIVE_TOOL_NAMES = (
+    "glib-compile-schemas",
+    "glib-compile-resources",
+    "xgettext",
+    "msgfmt",
+)
+
 
 @dataclass
 class CatalogEntry:
@@ -64,16 +70,27 @@ def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
                 references.extend(line[2:].strip().split())
                 continue
             if line.startswith("#,"):
-                flags.update(flag.strip() for flag in line[2:].split(",") if flag.strip())
+                flags.update(
+                    flag.strip()
+                    for flag in line[2:].split(",")
+                    if flag.strip()
+                )
                 continue
             if line.startswith("#"):
                 continue
 
-            match = re.match(r"(msgid_plural|msgid|msgstr(?:\[(\d+)\])?)\s+(.*)$", line)
+            match = re.match(
+                r"(msgid_plural|msgid|msgstr(?:\[(\d+)\])?)\s+(.*)$",
+                line,
+            )
             if match:
                 directive = match.group(1)
                 index = match.group(2)
-                current_field = f"msgstr[{index}]" if directive.startswith("msgstr[") else directive
+                current_field = (
+                    f"msgstr[{index}]"
+                    if directive.startswith("msgstr[")
+                    else directive
+                )
                 fields[current_field] = decode_quoted(match.group(3))
                 continue
 
@@ -108,7 +125,11 @@ def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
     return entries
 
 
-def validate_catalog_header(path: Path, entries: dict[str, CatalogEntry], language: str | None) -> list[str]:
+def validate_catalog_header(
+    path: Path,
+    entries: dict[str, CatalogEntry],
+    language: str | None,
+) -> list[str]:
     errors: list[str] = []
     header = entries.get("")
     if header is None:
@@ -136,7 +157,10 @@ def validate_catalog_header(path: Path, entries: dict[str, CatalogEntry], langua
     return errors
 
 
-def validate_source_references(path: Path, entries: dict[str, CatalogEntry]) -> list[str]:
+def validate_source_references(
+    path: Path,
+    entries: dict[str, CatalogEntry],
+) -> list[str]:
     errors: list[str] = []
     checked: set[str] = set()
     for entry in entries.values():
@@ -146,15 +170,63 @@ def validate_source_references(path: Path, entries: dict[str, CatalogEntry]) -> 
                 continue
             checked.add(source_path)
             if not (ROOT / source_path).is_file():
-                errors.append(f"{path.name}: source reference does not exist: {source_path}")
+                errors.append(
+                    f"{path.name}: source reference does not exist: {source_path}"
+                )
     return errors
 
 
-def extract_source_catalog(output_path: Path) -> dict[str, CatalogEntry]:
+def extract_source_catalog_fallback() -> dict[str, CatalogEntry]:
+    """Extract literal JavaScript and GtkBuilder messages from parsed sources."""
+    result = subprocess.run(
+        ["node", "scripts/dev/extractTranslations.mjs"],
+        cwd=ROOT,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(
+            "Translation validation failed:\n"
+            f"- parsed JavaScript extraction failed: {result.stderr.strip()}"
+        )
+
+    entries: dict[str, CatalogEntry] = {}
+    for item in json.loads(result.stdout):
+        msgid = item.get("msgid")
+        if not msgid:
+            continue
+        entries[msgid] = CatalogEntry(
+            msgid=msgid,
+            msgid_plural=item.get("msgidPlural"),
+            references=list(item.get("references") or []),
+        )
+
+    for ui_path in sorted((ASSETS / "ui").glob("*.ui")):
+        root = ET.parse(ui_path).getroot()
+        for node in root.iter():
+            if node.get("translatable") != "yes":
+                continue
+            msgid = "".join(node.itertext()).strip()
+            if not msgid:
+                continue
+            reference = str(ui_path.relative_to(ROOT))
+            entry = entries.setdefault(msgid, CatalogEntry(msgid=msgid))
+            if reference not in entry.references:
+                entry.references.append(reference)
+    return entries
+
+
+def extract_source_catalog(
+    output_path: Path, *, require_native: bool = False
+) -> dict[str, CatalogEntry]:
     """Extract messages with GNU gettext's JavaScript and Glade parsers."""
     xgettext = shutil.which("xgettext")
     if xgettext is None:
-        raise SystemExit("Translation validation failed: xgettext is required")
+        if require_native:
+            raise SystemExit("Translation validation failed: xgettext is required")
+        return extract_source_catalog_fallback()
 
     javascript_paths = [
         str(path.relative_to(ROOT))
@@ -164,11 +236,14 @@ def extract_source_catalog(output_path: Path) -> dict[str, CatalogEntry]:
         str(path.relative_to(ROOT))
         for path in sorted((ASSETS / "ui").glob("*.ui"))
     ]
+    package_version = json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))[
+        "version"
+    ]
     common_args = [
         "--from-code=UTF-8",
         "--add-comments",
         "--package-name=MediaShell",
-        "--package-version=2.0.0",
+        f"--package-version={package_version}",
     ]
     commands = [
         [
@@ -207,22 +282,6 @@ def extract_source_catalog(output_path: Path) -> dict[str, CatalogEntry]:
             )
 
     return parse_catalog(output_path)
-
-
-def run_optional_tool(name: str, args: list[str], error_prefix: str) -> subprocess.CompletedProcess[str] | None:
-    executable = shutil.which(name)
-    if executable is None:
-        if REQUIRE_NATIVE_TOOLS:
-            raise SystemExit(f"{error_prefix}: {name} is required when MEDIASHELL_REQUIRE_NATIVE_TOOLS=1")
-        return None
-
-    return subprocess.run(
-        [executable, *args],
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
 
 
 def validate_png(path: Path) -> list[str]:
@@ -328,15 +387,20 @@ def parse_schema_default(key_node: ET.Element) -> object:
     return value
 
 
-def parse_dbus_interfaces() -> dict[str, dict[str, list[str]]]:
-    """Return D-Bus interface members parsed from every maintained XML file."""
+def parse_dbus_contracts() -> tuple[
+    dict[str, dict[str, list[str]]],
+    dict[str, dict[str, dict[str, object]]],
+]:
+    """Return D-Bus member names and normalized signatures from maintained XML."""
     interfaces: dict[str, dict[str, list[str]]] = {}
+    signatures: dict[str, dict[str, dict[str, object]]] = {}
     for dbus_path in sorted((ASSETS / "dbus").glob("*.xml")):
         for interface_node in ET.parse(dbus_path).findall(".//interface"):
             interface_name = interface_node.get("name")
             if not interface_name:
                 continue
-            interfaces[interface_name] = {
+
+            interface_members = {
                 member_type: [
                     member.get("name")
                     for member in interface_node.findall(member_type)
@@ -344,7 +408,43 @@ def parse_dbus_interfaces() -> dict[str, dict[str, list[str]]]:
                 ]
                 for member_type in ("method", "signal", "property")
             }
-    return interfaces
+            interface_signatures: dict[str, dict[str, object]] = {
+                "method": {},
+                "signal": {},
+                "property": {},
+            }
+
+            for member_type in ("method", "signal"):
+                for member in interface_node.findall(member_type):
+                    member_name = member.get("name")
+                    if not member_name:
+                        continue
+                    interface_signatures[member_type][member_name] = [
+                        {
+                            "name": argument.get("name"),
+                            "type": argument.get("type"),
+                            "direction": (
+                                argument.get("direction", "in")
+                                if member_type == "method"
+                                else argument.get("direction")
+                            ),
+                        }
+                        for argument in member.findall("arg")
+                    ]
+
+            for property_node in interface_node.findall("property"):
+                property_name = property_node.get("name")
+                if not property_name:
+                    continue
+                interface_signatures["property"][property_name] = {
+                    "type": property_node.get("type"),
+                    "access": property_node.get("access"),
+                }
+
+            interfaces[interface_name] = interface_members
+            signatures[interface_name] = interface_signatures
+
+    return interfaces, signatures
 
 
 def build_asset_manifest() -> dict[str, object]:
@@ -386,6 +486,7 @@ def build_asset_manifest() -> dict[str, object]:
         }
 
     ui_objects: dict[str, dict[str, object]] = {}
+    ui_string_lists: dict[str, list[str]] = {}
     for ui_path in sorted((ASSETS / "ui").glob("*.ui")):
         for object_node in ET.parse(ui_path).findall(".//object"):
             object_id = object_node.get("id")
@@ -401,7 +502,13 @@ def build_asset_manifest() -> dict[str, object]:
                 "properties": properties,
                 "source": str(ui_path.relative_to(ROOT)),
             }
+            if object_node.get("class") == "GtkStringList":
+                ui_string_lists[object_id] = [
+                    "".join(item_node.itertext())
+                    for item_node in object_node.findall("items/item")
+                ]
 
+    dbus_interfaces, dbus_signatures = parse_dbus_contracts()
     return {
         "schema": {
             "id": schema_node.get("id"),
@@ -410,7 +517,9 @@ def build_asset_manifest() -> dict[str, object]:
             "enums": enums,
         },
         "uiObjects": ui_objects,
-        "dbusInterfaces": parse_dbus_interfaces(),
+        "uiStringLists": ui_string_lists,
+        "dbusInterfaces": dbus_interfaces,
+        "dbusSignatures": dbus_signatures,
     }
 
 
@@ -419,7 +528,6 @@ def check_resources() -> None:
     schema_xml = ASSETS / "org.gnome.shell.extensions.mediashell.gschema.xml"
     metadata_path = ROOT / "src" / "metadata.json"
     errors: list[str] = []
-    skipped_native_tools: list[str] = []
 
     check_images()
 
@@ -436,7 +544,10 @@ def check_resources() -> None:
             errors.append(f"{path.relative_to(ROOT)}: invalid XML: {error}")
 
     if errors:
-        raise SystemExit("Resource validation failed:\n" + "\n".join(f"- {error}" for error in errors))
+        raise SystemExit(
+            "Resource validation failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
 
     resource_tree = ET.parse(resource_xml)
     entries = [(node.text or "").strip() for node in resource_tree.findall(".//file")]
@@ -481,14 +592,18 @@ def check_resources() -> None:
     if schema is None:
         errors.append("GSettings schema definition is missing")
     elif schema.get("id") != metadata.get("settings-schema"):
-        errors.append("metadata settings-schema does not match the GSettings schema ID")
+        errors.append(
+            "metadata settings-schema does not match the GSettings schema ID"
+        )
 
     seen_interfaces: dict[str, Path] = {}
     for dbus_path in sorted((ASSETS / "dbus").glob("*.xml")):
         for interface in ET.parse(dbus_path).findall(".//interface"):
             interface_name = interface.get("name")
             if not interface_name:
-                errors.append(f"{dbus_path.relative_to(ROOT)}: unnamed D-Bus interface")
+                errors.append(
+                    f"{dbus_path.relative_to(ROOT)}: unnamed D-Bus interface"
+                )
                 continue
             if interface_name in seen_interfaces:
                 errors.append(
@@ -525,49 +640,96 @@ def check_resources() -> None:
                         f"{interface_name}: property {property_node.get('name')} "
                         "has invalid access"
                     )
+    if errors:
+        raise SystemExit(
+            "Resource validation failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
 
-    schema_result = run_optional_tool(
-        "glib-compile-schemas",
-        ["--strict", "--dry-run", str(ASSETS)],
-        "Schema validation failed",
-    )
-    if schema_result is None:
-        skipped_native_tools.append("glib-compile-schemas")
-    elif schema_result.returncode != 0:
-        errors.append(f"glib-compile-schemas failed: {schema_result.stderr.strip()}")
+    print("Parsed resource, schema, UI, and D-Bus validation passed.")
 
-    resource_tool = shutil.which("glib-compile-resources")
-    if resource_tool is None and REQUIRE_NATIVE_TOOLS:
-        errors.append("glib-compile-resources is required when MEDIASHELL_REQUIRE_NATIVE_TOOLS=1")
-    elif resource_tool is None:
-        skipped_native_tools.append("glib-compile-resources")
-    elif resource_tool is not None:
-        with tempfile.TemporaryDirectory(prefix="mediashell-gresource-") as temporary_directory:
-            output_path = Path(temporary_directory) / "mediashell.gresource"
-            result = subprocess.run(
-                [
-                    resource_tool,
-                    str(resource_xml),
-                    f"--target={output_path}",
-                    f"--sourcedir={ASSETS}",
-                ],
-                check=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
+
+def require_native_tools() -> dict[str, str]:
+    """Return the complete native toolchain or fail once with all missing tools."""
+    resolved_tools = {
+        tool_name: shutil.which(tool_name) for tool_name in NATIVE_TOOL_NAMES
+    }
+    missing_tools = [
+        tool_name
+        for tool_name, executable in resolved_tools.items()
+        if executable is None
+    ]
+    if missing_tools:
+        raise SystemExit(
+            "Native validation could not start:\n"
+            + "\n".join(
+                f"- {tool_name} is required" for tool_name in missing_tools
             )
-            if result.returncode != 0:
-                errors.append(f"glib-compile-resources failed: {result.stderr.strip()}")
-            elif not output_path.is_file() or output_path.stat().st_size == 0:
-                errors.append("glib-compile-resources produced an empty file")
+        )
+    return {
+        tool_name: executable
+        for tool_name, executable in resolved_tools.items()
+        if executable is not None
+    }
+
+
+def check_native_resources(tools: dict[str, str]) -> None:
+    """Run only the native GLib schema and resource compiler gate."""
+    resource_xml = ASSETS / "org.gnome.shell.extensions.mediashell.gresource.xml"
+    errors: list[str] = []
+
+    schema_result = subprocess.run(
+        [tools["glib-compile-schemas"], "--strict", "--dry-run", str(ASSETS)],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if schema_result.returncode != 0:
+        errors.append(
+            f"glib-compile-schemas failed: {schema_result.stderr.strip()}"
+        )
+
+    with tempfile.TemporaryDirectory(
+        prefix="mediashell-gresource-"
+    ) as temporary_directory:
+        output_path = Path(temporary_directory) / "mediashell.gresource"
+        result = subprocess.run(
+            [
+                tools["glib-compile-resources"],
+                str(resource_xml),
+                f"--target={output_path}",
+                f"--sourcedir={ASSETS}",
+            ],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode != 0:
+            errors.append(
+                f"glib-compile-resources failed: {result.stderr.strip()}"
+            )
+        elif not output_path.is_file() or output_path.stat().st_size == 0:
+            errors.append("glib-compile-resources produced an empty file")
 
     if errors:
-        raise SystemExit("Resource validation failed:\n" + "\n".join(f"- {error}" for error in errors))
+        raise SystemExit(
+            "Native resource validation failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
+    print("Native schema and resource compilation passed.")
 
-    message = "Parsed resource, schema, UI, and D-Bus validation passed."
-    if skipped_native_tools:
-        message += f" Native compilation skipped: {', '.join(skipped_native_tools)}."
-    print(message)
+
+def catalog_message_set(entries: dict[str, CatalogEntry]) -> set[str]:
+    """Return singular and plural source messages without the header entry."""
+    messages = set(entries) - {""}
+    messages.update(
+        entry.msgid_plural
+        for entry in entries.values()
+        if entry.msgid_plural is not None
+    )
+    return messages
 
 
 def check_translations() -> None:
@@ -576,24 +738,9 @@ def check_translations() -> None:
     errors.extend(validate_catalog_header(POT, pot_entries, None))
     errors.extend(validate_source_references(POT, pot_entries))
 
-    with tempfile.TemporaryDirectory(prefix="mediashell-gettext-") as temporary_directory:
-        source_entries = extract_source_catalog(
-            Path(temporary_directory) / "source-messages.pot"
-        )
-    source_messages = set(source_entries) - {""}
-    source_plural_messages = {
-        entry.msgid_plural
-        for entry in source_entries.values()
-        if entry.msgid_plural is not None
-    }
-    source_messages |= source_plural_messages
-    pot_messages = set(pot_entries) - {""}
-    pot_plural_messages = {
-        entry.msgid_plural
-        for entry in pot_entries.values()
-        if entry.msgid_plural is not None
-    }
-    template_messages = pot_messages | pot_plural_messages
+    source_entries = extract_source_catalog_fallback()
+    source_messages = catalog_message_set(source_entries)
+    template_messages = catalog_message_set(pot_entries)
 
     missing = sorted(source_messages - template_messages)
     stale = sorted(template_messages - source_messages)
@@ -602,10 +749,6 @@ def check_translations() -> None:
     if stale:
         errors.append(f"template contains stale source messages: {stale}")
 
-    msgfmt = shutil.which("msgfmt")
-    if msgfmt is None:
-        errors.append("msgfmt is required for translation validation")
-
     for po_path in sorted(LOCALE_DIR.glob("*.po")):
         entries = parse_catalog(po_path)
         language = po_path.stem
@@ -613,15 +756,26 @@ def check_translations() -> None:
         errors.extend(validate_source_references(po_path, entries))
 
         raw_catalog_lines = po_path.read_text(encoding="utf-8").splitlines()
-        if any("fuzzy" in entry.flags for msgid, entry in entries.items() if msgid):
-            errors.append(f"{po_path.name}: fuzzy translations must be resolved before release")
+        if any(
+            "fuzzy" in entry.flags
+            for msgid, entry in entries.items()
+            if msgid
+        ):
+            errors.append(
+                f"{po_path.name}: fuzzy translations must be resolved before release"
+            )
         if any(line.startswith("#~") for line in raw_catalog_lines):
-            errors.append(f"{po_path.name}: obsolete translations must be removed before release")
+            errors.append(
+                f"{po_path.name}: obsolete translations must be removed before release"
+            )
 
-        missing_messages = sorted((set(pot_entries) - {""}) - (set(entries) - {""}))
+        missing_messages = sorted(
+            (set(pot_entries) - {""}) - (set(entries) - {""})
+        )
         if missing_messages:
-            errors.append(f"{po_path.name}: missing template messages: {missing_messages}")
-
+            errors.append(
+                f"{po_path.name}: missing template messages: {missing_messages}"
+            )
 
         for msgid, entry in entries.items():
             if not msgid or msgid not in pot_entries:
@@ -629,7 +783,9 @@ def check_translations() -> None:
 
             template_entry = pot_entries[msgid]
             if entry.msgid_plural != template_entry.msgid_plural:
-                errors.append(f"{po_path.name}: plural source mismatch for {msgid!r}")
+                errors.append(
+                    f"{po_path.name}: plural source mismatch for {msgid!r}"
+                )
                 continue
 
             required_forms = 2 if entry.msgid_plural is not None else 1
@@ -648,35 +804,85 @@ def check_translations() -> None:
                 expected_forms.append(entry.msgid_plural)
 
             for index, translation in entry.translations.items():
-                expected = expected_forms[0 if index == 0 else min(1, len(expected_forms) - 1)]
-                if sorted(PLACEHOLDER_RE.findall(expected)) != sorted(PLACEHOLDER_RE.findall(translation)):
-                    errors.append(f"{po_path.name}: placeholder mismatch for {msgid!r} form {index}")
-
-        if msgfmt is not None:
-            with tempfile.TemporaryDirectory(prefix="mediashell-locale-") as temporary_directory:
-                output_path = Path(temporary_directory) / f"{po_path.stem}.mo"
-                result = subprocess.run(
-                    [
-                        msgfmt,
-                        "--check",
-                        "--check-header",
-                        "--check-format",
-                        "--output-file",
-                        str(output_path),
-                        str(po_path),
-                    ],
-                    check=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
+                expected_index = 0 if index == 0 else min(
+                    1,
+                    len(expected_forms) - 1,
                 )
-                if result.returncode != 0:
-                    errors.append(f"{po_path.name}: msgfmt failed: {result.stderr.strip()}")
+                expected = expected_forms[expected_index]
+                if sorted(PLACEHOLDER_RE.findall(expected)) != sorted(
+                    PLACEHOLDER_RE.findall(translation)
+                ):
+                    errors.append(
+                        f"{po_path.name}: placeholder mismatch for "
+                        f"{msgid!r} form {index}"
+                    )
 
     if errors:
-        raise SystemExit("Translation validation failed:\n" + "\n".join(f"- {error}" for error in errors))
+        raise SystemExit(
+            "Translation validation failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
 
-    print("Translation template, references, headers, and placeholders passed.")
+    print(
+        "Parsed translation template, references, headers, and placeholders "
+        "passed. GNU gettext compilation belongs to the native gate."
+    )
+
+
+def check_native_translations(tools: dict[str, str]) -> None:
+    """Run GNU gettext extraction and catalog compilation."""
+    errors: list[str] = []
+
+    pot_entries = parse_catalog(POT)
+    with tempfile.TemporaryDirectory(
+        prefix="mediashell-gettext-native-"
+    ) as temporary_directory:
+        source_entries = extract_source_catalog(
+            Path(temporary_directory) / "source-messages.pot",
+            require_native=True,
+        )
+    source_messages = catalog_message_set(source_entries)
+    template_messages = catalog_message_set(pot_entries)
+    missing = sorted(source_messages - template_messages)
+    stale = sorted(template_messages - source_messages)
+    if missing:
+        errors.append(f"template is missing GNU gettext messages: {missing}")
+    if stale:
+        errors.append(f"template contains stale GNU gettext messages: {stale}")
+
+    for po_path in sorted(LOCALE_DIR.glob("*.po")):
+        with tempfile.TemporaryDirectory(
+            prefix="mediashell-locale-native-"
+        ) as temporary_directory:
+            output_path = Path(temporary_directory) / f"{po_path.stem}.mo"
+            result = subprocess.run(
+                [
+                    tools["msgfmt"],
+                    "--check",
+                    "--check-header",
+                    "--check-format",
+                    "--output-file",
+                    str(output_path),
+                    str(po_path),
+                ],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            if result.returncode != 0:
+                errors.append(
+                    f"{po_path.name}: msgfmt failed: {result.stderr.strip()}"
+                )
+            elif not output_path.is_file() or output_path.stat().st_size == 0:
+                errors.append(f"{po_path.name}: msgfmt produced an empty catalog")
+
+    if errors:
+        raise SystemExit(
+            "Native translation validation failed:\n"
+            + "\n".join(f"- {error}" for error in errors)
+        )
+    print("Native gettext extraction and catalog compilation passed.")
 
 
 def main() -> None:
@@ -685,14 +891,26 @@ def main() -> None:
         return
     if sys.argv[1:] == ["--extract-translations"]:
         POT.unlink(missing_ok=True)
-        extract_source_catalog(POT)
+        extract_source_catalog(POT, require_native=True)
         return
     if sys.argv[1:] == ["--check-images"]:
         check_images()
         return
+    if sys.argv[1:] == ["--check-resources"]:
+        check_resources()
+        return
+    if sys.argv[1:] == ["--check-translations"]:
+        check_translations()
+        return
+    if sys.argv[1:] == ["--check-native"]:
+        tools = require_native_tools()
+        check_native_resources(tools)
+        check_native_translations(tools)
+        return
     if sys.argv[1:]:
         raise SystemExit(
-            "Usage: assets.py [--manifest|--extract-translations|--check-images]"
+            "Usage: assets.py [--manifest|--extract-translations|--check-images|"
+            "--check-resources|--check-translations|--check-native]"
         )
 
     check_resources()

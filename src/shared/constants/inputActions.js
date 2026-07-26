@@ -2,89 +2,142 @@
  * @file inputActions.js
  * @module shared.constants.inputActions
  *
- * Defines executable input actions and their optional global shortcut keys.
+ * Defines executable input actions, shortcut ownership, and visible pointer order.
  *
- * The definitions map stable action IDs to InputActions enum values and the
- * GSettings key used when the action can be bound globally. Shell services and
- * preference controllers consume the same table so new actions remain consistent
- * across runtime execution and shortcut editing UI.
+ * Keyboard and pointer inputs share executable action descriptors, while pointer
+ * rows use an explicit value map so visual order never depends on persisted enum
+ * indexes. Deprecated enum slots are intentionally absent from executable tables.
  */
 
 import { InputActions } from "../enums/input.js";
+import { PlaybackControlActions } from "./playbackControls.js";
 import { SettingsKeys } from "./settings.js";
 
-/**
- * Runtime action descriptors shared by keyboard shortcuts and pointer gestures.
- *
- * The `id` is a stable developer-facing identifier, `action` is the value sent
- * to runtime dispatch, and `shortcutKey` points to the GSettings key that stores
- * the optional global accelerator. Keep entries in the same order used by the
- * preferences shortcut page.
- */
+function createInputAction(id, action, shortcutKey, playbackAction = null) {
+  return Object.freeze({ id, action, shortcutKey, playbackAction });
+}
+
+/** Executable actions in the same semantic order used by shortcut preferences. */
 export const INPUT_ACTION_DEFINITIONS = Object.freeze([
-  Object.freeze({
-    id: "toggle-shuffle",
-    action: InputActions.TOGGLE_SHUFFLE,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE,
-  }),
-  Object.freeze({
-    id: "previous-track",
-    action: InputActions.PREVIOUS_TRACK,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_PREVIOUS_TRACK,
-  }),
-  Object.freeze({
-    id: "play-pause",
-    action: InputActions.PLAY_PAUSE,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_PLAY_PAUSE,
-  }),
-  Object.freeze({
-    id: "next-track",
-    action: InputActions.NEXT_TRACK,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_NEXT_TRACK,
-  }),
-  Object.freeze({
-    id: "toggle-loop",
-    action: InputActions.TOGGLE_LOOP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_LOOP,
-  }),
-  Object.freeze({
-    id: "volume-up",
-    action: InputActions.VOLUME_UP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_UP,
-  }),
-  Object.freeze({
-    id: "volume-down",
-    action: InputActions.VOLUME_DOWN,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_DOWN,
-  }),
-  Object.freeze({
-    id: "toggle-popup",
-    action: InputActions.TOGGLE_POPUP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,
-  }),
-  Object.freeze({
-    id: "open-preferences",
-    action: InputActions.OPEN_PREFERENCES,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_OPEN_PREFERENCES,
-  }),
-  Object.freeze({
-    id: "raise-app",
-    action: InputActions.RAISE_APP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_RAISE_APP,
-  }),
-  Object.freeze({
-    id: "quit-app",
-    action: InputActions.QUIT_APP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_QUIT_APP,
-  }),
-  Object.freeze({
-    id: "switch-app",
-    action: InputActions.SWITCH_APP,
-    shortcutKey: SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_APP,
-  }),
+  createInputAction(
+    "toggle-shuffle",
+    InputActions.TOGGLE_SHUFFLE,
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE,
+    PlaybackControlActions.TOGGLE_SHUFFLE,
+  ),
+  createInputAction(
+    "seek-backward",
+    InputActions.SEEK_BACKWARD,
+    SettingsKeys.INTERACTIONS_SHORTCUT_SEEK_BACKWARD,
+    PlaybackControlActions.SEEK_BACKWARD,
+  ),
+  createInputAction(
+    "previous-track",
+    InputActions.PREVIOUS_TRACK,
+    SettingsKeys.INTERACTIONS_SHORTCUT_PREVIOUS_TRACK,
+    PlaybackControlActions.PREVIOUS,
+  ),
+  createInputAction(
+    "play-pause",
+    InputActions.PLAY_PAUSE,
+    SettingsKeys.INTERACTIONS_SHORTCUT_PLAY_PAUSE,
+    PlaybackControlActions.PLAY_PAUSE,
+  ),
+  createInputAction(
+    "next-track",
+    InputActions.NEXT_TRACK,
+    SettingsKeys.INTERACTIONS_SHORTCUT_NEXT_TRACK,
+    PlaybackControlActions.NEXT,
+  ),
+  createInputAction(
+    "seek-forward",
+    InputActions.SEEK_FORWARD,
+    SettingsKeys.INTERACTIONS_SHORTCUT_SEEK_FORWARD,
+    PlaybackControlActions.SEEK_FORWARD,
+  ),
+  createInputAction(
+    "toggle-loop",
+    InputActions.TOGGLE_LOOP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_LOOP,
+    PlaybackControlActions.TOGGLE_REPEAT,
+  ),
+  createInputAction(
+    "volume-up",
+    InputActions.VOLUME_UP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_UP,
+  ),
+  createInputAction(
+    "volume-down",
+    InputActions.VOLUME_DOWN,
+    SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_DOWN,
+  ),
+  createInputAction(
+    "toggle-popup",
+    InputActions.TOGGLE_POPUP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,
+  ),
+  createInputAction(
+    "open-preferences",
+    InputActions.OPEN_PREFERENCES,
+    SettingsKeys.INTERACTIONS_SHORTCUT_OPEN_PREFERENCES,
+  ),
+  createInputAction(
+    "raise-app",
+    InputActions.RAISE_APP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_RAISE_APP,
+  ),
+  createInputAction(
+    "quit-app",
+    InputActions.QUIT_APP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_QUIT_APP,
+  ),
+  createInputAction(
+    "switch-app",
+    InputActions.SWITCH_APP,
+    SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_APP,
+  ),
 ]);
 
-/** Shortcut GSettings keys derived from INPUT_ACTION_DEFINITIONS for reset and validation flows. */
+/** Legacy schema nicks retained only so stored enum values remain readable. */
+export const LEGACY_INPUT_ACTION_SCHEMA_NICKS = Object.freeze({
+  [InputActions.RESERVED_15]: "RATE_DECREASE",
+  [InputActions.RESERVED_16]: "RATE_INCREASE",
+  [InputActions.RESERVED_17]: "RATE_RESET",
+});
+
+/** Pointer action values in their translated GtkStringList display order. */
+export const MOUSE_ACTION_VALUES = Object.freeze([
+  InputActions.NONE,
+  ...INPUT_ACTION_DEFINITIONS.map(({ action }) => action),
+]);
+
+/** Pointer combo index by persisted enum value. */
+export const MOUSE_ACTION_INDEX_BY_VALUE = Object.freeze(
+  Object.fromEntries(
+    MOUSE_ACTION_VALUES.map((action, index) => [action, index]),
+  ),
+);
+
+/** Executable action values, including the explicit no-action value. */
+const EXECUTABLE_INPUT_ACTION_VALUES = Object.freeze(
+  new Set(MOUSE_ACTION_VALUES),
+);
+
+/** Normalizes unsupported and deprecated persisted actions to a safe fallback. */
+export function normalizeInputAction(value, fallback = InputActions.NONE) {
+  return EXECUTABLE_INPUT_ACTION_VALUES.has(value) ? value : fallback;
+}
+
+/** Playback action IDs indexed by their persisted InputActions enum value. */
+export const PLAYBACK_ACTION_BY_INPUT_ACTION = Object.freeze(
+  Object.fromEntries(
+    INPUT_ACTION_DEFINITIONS.filter(({ playbackAction }) => playbackAction).map(
+      ({ action, playbackAction }) => [action, playbackAction],
+    ),
+  ),
+);
+
+/** Shortcut GSettings keys derived from executable definitions. */
 export const KEYBOARD_SHORTCUT_KEYS = Object.freeze(
   INPUT_ACTION_DEFINITIONS.map(({ shortcutKey }) => shortcutKey),
 );

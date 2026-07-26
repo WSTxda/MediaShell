@@ -14,13 +14,10 @@ import {
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../shared/constants/settings.js";
 import { normalizeOrderedValues } from "../../shared/utils/format.js";
-import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
-
-const logger = createLogger("TopBarLayoutController");
 
 function arraysEqual(first, second) {
   return (
@@ -83,12 +80,7 @@ export default class TopBarLayoutController {
   }
 
   destroy() {
-    disconnectOwnedSignals(this.ownedSignalConnections, (error) => {
-      logger.debug(
-        "A top bar layout preference signal was already disconnected",
-        error,
-      );
-    });
+    disconnectOwnedSignals(this.ownedSignalConnections);
     this.topBarElementOrderGroup = null;
     this.settings = null;
     this.builder = null;

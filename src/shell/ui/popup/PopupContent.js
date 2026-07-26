@@ -13,10 +13,12 @@
 import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
-import { POPUP_WIDTH } from "../../../shared/constants/settings.js";
+import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
+import { resolvePopupWidth } from "../../../shared/utils/popupLayout.js";
+import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
 import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
@@ -61,7 +63,6 @@ export default class PopupContent {
       "open-state-changed",
       (_menu, isOpen) => {
         if (isOpen) {
-          logger.debug("Popup opened for", this.mediaApp.busName);
           let widgetFlags =
             this.pendingWidgetFlags |
             WidgetFlags.POPUP_APP_SELECTOR |
@@ -76,7 +77,6 @@ export default class PopupContent {
             this.resume();
           else this.pause();
         } else {
-          logger.debug("Popup closed");
           this.appSelectorController.close();
           this.albumArt.cancelAlbumArtLoad();
           this.pause();
@@ -151,9 +151,17 @@ export default class PopupContent {
     }
 
     if (popupFlags & WidgetFlags.POPUP_PLAYBACK_CONTROLS) {
-      this.runWidgetUpdate("playback controls", () =>
-        this.playbackControls.render(popupFlags),
-      );
+      this.runWidgetUpdate("playback controls", () => {
+        if (
+          isPlaybackControlSurfaceVisible(
+            this.extensionController,
+            PlaybackControlSurfaces.POPUP,
+          )
+        )
+          return this.playbackControls.render(popupFlags);
+        this.playbackControls.remove();
+        return null;
+      });
     }
   }
 
@@ -209,9 +217,15 @@ export default class PopupContent {
   }
 
   getPopupOuterWidth() {
-    return Number.isFinite(this.extensionController.popupWidth)
-      ? this.extensionController.popupWidth
-      : POPUP_WIDTH.DEFAULT;
+    const showTransportControls =
+      this.extensionController.popupPlaybackControlsShow;
+    return resolvePopupWidth(
+      this.extensionController.popupWidth,
+      showTransportControls &&
+        this.extensionController.popupPlaybackControlsSeekBackwardShow,
+      showTransportControls &&
+        this.extensionController.popupPlaybackControlsSeekForwardShow,
+    );
   }
 
   getPopupContentWidth() {
@@ -235,19 +249,15 @@ export default class PopupContent {
   destroy() {
     if (!this.topBarButton) return;
 
-    for (const [object, signalId, label] of [
-      [this.menu, this.menuOpenSignalId, "menu open-state"],
-      [this.popupItem, this.popupItemCapturedEventId, "popup captured-event"],
+    for (const [object, signalId] of [
+      [this.menu, this.menuOpenSignalId],
+      [this.popupItem, this.popupItemCapturedEventId],
     ]) {
       if (!object || signalId === null) continue;
       try {
         object.disconnect(signalId);
       } catch {
-        // The top bar actor may already be in Shell-side teardown if the
-        // panel destroys the menu tree. Treat missing signal handlers or
-        // disposed menu actors as successful cleanup and avoid logging a
-        // misleading GObject stack trace.
-        logger.debug(`${label} signal was already gone during teardown`);
+        // PopupMenu may dispose child handlers before MediaShell teardown.
       }
     }
     this.menuOpenSignalId = null;

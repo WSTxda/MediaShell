@@ -22,6 +22,11 @@ import {
   TOP_BAR_TRACK_INFORMATION_WIDTH,
   TOP_BAR_VISUALIZER_SPEED,
 } from "../../shared/constants/settings.js";
+import {
+  PlaybackControlSurfaceDefinitions,
+  PlaybackControlSurfaces,
+} from "../../shared/constants/playbackControlSurfaces.js";
+import { normalizeInputAction } from "../../shared/constants/inputActions.js";
 import { InputActions } from "../../shared/enums/input.js";
 import { SettingsAction } from "../../shared/enums/settings.js";
 import { PanelPositions } from "../../shared/enums/panel.js";
@@ -66,6 +71,26 @@ function normalizeTrackInformationContent(value, fallback) {
     .filter(Boolean);
   return normalized.length > 0 ? normalized : fallback;
 }
+
+function createPlaybackControlSettingsSpec(surface) {
+  const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
+  return Object.fromEntries([
+    [
+      show.settingKey,
+      { property: show.property, read: "get_boolean", impact: show.impact },
+    ],
+    ...controls.map(({ settingKey, property, impact }) => [
+      settingKey,
+      { property, read: "get_boolean", impact },
+    ]),
+  ]);
+}
+
+const POPUP_PLAYBACK_CONTROL_SETTINGS_SPEC = createPlaybackControlSettingsSpec(
+  PlaybackControlSurfaces.POPUP,
+);
+const TOP_BAR_PLAYBACK_CONTROL_SETTINGS_SPEC =
+  createPlaybackControlSettingsSpec(PlaybackControlSurfaces.TOP_BAR);
 
 export const SETTINGS_SPEC = Object.freeze({
   // Popup
@@ -112,6 +137,7 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.POPUP_PROGRESS_BAR,
   },
+  ...POPUP_PLAYBACK_CONTROL_SETTINGS_SPEC,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "popupTrackInformationScrollEnabled",
     read: "get_boolean",
@@ -145,12 +171,12 @@ export const SETTINGS_SPEC = Object.freeze({
     property: "topBarTrackInformationWidth",
     read: "get_uint",
     transform: createNumericConstraint(TOP_BAR_TRACK_INFORMATION_WIDTH),
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: WidgetFlags.TOP_BAR_LAYOUT,
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK]: {
     property: "topBarTrackInformationWidthLock",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: WidgetFlags.TOP_BAR_LAYOUT,
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "topBarTrackInformationScrollEnabled",
@@ -206,36 +232,7 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(TOP_BAR_VISUALIZER_SPEED),
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW]: {
-    property: "topBarPlaybackControlsShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS,
-  },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW]: {
-    property: "topBarPlaybackControlsShuffleShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE,
-  },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW]: {
-    property: "topBarPlaybackControlsPreviousTrackShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS,
-  },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW]: {
-    property: "topBarPlaybackControlsPlayPauseShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE,
-  },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW]: {
-    property: "topBarPlaybackControlsNextTrackShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_NEXT,
-  },
-  [SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW]: {
-    property: "topBarPlaybackControlsRepeatShow",
-    read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_PLAYBACK_REPEAT,
-  },
+  ...TOP_BAR_PLAYBACK_CONTROL_SETTINGS_SPEC,
   [SettingsKeys.TOP_BAR_ELEMENT_ORDER]: {
     property: "topBarElementOrder",
     read: "get_strv",
@@ -264,31 +261,43 @@ export const SETTINGS_SPEC = Object.freeze({
     property: "interactionsMouseActionLeft",
     read: "get_enum",
     fallback: InputActions.TOGGLE_POPUP,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE]: {
     property: "interactionsMouseActionMiddle",
     read: "get_enum",
     fallback: InputActions.OPEN_PREFERENCES,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT]: {
     property: "interactionsMouseActionRight",
     read: "get_enum",
     fallback: InputActions.RAISE_APP,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE]: {
     property: "interactionsMouseActionDouble",
     read: "get_enum",
     fallback: InputActions.NONE,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP]: {
     property: "interactionsMouseActionScrollUp",
     read: "get_enum",
     fallback: InputActions.VOLUME_UP,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN]: {
     property: "interactionsMouseActionScrollDown",
     read: "get_enum",
     fallback: InputActions.VOLUME_DOWN,
+    transform: (value) => normalizeInputAction(value, InputActions.NONE),
+    write: "set_enum",
   },
 
   // Others

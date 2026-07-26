@@ -14,6 +14,10 @@ import { parse } from "acorn";
 import { ancestor, simple } from "acorn-walk";
 
 import {
+  PLAYER_PROPERTIES,
+  ROOT_PROPERTIES,
+} from "../../src/shared/constants/dbus.js";
+import {
   ROOT,
   collectJavaScript,
   fail,
@@ -68,6 +72,19 @@ async function loadRecords() {
     return records;
   })();
   return recordsPromise;
+}
+
+/**
+ * Returns the cached parsed JavaScript records used by development checks.
+ *
+ * Callers must treat the returned map and records as read-only. Sharing the
+ * cache keeps architecture checks on the same AST and file set as syntax,
+ * import, liveness, and lifecycle validation.
+ *
+ * @returns {Promise<Map<string, object>>} Parsed module records by path.
+ */
+export async function getJavaScriptRecords() {
+  return loadRecords();
 }
 
 function isJSDoc(comment) {
@@ -206,12 +223,6 @@ export async function inspectModuleDocumentationAndNaming() {
   return errors;
 }
 
-export async function checkModuleDocumentationAndNaming() {
-  const errors = await inspectModuleDocumentationAndNaming();
-  fail("Module documentation and naming validation", errors);
-  console.log("Module documentation and naming passed.");
-}
-
 function moduleSpecifiers(record) {
   const specifiers = [];
   for (const node of record.ast.body) {
@@ -261,17 +272,454 @@ function exportedNames(record) {
       continue;
     }
     if (node.type !== "ExportNamedDeclaration") continue;
-    const declaration = node.declaration;
-    if (declaration?.id?.name) names.add(declaration.id.name);
-    if (declaration?.type === "VariableDeclaration") {
-      for (const item of declaration.declarations) {
-        if (item.id.type === "Identifier") names.add(item.id.name);
-      }
-    }
+    for (const name of declarationNames(node.declaration)) names.add(name);
     for (const specifier of node.specifiers)
       names.add(specifier.exported.name ?? specifier.exported.value);
   }
   return names;
+}
+
+function resolveModuleTarget(file, specifier) {
+  return resolve("/", dirname(file), specifier).slice(1).replaceAll("\\", "/");
+}
+
+function declarationNames(declaration) {
+  if (!declaration) return [];
+  if (declaration.id?.type === "Identifier") return [declaration.id.name];
+  if (declaration.type !== "VariableDeclaration") return [];
+
+  const names = [];
+  for (const item of declaration.declarations)
+    collectPatternIdentifiers(item.id, (identifier) =>
+      names.push(identifier.name),
+    );
+  return names;
+}
+
+function exportEntries(record) {
+  const entries = [];
+  for (const node of record.ast.body) {
+    if (node.type === "ExportDefaultDeclaration") {
+      entries.push({
+        exportedName: "default",
+        localName:
+          node.declaration.type === "Identifier"
+            ? node.declaration.name
+            : (node.declaration.id?.name ?? null),
+        line: lineOf(node),
+      });
+      continue;
+    }
+    if (node.type !== "ExportNamedDeclaration") continue;
+    for (const name of declarationNames(node.declaration))
+      entries.push({ exportedName: name, localName: name, line: lineOf(node) });
+    for (const specifier of node.specifiers) {
+      entries.push({
+        exportedName: specifier.exported.name ?? specifier.exported.value,
+        localName: node.source
+          ? null
+          : (specifier.local.name ?? specifier.local.value),
+        line: lineOf(specifier),
+      });
+    }
+  }
+  return entries;
+}
+
+function addConsumedExport(consumedExports, target, name) {
+  if (!consumedExports.has(target)) consumedExports.set(target, new Set());
+  consumedExports.get(target).add(name);
+}
+
+function dynamicImportNames(node, ancestors) {
+  let expression = node;
+  let index = ancestors.length - 2;
+  if (ancestors[index]?.type === "AwaitExpression") {
+    expression = ancestors[index];
+    index--;
+  }
+
+  const parent = ancestors[index];
+  if (parent?.type !== "VariableDeclarator" || parent.init !== expression)
+    return ["*"];
+  if (parent.id.type !== "ObjectPattern") return ["*"];
+
+  const names = [];
+  for (const property of parent.id.properties) {
+    if (property.type === "RestElement") return ["*"];
+    if (property.computed) return ["*"];
+    const name =
+      property.key.type === "Identifier"
+        ? property.key.name
+        : String(property.key.value);
+    names.push(name);
+  }
+  return names;
+}
+
+function collectModuleConsumption(records, entryPoints) {
+  const consumedExports = new Map();
+  const dependencyGraph = new Map(
+    [...records.keys()].map((file) => [file, new Set()]),
+  );
+
+  for (const record of records.values()) {
+    for (const node of record.ast.body) {
+      if (node.type === "ImportDeclaration") {
+        const target = node.source.value.startsWith(".")
+          ? resolveModuleTarget(record.file, node.source.value)
+          : null;
+        if (!target || !records.has(target)) continue;
+        dependencyGraph.get(record.file).add(target);
+        for (const specifier of node.specifiers) {
+          if (specifier.type === "ImportNamespaceSpecifier")
+            addConsumedExport(consumedExports, target, "*");
+          else if (specifier.type === "ImportDefaultSpecifier")
+            addConsumedExport(consumedExports, target, "default");
+          else
+            addConsumedExport(
+              consumedExports,
+              target,
+              specifier.imported.name ?? specifier.imported.value,
+            );
+        }
+        continue;
+      }
+
+      if (
+        ["ExportAllDeclaration", "ExportNamedDeclaration"].includes(
+          node.type,
+        ) &&
+        typeof node.source?.value === "string" &&
+        node.source.value.startsWith(".")
+      ) {
+        const target = resolveModuleTarget(record.file, node.source.value);
+        if (!records.has(target)) continue;
+        dependencyGraph.get(record.file).add(target);
+        if (node.type === "ExportAllDeclaration")
+          addConsumedExport(consumedExports, target, "*");
+        else
+          for (const specifier of node.specifiers) {
+            if (specifier.type === "ExportNamespaceSpecifier")
+              addConsumedExport(consumedExports, target, "*");
+            else
+              addConsumedExport(
+                consumedExports,
+                target,
+                specifier.local.name ?? specifier.local.value,
+              );
+          }
+      }
+    }
+
+    ancestor(record.ast, {
+      ImportExpression(node, _state, ancestors) {
+        if (
+          node.source.type !== "Literal" ||
+          typeof node.source.value !== "string" ||
+          !node.source.value.startsWith(".")
+        )
+          return;
+        const target = resolveModuleTarget(record.file, node.source.value);
+        if (!records.has(target)) return;
+        dependencyGraph.get(record.file).add(target);
+        for (const name of dynamicImportNames(node, ancestors))
+          addConsumedExport(consumedExports, target, name);
+      },
+    });
+  }
+
+  for (const entryPoint of entryPoints) {
+    if (records.has(entryPoint))
+      addConsumedExport(consumedExports, entryPoint, "default");
+  }
+  return { consumedExports, dependencyGraph };
+}
+
+function isScopeNode(node) {
+  return [
+    "Program",
+    "BlockStatement",
+    "CatchClause",
+    "ForStatement",
+    "ForInStatement",
+    "ForOfStatement",
+    "SwitchStatement",
+    "FunctionDeclaration",
+    "FunctionExpression",
+    "ArrowFunctionExpression",
+    "ClassDeclaration",
+    "ClassExpression",
+  ].includes(node.type);
+}
+
+function collectPatternIdentifiers(pattern, callback) {
+  if (!pattern) return;
+  if (pattern.type === "Identifier") {
+    callback(pattern);
+    return;
+  }
+  if (pattern.type === "RestElement") {
+    collectPatternIdentifiers(pattern.argument, callback);
+    return;
+  }
+  if (pattern.type === "AssignmentPattern") {
+    collectPatternIdentifiers(pattern.left, callback);
+    return;
+  }
+  if (pattern.type === "ArrayPattern") {
+    for (const element of pattern.elements)
+      collectPatternIdentifiers(element, callback);
+    return;
+  }
+  if (pattern.type === "ObjectPattern") {
+    for (const property of pattern.properties) {
+      if (property.type === "RestElement")
+        collectPatternIdentifiers(property.argument, callback);
+      else collectPatternIdentifiers(property.value, callback);
+    }
+  }
+}
+
+function analyzeBindings(record, consumedExports) {
+  const scopeByNode = new Map();
+  const declarationIdentifiers = new Set();
+  const bindings = [];
+
+  function ensureScopes(ancestors) {
+    let parent = null;
+    for (const node of ancestors) {
+      if (!isScopeNode(node)) continue;
+      if (!scopeByNode.has(node))
+        scopeByNode.set(node, { node, parent, bindings: new Map() });
+      parent = scopeByNode.get(node);
+    }
+    return parent;
+  }
+
+  function nearestFunctionOrProgram(scope) {
+    for (let current = scope; current; current = current.parent) {
+      if (
+        current.node.type === "Program" ||
+        current.node.type === "FunctionDeclaration" ||
+        current.node.type === "FunctionExpression" ||
+        current.node.type === "ArrowFunctionExpression"
+      )
+        return current;
+    }
+    return scope;
+  }
+
+  function declare(identifier, scope, kind) {
+    declarationIdentifiers.add(identifier);
+    let binding = scope.bindings.get(identifier.name);
+    if (!binding) {
+      binding = {
+        name: identifier.name,
+        kind,
+        line: lineOf(identifier),
+        used: false,
+        exportedNames: new Set(),
+      };
+      scope.bindings.set(identifier.name, binding);
+      bindings.push(binding);
+    }
+    return binding;
+  }
+
+  function declareFunctionParameters(node, ancestors) {
+    const functionScope = ensureScopes(ancestors);
+    if (node.type === "FunctionExpression" && node.id)
+      declare(node.id, functionScope, "function-name");
+    for (const parameter of node.params)
+      collectPatternIdentifiers(parameter, (identifier) =>
+        declare(identifier, functionScope, "parameter"),
+      );
+  }
+
+  ancestor(record.ast, {
+    ImportDeclaration(node, _state, ancestors) {
+      const programScope = ensureScopes(ancestors);
+      for (const specifier of node.specifiers)
+        declare(specifier.local, programScope, "import");
+    },
+    VariableDeclaration(node, _state, ancestors) {
+      const lexicalScope = ensureScopes(ancestors);
+      const targetScope =
+        node.kind === "var"
+          ? nearestFunctionOrProgram(lexicalScope)
+          : lexicalScope;
+      for (const item of node.declarations)
+        collectPatternIdentifiers(item.id, (identifier) =>
+          declare(identifier, targetScope, "variable"),
+        );
+    },
+    FunctionDeclaration(node, _state, ancestors) {
+      const parentScope = ensureScopes(ancestors.slice(0, -1));
+      if (node.id) declare(node.id, parentScope, "function");
+      declareFunctionParameters(node, ancestors);
+    },
+    FunctionExpression(node, _state, ancestors) {
+      declareFunctionParameters(node, ancestors);
+    },
+    ArrowFunctionExpression(node, _state, ancestors) {
+      declareFunctionParameters(node, ancestors);
+    },
+    ClassDeclaration(node, _state, ancestors) {
+      const parentScope = ensureScopes(ancestors.slice(0, -1));
+      if (node.id) declare(node.id, parentScope, "class");
+    },
+    ClassExpression(node, _state, ancestors) {
+      const classScope = ensureScopes(ancestors);
+      if (node.id) declare(node.id, classScope, "class-name");
+    },
+    CatchClause(node, _state, ancestors) {
+      const catchScope = ensureScopes(ancestors);
+      collectPatternIdentifiers(node.param, (identifier) =>
+        declare(identifier, catchScope, "catch-parameter"),
+      );
+    },
+  });
+
+  const programScope = scopeByNode.get(record.ast);
+  for (const entry of exportEntries(record)) {
+    if (!entry.localName) continue;
+    programScope?.bindings
+      .get(entry.localName)
+      ?.exportedNames.add(entry.exportedName);
+  }
+
+  function isReferenceIdentifier(node, ancestors) {
+    if (declarationIdentifiers.has(node)) return false;
+    const parent = ancestors.at(-2);
+    if (!parent) return true;
+    if (
+      parent.type === "MemberExpression" &&
+      parent.property === node &&
+      !parent.computed
+    )
+      return false;
+    if (
+      ["MethodDefinition", "PropertyDefinition"].includes(parent.type) &&
+      parent.key === node &&
+      !parent.computed
+    )
+      return false;
+    if (parent.type === "Property" && parent.key === node && !parent.computed)
+      return parent.shorthand && parent.value === node;
+    if (
+      ["LabeledStatement", "BreakStatement", "ContinueStatement"].includes(
+        parent.type,
+      ) &&
+      parent.label === node
+    )
+      return false;
+    if (["ExportSpecifier", "ExportDefaultDeclaration"].includes(parent.type))
+      return false;
+    return true;
+  }
+
+  ancestor(record.ast, {
+    Identifier(node, _state, ancestors) {
+      if (!isReferenceIdentifier(node, ancestors)) return;
+      let scope = ensureScopes(ancestors);
+      while (scope) {
+        const binding = scope.bindings.get(node.name);
+        if (binding) {
+          binding.used = true;
+          return;
+        }
+        scope = scope.parent;
+      }
+    },
+  });
+
+  const consumed = consumedExports.get(record.file) ?? new Set();
+  const diagnostics = [];
+  for (const binding of bindings) {
+    if (
+      ["parameter", "catch-parameter", "function-name", "class-name"].includes(
+        binding.kind,
+      )
+    )
+      continue;
+    const consumedExternally = [...binding.exportedNames].some(
+      (name) => consumed.has("*") || consumed.has(name),
+    );
+    if (binding.used || consumedExternally) continue;
+    const description =
+      binding.kind === "import"
+        ? `imported binding ${binding.name}`
+        : `${binding.kind} ${binding.name}`;
+    diagnostics.push(
+      `${record.file}:${binding.line}: ${description} is never used`,
+    );
+  }
+  return diagnostics;
+}
+
+function moduleLivenessDiagnostics(records, entryPoints = SOURCE_ENTRY_POINTS) {
+  const { consumedExports, dependencyGraph } = collectModuleConsumption(
+    records,
+    entryPoints,
+  );
+  const diagnostics = [];
+  const reachable = new Set();
+  const pending = [...entryPoints].filter((file) => records.has(file));
+  while (pending.length > 0) {
+    const file = pending.pop();
+    if (reachable.has(file)) continue;
+    reachable.add(file);
+    for (const dependency of dependencyGraph.get(file) ?? [])
+      if (dependency.startsWith("src/")) pending.push(dependency);
+  }
+
+  for (const file of records.keys()) {
+    if (file.startsWith("src/") && !reachable.has(file))
+      diagnostics.push(
+        `${file}: source module is unreachable from the runtime entry points`,
+      );
+  }
+
+  for (const record of records.values()) {
+    diagnostics.push(...analyzeBindings(record, consumedExports));
+    const consumed = consumedExports.get(record.file) ?? new Set();
+    for (const entry of exportEntries(record)) {
+      if (consumed.has("*") || consumed.has(entry.exportedName)) continue;
+      diagnostics.push(
+        `${record.file}:${entry.line}: export ${entry.exportedName} is not consumed by any module`,
+      );
+    }
+  }
+  return diagnostics;
+}
+
+/**
+ * Validates module reachability and binding/export liveness for parsed sources.
+ *
+ * @param {Record<string, string>|Map<string, string>} moduleSources - Repository-relative module sources.
+ * @param {Set<string>} entryPoints - Externally loaded source entry points.
+ * @returns {string[]} Liveness diagnostics.
+ */
+export function validateModuleLiveness(
+  moduleSources,
+  entryPoints = SOURCE_ENTRY_POINTS,
+) {
+  const records = new Map();
+  const sources =
+    moduleSources instanceof Map
+      ? moduleSources
+      : Object.entries(moduleSources);
+  for (const [file, source] of sources)
+    records.set(file, parseModule(file, source));
+  return moduleLivenessDiagnostics(records, entryPoints);
+}
+
+export async function checkModuleLiveness() {
+  const records = await loadRecords();
+  const errors = moduleLivenessDiagnostics(records);
+  fail("Module liveness validation", errors);
+  console.log("Module reachability, imports, bindings, and exports passed.");
 }
 
 function sourceLayer(file) {
@@ -416,7 +864,7 @@ export async function checkImportsAndBoundaries() {
   console.log("Imports, exports, cycles, and process boundaries passed.");
 }
 
-function memberPath(node) {
+export function memberPath(node) {
   if (node?.type === "Identifier") return node.name;
   if (node?.type === "ThisExpression") return "this";
   if (node?.type !== "MemberExpression") return null;
@@ -428,6 +876,71 @@ function memberPath(node) {
         ? String(node.property.value)
         : null;
   return owner && property ? `${owner}.${property}` : null;
+}
+
+/**
+ * Validates that every property hydrated into PlayerProxy state is read, and
+ * that every direct state read has an initial hydration owner.
+ *
+ * @param {string} file - Diagnostic source path.
+ * @param {string} source - PlayerProxy source text.
+ * @param {string[]} hydratedProperties - Root and Player properties loaded into state.
+ * @returns {string[]} Hydration diagnostics.
+ */
+export function validateHydratedPropertyUsage(
+  file,
+  source,
+  hydratedProperties,
+) {
+  const record = parseModule(file, source);
+  const reads = new Map();
+  ancestor(record.ast, {
+    MemberExpression(node, _state, ancestors) {
+      const path = memberPath(node);
+      if (!path?.startsWith("this.state.")) return;
+      const property = path.slice("this.state.".length);
+      if (!property || property.includes(".")) return;
+
+      const parent = ancestors.at(-2);
+      if (
+        (parent?.type === "AssignmentExpression" && parent.left === node) ||
+        (parent?.type === "UpdateExpression" && parent.argument === node) ||
+        (parent?.type === "UnaryExpression" &&
+          parent.operator === "delete" &&
+          parent.argument === node)
+      )
+        return;
+      if (!reads.has(property)) reads.set(property, lineOf(node));
+    },
+  });
+
+  const hydrated = new Set(hydratedProperties);
+  const errors = [];
+  for (const property of hydrated) {
+    if (!reads.has(property))
+      errors.push(
+        `${file}: hydrated MPRIS property ${property} is never read from PlayerProxy state`,
+      );
+  }
+  for (const [property, line] of reads) {
+    if (!hydrated.has(property))
+      errors.push(
+        `${file}:${line}: PlayerProxy reads ${property} without hydrating it`,
+      );
+  }
+  return errors;
+}
+
+export async function checkMprisPropertyHydration() {
+  const records = await loadRecords();
+  const playerProxy = records.get("src/shell/mpris/PlayerProxy.js");
+  const errors = validateHydratedPropertyUsage(
+    playerProxy.file,
+    playerProxy.source,
+    [...ROOT_PROPERTIES, ...PLAYER_PROPERTIES],
+  );
+  fail("MPRIS property hydration validation", errors);
+  console.log("MPRIS property hydration matches PlayerProxy state reads.");
 }
 
 function objectPropertyName(property) {

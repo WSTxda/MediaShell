@@ -4,18 +4,31 @@
  *
  * Defines Shell-only playback-control layout policy.
  *
- * Shared control descriptors own action identity and icons; this module owns the
- * compact top bar sequence used when actors are reconciled after visibility or
- * settings changes.
+ * Logical identity and state live in shared constants and utilities. This module
+ * owns only the ordered placement of those logical controls on Shell surfaces.
  */
 
-import { PlaybackControls } from "../../shared/constants/playbackControls.js";
+import { PlaybackControlIds } from "../../shared/constants/playbackControls.js";
 
-/** Playback control names in compact top bar display order. */
+/** Popup transport-row order. */
+export const POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER = Object.freeze([
+  PlaybackControlIds.SEEK_BACKWARD,
+  PlaybackControlIds.PREVIOUS,
+  PlaybackControlIds.PLAY_PAUSE,
+  PlaybackControlIds.NEXT,
+  PlaybackControlIds.SEEK_FORWARD,
+]);
+
+/** Popup secondary state-control order. */
+export const POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER = Object.freeze([
+  PlaybackControlIds.SHUFFLE,
+  PlaybackControlIds.SPEED,
+  PlaybackControlIds.REPEAT,
+]);
+
+/** Top bar order before per-control visibility is applied. */
 export const TOP_BAR_PLAYBACK_CONTROL_ORDER = Object.freeze([
-  PlaybackControls.SHUFFLE_ON.name,
-  PlaybackControls.PREVIOUS.name,
-  PlaybackControls.PLAY.name,
-  PlaybackControls.NEXT.name,
-  PlaybackControls.LOOP_NONE.name,
+  PlaybackControlIds.SHUFFLE,
+  ...POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
+  PlaybackControlIds.REPEAT,
 ]);

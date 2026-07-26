@@ -13,7 +13,6 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { EXTENSION_UUID } from "../../shared/constants/project.js";
-import { createLogger } from "../../shared/utils/log.js";
 
 Gio._promisify(Gio.File.prototype, "delete_async", "delete_finish");
 Gio._promisify(
@@ -27,8 +26,6 @@ Gio._promisify(
   "next_files_finish",
 );
 Gio._promisify(Gio.FileEnumerator.prototype, "close_async", "close_finish");
-
-const logger = createLogger("AlbumArtCacheService");
 
 function isFileNotFoundError(error) {
   return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND));
@@ -125,8 +122,8 @@ export default class AlbumArtCacheService {
           GLib.PRIORITY_DEFAULT,
           this.albumArtCacheOperationCancellable,
         );
-      } catch (error) {
-        logger.debug("Cache enumerator was already closed", error);
+      } catch {
+        // Cancellation may close the enumerator before the finally block.
       }
     }
   }

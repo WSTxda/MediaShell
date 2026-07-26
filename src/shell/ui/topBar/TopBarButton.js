@@ -25,10 +25,12 @@ import {
   APP_RESOLUTION_RETRY_DELAY_MS,
   APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../../shared/constants/timing.js";
+import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TopBarElements } from "../../../shared/enums/topBar.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
+import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/PopupContent.js";
 import TopBarPlaybackControls from "./TopBarPlaybackControls.js";
@@ -77,7 +79,6 @@ class TopBarButton extends PanelMenu.Button {
 
   setMediaApp(mediaApp) {
     if (!mediaApp || this.isActiveMediaApp(mediaApp)) return;
-    logger.debug("Switched active media app", mediaApp.busName);
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
     this.cancelAppResolutionRetry();
@@ -113,9 +114,6 @@ class TopBarButton extends PanelMenu.Button {
         this.pendingWidgetFlags = 0;
         if (!this.isDestroyed && pendingWidgetFlags) {
           try {
-            logger.debug(
-              `Updating widgets with flags: 0x${pendingWidgetFlags.toString(16)}`,
-            );
             this.updateWidgets(pendingWidgetFlags);
           } catch (error) {
             logger.errorOnce(
@@ -215,6 +213,12 @@ class TopBarButton extends PanelMenu.Button {
       this.popupContent.updateWidgets(widgetFlags),
     );
     if (!this.topBarBox.get_parent()) this.add_child(this.topBarBox);
+
+    if (
+      widgetFlags & WidgetFlags.TOP_BAR ||
+      widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER
+    )
+      this.syncTopBarLayout();
   }
 
   ensureTopBarLayout() {
@@ -229,11 +233,40 @@ class TopBarButton extends PanelMenu.Button {
     this.topBarBox.add_child(this.topBarActionBoxAfter);
   }
 
+  syncTopBarLayout() {
+    if (!this.topBarBox) return;
+
+    for (const actionBox of [
+      this.topBarActionBoxBefore,
+      this.topBarActionBoxAfter,
+    ]) {
+      actionBox.xExpand = false;
+      actionBox.xAlign = Clutter.ActorAlign.START;
+    }
+    if (this.topBarTrackInformation.actor) {
+      this.topBarTrackInformation.actor.xExpand = false;
+      this.topBarTrackInformation.actor.xAlign = Clutter.ActorAlign.START;
+    }
+
+    // Preserve the original setting contract: Width belongs to track
+    // information, not to the complete top-bar row. Fixed-width actors keep
+    // their natural width and are laid out next to the metadata regardless of
+    // element order. A zero value leaves the metadata unconstrained, while
+    // Lock width fixes only the metadata region when Width is greater than 0.
+    this.topBarTrackInformation.setWidth(
+      this.extensionController.topBarTrackInformationWidth,
+      this.extensionController.topBarTrackInformationWidthLock,
+    );
+    this.topBarBox.set_style(null);
+  }
+
   createTopBarActionBox() {
     return new St.BoxLayout({
       styleClass: StyleClasses.TOP_BAR_ACTION_BOX,
       reactive: true,
       trackHover: false,
+      xExpand: false,
+      xAlign: Clutter.ActorAlign.START,
     });
   }
 
@@ -245,7 +278,10 @@ class TopBarButton extends PanelMenu.Button {
     if (element === TopBarElements.VISUALIZER)
       return this.extensionController.topBarVisualizerShow;
     if (element === TopBarElements.PLAYBACK_CONTROLS)
-      return this.extensionController.topBarPlaybackControlsShow;
+      return isPlaybackControlSurfaceVisible(
+        this.extensionController,
+        PlaybackControlSurfaces.TOP_BAR,
+      );
     return false;
   }
 
@@ -323,7 +359,13 @@ class TopBarButton extends PanelMenu.Button {
       );
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_PROGRESS_BAR);
+      this.requestWidgetUpdate(
+        WidgetFlags.POPUP_PROGRESS_BAR |
+          WidgetFlags.TOP_BAR_PLAYBACK_SEEK_BACKWARD |
+          WidgetFlags.TOP_BAR_PLAYBACK_SEEK_FORWARD |
+          WidgetFlags.POPUP_PLAYBACK_SEEK_BACKWARD |
+          WidgetFlags.POPUP_PLAYBACK_SEEK_FORWARD,
+      );
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
       this.requestWidgetUpdate(
@@ -353,15 +395,26 @@ class TopBarButton extends PanelMenu.Button {
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
       this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_LOOP,
+        WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_REPEAT,
       );
     });
     this.addMediaAppPropertyListener(MediaAppStateProperties.IS_PINNED, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_APP_SELECTOR);
     });
+    const updatePlaybackSpeedControl = () =>
+      this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_SPEED);
     this.addMediaAppPropertyListener(MprisPlayerProperties.RATE, () => {
       this.popupContent.setPlaybackRate(this.mediaApp.rate);
+      updatePlaybackSpeedControl();
     });
+    this.addMediaAppPropertyListener(
+      MprisPlayerProperties.MINIMUM_RATE,
+      updatePlaybackSpeedControl,
+    );
+    this.addMediaAppPropertyListener(
+      MprisPlayerProperties.MAXIMUM_RATE,
+      updatePlaybackSpeedControl,
+    );
     const observedMediaApp = this.mediaApp;
     this.disconnectPositionChangeListener = observedMediaApp.onPositionChanged(
       (positionMicroseconds) => {
@@ -410,9 +463,6 @@ class TopBarButton extends PanelMenu.Button {
           return GLib.SOURCE_REMOVE;
         }
 
-        logger.debug(
-          `Retrying app identity resolution for ${observedMediaApp.busName} (attempt ${APP_RESOLUTION_RETRY_MAX_ATTEMPTS - this.appResolutionRetryAttemptsRemaining + 1}/${APP_RESOLUTION_RETRY_MAX_ATTEMPTS})`,
-        );
         this.requestWidgetUpdate(
           WidgetFlags.TOP_BAR_APP_ICON | WidgetFlags.POPUP_APP_SELECTOR,
         );

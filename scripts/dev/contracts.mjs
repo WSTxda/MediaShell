@@ -30,6 +30,7 @@ import {
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
+  LEGACY_INPUT_ACTION_SCHEMA_NICKS,
 } from "../../src/shared/constants/inputActions.js";
 import {
   NUMERIC_SETTING_CONSTRAINTS,
@@ -54,6 +55,7 @@ const BINDING_WIDGET_CLASSES = Object.freeze({
   value: new Set(["AdwSpinRow"]),
   active: new Set(["AdwSwitchRow", "GtkSwitch"]),
   selected: new Set(["AdwComboRow"]),
+  "input-action-selected": new Set(["AdwComboRow"]),
   accelerator: new Set(["GtkShortcutLabel"]),
   "enable-expansion": new Set(["AdwExpanderRow"]),
 });
@@ -205,7 +207,8 @@ export function validateSettingContractTables({
     const expectedRange = { min: bounds.MIN, max: bounds.MAX };
     if (JSON.stringify(schemaKey.range) !== JSON.stringify(expectedRange))
       errors.push(
-        `${key}: schema range ${JSON.stringify(schemaKey.range)} differs from ${JSON.stringify(expectedRange)}`,
+        `${key}: schema range ${JSON.stringify(schemaKey.range)} differs ` +
+          `from ${JSON.stringify(expectedRange)}`,
       );
     if (schemaKey.default !== bounds.DEFAULT)
       errors.push(
@@ -295,7 +298,10 @@ export async function checkSettingsContracts() {
     errors,
     `${schemaPrefix}.input-actions`,
     schema.enums[`${schemaPrefix}.input-actions`],
-    Object.entries(InputActions).map(([nick, value]) => ({ nick, value })),
+    Object.entries(InputActions).map(([nick, value]) => ({
+      nick: LEGACY_INPUT_ACTION_SCHEMA_NICKS[value] ?? nick,
+      value,
+    })),
   );
   compareEnum(
     errors,

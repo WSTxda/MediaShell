@@ -14,7 +14,7 @@ export const COMPILED_RESOURCE_FILENAME =
   "org.gnome.shell.extensions.mediashell.gresource";
 
 /** Canonical GResource path prefix declared by the XML resource manifest. */
-export const RESOURCE_PATH_PREFIX = "/org/gnome/shell/extensions/mediashell";
+const RESOURCE_PATH_PREFIX = "/org/gnome/shell/extensions/mediashell";
 
 /** Bundled resource paths consumed through Gio resource lookup. */
 export const ResourcePaths = Object.freeze({

@@ -6,14 +6,14 @@
  *
  * TopBarButton owns this component and passes the ordered metadata fields chosen
  * in preferences. It uses ScrollingLabel for long text and shared metadata
- * helpers for field assembly, keeping compact top bar layout separate from
- * metadata normalization.
+ * helpers for field assembly. TopBarButton owns layout orchestration, while this
+ * component preserves the original metadata width and Lock width contract.
  */
 
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
-import ScrollingLabel from "../ScrollingLabel.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
+import ScrollingLabel from "../ScrollingLabel.js";
 
 /**
  * Renders configurable track metadata inside the GNOME top bar.
@@ -23,14 +23,20 @@ export default class TopBarTrackInformation {
     this.topBarButton = topBarButton;
     this.actor = null;
     this.renderKey = null;
+    this.width = normalizeWidth(
+      topBarButton.extensionController.topBarTrackInformationWidth,
+    );
+    this.isFixedWidth = Boolean(
+      topBarButton.extensionController.topBarTrackInformationWidthLock,
+    );
   }
 
   render(index, parentBox) {
     const text = this.buildTrackInformationText();
     const renderKey = [
       text,
-      this.topBarButton.extensionController.topBarTrackInformationWidth,
-      this.topBarButton.extensionController.topBarTrackInformationWidthLock,
+      this.width,
+      this.isFixedWidth,
       this.topBarButton.extensionController.topBarTrackInformationScrollEnabled,
       this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
       this.topBarButton.extensionController
@@ -44,9 +50,8 @@ export default class TopBarTrackInformation {
 
     const label = new ScrollingLabel({
       text,
-      width: this.topBarButton.extensionController.topBarTrackInformationWidth,
-      isFixedWidth:
-        this.topBarButton.extensionController.topBarTrackInformationWidthLock,
+      width: this.width,
+      isFixedWidth: this.isFixedWidth,
       isScrolling:
         this.topBarButton.extensionController
           .topBarTrackInformationScrollEnabled,
@@ -64,6 +69,24 @@ export default class TopBarTrackInformation {
     this.renderKey = renderKey;
     this.attach(index, parentBox);
     oldLabel?.destroy();
+  }
+
+  setWidth(width, isFixedWidth) {
+    const normalizedWidth = normalizeWidth(width);
+    const normalizedFixedWidth = Boolean(isFixedWidth);
+    if (
+      normalizedWidth === this.width &&
+      normalizedFixedWidth === this.isFixedWidth
+    )
+      return;
+
+    this.width = normalizedWidth;
+    this.isFixedWidth = normalizedFixedWidth;
+    const parentBox = this.actor?.get_parent();
+    if (!parentBox) return;
+
+    const index = parentBox.get_children().indexOf(this.actor);
+    this.render(Math.max(0, index), parentBox);
   }
 
   pause() {
@@ -97,4 +120,11 @@ export default class TopBarTrackInformation {
     this.remove();
     this.topBarButton = null;
   }
+}
+
+function normalizeWidth(width) {
+  const numericWidth = Number(width);
+  return Number.isFinite(numericWidth)
+    ? Math.max(0, Math.ceil(numericWidth))
+    : 0;
 }

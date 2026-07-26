@@ -23,6 +23,5 @@ export const PROJECT_URLS = Object.freeze({
   REPOSITORY: "https://github.com/WSTxda/MediaShell",
   ISSUES: "https://github.com/WSTxda/MediaShell/issues",
   DONATIONS: "https://buymeacoffee.com/wstxda",
-  MEDIA_CONTROLS_CONTRIBUTORS:
-    "https://github.com/sakithb/media-controls/graphs/contributors?all=1",
+  MEDIA_CONTROLS: "https://github.com/sakithb/media-controls",
 });
