@@ -14,8 +14,16 @@ import {
   SUPPORTED_GNOME_SHELL_VERSIONS,
   isVersionAtLeast,
 } from "../src/shared/constants/platform.js";
-import { TOP_BAR_VISUALIZER_BAR_COUNT } from "../src/shared/constants/visualizer.js";
-import { VisualizerStyles } from "../src/shared/enums/visualizer.js";
+import {
+  TOP_BAR_VISUALIZER_BAND_COUNT,
+  TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+  TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
+} from "../src/shared/constants/visualizer.js";
+import {
+  VisualizerAnimationKinds,
+  VisualizerSpectrumLayers,
+  VisualizerStyles,
+} from "../src/shared/enums/visualizer.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
@@ -45,9 +53,15 @@ import {
   tokenizeSearchQuery,
 } from "../src/shared/utils/search.js";
 import {
-  getVisualizerBarLevels,
+  getVisualizerLevels,
+  getVisualizerSpectrumOffsets,
   normalizeVisualizerSpeed,
+  normalizeVisualizerStyle,
 } from "../src/shared/utils/visualizer.js";
+import {
+  TOP_BAR_VISUALIZER_STYLE_DEFINITIONS,
+  VisualizerRendererKinds,
+} from "../src/shell/constants/visualizer.js";
 import { runCases } from "./helpers.mjs";
 
 const PWA_ID = "cinhimbnkkaeohfgghhklpknlkffjgod";
@@ -104,14 +118,131 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
     [
       "visualizer",
       () => {
+        const assertFramesClose = (actual, expected) => {
+          assert.equal(actual.length, expected.length);
+          for (let index = 0; index < actual.length; index++)
+            assert.ok(Math.abs(actual[index] - expected[index]) < 1e-12);
+        };
+
         assert.equal(normalizeVisualizerSpeed(undefined), 4);
         assert.equal(normalizeVisualizerSpeed(0), 1);
         assert.equal(normalizeVisualizerSpeed(11), 8);
-        for (const style of [VisualizerStyles.BEATS, VisualizerStyles.PULSE]) {
-          const frame = getVisualizerBarLevels(style, 0.37);
-          assert.equal(frame.length, TOP_BAR_VISUALIZER_BAR_COUNT);
-          assert.ok(frame.every((value) => value >= 0.2 && value <= 1));
+        assert.equal(normalizeVisualizerStyle(-1), VisualizerStyles.BEATS);
+        assert.equal(
+          normalizeVisualizerStyle(VisualizerStyles.SPECTRUM),
+          VisualizerStyles.SPECTRUM,
+        );
+
+        const rendererKinds = new Set(Object.values(VisualizerRendererKinds));
+        for (const style of Object.values(VisualizerStyles)) {
+          const definition = TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[style];
+          assert.ok(definition);
+          assert.ok(rendererKinds.has(definition.rendererKind));
         }
+        assert.equal(
+          TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.CLASSIC]
+            .animationKind,
+          VisualizerAnimationKinds.BEATS,
+        );
+        assert.equal(
+          TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.CLASSIC]
+            .elementCount,
+          TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+        );
+
+        const reusableLevels = new Array(TOP_BAR_VISUALIZER_BAND_COUNT);
+        const beats = getVisualizerLevels(
+          VisualizerAnimationKinds.BEATS,
+          0.37,
+          4,
+          reusableLevels,
+        );
+        assert.equal(beats, reusableLevels);
+        assertFramesClose(
+          beats,
+          [
+            0.9940437304619096, 0.6466194424288516, 0.21672268377811832,
+            0.421153203411492,
+          ],
+        );
+        assertFramesClose(
+          getVisualizerLevels(VisualizerAnimationKinds.PULSE, 0.37),
+          [
+            0.7941959066656921, 0.2506807791258749, 0.25565841237106834,
+            0.7119127027050491,
+          ],
+        );
+        assertFramesClose(
+          getVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.37, 8),
+          getVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.74, 4),
+        );
+
+        assert.equal(
+          TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+          TOP_BAR_VISUALIZER_BAND_COUNT,
+        );
+        const reusableClassic = new Array(
+          TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+        );
+        const classic = getVisualizerLevels(
+          TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.CLASSIC]
+            .animationKind,
+          0.37,
+          4,
+          reusableClassic,
+        );
+        assert.equal(classic, reusableClassic);
+        assertFramesClose(classic, beats);
+
+        const primaryOffsets = new Array(
+          TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
+        );
+        const secondaryOffsets = new Array(
+          TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
+        );
+        const spectrum = getVisualizerSpectrumOffsets(
+          0.37,
+          4,
+          primaryOffsets,
+          VisualizerSpectrumLayers.PRIMARY,
+        );
+        const backgroundSpectrum = getVisualizerSpectrumOffsets(
+          0.37,
+          4,
+          secondaryOffsets,
+          VisualizerSpectrumLayers.SECONDARY,
+        );
+        assert.equal(spectrum, primaryOffsets);
+        assert.equal(backgroundSpectrum, secondaryOffsets);
+        assert.equal(spectrum[0], 0);
+        assert.equal(spectrum.at(-1), 0);
+        assert.equal(backgroundSpectrum[0], 0);
+        assert.equal(backgroundSpectrum.at(-1), 0);
+        assert.ok(spectrum.every((value) => value >= -1 && value <= 1));
+        assert.ok(
+          backgroundSpectrum.every((value) => value >= -1 && value <= 1),
+        );
+        assert.notDeepEqual(spectrum, backgroundSpectrum);
+        assertFramesClose(
+          spectrum,
+          [
+            0, 0.0828838211401352, 0.12139517572341482, -0.1583710714856252,
+            -0.4868807978633519, -0.1815450803234218, 0.3134342250893718,
+            0.24625270125663265, 0.018602146726204, -0.01266542187049441, 0,
+          ],
+        );
+        assertFramesClose(
+          backgroundSpectrum,
+          [
+            0, 0.09819040083206695, 0.20699474856130515, 0.12837587515764975,
+            -0.20147313906095343, -0.512974641095604, -0.5663165690880586,
+            -0.2961804848033074, 0.07943234869022717, 0.1616213657084673, 0,
+          ],
+        );
+        assertFramesClose(
+          getVisualizerSpectrumOffsets(0.37, 8),
+          getVisualizerSpectrumOffsets(0.74, 4),
+        );
       },
     ],
     [

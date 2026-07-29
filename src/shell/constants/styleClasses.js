@@ -69,5 +69,14 @@ export const StyleClasses = Object.freeze({
   TOP_BAR_CONTROL_LABEL: "mediashell-top-bar-control-label",
   TOP_BAR_PLAYBACK_CONTROLS: "mediashell-top-bar-playback-controls",
   TOP_BAR_VISUALIZER: "mediashell-top-bar-visualizer",
-  TOP_BAR_VISUALIZER_BAR: "mediashell-top-bar-visualizer-bar",
+  TOP_BAR_VISUALIZER_BEATS: "mediashell-top-bar-visualizer-beats",
+  TOP_BAR_VISUALIZER_BEATS_BAR: "mediashell-top-bar-visualizer-beats-bar",
+  TOP_BAR_VISUALIZER_PULSE: "mediashell-top-bar-visualizer-pulse",
+  TOP_BAR_VISUALIZER_PULSE_BAR: "mediashell-top-bar-visualizer-pulse-bar",
+  TOP_BAR_VISUALIZER_CLASSIC: "mediashell-top-bar-visualizer-classic",
+  TOP_BAR_VISUALIZER_CLASSIC_COLUMN:
+    "mediashell-top-bar-visualizer-classic-column",
+  TOP_BAR_VISUALIZER_CLASSIC_BLOCK:
+    "mediashell-top-bar-visualizer-classic-block",
+  TOP_BAR_VISUALIZER_SPECTRUM: "mediashell-top-bar-visualizer-spectrum",
 });

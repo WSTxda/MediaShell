@@ -57,10 +57,31 @@
 }
 
 .mediashell-top-bar-visualizer {
+  spacing: 0;
+}
+
+.mediashell-top-bar-visualizer-beats,
+.mediashell-top-bar-visualizer-pulse {
   spacing: 2px;
 }
 
-.mediashell-top-bar-visualizer-bar {
+.mediashell-top-bar-visualizer-beats-bar {
+  border-radius: 1px;
+}
+
+.mediashell-top-bar-visualizer-pulse-bar {
+  border-radius: 3px;
+}
+
+.mediashell-top-bar-visualizer-classic {
+  spacing: 2px;
+}
+
+.mediashell-top-bar-visualizer-classic-column {
+  spacing: 1px;
+}
+
+.mediashell-top-bar-visualizer-classic-block {
   border-radius: 1px;
 }
 

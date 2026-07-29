@@ -30,8 +30,10 @@
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.visualizer-styles">
-    <value nick="BEATS" value="0" />
-    <value nick="PULSE" value="1" />
+    <value nick="BEATS"    value="0" />
+    <value nick="PULSE"    value="1" />
+    <value nick="CLASSIC"  value="2" />
+    <value nick="SPECTRUM" value="3" />
   </enum>
 
   <schema id="org.gnome.shell.extensions.mediashell"
