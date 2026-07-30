@@ -2,7 +2,8 @@
  * @file PopupAlbumArt.js
  * @module shell.ui.popup.PopupAlbumArt
  *
- * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks,
+ * square cropping, and actor lifecycle.
  *
  * PopupContent delegates album art to this component so async file/network loads
  * are isolated from the rest of the popup. The component cancels stale loads by
@@ -18,8 +19,13 @@ import St from "gi://St";
 import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
 import { IconNames } from "../../../shared/constants/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/popup.js";
+import {
+  POPUP_ALBUM_ART_OUTLINE_WIDTH,
+  POPUP_ALBUM_ART_PAUSED_SCALE,
+  POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
+} from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
 import { isCancellationError } from "../../utils/errors.js";
@@ -38,7 +44,8 @@ Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 const logger = createLogger("PopupAlbumArt");
 
 /**
- * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks,
+ * square cropping, and actor lifecycle.
  */
 export default class PopupAlbumArt {
   constructor(popupContent) {
@@ -47,6 +54,7 @@ export default class PopupAlbumArt {
     this.albumArtLoadCancellable = null;
     this.loadedAlbumArtKey = null;
     this.loadingAlbumArtKey = null;
+    this.playbackScaleTarget = null;
     this.albumArtLoader = AlbumArtLoader.getInstance();
     this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
@@ -101,6 +109,7 @@ export default class PopupAlbumArt {
 
     this.ensureAlbumArtActor(request.width, request.radius);
     this.attach();
+    this.syncPlaybackState(this.mediaApp.playbackStatus, false);
     if (
       this.loadedAlbumArtKey === request.key ||
       this.loadingAlbumArtKey === request.key
@@ -366,23 +375,53 @@ export default class PopupAlbumArt {
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
     });
+    this.albumArtFrame.set_pivot_point(0.5, 0.5);
     this.albumArtFrame.set_child(this.albumArtImage);
     this.setAlbumArtFallback(width, radius, null);
   }
 
+  syncPlaybackState(playbackStatus, animate = true) {
+    if (!this.albumArtFrame) return;
+
+    const targetScale =
+      playbackStatus === PlaybackStatus.PLAYING
+        ? 1
+        : POPUP_ALBUM_ART_PAUSED_SCALE;
+    if (targetScale === this.playbackScaleTarget) return;
+
+    this.playbackScaleTarget = targetScale;
+    if (!animate) {
+      this.stopPlaybackScaleTransition();
+      this.albumArtFrame.set_scale(targetScale, targetScale);
+      return;
+    }
+
+    this.albumArtFrame.ease({
+      scale_x: targetScale,
+      scale_y: targetScale,
+      duration: POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
+      mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+    });
+  }
+
+  stopPlaybackScaleTransition() {
+    this.albumArtFrame?.remove_transition("scale-x");
+    this.albumArtFrame?.remove_transition("scale-y");
+  }
+
   getImageSize(width) {
-    return Math.max(1, Math.round(width - ALBUM_ART_OUTLINE_WIDTH * 2));
+    return Math.max(1, Math.round(width - POPUP_ALBUM_ART_OUTLINE_WIDTH * 2));
   }
 
   getImageRadius(radius) {
-    return Math.max(0, radius - ALBUM_ART_OUTLINE_WIDTH);
+    return Math.max(0, radius - POPUP_ALBUM_ART_OUTLINE_WIDTH);
   }
 
   syncAlbumArtGeometry(width, radius) {
     const imageSize = this.getImageSize(width);
     const imageRadius = this.getImageRadius(radius);
 
-    this.albumArtFrame.style = `border-radius: ${radius}px; padding: ${ALBUM_ART_OUTLINE_WIDTH}px;`;
+    this.albumArtFrame.style = `border-radius: ${radius}px; padding: ${POPUP_ALBUM_ART_OUTLINE_WIDTH}px;`;
     this.albumArtFrame.width = width;
     this.albumArtFrame.height = width;
     this.albumArtImage.style = `border-radius: ${imageRadius}px;`;
@@ -423,8 +462,10 @@ export default class PopupAlbumArt {
   remove() {
     this.cancelAlbumArtLoad();
     this.loadedAlbumArtKey = null;
+    this.playbackScaleTarget = null;
     if (!this.albumArtFrame) return;
 
+    this.stopPlaybackScaleTransition();
     this.albumArtFrame.get_parent()?.remove_child(this.albumArtFrame);
     this.albumArtFrame.destroy();
     this.albumArtFrame = null;

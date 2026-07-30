@@ -204,6 +204,12 @@ export default class PopupContent {
     this.progressBar.setPlaybackPosition(positionMicroseconds);
   }
 
+  syncAlbumArtPlaybackState() {
+    if (!this.menu.isOpen || !this.extensionController.popupAlbumArtShow)
+      return;
+    this.albumArt.syncPlaybackState(this.mediaApp.playbackStatus);
+  }
+
   buildFixedWidthStyle(width) {
     return [
       `width: ${width}px;`,

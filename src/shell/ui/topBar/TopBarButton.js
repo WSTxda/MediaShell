@@ -337,6 +337,7 @@ class TopBarButton extends PanelMenu.Button {
             WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE |
             WidgetFlags.POPUP_PROGRESS_BAR,
         );
+        this.popupContent.syncAlbumArtPlaybackState();
         if (this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
           this.topBarTrackInformation.pause();
           this.popupContent.pause();
