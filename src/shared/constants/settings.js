@@ -154,7 +154,7 @@ export const TOP_BAR_VISUALIZER_SPEED = Object.freeze({
 export const TEXT_SCROLL_PAUSE_SECONDS = Object.freeze({
   MIN: 0,
   MAX: 10,
-  DEFAULT: 0,
+  DEFAULT: 1,
 });
 
 // --- Popup settings ---
