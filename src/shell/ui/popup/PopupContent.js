@@ -73,13 +73,11 @@ export default class PopupContent {
             widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
           this.pendingWidgetFlags = 0;
           this.updateWidgets(widgetFlags, true);
-          if (this.mediaApp.playbackStatus === PlaybackStatus.PLAYING)
-            this.resume();
-          else this.pause();
+          this.syncProgressBarPlaybackState();
         } else {
           this.appSelectorController.close();
           this.albumArt.cancelAlbumArtLoad();
-          this.pause();
+          this.progressBar.pause();
         }
       },
     );
@@ -186,13 +184,14 @@ export default class PopupContent {
     }
   }
 
-  pause() {
-    this.trackInformation.pause();
-    this.progressBar.pause();
-  }
-
-  resume() {
-    this.trackInformation.resume();
+  syncProgressBarPlaybackState() {
+    if (
+      !this.menu.isOpen ||
+      this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING
+    ) {
+      this.progressBar.pause();
+      return;
+    }
     this.progressBar.resume();
   }
 

@@ -13,7 +13,6 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TrackInformationFields } from "../../../shared/enums/trackInformation.js";
 import { buildTrackInformationItems } from "../../../shared/utils/metadata.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
@@ -79,16 +78,11 @@ export default class PopupTrackInformation {
     this.ensureContainer(width);
     this.clearFields();
 
-    const paused = this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING;
     for (const item of items) {
       const label = this.createLabel(
         item.text,
         this.resolveStyleClass(item.field),
         width,
-        paused,
-        item.field === TrackInformationFields.ARTIST
-          ? Clutter.TimelineDirection.BACKWARD
-          : Clutter.TimelineDirection.FORWARD,
       );
       this.trackInformationLabels.push(label);
       this.trackInformationBox.add_child(label);
@@ -101,14 +95,6 @@ export default class PopupTrackInformation {
       return;
     }
     this.attach();
-  }
-
-  pause() {
-    for (const label of this.trackInformationLabels) label.pauseScrolling();
-  }
-
-  resume() {
-    for (const label of this.trackInformationLabels) label.resumeScrolling();
   }
 
   ensureContainer(width) {
@@ -125,18 +111,10 @@ export default class PopupTrackInformation {
     this.trackInformationBox.xAlign = Clutter.ActorAlign.FILL;
   }
 
-  createLabel(
-    text,
-    styleClass,
-    width,
-    isPaused,
-    direction = Clutter.TimelineDirection.FORWARD,
-  ) {
+  createLabel(text, styleClass, width) {
     const label = new ScrollingLabel({
       text,
       isScrolling: this.extensionController.popupTrackInformationScrollEnabled,
-      isPaused,
-      direction,
       width,
       scrollSpeed: this.extensionController.popupTrackInformationScrollSpeed,
       scrollPauseMilliseconds:

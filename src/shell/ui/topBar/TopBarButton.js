@@ -26,7 +26,6 @@ import {
   APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../../shared/constants/timing.js";
 import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TopBarElements } from "../../../shared/enums/topBar.js";
 import { WidgetFlags } from "../../../shared/enums/widget.js";
 import { createLogger } from "../../../shared/utils/log.js";
@@ -338,13 +337,7 @@ class TopBarButton extends PanelMenu.Button {
             WidgetFlags.POPUP_PROGRESS_BAR,
         );
         this.popupContent.syncAlbumArtPlaybackState();
-        if (this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
-          this.topBarTrackInformation.pause();
-          this.popupContent.pause();
-        } else {
-          this.topBarTrackInformation.resume();
-          this.popupContent.resume();
-        }
+        this.popupContent.syncProgressBarPlaybackState();
       },
     );
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {

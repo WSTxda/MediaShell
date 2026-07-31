@@ -10,7 +10,6 @@
  * component preserves the original metadata width and Lock width contract.
  */
 
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import ScrollingLabel from "../ScrollingLabel.js";
@@ -55,8 +54,6 @@ export default class TopBarTrackInformation {
       isScrolling:
         this.topBarButton.extensionController
           .topBarTrackInformationScrollEnabled,
-      isPaused:
-        this.topBarButton.mediaApp.playbackStatus !== PlaybackStatus.PLAYING,
       scrollSpeed:
         this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
       scrollPauseMilliseconds:
@@ -87,14 +84,6 @@ export default class TopBarTrackInformation {
 
     const index = parentBox.get_children().indexOf(this.actor);
     this.render(Math.max(0, index), parentBox);
-  }
-
-  pause() {
-    this.actor?.pauseScrolling();
-  }
-
-  resume() {
-    this.actor?.resumeScrolling();
   }
 
   buildTrackInformationText() {
