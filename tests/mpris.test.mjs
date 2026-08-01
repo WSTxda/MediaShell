@@ -12,12 +12,12 @@ import test from "node:test";
 import {
   MPRIS_NO_TRACK_PATH,
   MprisMetadataKeys,
-} from "../src/shared/constants/dbus.js";
+} from "../src/shared/constants/mpris.js";
 import {
   PlaybackControlActions,
   RELATIVE_SEEK_SECONDS,
 } from "../src/shared/constants/playbackControls.js";
-import { MediaAppValidity } from "../src/shared/enums/app.js";
+import { MediaAppValidity } from "../src/shared/enums/mediaAppValidity.js";
 import { LoopStatus, PlaybackStatus } from "../src/shared/enums/playback.js";
 import {
   metadataContainsTrack,

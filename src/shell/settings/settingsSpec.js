@@ -10,33 +10,38 @@
  */
 
 import {
-  POPUP_ALBUM_ART_CORNER_RADIUS,
+  POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
-  POPUP_WIDTH,
+  POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
-  TEXT_SCROLL_PAUSE_SECONDS,
-  TEXT_SCROLL_SPEED,
+  TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+  TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
-  PANEL_INDEX,
-  TOP_BAR_TRACK_INFORMATION_WIDTH,
-  TOP_BAR_VISUALIZER_SPEED,
+  PANEL_INDEX_CONSTRAINTS,
+  TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
+  TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
 } from "../../shared/constants/settings.js";
 import {
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
 } from "../../shared/constants/playbackControlSurfaces.js";
-import { normalizeInputAction } from "../../shared/constants/inputActions.js";
+import { normalizeInputAction } from "../../shared/utils/inputActions.js";
 import { InputActions } from "../../shared/enums/input.js";
-import { SettingsAction } from "../../shared/enums/settings.js";
+import { SettingsAction } from "../../shared/enums/settingsAction.js";
 import { PanelPositions } from "../../shared/enums/panel.js";
 import { VisualizerStyles } from "../../shared/enums/visualizer.js";
-import { WidgetFlags } from "../../shared/enums/widget.js";
+import { WidgetFlags } from "../../shared/enums/widgetFlags.js";
+import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
 import {
   enumValueByIndex,
   normalizeOrderedValues,
   normalizeUniqueStrings,
 } from "../../shared/utils/format.js";
+
+const DEFAULT_PANEL_POSITION_INDEX = Object.values(PanelPositions).indexOf(
+  PanelPositions.CENTER,
+);
 
 /**
  * Creates a transform that clamps numeric settings to their supported bounds.
@@ -64,14 +69,6 @@ function createSecondsToMillisecondsTransform(bounds) {
   return (value) => constrainValue(value) * 1000;
 }
 
-function normalizeTrackInformationContent(value, fallback) {
-  if (!Array.isArray(value)) return fallback;
-  const normalized = value
-    .map((item) => String(item ?? "").trim())
-    .filter(Boolean);
-  return normalized.length > 0 ? normalized : fallback;
-}
-
 function createPlaybackControlSettingsSpec(surface) {
   const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
   return Object.fromEntries([
@@ -97,7 +94,7 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.POPUP_WIDTH]: {
     property: "popupWidth",
     read: "get_uint",
-    transform: createNumericConstraint(POPUP_WIDTH),
+    transform: createNumericConstraint(POPUP_WIDTH_CONSTRAINTS),
     impact:
       WidgetFlags.POPUP_ALBUM_ART |
       WidgetFlags.POPUP_TRACK_INFORMATION |
@@ -114,7 +111,9 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]: {
     property: "popupAlbumArtCornerRadius",
     read: "get_uint",
-    transform: createNumericConstraint(POPUP_ALBUM_ART_CORNER_RADIUS),
+    transform: createNumericConstraint(
+      POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.POPUP_ALBUM_ART,
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SHOW]: {
@@ -146,19 +145,23 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "popupTrackInformationScrollSpeed",
     read: "get_uint",
-    transform: createNumericConstraint(TEXT_SCROLL_SPEED),
+    transform: createNumericConstraint(
+      TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
+    ),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "popupTrackInformationScrollPauseMilliseconds",
     read: "get_uint",
-    transform: createSecondsToMillisecondsTransform(TEXT_SCROLL_PAUSE_SECONDS),
+    transform: createSecondsToMillisecondsTransform(
+      TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.POPUP_TRACK_INFORMATION,
   },
-  [SettingsKeys.POPUP_APP_ICON_USE_COLOR]: {
-    property: "popupAppIconUseColor",
+  [SettingsKeys.POPUP_MEDIA_APP_ICON_USE_COLOR]: {
+    property: "popupMediaAppIconUseColor",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_APP_SELECTOR,
+    impact: WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
   },
 
   // Top bar
@@ -170,7 +173,9 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH]: {
     property: "topBarTrackInformationWidth",
     read: "get_uint",
-    transform: createNumericConstraint(TOP_BAR_TRACK_INFORMATION_WIDTH),
+    transform: createNumericConstraint(
+      TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_LAYOUT,
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK]: {
@@ -186,13 +191,17 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "topBarTrackInformationScrollSpeed",
     read: "get_uint",
-    transform: createNumericConstraint(TEXT_SCROLL_SPEED),
+    transform: createNumericConstraint(
+      TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "topBarTrackInformationScrollPauseMilliseconds",
     read: "get_uint",
-    transform: createSecondsToMillisecondsTransform(TEXT_SCROLL_PAUSE_SECONDS),
+    transform: createSecondsToMillisecondsTransform(
+      TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT]: {
@@ -205,15 +214,15 @@ export const SETTINGS_SPEC = Object.freeze({
       ),
     impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
   },
-  [SettingsKeys.TOP_BAR_APP_ICON_SHOW]: {
-    property: "topBarAppIconShow",
+  [SettingsKeys.TOP_BAR_MEDIA_APP_ICON_SHOW]: {
+    property: "topBarMediaAppIconShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_APP_ICON,
+    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
   },
-  [SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR]: {
-    property: "topBarAppIconUseColor",
+  [SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR]: {
+    property: "topBarMediaAppIconUseColor",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_APP_ICON,
+    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {
     property: "topBarVisualizerShow",
@@ -229,7 +238,7 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: {
     property: "topBarVisualizerSpeed",
     read: "get_uint",
-    transform: createNumericConstraint(TOP_BAR_VISUALIZER_SPEED),
+    transform: createNumericConstraint(TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS),
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
   ...TOP_BAR_PLAYBACK_CONTROL_SETTINGS_SPEC,
@@ -245,15 +254,15 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.PANEL_POSITION]: {
     property: "panelPosition",
     read: "get_enum",
-    fallback: 1,
+    fallback: DEFAULT_PANEL_POSITION_INDEX,
     transform: (value) => enumValueByIndex(PanelPositions, value),
-    action: SettingsAction.REBUILD_TOP_BAR_BUTTON,
+    action: SettingsAction.REBUILD_INDICATOR,
   },
   [SettingsKeys.PANEL_INDEX]: {
     property: "panelIndex",
     read: "get_uint",
-    transform: createNumericConstraint(PANEL_INDEX),
-    action: SettingsAction.REBUILD_TOP_BAR_BUTTON,
+    transform: createNumericConstraint(PANEL_INDEX_CONSTRAINTS),
+    action: SettingsAction.REBUILD_INDICATOR,
   },
 
   // Interactions

@@ -24,7 +24,7 @@ function withDetail(label, detail) {
 /**
  * Resolves the assistive-technology name for one playback control.
  *
- * @param {object} mediaApp - Normalized PlayerProxy-like state.
+ * @param {object} mediaApp - Normalized media-app state.
  * @param {object} controlState - Result from resolvePlaybackControlState().
  * @param {(message: string) => string} _ - Translation function.
  * @returns {string} Localized accessible name.

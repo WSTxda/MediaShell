@@ -4,8 +4,8 @@
  *
  * Resolves one logical playback control into pure presentation and action data.
  *
- * Popup and topbar consume the same result while retaining separate actors and
- * styling. The resolver never captures a live PlayerProxy in a callback; Shell
+ * Popup and top bar consume the same result while retaining separate actors and
+ * styling. The resolver never captures a live MprisMediaApp in a callback; Shell
  * execution is delegated to the playback-control executor.
  */
 
@@ -113,7 +113,7 @@ function resolveSpeedState(mediaApp) {
 /**
  * Resolves one logical playback control for a normalized media-app state.
  *
- * @param {object} mediaApp - Normalized PlayerProxy-like state.
+ * @param {object} mediaApp - Normalized media-app state.
  * @param {string} controlId - One value from PlaybackControlIds.
  * @returns {{control: object, iconName: string|null, labelText: string,
  *   isReactive: boolean, isActive: boolean, action: string}} Pure control state.

@@ -10,7 +10,7 @@
  * deterministic in Node tests.
  */
 
-import { MprisMetadataKeys } from "../constants/dbus.js";
+import { MprisMetadataKeys } from "../constants/mpris.js";
 
 function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";

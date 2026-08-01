@@ -28,9 +28,8 @@ import { StyleClasses } from "../constants/styleClasses.js";
 class ScrollingLabel extends St.ScrollView {
   label;
   labelBox;
-  adjustmentChangedSignalId;
-  labelShowSignalId;
 
+  isDestroyed;
   isScrolling;
   isFixedWidth;
   labelWidth;
@@ -38,7 +37,18 @@ class ScrollingLabel extends St.ScrollView {
   cycleWidth;
   scrollPauseMilliseconds;
   scrollTransition;
-  scrollSpeed;
+  scrollPixelsPerMillisecond;
+
+  labelShowSignalId;
+  mappedSignalId;
+  animationMappedSignalId;
+  lifecycleMappedSignalId;
+  adjustmentChangedSignalId;
+  scrollCompletedSignalId;
+
+  initializationSourceId;
+  adjustmentInitializationSourceId;
+  cyclePauseSourceId;
 
   constructor(params) {
     super({
@@ -80,7 +90,7 @@ class ScrollingLabel extends St.ScrollView {
     this.initializationSourceId = null;
     this.cyclePauseSourceId = null;
     this.adjustmentInitializationSourceId = null;
-    this.scrollSpeed = Math.max((scrollSpeed ?? 4) / 100, 0.01);
+    this.scrollPixelsPerMillisecond = Math.max((scrollSpeed ?? 4) / 100, 0.01);
     this.labelBox = new St.BoxLayout({
       xExpand: true,
       yExpand: true,
@@ -223,7 +233,7 @@ class ScrollingLabel extends St.ScrollView {
     const finalOffset = initialOffset + this.cycleWidth;
     const durationMilliseconds = Math.max(
       1,
-      Math.round(this.cycleWidth / this.scrollSpeed),
+      Math.round(this.cycleWidth / this.scrollPixelsPerMillisecond),
     );
     adjustment.value = initialOffset;
 

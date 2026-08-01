@@ -4,7 +4,7 @@
  *
  * Renders configurable playback controls inside the top bar.
  *
- * TopBarButton owns surface visibility. This renderer owns top-bar actors and
+ * TopBarContent owns surface visibility. This renderer owns top-bar actors and
  * delegates state and execution to the shared playback-control domain.
  */
 
@@ -32,18 +32,18 @@ import { styleClassNames } from "../../utils/styleClasses.js";
 
 /** Renders configurable playback controls inside the top bar. */
 export default class TopBarPlaybackControls {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+  constructor(topBarContent) {
+    this.topBarContent = topBarContent;
     this.actor = null;
     this.controlButtons = new Map();
   }
 
   get extensionController() {
-    return this.topBarButton.extensionController;
+    return this.topBarContent.extensionController;
   }
 
   get mediaApp() {
-    return this.topBarButton.mediaApp;
+    return this.topBarContent.mediaApp;
   }
 
   render(widgetFlags) {
@@ -161,8 +161,8 @@ export default class TopBarPlaybackControls {
   }
 
   attach() {
-    const topBarBox = this.topBarButton.topBarBox;
-    const afterActionBox = this.topBarButton.topBarActionBoxAfter;
+    const topBarBox = this.topBarContent.topBarBox;
+    const afterActionBox = this.topBarContent.topBarActionBoxAfter;
     const parent = this.actor.get_parent();
     const targetIndex = topBarBox.get_children().indexOf(afterActionBox);
     const currentIndex =
@@ -189,7 +189,7 @@ export default class TopBarPlaybackControls {
 
   destroy() {
     this.remove();
-    this.topBarButton = null;
+    this.topBarContent = null;
   }
 }
 

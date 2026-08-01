@@ -9,7 +9,7 @@
  * normalized user-speed multiplier and fixed playback clock.
  */
 
-import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
+import { TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS } from "../constants/settings.js";
 import {
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
   VISUALIZER_LEVEL_ANIMATION_DEFINITIONS,
@@ -35,7 +35,8 @@ function gaussian(value, center, width) {
 function getAnimationTime(elapsedSeconds, speed) {
   const time = Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0;
   const speedMultiplier =
-    normalizeVisualizerSpeed(speed) / TOP_BAR_VISUALIZER_SPEED.DEFAULT;
+    normalizeVisualizerSpeed(speed) /
+    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT;
   return time * speedMultiplier;
 }
 
@@ -103,10 +104,11 @@ function fillSpectrumOffsets(animationTime, offsets, layerDefinition) {
  */
 export function normalizeVisualizerSpeed(speed) {
   const numericSpeed = Number(speed);
-  if (!Number.isFinite(numericSpeed)) return TOP_BAR_VISUALIZER_SPEED.DEFAULT;
+  if (!Number.isFinite(numericSpeed))
+    return TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT;
   return Math.min(
-    TOP_BAR_VISUALIZER_SPEED.MAX,
-    Math.max(TOP_BAR_VISUALIZER_SPEED.MIN, numericSpeed),
+    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.MAX,
+    Math.max(TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.MIN, numericSpeed),
   );
 }
 
@@ -138,7 +140,7 @@ export function normalizeVisualizerStyle(style) {
 export function getVisualizerLevels(
   animationKind,
   elapsedSeconds,
-  speed = TOP_BAR_VISUALIZER_SPEED.DEFAULT,
+  speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
   outputLevels = null,
 ) {
   const definition =
@@ -171,7 +173,7 @@ export function getVisualizerLevels(
  */
 export function getVisualizerSpectrumOffsets(
   elapsedSeconds,
-  speed = TOP_BAR_VISUALIZER_SPEED.DEFAULT,
+  speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
   outputOffsets = null,
   layer = VisualizerSpectrumLayers.PRIMARY,
 ) {

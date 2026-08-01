@@ -9,7 +9,7 @@
  * from album art, track information, and playback control rendering.
  */
 
-import { MprisMetadataKeys } from "../../../shared/constants/dbus.js";
+import { MprisMetadataKeys } from "../../../shared/constants/mpris.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import PopupProgressBarSlider from "./PopupProgressBarSlider.js";

@@ -221,7 +221,7 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Apps</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-popup-app-icon-use-color">
+          <object class="AdwSwitchRow" id="sr-popup-media-app-icon-use-color">
             <property name="title" translatable="yes">Colored app icon</property>
             <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
           </object>
@@ -483,13 +483,13 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Apps</property>
         <child>
-          <object class="AdwExpanderRow" id="er-top-bar-app-icon">
+          <object class="AdwExpanderRow" id="er-top-bar-media-app-icon">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">App icon</property>
             <property name="subtitle" translatable="yes">Show the app icon</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-app-icon-use-color">
+              <object class="AdwSwitchRow" id="sr-top-bar-media-app-icon-use-color">
                 <property name="title" translatable="yes">Colored app icon</property>
                 <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
               </object>
@@ -820,7 +820,7 @@
     <child>
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Mouse actions</property>
-        <property name="description" translatable="yes">Assign actions to clicks and scrolling on the top bar button</property>
+        <property name="description" translatable="yes">Assign actions to clicks and scrolling on the top bar indicator</property>
         <child>
           <object class="AdwComboRow" id="cr-interactions-left-click">
             <property name="title" translatable="yes">Left click / tap</property>

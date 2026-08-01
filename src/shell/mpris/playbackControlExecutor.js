@@ -2,10 +2,10 @@
  * @file playbackControlExecutor.js
  * @module shell.mpris.playbackControlExecutor
  *
- * Executes resolved playback action IDs against the active PlayerProxy.
+ * Executes resolved playback action IDs against the active MprisMediaApp.
  *
  * This is the single Shell boundary used by popup, top bar, and input dispatch.
- * PlayerProxy remains responsible for capability checks and all D-Bus calls.
+ * MprisMediaApp remains responsible for capability checks and all D-Bus calls.
  */
 
 import {
@@ -21,7 +21,7 @@ import {
 } from "../../shared/utils/mprisOperationResult.js";
 import { resolveNextPlaybackRate } from "../../shared/utils/playbackRate.js";
 
-const PLAYER_METHOD_BY_ACTION = Object.freeze({
+const MEDIA_APP_METHOD_BY_ACTION = Object.freeze({
   [PlaybackControlActions.TOGGLE_SHUFFLE]: "toggleShuffle",
   [PlaybackControlActions.PREVIOUS]: "previous",
   [PlaybackControlActions.PLAY]: "play",
@@ -74,7 +74,7 @@ export function resolveSeekOffsetMicroseconds(action) {
     : null;
 }
 
-/** Executes one canonical playback action against a PlayerProxy-like object. */
+/** Executes one canonical playback action against a MprisMediaApp-like object. */
 export async function executePlaybackControlAction(mediaApp, action) {
   const seekOffset = resolveSeekOffsetMicroseconds(action);
   if (seekOffset !== null) return executeDelegate(mediaApp, "seek", seekOffset);
@@ -90,7 +90,7 @@ export async function executePlaybackControlAction(mediaApp, action) {
       : executeDelegate(mediaApp, "setPlaybackRate", nextRate);
   }
 
-  if (!Object.hasOwn(PLAYER_METHOD_BY_ACTION, action))
+  if (!Object.hasOwn(MEDIA_APP_METHOD_BY_ACTION, action))
     return mprisOperationUnsupported(MprisOperationReasons.UNKNOWN_ACTION);
-  return executeDelegate(mediaApp, PLAYER_METHOD_BY_ACTION[action]);
+  return executeDelegate(mediaApp, MEDIA_APP_METHOD_BY_ACTION[action]);
 }

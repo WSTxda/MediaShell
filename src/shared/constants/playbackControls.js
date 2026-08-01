@@ -5,7 +5,7 @@
  * Defines the canonical playback-control vocabulary shared by runtime surfaces.
  *
  * Each logical control owns one stable ID, actor name, semantic group, visual
- * role, and content kind. Popup and topbar render separate actors, but they consume
+ * role, and content kind. Popup and top bar render separate actors, but they consume
  * the same definitions so control identity and semantics cannot drift.
  */
 

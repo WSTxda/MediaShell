@@ -27,9 +27,6 @@ export default class PreferenceSensitivityController {
     this.topBarTrackInformationRow = this.builder.get_object(
       "er-top-bar-track-information",
     );
-    this.topBarTrackInformationScrollEnabledRow = this.builder.get_object(
-      "sr-top-bar-track-information-scroll-enabled",
-    );
     this.topBarTrackInformationScrollEnabledSwitch = this.builder.get_object(
       "sw-top-bar-track-information-scroll-enabled",
     );
@@ -47,9 +44,6 @@ export default class PreferenceSensitivityController {
     );
     this.popupTrackInformationContentRow = this.builder.get_object(
       "er-popup-track-information-content",
-    );
-    this.popupTrackInformationScrollEnabledRow = this.builder.get_object(
-      "sr-popup-track-information-scroll-enabled",
     );
     this.popupTrackInformationScrollEnabledSwitch = this.builder.get_object(
       "sw-popup-track-information-scroll-enabled",
@@ -131,14 +125,12 @@ export default class PreferenceSensitivityController {
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.builder = null;
     this.topBarTrackInformationRow = null;
-    this.topBarTrackInformationScrollEnabledRow = null;
     this.topBarTrackInformationScrollEnabledSwitch = null;
     this.topBarTrackInformationScrollSpeedRow = null;
     this.topBarScrollPauseRow = null;
     this.topBarTrackInformationContentRow = null;
     this.popupTrackInformationRow = null;
     this.popupTrackInformationContentRow = null;
-    this.popupTrackInformationScrollEnabledRow = null;
     this.popupTrackInformationScrollEnabledSwitch = null;
     this.popupTrackInformationScrollSpeedRow = null;
     this.popupScrollPauseRow = null;

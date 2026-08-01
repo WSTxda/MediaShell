@@ -25,22 +25,34 @@ export const StyleClasses = Object.freeze({
   POPUP_ALBUM_ART: "mediashell-popup-album-art",
   POPUP_ALBUM_ART_FALLBACK: "mediashell-popup-album-art-fallback",
   POPUP_ALBUM_ART_FRAME: "mediashell-popup-album-art-frame",
-  POPUP_APP_SELECTOR_TRIGGER_EXPAND_ICON: "mediashell-popup-app-expand-icon",
-  POPUP_APP_SELECTOR_TRIGGER_LABEL: "mediashell-popup-app-label",
-  POPUP_APP_SELECTOR_TRIGGER: "mediashell-popup-app-selector",
-  POPUP_APP_SELECTOR_ROW_APP_ICON: "mediashell-popup-app-selector-app-icon",
-  POPUP_APP_SELECTOR_CARD: "mediashell-popup-app-selector-card",
-  POPUP_APP_SELECTOR_ROW_CHECK_ICON: "mediashell-popup-app-selector-check-icon",
-  POPUP_APP_SELECTOR_TRIGGER_ICON: "mediashell-popup-app-selector-icon",
-  POPUP_APP_SELECTOR_ROW_LABEL: "mediashell-popup-app-selector-label",
-  POPUP_APP_SELECTOR_LIST: "mediashell-popup-app-selector-list",
-  POPUP_APP_SELECTOR_ROW_PIN_BUTTON: "mediashell-popup-app-selector-pin-button",
-  POPUP_APP_SELECTOR_ROW_PIN_ICON: "mediashell-popup-app-selector-pin-icon",
-  POPUP_APP_SELECTOR_REVEALER: "mediashell-popup-app-selector-revealer",
-  POPUP_APP_SELECTOR_ROW: "mediashell-popup-app-selector-row",
-  POPUP_APP_SELECTOR_ROW_BOX: "mediashell-popup-app-selector-row-box",
-  POPUP_APP_SELECTOR_ROW_ITEM: "mediashell-popup-app-selector-row-item",
-  POPUP_APP_SELECTOR_CONTAINER: "mediashell-popup-apps",
+  POPUP_MEDIA_APP_SELECTOR: "mediashell-popup-media-app-selector",
+  POPUP_MEDIA_APP_SELECTOR_BUTTON:
+    "mediashell-popup-media-app-selector-button",
+  POPUP_MEDIA_APP_SELECTOR_BUTTON_EXPAND_ICON:
+    "mediashell-popup-media-app-selector-button-expand-icon",
+  POPUP_MEDIA_APP_SELECTOR_BUTTON_ICON:
+    "mediashell-popup-media-app-selector-button-icon",
+  POPUP_MEDIA_APP_SELECTOR_BUTTON_LABEL:
+    "mediashell-popup-media-app-selector-button-label",
+  POPUP_MEDIA_APP_SELECTOR_CARD: "mediashell-popup-media-app-selector-card",
+  POPUP_MEDIA_APP_SELECTOR_LIST: "mediashell-popup-media-app-selector-list",
+  POPUP_MEDIA_APP_SELECTOR_REVEALER:
+    "mediashell-popup-media-app-selector-revealer",
+  POPUP_MEDIA_APP_SELECTOR_ROW: "mediashell-popup-media-app-selector-row",
+  POPUP_MEDIA_APP_SELECTOR_ROW_BOX:
+    "mediashell-popup-media-app-selector-row-box",
+  POPUP_MEDIA_APP_SELECTOR_ROW_CHECK_ICON:
+    "mediashell-popup-media-app-selector-row-check-icon",
+  POPUP_MEDIA_APP_SELECTOR_ROW_ITEM:
+    "mediashell-popup-media-app-selector-row-item",
+  POPUP_MEDIA_APP_SELECTOR_ROW_LABEL:
+    "mediashell-popup-media-app-selector-row-label",
+  POPUP_MEDIA_APP_SELECTOR_ROW_MEDIA_APP_ICON:
+    "mediashell-popup-media-app-selector-row-media-app-icon",
+  POPUP_MEDIA_APP_SELECTOR_ROW_PIN_BUTTON:
+    "mediashell-popup-media-app-selector-row-pin-button",
+  POPUP_MEDIA_APP_SELECTOR_ROW_PIN_ICON:
+    "mediashell-popup-media-app-selector-row-pin-icon",
   POPUP_BOX: "mediashell-popup-box",
   POPUP_CONTAINER: "mediashell-popup-container",
   POPUP_CONTROL_BUTTON: "mediashell-popup-control-button",
@@ -63,11 +75,13 @@ export const StyleClasses = Object.freeze({
   POPUP_TRACK_INFORMATION_TITLE: "mediashell-popup-track-information-title",
 
   TOP_BAR_ACTION_BOX: "mediashell-top-bar-action-box",
+  TOP_BAR_MEDIA_APP_ICON: "mediashell-top-bar-media-app-icon",
   TOP_BAR_BOX: "mediashell-top-bar-box",
   TOP_BAR_CONTROL_BUTTON: "mediashell-top-bar-control-button",
   TOP_BAR_CONTROL_ICON: "mediashell-top-bar-control-icon",
   TOP_BAR_CONTROL_LABEL: "mediashell-top-bar-control-label",
   TOP_BAR_PLAYBACK_CONTROLS: "mediashell-top-bar-playback-controls",
+  TOP_BAR_TRACK_INFORMATION: "mediashell-top-bar-track-information",
   TOP_BAR_VISUALIZER: "mediashell-top-bar-visualizer",
   TOP_BAR_VISUALIZER_BEATS: "mediashell-top-bar-visualizer-beats",
   TOP_BAR_VISUALIZER_BEATS_BAR: "mediashell-top-bar-visualizer-beats-bar",

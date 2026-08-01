@@ -4,14 +4,14 @@
  *
  * Normalizes untrusted MPRIS metadata into stable protocol and display values.
  *
- * PlayerProxy uses the canonical metadata object and revision helpers before
+ * MprisMediaApp uses the canonical metadata object and revision helpers before
  * publishing state. PopupTrackInformation and TopBarTrackInformation use the
  * display helpers so both surfaces share field extraction, list formatting,
  * custom text handling, and missing-metadata rules without sharing actor code.
  * Every helper stays pure so the policy can be tested outside GNOME Shell.
  */
 
-import { MprisMetadataKeys } from "../constants/dbus.js";
+import { MprisMetadataKeys } from "../constants/mpris.js";
 import { TrackInformationFields } from "../enums/trackInformation.js";
 
 const METADATA_FIELD_KEYS = Object.freeze({

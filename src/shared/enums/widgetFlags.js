@@ -1,16 +1,17 @@
 /**
- * @file widget.js
- * @module shared.enums.widget
+ * @file widgetFlags.js
+ * @module shared.enums.widgetFlags
  *
  * Bitmask enum that identifies which UI regions need a re-render.
  *
- * Flags are ORed into pending update fields inside TopBarButton and PopupContent
+ * Flags are ORed into pending update fields inside MediaShellIndicator and
+ * PopupContent
  * so bursts of MPRIS changes can be coalesced into a single idle render. Compound
  * flags group top bar and popup regions while individual bits target one widget.
  */
 
 export const WidgetFlags = Object.freeze({
-  TOP_BAR_APP_ICON: 1 << 0,
+  TOP_BAR_MEDIA_APP_ICON: 1 << 0,
   TOP_BAR_TRACK_INFORMATION: 1 << 1,
   TOP_BAR_PLAYBACK_SHUFFLE: 1 << 2,
   TOP_BAR_PLAYBACK_PREVIOUS: 1 << 3,
@@ -18,7 +19,7 @@ export const WidgetFlags = Object.freeze({
   TOP_BAR_PLAYBACK_NEXT: 1 << 5,
   TOP_BAR_PLAYBACK_REPEAT: 1 << 6,
   TOP_BAR_ELEMENT_ORDER: 1 << 7,
-  POPUP_APP_SELECTOR: 1 << 8,
+  POPUP_MEDIA_APP_SELECTOR: 1 << 8,
   POPUP_ALBUM_ART: 1 << 9,
   POPUP_TRACK_INFORMATION: 1 << 10,
   POPUP_PROGRESS_BAR: 1 << 11,

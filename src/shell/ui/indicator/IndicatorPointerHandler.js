@@ -1,8 +1,8 @@
 /**
- * @file TopBarPointerHandler.js
- * @module shell.ui.topBar.TopBarPointerHandler
+ * @file IndicatorPointerHandler.js
+ * @module shell.ui.indicator.IndicatorPointerHandler
  *
- * Installs pointer gestures for the non-playback regions of the top bar button.
+ * Installs pointer gestures for the non-playback regions of the panel indicator.
  *
  * The handler translates mouse, touch, and scroll input into configured
  * InputActions while keeping playback control clicks isolated from top bar
@@ -10,7 +10,7 @@
  * timeout installed for pointer handling and tears them down independently of
  * the top bar widget layout.
  *
- * @see src/shell/ui/topBar/TopBarButton.js
+ * @see src/shell/ui/indicator/MediaShellIndicator.js
  */
 
 import Clutter from "gi://Clutter";
@@ -19,34 +19,34 @@ import GLib from "gi://GLib";
 import { InputActions } from "../../../shared/enums/input.js";
 
 /**
- * Installs pointer gestures for the non-playback regions of the top bar button.
+ * Installs pointer gestures for the non-playback regions of the panel indicator.
  */
-export default class TopBarPointerHandler {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+export default class IndicatorPointerHandler {
+  constructor(indicator) {
+    this.indicator = indicator;
     this.pointerActionCleanups = [];
     this.primaryActivationTimeoutId = null;
     this.disabledClickGesture = null;
   }
 
   get extensionController() {
-    return this.topBarButton.extensionController;
+    return this.indicator.extensionController;
   }
 
   install() {
-    this.topBarButton.ensureTopBarLayout();
+    this.indicator.topBarContent.ensureLayout();
 
     if (
-      this.topBarButton._clickGesture &&
-      typeof this.topBarButton._clickGesture.set_enabled === "function"
+      this.indicator._clickGesture &&
+      typeof this.indicator._clickGesture.set_enabled === "function"
     ) {
-      this.topBarButton._clickGesture.set_enabled(false);
-      this.disabledClickGesture = this.topBarButton._clickGesture;
+      this.indicator._clickGesture.set_enabled(false);
+      this.disabledClickGesture = this.indicator._clickGesture;
     }
 
     for (const actor of [
-      this.topBarButton.topBarActionBoxBefore,
-      this.topBarButton.topBarActionBoxAfter,
+      this.indicator.topBarContent.topBarActionBoxBefore,
+      this.indicator.topBarContent.topBarActionBoxAfter,
     ])
       this.#installForActor(actor);
   }
@@ -207,6 +207,6 @@ export default class TopBarPointerHandler {
     )
       this.disabledClickGesture.set_enabled(true);
     this.disabledClickGesture = null;
-    this.topBarButton = null;
+    this.indicator = null;
   }
 }

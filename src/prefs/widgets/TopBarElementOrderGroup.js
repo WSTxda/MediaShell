@@ -30,11 +30,11 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     super(params);
     this.dragControllersInitialized = false;
     this.listBox = this._lb_top_bar_element_order;
-    this.appIconRow = this._row_app_icon;
+    this.mediaAppIconRow = this._row_media_app_icon;
     this.trackInformationRow = this._row_track_information;
     this.visualizerRow = this._row_visualizer;
     this.playbackControlsRow = this._row_playback_controls;
-    this.appIconRow.elementKey = "APP_ICON";
+    this.mediaAppIconRow.elementKey = "MEDIA_APP_ICON";
     this.trackInformationRow.elementKey = "TRACK_INFORMATION";
     this.visualizerRow.elementKey = "VISUALIZER";
     this.playbackControlsRow.elementKey = "PLAYBACK_CONTROLS";
@@ -73,7 +73,7 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
   setElementOrder(elementOrder) {
     this.elementOrder = [...elementOrder];
     if (!this.dragControllersInitialized) {
-      this.addDragControllers(this.appIconRow);
+      this.addDragControllers(this.mediaAppIconRow);
       this.addDragControllers(this.trackInformationRow);
       this.addDragControllers(this.visualizerRow);
       this.addDragControllers(this.playbackControlsRow);
@@ -114,7 +114,7 @@ export default GObject.registerClass(
     Template: ResourceUris.TOP_BAR_ELEMENT_ORDER_UI,
     InternalChildren: [
       "lb-top-bar-element-order",
-      "row-app-icon",
+      "row-media-app-icon",
       "row-track-information",
       "row-visualizer",
       "row-playback-controls",

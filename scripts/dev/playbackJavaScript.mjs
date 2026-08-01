@@ -212,10 +212,10 @@ export function validatePlaybackBoundaryRecord(record) {
   return errors;
 }
 
-function validatePlayerProxySeekMethods(record) {
+function validateMprisMediaAppSeekMethods(record) {
   const errors = [];
   const classNode = findOwnedClass(record);
-  if (!classNode) return [`${record.file}: PlayerProxy class is missing`];
+  if (!classNode) return [`${record.file}: MprisMediaApp class is missing`];
   const facts = buildMethodFacts(classNode);
   const seek = facts.get("seek");
   const setPosition = facts.get("setPosition");
@@ -289,12 +289,12 @@ function validateAbsoluteRelativeSeekOwnership(records) {
             "MprisPlayerMethods.SEEK",
             "MprisPlayerMethods.SET_POSITION",
           ].includes(path) &&
-          record.file !== "src/shell/mpris/PlayerProxy.js" &&
-          record.file !== "src/shared/constants/dbus.js"
+          record.file !== "src/shell/mpris/MprisMediaApp.js" &&
+          record.file !== "src/shared/constants/mpris.js"
         )
           errors.push(
             `${record.file}:${node.loc?.start.line ?? 1}: direct MPRIS seek ` +
-              "vocabulary is outside PlayerProxy",
+              "vocabulary is outside MprisMediaApp",
           );
       },
     });
@@ -307,22 +307,22 @@ function validateAbsoluteRelativeSeekOwnership(records) {
   return errors;
 }
 
-function validatePlayerProxyOwnerHandoff(records) {
+function validateMprisMediaAppOwnerHandoff(records) {
   const errors = [];
-  const playerProxy = records.get("src/shell/mpris/PlayerProxy.js");
+  const mprisMediaApp = records.get("src/shell/mpris/MprisMediaApp.js");
   const registry = records.get("src/shell/mpris/MediaAppRegistry.js");
-  if (!playerProxy || !registry) return errors;
+  if (!mprisMediaApp || !registry) return errors;
 
-  const classNode = findOwnedClass(playerProxy);
+  const classNode = findOwnedClass(mprisMediaApp);
   const facts = classNode ? buildMethodFacts(classNode) : new Map();
   const adoptOwner = facts.get("adoptCurrentNameOwner");
   const resetOwnerState = facts.get("resetStateForOwnerChange");
   const callProxy = facts.get("#callProxy") ?? facts.get("callProxy");
   if (!adoptOwner)
-    errors.push(`${playerProxy.file}: owner-adoption method is missing`);
+    errors.push(`${mprisMediaApp.file}: owner-adoption method is missing`);
   else if (!adoptOwner.calls.has("resetStateForOwnerChange"))
     errors.push(
-      `${playerProxy.file}: owner adoption does not reset stale MPRIS state`,
+      `${mprisMediaApp.file}: owner adoption does not reset stale MPRIS state`,
     );
   if (
     !resetOwnerState ||
@@ -331,15 +331,15 @@ function validatePlayerProxyOwnerHandoff(records) {
     )
   )
     errors.push(
-      `${playerProxy.file}: owner reset does not invalidate position reads`,
+      `${mprisMediaApp.file}: owner reset does not invalidate position reads`,
     );
   if (!callProxy?.calls.has("readCurrentNameOwner"))
     errors.push(
-      `${playerProxy.file}: D-Bus calls do not snapshot the current owner`,
+      `${mprisMediaApp.file}: D-Bus calls do not snapshot the current owner`,
     );
   if (!callProxy?.calls.has("adoptCurrentNameOwner"))
     errors.push(
-      `${playerProxy.file}: D-Bus calls do not adopt a replacement owner`,
+      `${mprisMediaApp.file}: D-Bus calls do not adopt a replacement owner`,
     );
 
   let registryAdoptsOwner = false;
@@ -351,7 +351,7 @@ function validatePlayerProxyOwnerHandoff(records) {
   });
   if (!registryAdoptsOwner)
     errors.push(
-      `${registry.file}: owner reconciliation does not refresh PlayerProxy ownership`,
+      `${registry.file}: owner reconciliation does not refresh MprisMediaApp ownership`,
     );
   return errors;
 }
@@ -372,10 +372,10 @@ function importedNames(record, sourceSuffix) {
   return names;
 }
 
-function validatePositionTrackerOwnership(records) {
+function validatePlaybackPositionTrackerOwnership(records) {
   const errors = [];
-  const record = records.get("src/shell/mpris/PositionTracker.js");
-  if (!record) return ["src/shell/mpris/PositionTracker.js: module is missing"];
+  const record = records.get("src/shell/mpris/PlaybackPositionTracker.js");
+  if (!record) return ["src/shell/mpris/PlaybackPositionTracker.js: module is missing"];
 
   const playbackPositionImports = importedNames(
     record,
@@ -459,7 +459,7 @@ function validateMediaAppRegistryPolicy(records) {
   }
   if (![...calls].some((call) => call.endsWith(".adoptCurrentNameOwner")))
     errors.push(
-      `${record.file}: owner reconciliation does not refresh PlayerProxy ownership`,
+      `${record.file}: owner reconciliation does not refresh MprisMediaApp ownership`,
     );
   return errors;
 }
@@ -482,13 +482,13 @@ export function validatePlaybackJavaScriptContracts(records) {
     if (record) errors.push(...validatePlaybackRendererLifecycle(record));
   }
 
-  const playerProxy = records.get("src/shell/mpris/PlayerProxy.js");
-  if (!playerProxy)
-    errors.push("src/shell/mpris/PlayerProxy.js: module is missing");
-  else errors.push(...validatePlayerProxySeekMethods(playerProxy));
+  const mprisMediaApp = records.get("src/shell/mpris/MprisMediaApp.js");
+  if (!mprisMediaApp)
+    errors.push("src/shell/mpris/MprisMediaApp.js: module is missing");
+  else errors.push(...validateMprisMediaAppSeekMethods(mprisMediaApp));
   errors.push(...validateAbsoluteRelativeSeekOwnership(records));
-  errors.push(...validatePlayerProxyOwnerHandoff(records));
-  errors.push(...validatePositionTrackerOwnership(records));
+  errors.push(...validateMprisMediaAppOwnerHandoff(records));
+  errors.push(...validatePlaybackPositionTrackerOwnership(records));
   errors.push(...validateMediaAppRegistryPolicy(records));
   return errors;
 }

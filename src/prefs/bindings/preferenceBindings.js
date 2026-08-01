@@ -96,8 +96,8 @@ const POPUP_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.POPUP_APP_ICON_USE_COLOR,
-    "sr-popup-app-icon-use-color",
+    SettingsKeys.POPUP_MEDIA_APP_ICON_USE_COLOR,
+    "sr-popup-media-app-icon-use-color",
     "active",
   ],
 ]);
@@ -151,13 +151,13 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.TOP_BAR_APP_ICON_SHOW,
-    "er-top-bar-app-icon",
+    SettingsKeys.TOP_BAR_MEDIA_APP_ICON_SHOW,
+    "er-top-bar-media-app-icon",
     "enable-expansion",
   ],
   [
-    SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
-    "sr-top-bar-app-icon-use-color",
+    SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR,
+    "sr-top-bar-media-app-icon-use-color",
     "active",
   ],
 ]);

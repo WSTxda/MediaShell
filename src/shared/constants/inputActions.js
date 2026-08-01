@@ -118,16 +118,6 @@ export const MOUSE_ACTION_INDEX_BY_VALUE = Object.freeze(
   ),
 );
 
-/** Executable action values, including the explicit no-action value. */
-const EXECUTABLE_INPUT_ACTION_VALUES = Object.freeze(
-  new Set(MOUSE_ACTION_VALUES),
-);
-
-/** Normalizes unsupported and deprecated persisted actions to a safe fallback. */
-export function normalizeInputAction(value, fallback = InputActions.NONE) {
-  return EXECUTABLE_INPUT_ACTION_VALUES.has(value) ? value : fallback;
-}
-
 /** Playback action IDs indexed by their persisted InputActions enum value. */
 export const PLAYBACK_ACTION_BY_INPUT_ACTION = Object.freeze(
   Object.fromEntries(

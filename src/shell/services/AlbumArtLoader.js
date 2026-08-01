@@ -22,7 +22,7 @@ import {
   ALBUM_ART_MAX_BYTES,
   ALBUM_ART_READ_CHUNK_BYTES,
   ALBUM_ART_REQUEST_TIMEOUT_SECONDS,
-} from "../../shared/constants/limits.js";
+} from "../constants/albumArt.js";
 import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { selectAlbumArtCacheEvictions } from "../../shared/utils/albumArt.js";
 import { createLogger } from "../../shared/utils/log.js";
@@ -211,7 +211,7 @@ export default class AlbumArtLoader {
     }
   }
 
-  #writeAlbumArtCacheBytes(cacheFile, responseBytes, cacheKey) {
+  #writeAlbumArtCacheBytes(cacheFile, responseBytes) {
     if (!cacheFile) return;
 
     // Cache persistence and pruning must not delay the first popup paint.
@@ -469,7 +469,7 @@ export default class AlbumArtLoader {
     );
     if (!responseBytes) return null;
 
-    this.#writeAlbumArtCacheBytes(cacheFile, responseBytes, cacheKey);
+    this.#writeAlbumArtCacheBytes(cacheFile, responseBytes);
     return {
       stream: Gio.MemoryInputStream.new_from_bytes(responseBytes),
       albumArtUri,

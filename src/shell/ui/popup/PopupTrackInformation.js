@@ -76,12 +76,12 @@ export default class PopupTrackInformation {
     }
     this.renderKey = renderKey;
     this.ensureContainer(width);
-    this.clearFields();
+    this.destroyLabels();
 
     for (const item of items) {
       const label = this.createLabel(
         item.text,
-        this.resolveStyleClass(item.field),
+        this.resolveFieldStyleClass(item.field),
         width,
       );
       this.trackInformationLabels.push(label);
@@ -133,7 +133,7 @@ export default class PopupTrackInformation {
     return label;
   }
 
-  resolveStyleClass(field) {
+  resolveFieldStyleClass(field) {
     if (field === TrackInformationFields.TITLE)
       return StyleClasses.POPUP_TRACK_INFORMATION_TITLE;
     if (field === TrackInformationFields.ARTIST)
@@ -141,7 +141,7 @@ export default class PopupTrackInformation {
     return StyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 
-  clearFields() {
+  destroyLabels() {
     for (const label of this.trackInformationLabels) {
       label.get_parent()?.remove_child(label);
       label.destroy();
@@ -173,7 +173,7 @@ export default class PopupTrackInformation {
   }
 
   remove() {
-    this.clearFields();
+    this.destroyLabels();
     this.trackInformationBox
       ?.get_parent()
       ?.remove_child(this.trackInformationBox);

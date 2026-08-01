@@ -32,10 +32,10 @@ import {
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
-} from "../../src/shared/constants/dbus.js";
+} from "../../src/shared/constants/mpris.js";
 import { SettingsKeys } from "../../src/shared/constants/settings.js";
 import { InputActions } from "../../src/shared/enums/input.js";
-import { WidgetFlags } from "../../src/shared/enums/widget.js";
+import { WidgetFlags } from "../../src/shared/enums/widgetFlags.js";
 import {
   POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
@@ -307,7 +307,7 @@ function validateOrdersAndSurfaces(snapshot, errors) {
       ({ controlId }) => controlId === PlaybackControlIds.SPEED,
     )
   )
-    errors.push("topbar: playback speed must remain popup-only");
+    errors.push("top bar: playback speed must remain popup-only");
 }
 
 function validateInputs(snapshot, errors) {

@@ -4,7 +4,7 @@
  *
  * Defines shared opacity values for Shell actors that represent active, inactive, or hidden state.
  *
- * Top bar controls, popup controls, and app selector rows import these values so
+ * Top bar controls, popup controls, and media app selector rows import these values so
  * disabled or inactive UI feedback stays visually aligned across the extension.
  * The numbers are design policy, not behavior; checks only require centralized use.
  */

@@ -122,7 +122,7 @@ export function chooseReconciledMediaApp(
 }
 
 /**
- * Chooses the next media app for app selector and shortcut cycling.
+ * Chooses the next media app for media app selector and shortcut cycling.
  *
  * @param {object[]} mediaApps - Available media app proxies.
  * @param {object|null} activeMediaApp - Active media app proxy.

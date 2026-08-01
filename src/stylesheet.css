@@ -2,7 +2,7 @@
  * MediaShell Shell stylesheet.
  *
  * Sections mirror the runtime UI tree: shared utilities, top bar, popup root,
- * app selector, album art, track information, progress bar, and playback controls.
+ * media app selector, album art, track information, progress bar, and playback controls.
  * Keep horizontal alignment rules centralized in component roots; JS computes
  * dimensions from canonical shared and Shell constants.
  */
@@ -52,8 +52,13 @@
 /* St.ScrollView reapplies its fade from theme properties whenever its style
  * changes. Keeping the offset in CSS makes the effect survive popup, focus,
  * hover, playback, and remapping state changes. */
-.mediashell-scrolling-label {
+.mediashell-scrolling-label,
+.mediashell-top-bar-track-information {
   -st-hfade-offset: 12px;
+}
+
+.mediashell-top-bar-media-app-icon {
+  margin: 0;
 }
 
 .mediashell-top-bar-visualizer {
@@ -146,15 +151,15 @@
   margin-bottom: 0;
 }
 
-/* Popup — App selector trigger --------------------------------------
+/* Popup — Media app selector button --------------------------------------
  * The pill keeps its stock Quick Settings shape. It is centered and does not
  * participate in the full-width parent-padding grid.
  */
-.mediashell-popup-apps {
+.mediashell-popup-media-app-selector {
   spacing: 6px;
 }
 
-.mediashell-popup-app-selector {
+.mediashell-popup-media-app-selector-button {
   border-radius: 999px;
   padding: 4px 8px;
   spacing: 6px;
@@ -162,7 +167,7 @@
   max-height: 28px;
 }
 
-.mediashell-popup-app-selector-icon {
+.mediashell-popup-media-app-selector-button-icon {
   icon-size: 20px;
   width: 20px;
   height: 20px;
@@ -171,22 +176,22 @@
   padding: 0;
 }
 
-.mediashell-popup-app-selector-icon.symbolic-icon {
+.mediashell-popup-media-app-selector-button-icon.symbolic-icon {
   icon-size: 18px;
 }
 
-.mediashell-popup-app-expand-icon {
+.mediashell-popup-media-app-selector-button-expand-icon {
   icon-size: 14px;
   opacity: 160;
   transition-duration: 140ms;
 }
 
-.mediashell-popup-app-label {
+.mediashell-popup-media-app-selector-button-label {
   font-weight: bold;
   font-size: 100%;
 }
 
-/* Popup — App selector list -----------------------------------------
+/* Popup — Media app selector list -----------------------------------------
  * Full-width component: the card starts and ends at the parent padding, exactly
  * like the slider and labels. The card owns only internal organization padding.
  *
@@ -194,12 +199,12 @@
  * black/white: it gets slightly lighter on dark themes and slightly darker on
  * light themes while preserving custom user colors behind it.
  */
-.mediashell-popup-app-selector-revealer {
+.mediashell-popup-media-app-selector-revealer {
   padding: 0;
   min-width: 0;
 }
 
-.mediashell-popup-app-selector-card {
+.mediashell-popup-media-app-selector-card {
   background-color: rgba(128, 128, 128, 0.12);
   border-radius: 20px;
   border-width: 0;
@@ -209,25 +214,25 @@
   min-width: 0;
 }
 
-.mediashell-popup-app-selector-list {
+.mediashell-popup-media-app-selector-list {
   spacing: 4px;
 }
 
-.mediashell-popup-app-selector-row-item {
+.mediashell-popup-media-app-selector-row-item {
   spacing: 6px;
 }
 
-.mediashell-popup-app-selector-row {
+.mediashell-popup-media-app-selector-row {
   border-radius: 10px;
   padding: 4px 8px;
   min-height: 32px;
 }
 
-.mediashell-popup-app-selector-row-box {
+.mediashell-popup-media-app-selector-row-box {
   spacing: 8px;
 }
 
-.mediashell-popup-app-selector-app-icon {
+.mediashell-popup-media-app-selector-row-media-app-icon {
   icon-size: 20px;
   width: 20px;
   height: 20px;
@@ -236,19 +241,19 @@
   padding: 0;
 }
 
-.mediashell-popup-app-selector-app-icon.symbolic-icon {
+.mediashell-popup-media-app-selector-row-media-app-icon.symbolic-icon {
   icon-size: 18px;
 }
 
-.mediashell-popup-app-selector-label {
+.mediashell-popup-media-app-selector-row-label {
   font-size: 100%;
 }
 
-.mediashell-popup-app-selector-check-icon {
+.mediashell-popup-media-app-selector-row-check-icon {
   icon-size: 16px;
 }
 
-.mediashell-popup-app-selector-pin-button {
+.mediashell-popup-media-app-selector-row-pin-button {
   border-radius: 999px;
   min-width: 30px;
   min-height: 30px;
@@ -257,24 +262,24 @@
   padding: 0;
 }
 
-.mediashell-popup-app-selector-pin-button:checked {
+.mediashell-popup-media-app-selector-row-pin-button:checked {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
 }
 
-.mediashell-popup-app-selector-pin-button:checked:hover {
+.mediashell-popup-media-app-selector-row-pin-button:checked:hover {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
   box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
 }
 
-.mediashell-popup-app-selector-pin-button:checked:active {
+.mediashell-popup-media-app-selector-row-pin-button:checked:active {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
   box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
-.mediashell-popup-app-selector-pin-icon {
+.mediashell-popup-media-app-selector-row-pin-icon {
   icon-size: 14px;
 }
 

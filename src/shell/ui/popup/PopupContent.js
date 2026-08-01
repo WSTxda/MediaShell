@@ -5,9 +5,10 @@
  * Orchestrates every widget inside the MediaShell popup.
  *
  * PopupContent owns album art, track information, playback controls, the progress
- * bar, and app selector components for the active media app. It applies WidgetFlags
+ * bar, and media app selector components for the active media app. It applies
+ * WidgetFlags
  * immediately while open and accumulates affected regions while closed.
- * TopBarButton owns idle coalescing for bursts of MPRIS changes.
+ * MediaShellIndicator owns idle coalescing for bursts of MPRIS changes.
  */
 
 import Clutter from "gi://Clutter";
@@ -15,16 +16,18 @@ import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { WidgetFlags } from "../../../shared/enums/widget.js";
+import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { resolvePopupWidth } from "../../../shared/utils/popupLayout.js";
-import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
+import {
+  isPlaybackControlSurfaceVisible,
+} from "../../../shared/utils/playbackControlSurfaceState.js";
 import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 import PopupAlbumArt from "./PopupAlbumArt.js";
 import PopupPlaybackControls from "./PopupPlaybackControls.js";
-import PopupAppSelectorController from "./PopupAppSelectorController.js";
+import PopupMediaAppSelectorController from "./PopupMediaAppSelectorController.js";
 import PopupTrackInformation from "./PopupTrackInformation.js";
 import PopupProgressBar from "./PopupProgressBar.js";
 
@@ -34,8 +37,8 @@ const logger = createLogger("PopupContent");
  * Orchestrates every widget inside the MediaShell popup menu.
  */
 export default class PopupContent {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+  constructor(indicator) {
+    this.indicator = indicator;
     this.pendingWidgetFlags = 0;
     this.appliedPopupOuterWidth = null;
     this.popupItem = new PopupMenu.PopupBaseMenuItem({
@@ -48,7 +51,7 @@ export default class PopupContent {
     this.popupItem.set_orientation(Clutter.Orientation.VERTICAL);
     this.popupItem.remove_style_class_name(StyleClasses.POPUP_MENU_ITEM);
 
-    this.appSelectorController = new PopupAppSelectorController(this);
+    this.mediaAppSelectorController = new PopupMediaAppSelectorController(this);
     this.albumArt = new PopupAlbumArt(this);
     this.trackInformation = new PopupTrackInformation(this);
     this.progressBar = new PopupProgressBar(this);
@@ -57,7 +60,8 @@ export default class PopupContent {
     this.menu.addMenuItem(this.popupItem);
     this.popupItemCapturedEventId = this.popupItem.connect(
       "captured-event",
-      (_actor, event) => this.appSelectorController.handleCapturedEvent(event),
+      (_actor, event) =>
+        this.mediaAppSelectorController.handleCapturedEvent(event),
     );
     this.menuOpenSignalId = this.menu.connect(
       "open-state-changed",
@@ -65,7 +69,7 @@ export default class PopupContent {
         if (isOpen) {
           let widgetFlags =
             this.pendingWidgetFlags |
-            WidgetFlags.POPUP_APP_SELECTOR |
+            WidgetFlags.POPUP_MEDIA_APP_SELECTOR |
             WidgetFlags.POPUP_ALBUM_ART |
             WidgetFlags.POPUP_TRACK_INFORMATION |
             WidgetFlags.POPUP_PLAYBACK_CONTROLS;
@@ -75,7 +79,7 @@ export default class PopupContent {
           this.updateWidgets(widgetFlags, true);
           this.syncProgressBarPlaybackState();
         } else {
-          this.appSelectorController.close();
+          this.mediaAppSelectorController.close();
           this.albumArt.cancelAlbumArtLoad();
           this.progressBar.pause();
         }
@@ -84,17 +88,17 @@ export default class PopupContent {
   }
 
   get extensionController() {
-    return this.topBarButton.extensionController;
+    return this.indicator.extensionController;
   }
   get mediaApp() {
-    return this.topBarButton.mediaApp;
+    return this.indicator.mediaApp;
   }
   get menu() {
-    return this.topBarButton.menu;
+    return this.indicator.menu;
   }
 
   isActiveMediaApp(mediaApp) {
-    return this.topBarButton.isActiveMediaApp(mediaApp);
+    return this.indicator.isActiveMediaApp(mediaApp);
   }
 
   selectMediaApp(mediaApp) {
@@ -115,9 +119,9 @@ export default class PopupContent {
       return;
     }
 
-    if (popupFlags & WidgetFlags.POPUP_APP_SELECTOR) {
-      this.runWidgetUpdate("app selector", () =>
-        this.appSelectorController.render(),
+    if (popupFlags & WidgetFlags.POPUP_MEDIA_APP_SELECTOR) {
+      this.runWidgetUpdate("media app selector", () =>
+        this.mediaAppSelectorController.render(),
       );
     }
 
@@ -248,11 +252,11 @@ export default class PopupContent {
     if (width === this.appliedPopupOuterWidth) return;
     this.appliedPopupOuterWidth = width;
     this.popupItem.style = this.buildFixedWidthStyle(width);
-    this.appSelectorController.syncAppSelectorWidth();
+    this.mediaAppSelectorController.syncMediaAppSelectorWidth();
   }
 
   destroy() {
-    if (!this.topBarButton) return;
+    if (!this.indicator) return;
 
     for (const [object, signalId] of [
       [this.menu, this.menuOpenSignalId],
@@ -273,7 +277,7 @@ export default class PopupContent {
       "trackInformation",
       "playbackControls",
       "albumArt",
-      "appSelectorController",
+      "mediaAppSelectorController",
       "popupItem",
     ]) {
       const component = this[property];
@@ -286,6 +290,6 @@ export default class PopupContent {
     }
     this.pendingWidgetFlags = 0;
     this.appliedPopupOuterWidth = null;
-    this.topBarButton = null;
+    this.indicator = null;
   }
 }

@@ -1,6 +1,6 @@
 /**
- * @file settings.js
- * @module shared.enums.settings
+ * @file settingsAction.js
+ * @module shared.enums.settingsAction
  *
  * Enum values describing how a settings change affects runtime components.
  *
@@ -10,7 +10,7 @@
  */
 
 export const SettingsAction = Object.freeze({
-  REBUILD_TOP_BAR_BUTTON: "rebuild-top-bar-button",
+  REBUILD_INDICATOR: "rebuild-indicator",
   UPDATE_BLOCKED_APPS: "update-blocked-apps",
   UPDATE_GNOME_SHELL_MEDIA_CONTROLS: "update-gnome-shell-media-controls",
 });

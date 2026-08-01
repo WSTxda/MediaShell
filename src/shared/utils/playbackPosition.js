@@ -4,15 +4,18 @@
  *
  * Pure playback-position normalization, track identity, and interpolation policy.
  *
- * PositionTracker supplies clock values and D-Bus anchors, while this module
+ * PlaybackPositionTracker supplies clock values and D-Bus anchors, while this module
  * performs deterministic calculations that remain testable outside GNOME Shell.
  */
 
-import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "../constants/dbus.js";
+import {
+  MPRIS_NO_TRACK_PATH,
+  MprisMetadataKeys,
+} from "../constants/mpris.js";
 import {
   POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
   POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,
-} from "../constants/timing.js";
+} from "../constants/playbackPosition.js";
 import { PlaybackStatus } from "../enums/playback.js";
 
 function normalizeIdentityValue(value) {

@@ -192,6 +192,19 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
             error.includes("src/orphan.js: source module"),
           ),
         );
+
+        const unresolvedErrors = validateModuleLiveness({
+          "src/extension.js": `const object = { MissingImport: true }; object.MissingImport; String(MissingImport.MEDIA); export default class ExtensionEntry {}`,
+          "src/prefs.js": `export default class PreferencesEntry {}`,
+        });
+        assert.deepEqual(
+          unresolvedErrors.filter((error) =>
+            error.includes("referenced identifier"),
+          ),
+          [
+            "src/extension.js:1: referenced identifier MissingImport is not declared or imported",
+          ],
+        );
       },
     ],
     [
@@ -204,8 +217,8 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
             ["PlaybackStatus", "Metadata"],
           ),
           [
-            "src/shell/mpris/ExampleProxy.js: hydrated MPRIS property Metadata is never read from PlayerProxy state",
-            "src/shell/mpris/ExampleProxy.js:1: PlayerProxy reads Volume without hydrating it",
+            "src/shell/mpris/ExampleProxy.js: hydrated MPRIS property Metadata is never read from MprisMediaApp state",
+            "src/shell/mpris/ExampleProxy.js:1: MprisMediaApp reads Volume without hydrating it",
           ],
         );
       },

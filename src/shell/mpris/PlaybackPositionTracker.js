@@ -1,10 +1,10 @@
 /**
- * @file PositionTracker.js
- * @module shell.mpris.PositionTracker
+ * @file PlaybackPositionTracker.js
+ * @module shell.mpris.PlaybackPositionTracker
  *
  * Tracks MPRIS position using exact reads, Seeked signals, and bounded projection.
  *
- * PlayerProxy delegates position state here so UI components can render a live
+ * MprisMediaApp delegates position state here so UI components can render a live
  * estimate without polling D-Bus. Pure calculation stays in shared utilities;
  * this class owns Gio calls, clock snapshots, listener delivery, and lifecycle.
  */
@@ -12,12 +12,12 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
+import { DbusPropertiesMethods } from "../../shared/constants/dbus.js";
 import {
-  DbusPropertiesMethods,
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerProperties,
-} from "../../shared/constants/dbus.js";
-import { DBUS_CALL_TIMEOUT_MS } from "../../shared/constants/timing.js";
+} from "../../shared/constants/mpris.js";
+import { DBUS_CALL_TIMEOUT_MS } from "../constants/mpris.js";
 import { PlaybackStatus } from "../../shared/enums/playback.js";
 import { createLogger } from "../../shared/utils/log.js";
 import {
@@ -30,7 +30,7 @@ import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
-const logger = createLogger("PositionTracker");
+const logger = createLogger("PlaybackPositionTracker");
 
 const DEFAULT_CLOCK = Object.freeze({
   getMonotonicTime: () => GLib.get_monotonic_time(),
@@ -40,7 +40,7 @@ const DEFAULT_CLOCK = Object.freeze({
 /**
  * Tracks MPRIS position using explicit reads, Seeked signals, and clock projection.
  */
-export default class PositionTracker {
+export default class PlaybackPositionTracker {
   constructor(propertiesProxy, operationCancellable = null, clock = {}) {
     this.propertiesProxy = propertiesProxy;
     this.operationCancellable = operationCancellable;

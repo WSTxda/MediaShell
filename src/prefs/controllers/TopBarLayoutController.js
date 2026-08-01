@@ -13,18 +13,12 @@ import {
   SettingsKeys,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../shared/constants/settings.js";
+import { arraysEqual } from "../../shared/utils/collections.js";
 import { normalizeOrderedValues } from "../../shared/utils/format.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
-
-function arraysEqual(first, second) {
-  return (
-    first.length === second.length &&
-    first.every((value, index) => value === second[index])
-  );
-}
 
 /**
  * Coordinates custom preference widgets that edit top bar layout.

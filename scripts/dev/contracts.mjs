@@ -13,20 +13,22 @@ import { PREFERENCE_WIDGET_BINDINGS } from "../../src/prefs/bindings/preferenceB
 import { PREFERENCE_PAGE_IDS } from "../../src/prefs/constants/ui.js";
 import { GTypeNames } from "../../src/shared/constants/gtypes.js";
 import {
-  DBUS_IFACE_NAME,
+  DBUS_DAEMON_IFACE_NAME,
   DBUS_PROPERTIES_IFACE_NAME,
-  DbusMethods,
+  DbusDaemonMethods,
   DbusPropertiesMethods,
-  DbusSignals,
-  MPRIS_IFACE_NAME,
+  DbusDaemonSignals,
+} from "../../src/shared/constants/dbus.js";
+import {
+  MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerProperties,
   MprisPlayerMethods,
   MprisPlayerSignals,
   MprisRootMethods,
-  PLAYER_PROPERTIES,
-  ROOT_PROPERTIES,
-} from "../../src/shared/constants/dbus.js";
+  MPRIS_PLAYER_PROPERTY_NAMES,
+  MPRIS_ROOT_PROPERTY_NAMES,
+} from "../../src/shared/constants/mpris.js";
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
@@ -82,10 +84,10 @@ export function validateDbusContracts(interfaces) {
   const errors = [];
   const contracts = [
     [
-      DBUS_IFACE_NAME,
+      DBUS_DAEMON_IFACE_NAME,
       {
-        method: Object.values(DbusMethods),
-        signal: Object.values(DbusSignals),
+        method: Object.values(DbusDaemonMethods),
+        signal: Object.values(DbusDaemonSignals),
       },
     ],
     [
@@ -93,10 +95,10 @@ export function validateDbusContracts(interfaces) {
       { method: Object.values(DbusPropertiesMethods) },
     ],
     [
-      MPRIS_IFACE_NAME,
+      MPRIS_ROOT_IFACE_NAME,
       {
         method: Object.values(MprisRootMethods),
-        property: ROOT_PROPERTIES,
+        property: MPRIS_ROOT_PROPERTY_NAMES,
       },
     ],
     [
@@ -104,7 +106,7 @@ export function validateDbusContracts(interfaces) {
       {
         method: Object.values(MprisPlayerMethods),
         signal: Object.values(MprisPlayerSignals),
-        property: [...PLAYER_PROPERTIES, MprisPlayerProperties.POSITION],
+        property: [...MPRIS_PLAYER_PROPERTY_NAMES, MprisPlayerProperties.POSITION],
       },
     ],
   ];

@@ -1,73 +1,60 @@
 /**
- * @file TopBarButton.js
- * @module shell.ui.topBar.TopBarButton
+ * @file MediaShellIndicator.js
+ * @module shell.ui.indicator.MediaShellIndicator
  *
- * Owns the MediaShell top bar button, popup, and top bar widget orchestration.
+ * Owns the MediaShell panel indicator, popup, and surface orchestration.
  *
  * ExtensionController mounts this actor into Main.panel and supplies active
  * media-app state from MediaAppRegistry. The class coalesces WidgetFlags into
- * idle updates and delegates pointer gestures to TopBarPointerHandler.
+ * idle updates and delegates pointer gestures to IndicatorPointerHandler.
  */
 
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
-import St from "gi://St";
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 
 import {
   MprisPlayerProperties,
   MprisRootProperties,
-} from "../../../shared/constants/dbus.js";
+} from "../../../shared/constants/mpris.js";
 import { GTypeNames } from "../../../shared/constants/gtypes.js";
-import { MediaAppStateProperties } from "../../../shared/constants/mediaApp.js";
+import { MediaAppStateProperties } from "../../constants/mediaApp.js";
 import {
-  APP_RESOLUTION_RETRY_DELAY_MS,
-  APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
-} from "../../../shared/constants/timing.js";
-import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
-import { TopBarElements } from "../../../shared/enums/topBar.js";
-import { WidgetFlags } from "../../../shared/enums/widget.js";
+  DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
+  DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
+} from "../../constants/desktopApp.js";
+import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/PopupContent.js";
-import TopBarPlaybackControls from "./TopBarPlaybackControls.js";
-import TopBarPointerHandler from "./TopBarPointerHandler.js";
-import TopBarAppIcon from "./TopBarAppIcon.js";
-import TopBarTrackInformation from "./TopBarTrackInformation.js";
-import TopBarVisualizer from "./TopBarVisualizer.js";
+import TopBarContent from "../topBar/TopBarContent.js";
+import IndicatorPointerHandler from "./IndicatorPointerHandler.js";
 
-const logger = createLogger("TopBarButton");
+const logger = createLogger("MediaShellIndicator");
 
 /**
- * Owns the MediaShell top bar button, popup menu, and top bar widget orchestration.
+ * Owns the MediaShell panel indicator and coordinates its top bar and popup
+ * surfaces.
  */
-class TopBarButton extends PanelMenu.Button {
+class MediaShellIndicator extends PanelMenu.Button {
   constructor(mediaApp, extensionController) {
     super(0.5, "MediaShell", false);
     this.mediaApp = mediaApp;
     this.extensionController = extensionController;
     this.mediaAppPropertyListenerIds = new Map();
-    this.appResolutionRetrySourceId = null;
-    this.appResolutionRetryAttemptsRemaining = 0;
+    this.desktopAppResolutionRetrySourceId = null;
+    this.desktopAppResolutionRetryAttemptsRemaining = 0;
     this.widgetUpdateSourceId = null;
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
     this.isDestroyed = false;
-    this.topBarBox = null;
-    this.topBarActionBoxBefore = null;
-    this.topBarActionBoxAfter = null;
-    this.topBarAppIcon = new TopBarAppIcon(this);
-    this.topBarTrackInformation = new TopBarTrackInformation(this);
-    // The visualizer is created lazily so the disabled default owns no actor or timer.
-    this.topBarVisualizer = null;
-    this.topBarPlaybackControls = new TopBarPlaybackControls(this);
+    this.topBarContent = new TopBarContent(this);
     this.popupContent = new PopupContent(this);
-    this.pointerHandler = new TopBarPointerHandler(this);
+    this.pointerHandler = new IndicatorPointerHandler(this);
     this.addMediaAppPropertyListeners();
     this.updateWidgets(WidgetFlags.ALL);
-    this.scheduleAppResolutionRetry();
+    this.scheduleDesktopAppResolutionRetry();
     this.pointerHandler.install();
     this.menu.box.add_style_class_name(StyleClasses.POPUP_CONTAINER);
   }
@@ -80,14 +67,14 @@ class TopBarButton extends PanelMenu.Button {
     if (!mediaApp || this.isActiveMediaApp(mediaApp)) return;
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
-    this.cancelAppResolutionRetry();
+    this.cancelDesktopAppResolutionRetry();
     this.mediaApp = mediaApp;
     this.addMediaAppPropertyListeners();
     // The configured element order has not changed. Reconcile the new
     // app in place so feed hand-offs do not unparent and reinsert every
     // top bar actor.
     this.updateWidgets(WidgetFlags.ALL);
-    this.scheduleAppResolutionRetry();
+    this.scheduleDesktopAppResolutionRetry();
   }
 
   isActiveMediaApp(mediaApp) {
@@ -138,161 +125,12 @@ class TopBarButton extends PanelMenu.Button {
   updateWidgets(widgetFlags) {
     if (this.isDestroyed) return;
 
-    this.ensureTopBarLayout();
-
-    const playbackOrderIndex =
-      this.extensionController.topBarElementOrder.indexOf("PLAYBACK_CONTROLS");
-    let beforePlaybackIndex = 0;
-    let afterPlaybackIndex = 0;
-
-    for (
-      let orderIndex = 0;
-      orderIndex < this.extensionController.topBarElementOrder.length;
-      orderIndex++
-    ) {
-      const elementName =
-        this.extensionController.topBarElementOrder[orderIndex];
-      const element = TopBarElements[elementName];
-      const isVisible = this.isTopBarElementVisible(element);
-      const isBeforePlayback =
-        playbackOrderIndex < 0 || orderIndex < playbackOrderIndex;
-      const targetBox = isBeforePlayback
-        ? this.topBarActionBoxBefore
-        : this.topBarActionBoxAfter;
-      const targetIndex = isBeforePlayback
-        ? beforePlaybackIndex
-        : afterPlaybackIndex;
-      if (
-        element === TopBarElements.APP_ICON &&
-        (widgetFlags & WidgetFlags.TOP_BAR_APP_ICON ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
-      ) {
-        this.runWidgetUpdate("top bar app icon", () => {
-          if (isVisible) this.topBarAppIcon.render(targetIndex, targetBox);
-          else this.topBarAppIcon.remove();
-        });
-      }
-      if (
-        element === TopBarElements.TRACK_INFORMATION &&
-        (widgetFlags & WidgetFlags.TOP_BAR_TRACK_INFORMATION ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
-      ) {
-        this.runWidgetUpdate("top bar track information", () => {
-          if (isVisible)
-            this.topBarTrackInformation.render(targetIndex, targetBox);
-          else this.topBarTrackInformation.remove();
-        });
-      }
-      if (
-        element === TopBarElements.VISUALIZER &&
-        (widgetFlags & WidgetFlags.TOP_BAR_VISUALIZER ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
-      ) {
-        this.runWidgetUpdate("top bar visualizer", () =>
-          this.updateTopBarVisualizer(targetIndex, targetBox),
-        );
-      }
-      if (
-        element === TopBarElements.PLAYBACK_CONTROLS &&
-        (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
-      ) {
-        this.runWidgetUpdate("top bar playback controls", () => {
-          if (isVisible) this.topBarPlaybackControls.render(widgetFlags);
-          else this.topBarPlaybackControls.remove();
-        });
-      }
-      if (isVisible && element !== TopBarElements.PLAYBACK_CONTROLS) {
-        if (isBeforePlayback) beforePlaybackIndex++;
-        else afterPlaybackIndex++;
-      }
-    }
-
+    this.runWidgetUpdate("top bar", () =>
+      this.topBarContent.updateWidgets(widgetFlags),
+    );
     this.runWidgetUpdate("popup", () =>
       this.popupContent.updateWidgets(widgetFlags),
     );
-    if (!this.topBarBox.get_parent()) this.add_child(this.topBarBox);
-
-    if (
-      widgetFlags & WidgetFlags.TOP_BAR ||
-      widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER
-    )
-      this.syncTopBarLayout();
-  }
-
-  ensureTopBarLayout() {
-    if (this.topBarBox) return;
-
-    this.topBarBox = new St.BoxLayout({
-      styleClass: StyleClasses.TOP_BAR_BOX,
-    });
-    this.topBarActionBoxBefore = this.createTopBarActionBox();
-    this.topBarActionBoxAfter = this.createTopBarActionBox();
-    this.topBarBox.add_child(this.topBarActionBoxBefore);
-    this.topBarBox.add_child(this.topBarActionBoxAfter);
-  }
-
-  syncTopBarLayout() {
-    if (!this.topBarBox) return;
-
-    for (const actionBox of [
-      this.topBarActionBoxBefore,
-      this.topBarActionBoxAfter,
-    ]) {
-      actionBox.xExpand = false;
-      actionBox.xAlign = Clutter.ActorAlign.START;
-    }
-    if (this.topBarTrackInformation.actor) {
-      this.topBarTrackInformation.actor.xExpand = false;
-      this.topBarTrackInformation.actor.xAlign = Clutter.ActorAlign.START;
-    }
-
-    // Preserve the original setting contract: Width belongs to track
-    // information, not to the complete top-bar row. Fixed-width actors keep
-    // their natural width and are laid out next to the metadata regardless of
-    // element order. A zero value leaves the metadata unconstrained, while
-    // Lock width fixes only the metadata region when Width is greater than 0.
-    this.topBarTrackInformation.setWidth(
-      this.extensionController.topBarTrackInformationWidth,
-      this.extensionController.topBarTrackInformationWidthLock,
-    );
-    this.topBarBox.set_style(null);
-  }
-
-  createTopBarActionBox() {
-    return new St.BoxLayout({
-      styleClass: StyleClasses.TOP_BAR_ACTION_BOX,
-      reactive: true,
-      trackHover: false,
-      xExpand: false,
-      xAlign: Clutter.ActorAlign.START,
-    });
-  }
-
-  isTopBarElementVisible(element) {
-    if (element === TopBarElements.APP_ICON)
-      return this.extensionController.topBarAppIconShow;
-    if (element === TopBarElements.TRACK_INFORMATION)
-      return this.extensionController.topBarTrackInformationShow;
-    if (element === TopBarElements.VISUALIZER)
-      return this.extensionController.topBarVisualizerShow;
-    if (element === TopBarElements.PLAYBACK_CONTROLS)
-      return isPlaybackControlSurfaceVisible(
-        this.extensionController,
-        PlaybackControlSurfaces.TOP_BAR,
-      );
-    return false;
-  }
-
-  updateTopBarVisualizer(index, targetBox) {
-    if (!this.extensionController.topBarVisualizerShow) {
-      this.topBarVisualizer?.destroy();
-      this.topBarVisualizer = null;
-      return;
-    }
-
-    this.topBarVisualizer ??= new TopBarVisualizer(this);
-    this.topBarVisualizer.render(index, targetBox);
   }
 
   runWidgetUpdate(componentName, update) {
@@ -311,21 +149,22 @@ class TopBarButton extends PanelMenu.Button {
 
   addMediaAppPropertyListeners() {
     this.addMediaAppPropertyListener(MprisPlayerProperties.METADATA, () => {
-      this.queueMetadataWidgetUpdate();
+      this.requestMetadataWidgetUpdate();
     });
-    const updateAppIdentity = () => {
+    const updateMediaAppIdentity = () => {
       this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_APP_ICON | WidgetFlags.POPUP_APP_SELECTOR,
+        WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
+          WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
       );
-      this.scheduleAppResolutionRetry();
+      this.scheduleDesktopAppResolutionRetry();
     };
     this.addMediaAppPropertyListener(
       MprisRootProperties.IDENTITY,
-      updateAppIdentity,
+      updateMediaAppIdentity,
     );
     this.addMediaAppPropertyListener(
       MprisRootProperties.DESKTOP_ENTRY,
-      updateAppIdentity,
+      updateMediaAppIdentity,
     );
     this.addMediaAppPropertyListener(
       MprisPlayerProperties.PLAYBACK_STATUS,
@@ -393,7 +232,7 @@ class TopBarButton extends PanelMenu.Button {
       );
     });
     this.addMediaAppPropertyListener(MediaAppStateProperties.IS_PINNED, () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_APP_SELECTOR);
+      this.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
     });
     const updatePlaybackSpeedControl = () =>
       this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_SPEED);
@@ -418,7 +257,7 @@ class TopBarButton extends PanelMenu.Button {
     );
   }
 
-  queueMetadataWidgetUpdate() {
+  requestMetadataWidgetUpdate() {
     let widgetFlags = WidgetFlags.TOP_BAR_TRACK_INFORMATION;
     if (this.menu?.isOpen) {
       widgetFlags |=
@@ -428,41 +267,42 @@ class TopBarButton extends PanelMenu.Button {
     }
     // requestWidgetUpdate() already coalesces the MPRIS burst at the next idle
     // turn. A second 100 ms timer only delayed visible metadata and retained
-    // this button longer without reducing same-turn work.
+    // this indicator longer without reducing same-turn work.
     this.requestWidgetUpdate(widgetFlags);
   }
 
-  scheduleAppResolutionRetry() {
-    this.cancelAppResolutionRetry();
-    this.appResolutionRetryAttemptsRemaining =
-      APP_RESOLUTION_RETRY_MAX_ATTEMPTS;
+  scheduleDesktopAppResolutionRetry() {
+    this.cancelDesktopAppResolutionRetry();
+    this.desktopAppResolutionRetryAttemptsRemaining =
+      DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS;
 
     const observedMediaApp = this.mediaApp;
-    this.appResolutionRetrySourceId = GLib.timeout_add(
+    this.desktopAppResolutionRetrySourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
-      APP_RESOLUTION_RETRY_DELAY_MS,
+      DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
       () => {
         if (this.isDestroyed || this.mediaApp !== observedMediaApp) {
-          this.appResolutionRetrySourceId = null;
-          this.appResolutionRetryAttemptsRemaining = 0;
+          this.desktopAppResolutionRetrySourceId = null;
+          this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
         }
 
         // A resolved top bar icon proves that Shell has associated the
         // MPRIS endpoint with a desktop app. Stop polling early;
         // otherwise retry only a small, bounded number of times.
-        if (this.topBarAppIcon.iconKey !== null) {
-          this.appResolutionRetrySourceId = null;
-          this.appResolutionRetryAttemptsRemaining = 0;
+        if (this.topBarContent.mediaAppIcon.iconKey !== null) {
+          this.desktopAppResolutionRetrySourceId = null;
+          this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
         }
 
         this.requestWidgetUpdate(
-          WidgetFlags.TOP_BAR_APP_ICON | WidgetFlags.POPUP_APP_SELECTOR,
+          WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
+          WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
         );
-        this.appResolutionRetryAttemptsRemaining--;
-        if (this.appResolutionRetryAttemptsRemaining <= 0) {
-          this.appResolutionRetrySourceId = null;
+        this.desktopAppResolutionRetryAttemptsRemaining--;
+        if (this.desktopAppResolutionRetryAttemptsRemaining <= 0) {
+          this.desktopAppResolutionRetrySourceId = null;
           return GLib.SOURCE_REMOVE;
         }
         return GLib.SOURCE_CONTINUE;
@@ -470,12 +310,12 @@ class TopBarButton extends PanelMenu.Button {
     );
   }
 
-  cancelAppResolutionRetry() {
-    if (this.appResolutionRetrySourceId !== null) {
-      GLib.Source.remove(this.appResolutionRetrySourceId);
-      this.appResolutionRetrySourceId = null;
+  cancelDesktopAppResolutionRetry() {
+    if (this.desktopAppResolutionRetrySourceId !== null) {
+      GLib.Source.remove(this.desktopAppResolutionRetrySourceId);
+      this.desktopAppResolutionRetrySourceId = null;
     }
-    this.appResolutionRetryAttemptsRemaining = 0;
+    this.desktopAppResolutionRetryAttemptsRemaining = 0;
   }
 
   removeMediaAppPropertyListeners() {
@@ -519,14 +359,11 @@ class TopBarButton extends PanelMenu.Button {
     this.isDestroyed = true;
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
-    this.cancelAppResolutionRetry();
+    this.cancelDesktopAppResolutionRetry();
     for (const [name, component] of [
       ["pointerHandler", this.pointerHandler],
       ["popupContent", this.popupContent],
-      ["topBarPlaybackControls", this.topBarPlaybackControls],
-      ["topBarVisualizer", this.topBarVisualizer],
-      ["topBarTrackInformation", this.topBarTrackInformation],
-      ["topBarAppIcon", this.topBarAppIcon],
+      ["topBarContent", this.topBarContent],
     ]) {
       try {
         component?.destroy();
@@ -537,9 +374,6 @@ class TopBarButton extends PanelMenu.Button {
     }
     this.mediaApp = null;
     this.extensionController = null;
-    this.topBarBox = null;
-    this.topBarActionBoxBefore = null;
-    this.topBarActionBoxAfter = null;
   }
 
   destroy() {
@@ -555,6 +389,6 @@ class TopBarButton extends PanelMenu.Button {
 }
 
 export default GObject.registerClass(
-  { GTypeName: GTypeNames.TOP_BAR_BUTTON },
-  TopBarButton,
+  { GTypeName: GTypeNames.MEDIA_SHELL_INDICATOR },
+  MediaShellIndicator,
 );

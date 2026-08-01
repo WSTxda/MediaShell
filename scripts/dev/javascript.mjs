@@ -14,9 +14,9 @@ import { parse } from "acorn";
 import { ancestor, simple } from "acorn-walk";
 
 import {
-  PLAYER_PROPERTIES,
-  ROOT_PROPERTIES,
-} from "../../src/shared/constants/dbus.js";
+  MPRIS_PLAYER_PROPERTY_NAMES,
+  MPRIS_ROOT_PROPERTY_NAMES,
+} from "../../src/shared/constants/mpris.js";
 import {
   ROOT,
   collectJavaScript,
@@ -27,6 +27,65 @@ import {
 } from "./files.mjs";
 
 const SOURCE_ENTRY_POINTS = new Set(["src/extension.js", "src/prefs.js"]);
+
+const GLOBAL_IDENTIFIERS = new Set([
+  "Array",
+  "ArrayBuffer",
+  "BigInt",
+  "Boolean",
+  "Buffer",
+  "Date",
+  "Error",
+  "EvalError",
+  "FinalizationRegistry",
+  "Infinity",
+  "Intl",
+  "JSON",
+  "Map",
+  "Math",
+  "NaN",
+  "Number",
+  "Object",
+  "Promise",
+  "RangeError",
+  "ReferenceError",
+  "Reflect",
+  "RegExp",
+  "Set",
+  "String",
+  "Symbol",
+  "SyntaxError",
+  "TextDecoder",
+  "TextEncoder",
+  "TypeError",
+  "URIError",
+  "URL",
+  "URLSearchParams",
+  "Uint8Array",
+  "WeakMap",
+  "WeakRef",
+  "WeakSet",
+  "arguments",
+  "clearInterval",
+  "clearTimeout",
+  "console",
+  "decodeURI",
+  "decodeURIComponent",
+  "encodeURI",
+  "encodeURIComponent",
+  "global",
+  "globalThis",
+  "isFinite",
+  "isNaN",
+  "parseFloat",
+  "parseInt",
+  "process",
+  "queueMicrotask",
+  "setInterval",
+  "setTimeout",
+  "structuredClone",
+  "undefined",
+]);
 
 let recordsPromise = null;
 
@@ -619,6 +678,7 @@ function analyzeBindings(record, consumedExports) {
     return true;
   }
 
+  const unresolvedReferences = new Map();
   ancestor(record.ast, {
     Identifier(node, _state, ancestors) {
       if (!isReferenceIdentifier(node, ancestors)) return;
@@ -631,11 +691,19 @@ function analyzeBindings(record, consumedExports) {
         }
         scope = scope.parent;
       }
+      if (
+        !GLOBAL_IDENTIFIERS.has(node.name) &&
+        !unresolvedReferences.has(node.name)
+      )
+        unresolvedReferences.set(node.name, lineOf(node));
     },
   });
 
   const consumed = consumedExports.get(record.file) ?? new Set();
-  const diagnostics = [];
+  const diagnostics = [...unresolvedReferences].map(
+    ([name, line]) =>
+      `${record.file}:${line}: referenced identifier ${name} is not declared or imported`,
+  );
   for (const binding of bindings) {
     if (
       ["parameter", "catch-parameter", "function-name", "class-name"].includes(
@@ -879,11 +947,11 @@ export function memberPath(node) {
 }
 
 /**
- * Validates that every property hydrated into PlayerProxy state is read, and
+ * Validates that every property hydrated into MprisMediaApp state is read, and
  * that every direct state read has an initial hydration owner.
  *
  * @param {string} file - Diagnostic source path.
- * @param {string} source - PlayerProxy source text.
+ * @param {string} source - MprisMediaApp source text.
  * @param {string[]} hydratedProperties - Root and Player properties loaded into state.
  * @returns {string[]} Hydration diagnostics.
  */
@@ -919,13 +987,13 @@ export function validateHydratedPropertyUsage(
   for (const property of hydrated) {
     if (!reads.has(property))
       errors.push(
-        `${file}: hydrated MPRIS property ${property} is never read from PlayerProxy state`,
+        `${file}: hydrated MPRIS property ${property} is never read from MprisMediaApp state`,
       );
   }
   for (const [property, line] of reads) {
     if (!hydrated.has(property))
       errors.push(
-        `${file}:${line}: PlayerProxy reads ${property} without hydrating it`,
+        `${file}:${line}: MprisMediaApp reads ${property} without hydrating it`,
       );
   }
   return errors;
@@ -933,14 +1001,14 @@ export function validateHydratedPropertyUsage(
 
 export async function checkMprisPropertyHydration() {
   const records = await loadRecords();
-  const playerProxy = records.get("src/shell/mpris/PlayerProxy.js");
+  const mprisMediaApp = records.get("src/shell/mpris/MprisMediaApp.js");
   const errors = validateHydratedPropertyUsage(
-    playerProxy.file,
-    playerProxy.source,
-    [...ROOT_PROPERTIES, ...PLAYER_PROPERTIES],
+    mprisMediaApp.file,
+    mprisMediaApp.source,
+    [...MPRIS_ROOT_PROPERTY_NAMES, ...MPRIS_PLAYER_PROPERTY_NAMES],
   );
   fail("MPRIS property hydration validation", errors);
-  console.log("MPRIS property hydration matches PlayerProxy state reads.");
+  console.log("MPRIS property hydration matches MprisMediaApp state reads.");
 }
 
 function objectPropertyName(property) {
@@ -1214,6 +1282,49 @@ export async function checkEntryPointContracts() {
  * @param {string} specifier - Imported module specifier.
  * @returns {string|null} Diagnostic, or null when the boundary is respected.
  */
+const RETIRED_NAMING_IDENTIFIERS = new Set([
+  "APP_ICON",
+  "MediaAppResolver",
+  "PlayerProxy",
+  "PopupAppSelectorButton",
+  "PopupAppSelectorController",
+  "PopupAppSelectorList",
+  "PositionTracker",
+  "REBUILD_TOP_BAR_BUTTON",
+  "TOP_BAR_APP_ICON",
+  "TOP_BAR_BUTTON",
+  "TopBarAppIcon",
+  "TopBarButton",
+  "TopBarPointerHandler",
+  "appSelectorButton",
+  "appSelectorController",
+  "appSelectorList",
+  "mediaAppResolver",
+  "popupAppIconUseColor",
+  "topBarAppIcon",
+  "topBarButton",
+]);
+
+const TECHNICAL_PLAYER_IDENTIFIERS = new Set([
+  "MPRIS_PLAYER_IFACE_NAME",
+  "MPRIS_PLAYER_PROPERTY_NAMES",
+  "MprisPlayerMethods",
+  "MprisPlayerProperties",
+  "MprisPlayerSignals",
+  "createPlayerProxy",
+  "playerInterfaceInfo",
+  "playerProxy",
+  "systemPlayer",
+]);
+
+const RETIRED_NAMING_LITERALS = new Set([
+  "APP_ICON",
+  "popup-app-icon-use-color",
+  "rebuild-top-bar-button",
+  "top-bar-app-icon-show",
+  "top-bar-app-icon-use-color",
+]);
+
 export function validatePrivateShellImport(file, specifier) {
   if (
     specifier !== "resource:///org/gnome/shell/ui/mpris.js" ||
@@ -1249,7 +1360,51 @@ export async function inspectSourceConventions() {
             `${record.file}:${lineOf(node)}: use shared createLogger() instead of ${path}`,
           );
       },
+      ClassDeclaration(node) {
+        if (
+          memberPath(node.superClass) === "PanelMenu.Button" &&
+          record.file !== "src/shell/ui/indicator/MediaShellIndicator.js"
+        )
+          diagnostics.push(
+            `${record.file}:${lineOf(node)}: MediaShellIndicator is the only PanelMenu.Button owner`,
+          );
+      },
+      Identifier(node) {
+        if (RETIRED_NAMING_IDENTIFIERS.has(node.name))
+          diagnostics.push(
+            `${record.file}:${lineOf(node)}: retired naming identifier ${node.name}`,
+          );
+        if (
+          /player/i.test(node.name) &&
+          !TECHNICAL_PLAYER_IDENTIFIERS.has(node.name)
+        )
+          diagnostics.push(
+            `${record.file}:${lineOf(node)}: Player terminology requires an explicit technical MPRIS/GNOME contract (${node.name})`,
+          );
+      },
+      Literal(node) {
+        if (
+          typeof node.value === "string" &&
+          RETIRED_NAMING_LITERALS.has(node.value)
+        )
+          diagnostics.push(
+            `${record.file}:${lineOf(node)}: retired naming literal ${JSON.stringify(node.value)}`,
+          );
+      },
     });
+
+    if (
+      record.file.startsWith("src/shell/ui/topBar/") &&
+      moduleSpecifiers(record).some((item) => item.value.includes("/popup/"))
+    )
+      diagnostics.push(
+        `${record.file}: top bar components must not import popup components`,
+      );
+
+    if (/active media players?/i.test(record.source))
+      diagnostics.push(
+        `${record.file}: product language uses media app, not active media player`,
+      );
   }
 
   return diagnostics;

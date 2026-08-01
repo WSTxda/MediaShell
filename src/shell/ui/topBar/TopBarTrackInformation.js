@@ -4,13 +4,14 @@
  *
  * Renders configurable track metadata inside the GNOME top bar.
  *
- * TopBarButton owns this component and passes the ordered metadata fields chosen
+ * TopBarContent owns this component and passes the ordered metadata fields chosen
  * in preferences. It uses ScrollingLabel for long text and shared metadata
- * helpers for field assembly. TopBarButton owns layout orchestration, while this
+ * helpers for field assembly. TopBarContent owns layout orchestration, while this
  * component preserves the original metadata width and Lock width contract.
  */
 
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import ScrollingLabel from "../ScrollingLabel.js";
 
@@ -18,28 +19,38 @@ import ScrollingLabel from "../ScrollingLabel.js";
  * Renders configurable track metadata inside the GNOME top bar.
  */
 export default class TopBarTrackInformation {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+  constructor(topBarContent) {
+    this.topBarContent = topBarContent;
     this.actor = null;
     this.renderKey = null;
     this.width = normalizeWidth(
-      topBarButton.extensionController.topBarTrackInformationWidth,
+      this.extensionController.topBarTrackInformationWidth,
     );
     this.isFixedWidth = Boolean(
-      topBarButton.extensionController.topBarTrackInformationWidthLock,
+      this.extensionController.topBarTrackInformationWidthLock,
     );
   }
 
+  get extensionController() {
+    return this.topBarContent.extensionController;
+  }
+
+  get mediaApp() {
+    return this.topBarContent.mediaApp;
+  }
+
   render(index, parentBox) {
-    const text = this.buildTrackInformationText();
+    const text = buildTrackInformationText(
+      this.mediaApp.metadata,
+      this.extensionController.topBarTrackInformationContent,
+    );
     const renderKey = [
       text,
       this.width,
       this.isFixedWidth,
-      this.topBarButton.extensionController.topBarTrackInformationScrollEnabled,
-      this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
-      this.topBarButton.extensionController
-        .topBarTrackInformationScrollPauseMilliseconds,
+      this.extensionController.topBarTrackInformationScrollEnabled,
+      this.extensionController.topBarTrackInformationScrollSpeed,
+      this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
     ].join("\u0001");
 
     if (this.actor && renderKey === this.renderKey) {
@@ -51,15 +62,13 @@ export default class TopBarTrackInformation {
       text,
       width: this.width,
       isFixedWidth: this.isFixedWidth,
-      isScrolling:
-        this.topBarButton.extensionController
-          .topBarTrackInformationScrollEnabled,
-      scrollSpeed:
-        this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
+      isScrolling: this.extensionController.topBarTrackInformationScrollEnabled,
+      scrollSpeed: this.extensionController.topBarTrackInformationScrollSpeed,
       scrollPauseMilliseconds:
-        this.topBarButton.extensionController
-          .topBarTrackInformationScrollPauseMilliseconds,
+        this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
     });
+
+    label.add_style_class_name(StyleClasses.TOP_BAR_TRACK_INFORMATION);
 
     const oldLabel = this.actor;
     this.actor = label;
@@ -86,13 +95,6 @@ export default class TopBarTrackInformation {
     this.render(Math.max(0, index), parentBox);
   }
 
-  buildTrackInformationText() {
-    return buildTrackInformationText(
-      this.topBarButton.mediaApp.metadata,
-      this.topBarButton.extensionController.topBarTrackInformationContent,
-    );
-  }
-
   attach(index, parentBox) {
     placeActorAtIndex(this.actor, parentBox, index);
   }
@@ -107,7 +109,7 @@ export default class TopBarTrackInformation {
 
   destroy() {
     this.remove();
-    this.topBarButton = null;
+    this.topBarContent = null;
   }
 }
 

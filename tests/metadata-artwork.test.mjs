@@ -9,11 +9,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MprisMetadataKeys } from "../src/shared/constants/dbus.js";
+import { MprisMetadataKeys } from "../src/shared/constants/mpris.js";
 import {
   ALBUM_ART_CACHE_MAX_BYTES,
   ALBUM_ART_MAX_BYTES,
-} from "../src/shared/constants/limits.js";
+} from "../src/shell/constants/albumArt.js";
 import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
 import {
   createAlbumArtRequest,

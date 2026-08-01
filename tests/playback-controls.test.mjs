@@ -14,8 +14,8 @@ import {
   LEGACY_INPUT_ACTION_SCHEMA_NICKS,
   MOUSE_ACTION_VALUES,
   PLAYBACK_ACTION_BY_INPUT_ACTION,
-  normalizeInputAction,
 } from "../src/shared/constants/inputActions.js";
+import { normalizeInputAction } from "../src/shared/utils/inputActions.js";
 import {
   PLAYBACK_CONTROL_DEFINITIONS,
   PlaybackControlActions,
@@ -27,10 +27,13 @@ import {
   PlaybackControlSurfaces,
 } from "../src/shared/constants/playbackControlSurfaces.js";
 import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../src/shared/constants/popup.js";
-import { POPUP_WIDTH, SettingsKeys } from "../src/shared/constants/settings.js";
+import {
+  POPUP_WIDTH_CONSTRAINTS,
+  SettingsKeys,
+} from "../src/shared/constants/settings.js";
 import { InputActions } from "../src/shared/enums/input.js";
 import { LoopStatus, PlaybackStatus } from "../src/shared/enums/playback.js";
-import { WidgetFlags } from "../src/shared/enums/widget.js";
+import { WidgetFlags } from "../src/shared/enums/widgetFlags.js";
 import { resolvePlaybackControlAccessibleName } from "../src/shared/utils/playbackControlAccessibility.js";
 import { resolvePlaybackControlState } from "../src/shared/utils/playbackControlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../src/shared/utils/playbackControlSurfaceState.js";
@@ -203,17 +206,17 @@ test("surface policies and popup layout preserve defaults without compacting con
       () => {
         const popupDefinition =
           PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.POPUP];
-        const topbarDefinition =
+        const topBarDefinition =
           PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.TOP_BAR];
         const popupIds = popupDefinition.controls.map(
           ({ controlId }) => controlId,
         );
-        const topbarIds = topbarDefinition.controls.map(
+        const topBarIds = topBarDefinition.controls.map(
           ({ controlId }) => controlId,
         );
         assert.deepEqual(popupIds, Object.values(PlaybackControlIds));
-        assert.equal(topbarIds.includes(PlaybackControlIds.SPEED), false);
-        assert.deepEqual(topbarIds, TOP_BAR_PLAYBACK_CONTROL_ORDER);
+        assert.equal(topBarIds.includes(PlaybackControlIds.SPEED), false);
+        assert.deepEqual(topBarIds, TOP_BAR_PLAYBACK_CONTROL_ORDER);
         assert.equal(
           popupDefinition.controls.find(
             ({ controlId }) => controlId === PlaybackControlIds.SPEED,
@@ -233,7 +236,7 @@ test("surface policies and popup layout preserve defaults without compacting con
         const popup =
           PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.POPUP]
             .controls;
-        const topbar =
+        const topBar =
           PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.TOP_BAR]
             .controls;
         assert.deepEqual(
@@ -257,7 +260,7 @@ test("surface policies and popup layout preserve defaults without compacting con
           },
         );
         assert.ok(
-          topbar.every(
+          topBar.every(
             ({ controlId }) =>
               ["previous", "play-pause", "next"].includes(controlId) ||
               ["shuffle", "seek-backward", "seek-forward", "repeat"].includes(
@@ -298,7 +301,7 @@ test("surface policies and popup layout preserve defaults without compacting con
     [
       "width policy",
       () => {
-        assert.equal(POPUP_WIDTH.DEFAULT, 250);
+        assert.equal(POPUP_WIDTH_CONSTRAINTS.DEFAULT, 250);
         assert.equal(POPUP_SEEK_CONTROLS_MIN_WIDTH, 350);
         assert.equal(resolvePopupWidth(250, false, false), 250);
         assert.equal(resolvePopupWidth(250, true, false), 350);

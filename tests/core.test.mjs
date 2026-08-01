@@ -12,8 +12,8 @@ import test from "node:test";
 import {
   MINIMUM_LIBADWAITA_VERSION,
   SUPPORTED_GNOME_SHELL_VERSIONS,
-  isVersionAtLeast,
 } from "../src/shared/constants/platform.js";
+import { isVersionAtLeast } from "../src/shared/utils/version.js";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
@@ -37,7 +37,7 @@ import {
   resolveBrowserIdentityCandidate,
   scoreBrowserIdentityCandidate,
 } from "../src/shared/utils/browserIdentity.js";
-import { moveArrayItem } from "../src/shared/utils/collections.js";
+import { arraysEqual, moveArrayItem } from "../src/shared/utils/collections.js";
 import {
   enumValueByIndex,
   formatDurationMilliseconds,
@@ -45,6 +45,7 @@ import {
   normalizeUniqueStrings,
 } from "../src/shared/utils/format.js";
 import { createLogger } from "../src/shared/utils/log.js";
+import { normalizeTrackInformationContent } from "../src/shared/utils/trackInformation.js";
 import {
   buildSearchIndex,
   matchesSearchText,
@@ -89,6 +90,14 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         const values = ["first", "second", "third"];
         assert.equal(moveArrayItem(values, 0, 2), true);
         assert.deepEqual(values, ["second", "third", "first"]);
+        assert.equal(arraysEqual(values, ["second", "third", "first"]), true);
+        assert.equal(arraysEqual(values, ["second", "first", "third"]), false);
+        const fallback = ["TITLE", "ARTIST"];
+        assert.deepEqual(
+          normalizeTrackInformationContent([" TITLE ", "", "TITLE"], fallback),
+          ["TITLE", "TITLE"],
+        );
+        assert.equal(normalizeTrackInformationContent([], fallback), fallback);
         assert.equal(moveArrayItem(values, 2, 0), true);
         assert.deepEqual(values, ["first", "second", "third"]);
         assert.equal(moveArrayItem(values, -1, 0), false);

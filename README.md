@@ -9,7 +9,7 @@ A GNOME extension that adds configurable MPRIS media controls to the top bar.
 
 ![Banner](https://raw.githubusercontent.com/WSTxda/MediaShell/main/assets/images/banner.svg)
 
-MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media players. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.
+MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media apps. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.
 
 <details>
   <summary><h3>Screenshots</h3></summary>
@@ -19,12 +19,12 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 <table>
   <tr>
     <td align="center"><strong>Popup</strong></td>
-    <td align="center"><strong>Popup app selector</strong></td>
+    <td align="center"><strong>Popup media app selector</strong></td>
     <td align="center"><strong>Popup theming</strong></td>
   </tr>
   <tr>
     <td><img src="assets/images/screenshots/screen_popup.png" alt="MediaShell popup" width="100%"></td>
-    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup app selector" width="100%"></td>
+    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup media app selector" width="100%"></td>
     <td><img src="assets/images/screenshots/screen_popup_theming.png" alt="MediaShell popup theming" width="100%"></td>
   </tr>
 </table>
@@ -70,12 +70,12 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 - Configure the popup and top bar independently.
 - Available controls include previous, play/pause, next, seek, shuffle, repeat, and popup playback speed.
-- Controls react to the capabilities reported by the active MPRIS app.
+- Controls react to the capabilities reported by the active media app.
 
-#### App selector
+#### Media app selector
 
 - Switch between media apps currently available through MPRIS.
-- Pin the selected app for the current Shell session.
+- Pin the selected media app for the current Shell session.
 - Open or quit an app when its MPRIS implementation supports the action.
 - Block apps you do not want MediaShell to display without changing their MPRIS service.
 
@@ -86,8 +86,8 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 #### Mouse and keyboard
 
-- Configure left, middle, and right click actions, scroll actions, and touch behavior on the top bar button.
-- Use global shortcuts for playback, volume, app switching, opening the popup, and Preferences.
+- Configure left, middle, and right click actions, scroll actions, and touch behavior on the top bar indicator.
+- Use global shortcuts for playback, volume, media app switching, opening the popup, and Preferences.
 
 #### Layout
 
@@ -101,7 +101,7 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 - An **MPRIS-compatible** media app or browser media session
 
 > [!IMPORTANT]
-> Available controls depend on the capabilities reported by each MPRIS implementation. Seeking, speed, shuffle, repeat, volume, album art, and app actions may not be supported by every app or track.
+> Available controls depend on the capabilities reported by each MPRIS implementation. Seeking, speed, shuffle, repeat, volume, album art, and media-app actions may not be supported by every media app or track.
 
 > [!NOTE]
 > Browsers decide how websites are exposed through MPRIS. A browser session may change identity or disappear when tabs, pages, or playback ownership change.

@@ -20,7 +20,7 @@ msgid ""
 "MediaShell is a GNOME Shell extension that adds configurable MPRIS media "
 "controls to the top bar. Its customizable popup displays album art, track "
 "information, playback controls, and a selector for switching between active "
-"media players. The top bar and popup can be configured independently, while "
+"media apps. The top bar and popup can be configured independently, while "
 "GTK4 and Libadwaita preferences provide a consistent GNOME experience."
 msgstr ""
 "MediaShell ist eine GNOME-Shell-Erweiterung, die der oberen Leiste "
@@ -327,8 +327,8 @@ msgstr "Keine"
 msgid "Playback speed"
 msgstr "Wiedergabegeschwindigkeit"
 
-#: src/shell/ui/popup/PopupAppSelectorButton.js:87
-#: src/shell/ui/popup/PopupAppSelectorList.js:219
+#: src/shell/ui/popup/PopupMediaAppSelectorButton.js:87
+#: src/shell/ui/popup/PopupMediaAppSelectorList.js:239
 msgid "Unknown app"
 msgstr "Unbekannte App"
 
@@ -617,7 +617,7 @@ msgid "Mouse actions"
 msgstr "Mausaktionen"
 
 #: assets/ui/prefs.ui:823
-msgid "Assign actions to clicks and scrolling on the top bar button"
+msgid "Assign actions to clicks and scrolling on the top bar indicator"
 msgstr ""
 "Aktionen für Klicks und Scrollen auf der Schaltfläche in der oberen Leiste "
 "festlegen"
@@ -693,7 +693,7 @@ msgid "Element order"
 msgstr "Elementreihenfolge"
 
 #: assets/ui/top-bar-element-order.ui:7
-msgid "Drag to reorder elements inside the top bar button"
+msgid "Drag to reorder elements inside the top bar indicator"
 msgstr ""
 "Elemente innerhalb der Schaltfläche der oberen Leiste per Ziehen neu anordnen"
 

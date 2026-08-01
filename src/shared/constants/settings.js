@@ -41,7 +41,7 @@ export const SettingsKeys = Object.freeze({
   POPUP_TRACK_INFORMATION_SCROLL_SPEED: "popup-track-information-scroll-speed",
   POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
     "popup-track-information-scroll-pause-time",
-  POPUP_APP_ICON_USE_COLOR: "popup-app-icon-use-color",
+  POPUP_MEDIA_APP_ICON_USE_COLOR: "popup-media-app-icon-use-color",
 
   // Historical schema IDs remain the persisted track-information width contract.
   TOP_BAR_TRACK_INFORMATION_WIDTH: "top-bar-track-information-width",
@@ -54,8 +54,8 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
     "top-bar-track-information-scroll-pause-time",
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
-  TOP_BAR_APP_ICON_SHOW: "top-bar-app-icon-show",
-  TOP_BAR_APP_ICON_USE_COLOR: "top-bar-app-icon-use-color",
+  TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
+  TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
@@ -116,7 +116,7 @@ export const SettingsKeys = Object.freeze({
  * next, then optional activity feedback and compact playback controls.
  */
 export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([
-  "APP_ICON",
+  "MEDIA_APP_ICON",
   "TRACK_INFORMATION",
   "VISUALIZER",
   "PLAYBACK_CONTROLS",
@@ -129,45 +129,47 @@ export const TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
   "ARTIST",
 ]);
 
-/** Bounds and default width for top bar track information, in pixels. */
-export const TOP_BAR_TRACK_INFORMATION_WIDTH = Object.freeze({
+/** Constraints for top bar track-information width, in pixels. */
+export const TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 1000,
   DEFAULT: 200,
 });
 
-/** Bounds and default value for scrolling track-information speed controls. */
-export const TEXT_SCROLL_SPEED = Object.freeze({
+/** Constraints for popup and top bar track-information scroll speed. */
+export const TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS = Object.freeze({
   MIN: 1,
   MAX: 10,
   DEFAULT: 4,
 });
 
-/** Bounds and default value for the optional top bar visualizer animation speed. */
-export const TOP_BAR_VISUALIZER_SPEED = Object.freeze({
+/** Constraints for the optional top bar visualizer animation speed. */
+export const TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS = Object.freeze({
   MIN: 1,
   MAX: 8,
   DEFAULT: 4,
 });
 
-/** Bounds and default pause between text-scroll cycles, in seconds. */
-export const TEXT_SCROLL_PAUSE_SECONDS = Object.freeze({
-  MIN: 0,
-  MAX: 10,
-  DEFAULT: 1,
-});
+/** Constraints for the pause between track-information scroll cycles, in seconds. */
+export const TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS = Object.freeze(
+  {
+    MIN: 0,
+    MAX: 10,
+    DEFAULT: 1,
+  },
+);
 
 // --- Popup settings ---
 
-/** Bounds and default popup content width, in pixels. */
-export const POPUP_WIDTH = Object.freeze({
+/** Constraints for popup content width, in pixels. */
+export const POPUP_WIDTH_CONSTRAINTS = Object.freeze({
   MIN: 250,
   MAX: 500,
   DEFAULT: 250,
 });
 
-/** Bounds and default corner radius for popup album art, in pixels. */
-export const POPUP_ALBUM_ART_CORNER_RADIUS = Object.freeze({
+/** Constraints for popup album-art corner radius, in pixels. */
+export const POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 50,
   DEFAULT: 20,
@@ -182,8 +184,8 @@ export const POPUP_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
 
 // --- Panel placement settings ---
 
-/** Bounds and default insertion index for the MediaShell top bar button in Main.panel. */
-export const PANEL_INDEX = Object.freeze({
+/** Constraints for the MediaShell button insertion index in Main.panel. */
+export const PANEL_INDEX_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
   DEFAULT: 0,
@@ -197,18 +199,21 @@ export const PANEL_INDEX = Object.freeze({
  * the parsed XML schema instead of searching source text.
  */
 export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
-  [SettingsKeys.POPUP_WIDTH]: POPUP_WIDTH,
-  [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]: POPUP_ALBUM_ART_CORNER_RADIUS,
-  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]: TEXT_SCROLL_SPEED,
+  [SettingsKeys.POPUP_WIDTH]: POPUP_WIDTH_CONSTRAINTS,
+  [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]:
+    POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]:
+    TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
-    TEXT_SCROLL_PAUSE_SECONDS,
+    TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH]:
-    TOP_BAR_TRACK_INFORMATION_WIDTH,
-  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]: TEXT_SCROLL_SPEED,
+    TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]:
+    TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
-    TEXT_SCROLL_PAUSE_SECONDS,
-  [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED,
-  [SettingsKeys.PANEL_INDEX]: PANEL_INDEX,
+    TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
+  [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });
 
 /** Ordered string-list defaults that must stay identical to the XML schema. */

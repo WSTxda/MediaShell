@@ -15,7 +15,7 @@ import { resolvePlaybackControlAccessibleName } from "../../shared/utils/playbac
  * Applies canonical interaction and accessibility state to a Shell button.
  *
  * @param {object} button - St.Button-like actor.
- * @param {object} mediaApp - Normalized PlayerProxy-like state.
+ * @param {object} mediaApp - Normalized media-app state.
  * @param {object} controlState - Result from resolvePlaybackControlState().
  * @param {(message: string) => string} gettext - Translation function.
  */

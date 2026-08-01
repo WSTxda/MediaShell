@@ -14,10 +14,8 @@
 import Adw from "gi://Adw";
 import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import {
-  MINIMUM_LIBADWAITA_VERSION,
-  isVersionAtLeast,
-} from "./shared/constants/platform.js";
+import { MINIMUM_LIBADWAITA_VERSION } from "./shared/constants/platform.js";
+import { isVersionAtLeast } from "./shared/utils/version.js";
 import { createLogger } from "./shared/utils/log.js";
 import PreferencesController from "./prefs/PreferencesController.js";
 import { initializePreferencesTranslations } from "./prefs/translations.js";

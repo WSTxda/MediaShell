@@ -1,10 +1,11 @@
 /**
- * @file PlayerProxy.js
- * @module shell.mpris.PlayerProxy
+ * @file MprisMediaApp.js
+ * @module shell.mpris.MprisMediaApp
  *
- * Normalizes one MPRIS player into stable state, commands, and signals.
+ * Models one MediaShell media app backed by an MPRIS service.
  *
- * Each proxy owns the D-Bus proxies, cached player properties, metadata
+ * Each instance owns the root, Player, and Properties D-Bus proxies, cached
+ * player properties, metadata
  * stabilization, position tracking, and command forwarding for one bus name.
  * The lifecycle is asynchronous because browser-backed MPRIS endpoints can
  * publish a bus before their properties are ready.
@@ -24,33 +25,35 @@
  *       ▼
  *   [destroyed]
  *
- * @see src/shell/mpris/PositionTracker.js
+ * @see src/shell/mpris/PlaybackPositionTracker.js
  */
 
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
+import { DbusPropertiesMethods } from "../../shared/constants/dbus.js";
 import {
-  DbusPropertiesMethods,
-  MPRIS_IFACE_NAME,
+  MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
   MprisRootMethods,
   MprisRootProperties,
-  PLAYER_PROPERTIES,
-  ROOT_PROPERTIES,
-} from "../../shared/constants/dbus.js";
-import { MediaAppStateProperties } from "../../shared/constants/mediaApp.js";
-import { MediaAppValidity } from "../../shared/enums/app.js";
+  MPRIS_PLAYER_PROPERTY_NAMES,
+  MPRIS_ROOT_PROPERTY_NAMES,
+} from "../../shared/constants/mpris.js";
+import {
+  MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
+  MediaAppStateProperties,
+} from "../constants/mediaApp.js";
+import { MediaAppValidity } from "../../shared/enums/mediaAppValidity.js";
 import { LoopStatus, PlaybackStatus } from "../../shared/enums/playback.js";
 import {
   DBUS_CALL_TIMEOUT_MS,
-  MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
   MPRIS_INIT_POLL_INTERVAL_MS,
   MPRIS_INIT_TIMEOUT_MS,
-} from "../../shared/constants/timing.js";
+} from "../constants/mpris.js";
 import { finiteNumberOr } from "../../shared/utils/format.js";
 import { normalizeAppIdentityHint } from "../../shared/utils/appIdentity.js";
 import {
@@ -78,11 +81,11 @@ import {
   mprisOperationUnsupported,
 } from "../../shared/utils/mprisOperationResult.js";
 import { getOperationErrorName, isCancellationError } from "../utils/errors.js";
-import PositionTracker from "./PositionTracker.js";
+import PlaybackPositionTracker from "./PlaybackPositionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
-const logger = createLogger("PlayerProxy");
+const logger = createLogger("MprisMediaApp");
 const LOOP_STATUS_ORDER = Object.freeze([
   LoopStatus.NONE,
   LoopStatus.PLAYLIST,
@@ -91,9 +94,9 @@ const LOOP_STATUS_ORDER = Object.freeze([
 const LOOP_STATUS_VALUES = new Set(LOOP_STATUS_ORDER);
 
 /**
- * Normalizes one MPRIS player into stable state, commands, and signals.
+ * Models one MediaShell media app backed by an MPRIS service.
  */
-export default class PlayerProxy {
+export default class MprisMediaApp {
   constructor(busName, mprisProxyFactory) {
     this.busName = busName;
     this.mprisProxyFactory = mprisProxyFactory;
@@ -139,9 +142,9 @@ export default class PlayerProxy {
     this.playerProxy = playerProxy;
     this.propertiesProxy = propertiesProxy;
     this.adoptCurrentNameOwner(undefined, { refreshState: false });
-    this.hydrateState(rootProxy, ROOT_PROPERTIES);
-    this.hydrateState(playerProxy, PLAYER_PROPERTIES);
-    this.positionTracker = new PositionTracker(
+    this.hydrateState(rootProxy, MPRIS_ROOT_PROPERTY_NAMES);
+    this.hydrateState(playerProxy, MPRIS_PLAYER_PROPERTY_NAMES);
+    this.positionTracker = new PlaybackPositionTracker(
       propertiesProxy,
       this.operationCancellable,
     );
@@ -155,7 +158,7 @@ export default class PlayerProxy {
       "g-properties-changed",
       (proxy, changed, invalidated) => {
         this.handlePropertiesChangedSafely(
-          MPRIS_IFACE_NAME,
+          MPRIS_ROOT_IFACE_NAME,
           proxy,
           changed,
           invalidated,
@@ -224,7 +227,10 @@ export default class PlayerProxy {
   }
 
   emitHydratedState() {
-    for (const property of [...ROOT_PROPERTIES, ...PLAYER_PROPERTIES])
+    for (const property of [
+      ...MPRIS_ROOT_PROPERTY_NAMES,
+      ...MPRIS_PLAYER_PROPERTY_NAMES,
+    ])
       this.emitPropertyChanged(property, this.state[property]);
   }
 
@@ -308,7 +314,7 @@ export default class PlayerProxy {
     const hasChanged = (property) =>
       property in changed || invalidated.has(property);
     if (
-      interfaceName === MPRIS_IFACE_NAME &&
+      interfaceName === MPRIS_ROOT_IFACE_NAME &&
       (hasChanged(MprisRootProperties.IDENTITY) ||
         hasChanged(MprisRootProperties.DESKTOP_ENTRY))
     )
@@ -579,9 +585,10 @@ export default class PlayerProxy {
     this.ownerGeneration++;
     if (refreshState) {
       this.resetStateForOwnerChange();
-      if (this.rootProxy) this.hydrateState(this.rootProxy, ROOT_PROPERTIES);
+      if (this.rootProxy)
+        this.hydrateState(this.rootProxy, MPRIS_ROOT_PROPERTY_NAMES);
       if (this.playerProxy)
-        this.hydrateState(this.playerProxy, PLAYER_PROPERTIES);
+        this.hydrateState(this.playerProxy, MPRIS_PLAYER_PROPERTY_NAMES);
       this.positionTracker?.updateTrackContext(
         resolvePlaybackPositionTrackContext(this.metadata),
         { refresh: false },

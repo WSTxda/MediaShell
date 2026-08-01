@@ -12,11 +12,11 @@ import test from "node:test";
 import {
   MPRIS_NO_TRACK_PATH,
   MprisMetadataKeys,
-} from "../src/shared/constants/dbus.js";
+} from "../src/shared/constants/mpris.js";
 import {
   POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
   POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,
-} from "../src/shared/constants/timing.js";
+} from "../src/shared/constants/playbackPosition.js";
 import { PlaybackStatus } from "../src/shared/enums/playback.js";
 import {
   normalizePlaybackPositionMicroseconds,

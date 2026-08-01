@@ -206,14 +206,14 @@ test("AST playback boundaries require shared execution and reachable renderer te
       () => {
         const records = new Map(sourceRecords);
         records.set(
-          "src/shell/mpris/PositionTracker.js",
+          "src/shell/mpris/PlaybackPositionTracker.js",
           parsedRecord(
-            "src/shell/mpris/PositionTracker.js",
+            "src/shell/mpris/PlaybackPositionTracker.js",
             `
             import GLib from "gi://GLib";
             import { resolvePlaybackPositionEstimate } from
               "../../shared/utils/playbackPosition.js";
-            export default class PositionTracker {
+            export default class PlaybackPositionTracker {
               refresh() { GLib.timeout_add(0, 1000, () => 1); }
               estimate() { return 0; }
             }

@@ -4,14 +4,14 @@
  *
  * Normalizes MPRIS bus names, identities, and desktop-entry hints into app IDs.
  *
- * MediaAppResolver and installed-app search rely on these helpers to strip
+ * DesktopAppResolver and installed-app search rely on these helpers to strip
  * unstable browser/session suffixes and desktop-file extensions. The functions
  * are pure so both Shell and preferences code can use the same matching rules.
  */
 
 import { extractChromiumPwaAppIds } from "./browserIdentity.js";
 
-import { MPRIS_PREFIX } from "../constants/dbus.js";
+import { MPRIS_BUS_NAME_PREFIX } from "../constants/mpris.js";
 
 const DESKTOP_FILE_SUFFIX = ".desktop";
 const EPHEMERAL_BUS_SEGMENT_PATTERN =
@@ -87,9 +87,9 @@ function addBrowserIdentityHints(hints, ...values) {
 
 function addBusNameHints(hints, busName) {
   const normalizedBusName = normalizeAppIdentityHint(busName);
-  if (!normalizedBusName.startsWith(MPRIS_PREFIX)) return;
+  if (!normalizedBusName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
 
-  const busSuffix = normalizedBusName.slice(MPRIS_PREFIX.length);
+  const busSuffix = normalizedBusName.slice(MPRIS_BUS_NAME_PREFIX.length);
   addLookupHint(hints, busSuffix);
 
   const segments = busSuffix.split(".").filter(Boolean);

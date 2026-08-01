@@ -2,12 +2,11 @@
  * @file PopupAlbumArt.js
  * @module shell.ui.popup.PopupAlbumArt
  *
- * Owns popup album-art loading, playback-state animation, safe fallbacks,
- * square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
  *
  * PopupContent delegates album art to this component so async file/network loads
  * are isolated from the rest of the popup. The component cancels stale loads by
- * generation, decodes images into Shell textures, and falls back to a themed icon.
+ * generation, delegates stateless pixbuf transforms, and falls back to a themed icon.
  */
 
 import Clutter from "gi://Clutter";
@@ -18,7 +17,7 @@ import St from "gi://St";
 
 import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
 import { IconNames } from "../../../shared/constants/icons.js";
-import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
+import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import {
@@ -28,6 +27,10 @@ import {
 } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
+import {
+  cropPixbufToSquare,
+  roundPixbufCorners,
+} from "../../utils/albumArtPixbuf.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 
@@ -44,8 +47,7 @@ Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 const logger = createLogger("PopupAlbumArt");
 
 /**
- * Owns popup album-art loading, playback-state animation, safe fallbacks,
- * square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
  */
 export default class PopupAlbumArt {
   constructor(popupContent) {
@@ -71,8 +73,8 @@ export default class PopupAlbumArt {
   get popupItem() {
     return this.popupContent.popupItem;
   }
-  get appSelectorActor() {
-    return this.popupContent.appSelectorController.actor;
+  get mediaAppSelectorActor() {
+    return this.popupContent.mediaAppSelectorController.actor;
   }
   get actor() {
     return this.albumArtFrame;
@@ -97,7 +99,7 @@ export default class PopupAlbumArt {
       this.extensionController.popupAlbumArtCornerRadius,
     )
       ? this.extensionController.popupAlbumArtCornerRadius
-      : POPUP_ALBUM_ART_CORNER_RADIUS.DEFAULT;
+      : POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
     const radius = Math.min(configuredRadius, Math.round(width / 2));
     const request = createAlbumArtRequest({
       busName: this.mediaApp.busName,
@@ -144,12 +146,7 @@ export default class PopupAlbumArt {
 
       if (pixbuf) this.setAlbumArtPixbuf(request.width, request.radius, pixbuf);
       else {
-        this.setAlbumArtFallback(
-          request.width,
-          request.radius,
-          fallbackIcon,
-          request.busName,
-        );
+        this.setAlbumArtFallback(request.width, request.radius, fallbackIcon);
       }
     } catch (error) {
       if (
@@ -161,12 +158,7 @@ export default class PopupAlbumArt {
           "Album-art processing failed; using the fallback icon",
           error,
         );
-        this.setAlbumArtFallback(
-          request.width,
-          request.radius,
-          null,
-          request.busName,
-        );
+        this.setAlbumArtFallback(request.width, request.radius, null);
       }
     } finally {
       if (
@@ -337,10 +329,10 @@ export default class PopupAlbumArt {
     const imageSize = this.getImageSize(width);
     const imageRadius = this.getImageRadius(radius);
     const orientedPixbuf = pixbuf.apply_embedded_orientation?.() ?? pixbuf;
-    const squarePixbuf = this.cropPixbufToSquare(orientedPixbuf, imageSize);
+    const squarePixbuf = cropPixbufToSquare(orientedPixbuf, imageSize);
     const renderPixbuf =
       imageRadius > 0
-        ? this.roundAlbumArtPixbufCorners(squarePixbuf, imageRadius)
+        ? roundPixbufCorners(squarePixbuf, imageRadius)
         : squarePixbuf;
 
     this.albumArtImage.content = null;
@@ -429,7 +421,7 @@ export default class PopupAlbumArt {
     this.albumArtImage.height = imageSize;
   }
 
-  setAlbumArtFallback(width, radius, icon, busName = null) {
+  setAlbumArtFallback(width, radius, icon) {
     const imageSize = this.getImageSize(width);
     this.syncAlbumArtGeometry(width, radius);
     this.albumArtImage.content = null;
@@ -451,10 +443,10 @@ export default class PopupAlbumArt {
 
   attach() {
     if (this.albumArtFrame.get_parent()) return;
-    if (this.appSelectorActor?.get_parent() === this.popupItem)
+    if (this.mediaAppSelectorActor?.get_parent() === this.popupItem)
       this.popupItem.insert_child_above(
         this.albumArtFrame,
-        this.appSelectorActor,
+        this.mediaAppSelectorActor,
       );
     else this.popupItem.add_child(this.albumArtFrame);
   }
@@ -488,119 +480,6 @@ export default class PopupAlbumArt {
       stream.close(null);
     } catch {
       // Cancellation and GdkPixbuf may close the stream before teardown.
-    }
-  }
-
-  cropPixbufToSquare(pixbuf, size) {
-    const targetSize = Math.max(1, Math.round(size));
-    const sourceWidth = pixbuf.get_width();
-    const sourceHeight = pixbuf.get_height();
-    if (sourceWidth <= 0 || sourceHeight <= 0) return pixbuf;
-
-    // Scale like CSS `cover`: the shortest side fills the square and the
-    // excess on the longest side is cropped equally around the center.
-    const scale = Math.max(targetSize / sourceWidth, targetSize / sourceHeight);
-    const scaledWidth = Math.max(targetSize, Math.round(sourceWidth * scale));
-    const scaledHeight = Math.max(targetSize, Math.round(sourceHeight * scale));
-    const scaled = pixbuf.scale_simple(
-      scaledWidth,
-      scaledHeight,
-      GdkPixbuf.InterpType.BILINEAR,
-    );
-    if (!scaled) return pixbuf;
-
-    const cropX = Math.max(0, Math.floor((scaledWidth - targetSize) / 2));
-    const cropY = Math.max(0, Math.floor((scaledHeight - targetSize) / 2));
-    return scaled.new_subpixbuf(cropX, cropY, targetSize, targetSize).copy();
-  }
-
-  roundAlbumArtPixbufCorners(pixbuf, radius) {
-    let source = pixbuf;
-    if (!source.get_has_alpha()) source = source.add_alpha(false, 0, 0, 0);
-
-    const width = source.get_width();
-    const height = source.get_height();
-    const cornerRadius = Math.min(
-      Math.floor(radius),
-      Math.floor(Math.min(width, height) / 2),
-    );
-    if (cornerRadius <= 0) return source;
-
-    const rowstride = source.get_rowstride();
-    const channels = source.get_n_channels();
-    const pixels = new Uint8Array(source.get_pixels());
-    const samples = [0.125, 0.375, 0.625, 0.875];
-    const sampleCount = samples.length * samples.length;
-    const radiusSquared = cornerRadius * cornerRadius;
-
-    // Only the four corner squares are touched; the center remains a fast
-    // direct copy even for large album-art settings.
-    for (let y = 0; y < cornerRadius; y++) {
-      this.roundAlbumArtCornerRow(
-        pixels,
-        rowstride,
-        channels,
-        y,
-        cornerRadius,
-        width,
-        cornerRadius,
-        radiusSquared,
-        samples,
-        sampleCount,
-      );
-      this.roundAlbumArtCornerRow(
-        pixels,
-        rowstride,
-        channels,
-        height - 1 - y,
-        height - cornerRadius,
-        width,
-        cornerRadius,
-        radiusSquared,
-        samples,
-        sampleCount,
-      );
-    }
-
-    return GdkPixbuf.Pixbuf.new_from_bytes(
-      GLib.Bytes.new(pixels),
-      source.get_colorspace(),
-      source.get_has_alpha(),
-      source.get_bits_per_sample(),
-      width,
-      height,
-      rowstride,
-    );
-  }
-
-  roundAlbumArtCornerRow(
-    pixels,
-    rowstride,
-    channels,
-    y,
-    centerY,
-    width,
-    radius,
-    radiusSquared,
-    samples,
-    sampleCount,
-  ) {
-    for (let xOffset = 0; xOffset < radius; xOffset++) {
-      for (const x of [xOffset, width - 1 - xOffset]) {
-        const centerX = x < radius ? radius : width - radius;
-        let inside = 0;
-        for (const sampleY of samples) {
-          const deltaY = y + sampleY - centerY;
-          const deltaYSquared = deltaY * deltaY;
-          for (const sampleX of samples) {
-            const deltaX = x + sampleX - centerX;
-            if (deltaX * deltaX + deltaYSquared <= radiusSquared) inside++;
-          }
-        }
-        if (inside === sampleCount) continue;
-        const offset = y * rowstride + x * channels + 3;
-        pixels[offset] = Math.round((pixels[offset] * inside) / sampleCount);
-      }
     }
   }
 

@@ -1,6 +1,6 @@
 /**
- * @file MediaAppResolver.js
- * @module shell.services.MediaAppResolver
+ * @file DesktopAppResolver.js
+ * @module shell.services.DesktopAppResolver
  *
  * Resolves MPRIS identity hints to installed desktop applications.
  *
@@ -17,8 +17,11 @@ import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
 import { resolveBrowserIdentityCandidate } from "../../shared/utils/browserIdentity.js";
-import { APP_RESOLVER_CACHE_LIMIT } from "../../shared/constants/limits.js";
-import { APP_RESOLVER_MISS_CACHE_TTL_MS } from "../../shared/constants/timing.js";
+import { IconNames } from "../../shared/constants/icons.js";
+import {
+  DESKTOP_APP_RESOLVER_CACHE_LIMIT,
+  DESKTOP_APP_RESOLVER_MISS_CACHE_TTL_MS,
+} from "../constants/desktopApp.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
@@ -28,7 +31,7 @@ import {
 } from "../../shared/utils/appIdentity.js";
 import { createLogger } from "../../shared/utils/log.js";
 
-const logger = createLogger("MediaAppResolver");
+const logger = createLogger("DesktopAppResolver");
 
 function createAppCacheKey(identity, desktopEntry, busName) {
   return `${String(desktopEntry ?? "")}\u0000${String(identity ?? "")}\u0000${String(busName ?? "")}`;
@@ -38,7 +41,7 @@ function storeBoundedCacheValue(cache, key, value) {
   if (!value) return value;
   cache.delete(key);
   cache.set(key, value);
-  if (cache.size > APP_RESOLVER_CACHE_LIMIT)
+  if (cache.size > DESKTOP_APP_RESOLVER_CACHE_LIMIT)
     cache.delete(cache.keys().next().value);
   return value;
 }
@@ -57,13 +60,13 @@ function readAppStringSafely(getter) {
 }
 
 function readCachedResolvedApp(cache, key) {
-  const app = cache.get(key) ?? null;
-  if (!app) return null;
+  const desktopApp = cache.get(key) ?? null;
+  if (!desktopApp) return null;
 
   // A cached Shell.App or Gio.AppInfo remains useful after its windows close,
   // but discard an object whose desktop ID can no longer be read.
-  const appId = readAppStringSafely(() => app.get_id?.());
-  if (appId) return app;
+  const appId = readAppStringSafely(() => desktopApp.get_id?.());
+  if (appId) return desktopApp;
   cache.delete(key);
   return null;
 }
@@ -81,9 +84,9 @@ function normalizedIdentityContains(normalizedValue, normalizedCandidate) {
   );
 }
 
-function getAppInfoSafely(app) {
+function getAppInfoSafely(desktopApp) {
   try {
-    return app?.get_app_info?.() ?? null;
+    return desktopApp?.get_app_info?.() ?? null;
   } catch (error) {
     logger.debugOnce(
       "app-info",
@@ -94,14 +97,14 @@ function getAppInfoSafely(app) {
   }
 }
 
-function getNormalizedAppIdentityValues(app) {
-  const appInfo = getAppInfoSafely(app);
+function getNormalizedAppIdentityValues(desktopApp) {
+  const appInfo = getAppInfoSafely(desktopApp);
   return [
-    readAppStringSafely(() => app.get_id?.()),
-    readAppStringSafely(() => app.get_name?.()),
-    readAppStringSafely(() => app.get_display_name?.()),
-    readAppStringSafely(() => app.get_executable?.()),
-    readAppStringSafely(() => app.get_startup_wm_class?.()),
+    readAppStringSafely(() => desktopApp.get_id?.()),
+    readAppStringSafely(() => desktopApp.get_name?.()),
+    readAppStringSafely(() => desktopApp.get_display_name?.()),
+    readAppStringSafely(() => desktopApp.get_executable?.()),
+    readAppStringSafely(() => desktopApp.get_startup_wm_class?.()),
     readAppStringSafely(() => appInfo?.get_id?.()),
     readAppStringSafely(() => appInfo?.get_name?.()),
     readAppStringSafely(() => appInfo?.get_display_name?.()),
@@ -123,27 +126,31 @@ function createMediaIdentityDescriptor(identity, desktopEntry, busName) {
  * resolver keeps the read side here and passes only strings to shared identity
  * helpers so browser matching remains testable outside GNOME Shell.
  *
- * @param {Shell.App|Gio.AppInfo|null} app - Shell or desktop app object.
+ * @param {Shell.App|Gio.AppInfo|null} desktopApp - Shell or desktop app object.
  * @returns {object} Descriptor accepted by shared browser identity helpers.
  */
-function readDesktopAppDescriptor(app) {
-  const appInfo = getAppInfoSafely(app) ?? app ?? null;
+function readDesktopAppDescriptor(desktopApp) {
+  const appInfo = getAppInfoSafely(desktopApp) ?? desktopApp ?? null;
   return {
     desktopId: readAppStringSafely(
-      () => app?.get_id?.() || appInfo?.get_id?.(),
+      () => desktopApp?.get_id?.() || appInfo?.get_id?.(),
     ),
-    name: readAppStringSafely(() => app?.get_name?.() || appInfo?.get_name?.()),
+    name: readAppStringSafely(
+      () => desktopApp?.get_name?.() || appInfo?.get_name?.(),
+    ),
     displayName: readAppStringSafely(
-      () => app?.get_display_name?.() || appInfo?.get_display_name?.(),
+      () => desktopApp?.get_display_name?.() || appInfo?.get_display_name?.(),
     ),
     executable: readAppStringSafely(
-      () => app?.get_executable?.() || appInfo?.get_executable?.(),
+      () => desktopApp?.get_executable?.() || appInfo?.get_executable?.(),
     ),
     startupWmClass: readAppStringSafely(
-      () => app?.get_startup_wm_class?.() || appInfo?.get_startup_wm_class?.(),
+      () =>
+        desktopApp?.get_startup_wm_class?.() ||
+        appInfo?.get_startup_wm_class?.(),
     ),
     commandline: readAppStringSafely(
-      () => app?.get_commandline?.() || appInfo?.get_commandline?.(),
+      () => desktopApp?.get_commandline?.() || appInfo?.get_commandline?.(),
     ),
   };
 }
@@ -156,14 +163,15 @@ function readDesktopAppDescriptor(app) {
  * ignored so ordinary browser media keeps the existing resolver fallback path.
  *
  * @param {object} mediaIdentity - MPRIS identity, desktop entry, and bus name.
- * @param {{app: Shell.App|Gio.AppInfo}[]} entries - Installed app candidates.
- * @returns {Shell.App|Gio.AppInfo|null} Strongly matched app, if any.
+ * @param {{desktopApp: Shell.App|Gio.AppInfo}[]} entries
+ *   Installed desktop app candidates.
+ * @returns {Shell.App|Gio.AppInfo|null} Strongly matched desktop app, if any.
  */
 function resolveBrowserIdentityApp(mediaIdentity, entries) {
   const descriptorEntries = entries
     .map((entry) => ({
       ...entry,
-      descriptor: readDesktopAppDescriptor(entry.app),
+      descriptor: readDesktopAppDescriptor(entry.desktopApp),
     }))
     .filter((entry) => entry.descriptor.desktopId);
   const match = resolveBrowserIdentityCandidate(
@@ -178,7 +186,7 @@ function resolveBrowserIdentityApp(mediaIdentity, entries) {
     ) ?? null;
   if (!entry) return null;
 
-  return entry.app;
+  return entry.desktopApp;
 }
 
 /**
@@ -203,13 +211,13 @@ function findShellAppByBrowserIdentity(
   );
   const runningMatch = resolveBrowserIdentityApp(
     mediaIdentity,
-    runningApps.map((app) => ({ app })),
+    runningApps.map((desktopApp) => ({ desktopApp })),
   );
   if (runningMatch) return runningMatch;
 
   const appInfoMatch = resolveBrowserIdentityApp(
     mediaIdentity,
-    Gio.AppInfo.get_all().map((app) => ({ app })),
+    Gio.AppInfo.get_all().map((desktopApp) => ({ desktopApp })),
   );
   const appId = readAppStringSafely(() => appInfoMatch?.get_id?.());
   return appId ? appSystem.lookup_app(appId) : null;
@@ -224,14 +232,14 @@ function findShellAppByBrowserIdentity(
 function findAppInfoByBrowserIdentity(identity, desktopEntry, busName) {
   return resolveBrowserIdentityApp(
     createMediaIdentityDescriptor(identity, desktopEntry, busName),
-    Gio.AppInfo.get_all().map((app) => ({ app })),
+    Gio.AppInfo.get_all().map((desktopApp) => ({ desktopApp })),
   );
 }
 
-function appMatchesIdentityCandidates(app, normalizedCandidates) {
-  if (!app || normalizedCandidates.length === 0) return false;
+function appMatchesIdentityCandidates(desktopApp, normalizedCandidates) {
+  if (!desktopApp || normalizedCandidates.length === 0) return false;
 
-  const normalizedAppValues = getNormalizedAppIdentityValues(app);
+  const normalizedAppValues = getNormalizedAppIdentityValues(desktopApp);
   return normalizedCandidates.some((candidate) =>
     normalizedAppValues.some((appValue) =>
       normalizedIdentityContains(appValue, candidate),
@@ -240,8 +248,9 @@ function appMatchesIdentityCandidates(app, normalizedCandidates) {
 }
 
 function findRunningShellApp(runningApps, normalizedCandidates) {
-  for (const app of runningApps) {
-    if (appMatchesIdentityCandidates(app, normalizedCandidates)) return app;
+  for (const desktopApp of runningApps) {
+    if (appMatchesIdentityCandidates(desktopApp, normalizedCandidates))
+      return desktopApp;
   }
   return null;
 }
@@ -278,10 +287,11 @@ function findShellAppFromSearch(
 
     for (const appId of flattenSearchResultGroups(resultGroups)) {
       const normalizedAppId = String(appId);
-      const app =
+      const desktopApp =
         runningAppsById.get(normalizedAppId) ??
         appSystem.lookup_app(normalizedAppId);
-      if (appMatchesIdentityCandidates(app, normalizedCandidates)) return app;
+      if (appMatchesIdentityCandidates(desktopApp, normalizedCandidates))
+        return desktopApp;
     }
   }
   return null;
@@ -298,8 +308,8 @@ function findShellAppByHeuristicLookup(appSystem, lookupHints) {
       const lookup = appSystem[methodName];
       if (typeof lookup !== "function") continue;
       try {
-        const app = lookup.call(appSystem, lookupHint);
-        if (app) return app;
+        const desktopApp = lookup.call(appSystem, lookupHint);
+        if (desktopApp) return desktopApp;
       } catch (error) {
         logger.debugOnce(
           `app-${methodName}`,
@@ -312,26 +322,26 @@ function findShellAppByHeuristicLookup(appSystem, lookupHints) {
   return null;
 }
 
-function readMediaAppIcon(app) {
-  if (!app) return null;
+function readDesktopAppIcon(desktopApp) {
+  if (!desktopApp) return null;
 
-  const directIcon = app.get_icon?.();
+  const directIcon = desktopApp.get_icon?.();
   if (directIcon) return directIcon;
-  return getAppInfoSafely(app)?.get_icon?.() ?? null;
+  return getAppInfoSafely(desktopApp)?.get_icon?.() ?? null;
 }
 
 /**
  * Resolves MPRIS identity hints to installed desktop applications.
  */
-export default class MediaAppResolver {
+export default class DesktopAppResolver {
   static #instance = null;
 
   static getInstance() {
-    MediaAppResolver.#instance ??= new MediaAppResolver();
-    return MediaAppResolver.#instance;
+    DesktopAppResolver.#instance ??= new DesktopAppResolver();
+    return DesktopAppResolver.#instance;
   }
 
-  #fallbackMediaAppIcon = null;
+  #fallbackDesktopAppIcon = null;
   #shellAppCache = new Map();
   #appInfoCache = new Map();
   #missCache = new Map();
@@ -349,9 +359,13 @@ export default class MediaAppResolver {
         busName,
       );
       for (const appIdCandidate of appIdCandidates) {
-        const app = appSystem.lookup_app(appIdCandidate);
-        if (app)
-          return storeBoundedCacheValue(this.#shellAppCache, appCacheKey, app);
+        const desktopApp = appSystem.lookup_app(appIdCandidate);
+        if (desktopApp)
+          return storeBoundedCacheValue(
+            this.#shellAppCache,
+            appCacheKey,
+            desktopApp,
+          );
       }
 
       const normalizedCandidates = buildNormalizedAppIdentityCandidates(
@@ -396,7 +410,10 @@ export default class MediaAppResolver {
 
       const runningAppsById = new Map(
         runningApps
-          .map((app) => [readAppStringSafely(() => app.get_id()), app])
+          .map((desktopApp) => [
+            readAppStringSafely(() => desktopApp.get_id()),
+            desktopApp,
+          ])
           .filter(([appId]) => Boolean(appId)),
       );
       const searchedApp = findShellAppFromSearch(
@@ -437,9 +454,13 @@ export default class MediaAppResolver {
         busName,
       );
       for (const appIdCandidate of appIdCandidates) {
-        const app = Gio.DesktopAppInfo.new(appIdCandidate);
-        if (app)
-          return storeBoundedCacheValue(this.#appInfoCache, appCacheKey, app);
+        const desktopApp = Gio.DesktopAppInfo.new(appIdCandidate);
+        if (desktopApp)
+          return storeBoundedCacheValue(
+            this.#appInfoCache,
+            appCacheKey,
+            desktopApp,
+          );
       }
 
       const candidateAppIdSet = new Set(appIdCandidates);
@@ -460,12 +481,20 @@ export default class MediaAppResolver {
         desktopEntry,
         busName,
       );
-      for (const app of Gio.AppInfo.get_all()) {
-        const appId = readAppStringSafely(() => app.get_id());
+      for (const desktopApp of Gio.AppInfo.get_all()) {
+        const appId = readAppStringSafely(() => desktopApp.get_id());
         if (candidateAppIdSet.has(appId))
-          return storeBoundedCacheValue(this.#appInfoCache, appCacheKey, app);
-        if (appMatchesIdentityCandidates(app, normalizedCandidates))
-          return storeBoundedCacheValue(this.#appInfoCache, appCacheKey, app);
+          return storeBoundedCacheValue(
+            this.#appInfoCache,
+            appCacheKey,
+            desktopApp,
+          );
+        if (appMatchesIdentityCandidates(desktopApp, normalizedCandidates))
+          return storeBoundedCacheValue(
+            this.#appInfoCache,
+            appCacheKey,
+            desktopApp,
+          );
       }
     } catch (error) {
       logger.warnOnce(
@@ -478,7 +507,7 @@ export default class MediaAppResolver {
     return null;
   }
 
-  resolveShellMediaApp(identity, desktopEntry, busName = "") {
+  resolveShellApp(identity, desktopEntry, busName = "") {
     return this.#findShellApp(identity, desktopEntry, busName);
   }
 
@@ -506,11 +535,11 @@ export default class MediaAppResolver {
     }
   }
 
-  isShellAppStopped(app) {
-    if (!app || typeof app.get_state !== "function") return false;
+  isShellAppStopped(desktopApp) {
+    if (!desktopApp || typeof desktopApp.get_state !== "function") return false;
 
     try {
-      return app.get_state() === Shell.AppState.STOPPED;
+      return desktopApp.get_state() === Shell.AppState.STOPPED;
     } catch (error) {
       logger.debugOnce(
         "lifecycle-app-state",
@@ -526,7 +555,7 @@ export default class MediaAppResolver {
     if (missTime === undefined) return false;
 
     const elapsed = GLib.get_monotonic_time() / 1000 - missTime;
-    if (elapsed < APP_RESOLVER_MISS_CACHE_TTL_MS) return true;
+    if (elapsed < DESKTOP_APP_RESOLVER_MISS_CACHE_TTL_MS) return true;
 
     this.#missCache.delete(appCacheKey);
     return false;
@@ -536,46 +565,48 @@ export default class MediaAppResolver {
     this.#missCache.set(appCacheKey, GLib.get_monotonic_time() / 1000);
   }
 
-  resolveMediaApp(identity, desktopEntry, busName = "") {
+  resolveDesktopApp(identity, desktopEntry, busName = "") {
     const appCacheKey = createAppCacheKey(identity, desktopEntry, busName);
 
     if (this.#isRecentMiss(appCacheKey)) return null;
 
-    const app =
-      this.resolveShellMediaApp(identity, desktopEntry, busName) ??
+    const desktopApp =
+      this.resolveShellApp(identity, desktopEntry, busName) ??
       this.#findAppInfo(identity, desktopEntry, busName);
 
-    if (!app) this.#recordMiss(appCacheKey);
-    return app;
+    if (!desktopApp) this.#recordMiss(appCacheKey);
+    return desktopApp;
   }
 
-  #getFallbackMediaAppIcon() {
-    this.#fallbackMediaAppIcon ??= Gio.ThemedIcon.new_from_names([
+  #getFallbackDesktopAppIcon() {
+    this.#fallbackDesktopAppIcon ??= Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
     ]);
-    return this.#fallbackMediaAppIcon;
+    return this.#fallbackDesktopAppIcon;
   }
 
-  getMediaAppIcon(app) {
+  getDesktopAppIcon(desktopApp) {
     try {
-      return readMediaAppIcon(app) ?? this.#getFallbackMediaAppIcon();
+      return (
+        readDesktopAppIcon(desktopApp) ?? this.#getFallbackDesktopAppIcon()
+      );
     } catch (error) {
       logger.debugOnce(
-        "media-app-icon",
+        "desktop-app-icon",
         "The app icon could not be read; using the fallback",
         error,
       );
-      return this.#getFallbackMediaAppIcon();
+      return this.#getFallbackDesktopAppIcon();
     }
   }
 
-  hasResolvedMediaAppIcon(app) {
+  hasResolvedDesktopAppIcon(desktopApp) {
     try {
-      return Boolean(readMediaAppIcon(app));
+      return Boolean(readDesktopAppIcon(desktopApp));
     } catch (error) {
       logger.debugOnce(
-        "media-app-icon-resolution",
+        "desktop-app-icon-resolution",
         "The app icon is not available yet",
         error,
       );
@@ -583,19 +614,19 @@ export default class MediaAppResolver {
     }
   }
 
-  getMediaAppName(app, fallback) {
+  getDesktopAppName(desktopApp, fallback) {
     try {
-      const appInfo = getAppInfoSafely(app);
+      const appInfo = getAppInfoSafely(desktopApp);
       return (
-        app?.get_display_name?.() ||
-        app?.get_name?.() ||
+        desktopApp?.get_display_name?.() ||
+        desktopApp?.get_name?.() ||
         appInfo?.get_display_name?.() ||
         appInfo?.get_name?.() ||
         fallback
       );
     } catch (error) {
       logger.debugOnce(
-        "media-app-name",
+        "desktop-app-name",
         "The app name could not be read; using the MPRIS identity",
         error,
       );
@@ -618,8 +649,8 @@ export default class MediaAppResolver {
     if (appIdCandidates.some((appId) => blockedAppIdSet.has(appId)))
       return true;
 
-    const app = this.resolveMediaApp(identity, desktopEntry, busName);
-    const appId = readAppStringSafely(() => app?.get_id?.());
+    const desktopApp = this.resolveDesktopApp(identity, desktopEntry, busName);
+    const appId = readAppStringSafely(() => desktopApp?.get_id?.());
     return Boolean(appId && blockedAppIdSet.has(appId));
   }
 
@@ -627,6 +658,6 @@ export default class MediaAppResolver {
     this.#shellAppCache.clear();
     this.#appInfoCache.clear();
     this.#missCache.clear();
-    this.#fallbackMediaAppIcon = null;
+    this.#fallbackDesktopAppIcon = null;
   }
 }

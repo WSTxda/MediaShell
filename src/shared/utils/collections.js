@@ -9,6 +9,22 @@
  */
 
 /**
+ * Returns whether two arrays contain the same values in the same order.
+ *
+ * @param {unknown[]} first - First array.
+ * @param {unknown[]} second - Second array.
+ * @returns {boolean} True when both arrays are shallowly equal.
+ */
+export function arraysEqual(first, second) {
+  return (
+    Array.isArray(first) &&
+    Array.isArray(second) &&
+    first.length === second.length &&
+    first.every((value, index) => value === second[index])
+  );
+}
+
+/**
  * Moves one item inside an array without changing the array identity.
  *
  * @param {unknown[]} values - Mutable array to reorder.

@@ -1,17 +1,17 @@
 /**
- * @file TopBarAppIcon.js
- * @module shell.ui.topBar.TopBarAppIcon
+ * @file TopBarMediaAppIcon.js
+ * @module shell.ui.topBar.TopBarMediaAppIcon
  *
  * Displays the active media app's icon in the GNOME top bar.
  *
- * TopBarButton owns this component and supplies the resolved Shell app or themed
+ * TopBarContent owns this component and supplies the resolved Shell app or themed
  * fallback icon. The component keeps icon actor creation and updates separate
  * from track text, visualizer, and playback control layout.
  */
 
 import { IconNames } from "../../../shared/constants/icons.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import MediaAppResolver from "../../services/MediaAppResolver.js";
+import DesktopAppResolver from "../../services/DesktopAppResolver.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
@@ -19,44 +19,52 @@ import { styleClassNames } from "../../utils/styleClasses.js";
 /**
  * Displays the active media app's icon in the GNOME top bar.
  */
-export default class TopBarAppIcon {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+export default class TopBarMediaAppIcon {
+  constructor(topBarContent) {
+    this.topBarContent = topBarContent;
     this.actor = null;
     this.iconKey = null;
     this.usesColoredIcon = null;
-    this.mediaAppResolver = MediaAppResolver.getInstance();
+    this.desktopAppResolver = DesktopAppResolver.getInstance();
+  }
+
+  get extensionController() {
+    return this.topBarContent.extensionController;
+  }
+
+  get mediaApp() {
+    return this.topBarContent.mediaApp;
   }
 
   render(index, parentBox) {
-    const identity = this.topBarButton.mediaApp.identity;
-    const desktopEntry = this.topBarButton.mediaApp.desktopEntry;
-    const useColoredIcon =
-      this.topBarButton.extensionController.topBarAppIconUseColor;
-    const iconKey = `${this.topBarButton.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
+    const identity = this.mediaApp.identity;
+    const desktopEntry = this.mediaApp.desktopEntry;
+    const useColoredIcon = this.extensionController.topBarMediaAppIconUseColor;
+    const iconKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
 
     // St can retain the previously resolved symbolic/regular texture when
     // only the CSS icon style changes. Replacing this tiny actor on a mode
     // toggle makes the setting visible immediately without rebuilding the
-    // complete top bar button.
+    // complete top bar indicator.
     if (!this.actor || this.usesColoredIcon !== useColoredIcon)
       this.replaceIconActor(index, useColoredIcon);
 
     if (iconKey !== this.iconKey) {
-      const app = this.mediaAppResolver.resolveMediaApp(
+      const desktopApp = this.desktopAppResolver.resolveDesktopApp(
         identity,
         desktopEntry,
-        this.topBarButton.mediaApp.busName,
+        this.mediaApp.busName,
       );
       setGIcon(
         this.actor,
-        this.mediaAppResolver.getMediaAppIcon(app),
+        this.desktopAppResolver.getDesktopAppIcon(desktopApp),
         IconNames.MEDIA,
       );
       // Do not memoize a transient miss: Shell may associate a browser
       // window with its desktop app shortly after MPRIS appears.
       this.iconKey =
-        app && this.mediaAppResolver.hasResolvedMediaAppIcon(app)
+        desktopApp &&
+        this.desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
           ? iconKey
           : null;
     }
@@ -73,6 +81,7 @@ export default class TopBarAppIcon {
       {
         styleClass: styleClassNames(
           StyleClasses.SYSTEM_STATUS_ICON,
+          StyleClasses.TOP_BAR_MEDIA_APP_ICON,
           StyleClasses.NO_MARGIN,
           useColoredIcon
             ? StyleClasses.COLORED_ICON
@@ -105,11 +114,10 @@ export default class TopBarAppIcon {
     this.actor = null;
     this.iconKey = null;
     this.usesColoredIcon = null;
-    this.mediaAppResolver = MediaAppResolver.getInstance();
   }
 
   destroy() {
     this.remove();
-    this.topBarButton = null;
+    this.topBarContent = null;
   }
 }

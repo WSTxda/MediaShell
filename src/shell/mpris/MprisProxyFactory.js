@@ -12,13 +12,15 @@
 import Gio from "gi://Gio";
 
 import {
-  DBUS_IFACE_NAME,
-  DBUS_OBJECT_PATH,
+  DBUS_DAEMON_IFACE_NAME,
+  DBUS_DAEMON_OBJECT_PATH,
   DBUS_PROPERTIES_IFACE_NAME,
-  MPRIS_IFACE_NAME,
+} from "../../shared/constants/dbus.js";
+import {
+  MPRIS_ROOT_IFACE_NAME,
   MPRIS_OBJECT_PATH,
   MPRIS_PLAYER_IFACE_NAME,
-} from "../../shared/constants/dbus.js";
+} from "../../shared/constants/mpris.js";
 import { ResourceUris } from "../../shared/constants/resources.js";
 import { isCancellationError } from "../utils/errors.js";
 
@@ -47,21 +49,23 @@ async function loadMprisIntrospectionData(cancellable) {
   const introspectionData = {
     mprisNodeInfo,
     dbusWatchNodeInfo,
-    rootInterfaceInfo: mprisNodeInfo.lookup_interface(MPRIS_IFACE_NAME),
+    rootInterfaceInfo: mprisNodeInfo.lookup_interface(MPRIS_ROOT_IFACE_NAME),
     playerInterfaceInfo: mprisNodeInfo.lookup_interface(
       MPRIS_PLAYER_IFACE_NAME,
     ),
     propertiesInterfaceInfo: mprisNodeInfo.lookup_interface(
       DBUS_PROPERTIES_IFACE_NAME,
     ),
-    busInterfaceInfo: dbusWatchNodeInfo.lookup_interface(DBUS_IFACE_NAME),
+    busDaemonInterfaceInfo: dbusWatchNodeInfo.lookup_interface(
+      DBUS_DAEMON_IFACE_NAME,
+    ),
   };
 
   if (
     !introspectionData.rootInterfaceInfo ||
     !introspectionData.playerInterfaceInfo ||
     !introspectionData.propertiesInterfaceInfo ||
-    !introspectionData.busInterfaceInfo
+    !introspectionData.busDaemonInterfaceInfo
   )
     throw new Error("The bundled D-Bus introspection data is incomplete");
 
@@ -119,11 +123,11 @@ export default class MprisProxyFactory {
     }
   }
 
-  createBusProxy(cancellable = null) {
+  createBusDaemonProxy(cancellable = null) {
     return this.createProxy(
-      this.busInterfaceInfo,
-      DBUS_IFACE_NAME,
-      DBUS_OBJECT_PATH,
+      this.busDaemonInterfaceInfo,
+      DBUS_DAEMON_IFACE_NAME,
+      DBUS_DAEMON_OBJECT_PATH,
       Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES,
       cancellable,
     );
@@ -185,6 +189,6 @@ export default class MprisProxyFactory {
     this.rootInterfaceInfo = null;
     this.playerInterfaceInfo = null;
     this.propertiesInterfaceInfo = null;
-    this.busInterfaceInfo = null;
+    this.busDaemonInterfaceInfo = null;
   }
 }

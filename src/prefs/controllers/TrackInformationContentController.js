@@ -14,26 +14,13 @@ import {
   SettingsKeys,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
 } from "../../shared/constants/settings.js";
+import { arraysEqual } from "../../shared/utils/collections.js";
+import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
 import { gettext as _ } from "../translations.js";
-
-function arraysEqual(first, second) {
-  return (
-    first.length === second.length &&
-    first.every((value, index) => value === second[index])
-  );
-}
-
-function normalizeContentItems(contentItems, fallback) {
-  if (!Array.isArray(contentItems)) return fallback;
-  const normalized = contentItems
-    .map((item) => String(item ?? "").trim())
-    .filter(Boolean);
-  return normalized.length > 0 ? normalized : fallback;
-}
 
 /**
  * Coordinates configurable track-information content rows with GSettings.
@@ -102,7 +89,7 @@ export default class TrackInformationContentController {
   }
 
   syncContentFromSettings(row, key, fallback) {
-    const contentItems = normalizeContentItems(
+    const contentItems = normalizeTrackInformationContent(
       this.settings.get_strv(key),
       fallback,
     );

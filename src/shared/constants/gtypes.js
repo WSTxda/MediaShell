@@ -14,7 +14,7 @@ export const GTypeNames = Object.freeze({
   BLOCKED_APPS_GROUP: "MediaShellBlockedAppsGroup",
   POPUP_PROGRESS_BAR_SLIDER: "MediaShellPopupProgressBarSlider",
   SCROLLING_LABEL: "MediaShellScrollingLabel",
-  TOP_BAR_BUTTON: "MediaShellTopBarButton",
+  MEDIA_SHELL_INDICATOR: "MediaShellIndicator",
   TOP_BAR_ELEMENT_ORDER_GROUP: "MediaShellTopBarElementOrderGroup",
   TRACK_INFORMATION_CONTENT_ROW: "MediaShellTrackInformationContentRow",
 });

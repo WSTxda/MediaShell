@@ -4,7 +4,7 @@
  *
  * Creates and updates the icon-or-label content used by playback buttons.
  *
- * Popup and topbar retain separate button actors and styles while sharing this
+ * Popup and top bar retain separate button actors and styles while sharing this
  * small content boundary so text controls do not introduce parallel renderers.
  */
 

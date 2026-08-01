@@ -4,7 +4,7 @@
  *
  * Draws the optional top bar visualizer for the active playing media app.
  *
- * TopBarButton owns one component, timeline, and animation clock. Style
+ * TopBarContent owns one component, timeline, and animation clock. Style
  * definitions select a shared animation and one of the local renderers without
  * creating parallel lifecycle or settings ownership.
  */
@@ -122,8 +122,8 @@ function drawSpectrumLayer(context, offsets, width, height, color, opacity) {
  * Draws the optional top bar visualizer for the active playing media app.
  */
 export default class TopBarVisualizer {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+  constructor(topBarContent) {
+    this.topBarContent = topBarContent;
     this.actor = null;
     this.continuousBars = [];
     this.classicColumns = [];
@@ -148,13 +148,19 @@ export default class TopBarVisualizer {
     ).fill(0);
   }
 
+  get extensionController() {
+    return this.topBarContent.extensionController;
+  }
+
+  get mediaApp() {
+    return this.topBarContent.mediaApp;
+  }
+
   render(index, parentBox) {
     this.ensureActor();
-    this.setStyle(this.topBarButton.extensionController.topBarVisualizerStyle);
-    this.setSpeed(this.topBarButton.extensionController.topBarVisualizerSpeed);
-    this.setPlaying(
-      this.topBarButton.mediaApp.playbackStatus === PlaybackStatus.PLAYING,
-    );
+    this.setStyle(this.extensionController.topBarVisualizerStyle);
+    this.setSpeed(this.extensionController.topBarVisualizerSpeed);
+    this.setPlaying(this.mediaApp.playbackStatus === PlaybackStatus.PLAYING);
     this.attach(index, parentBox);
   }
 
@@ -512,6 +518,6 @@ export default class TopBarVisualizer {
     this.animationLevels = null;
     this.spectrumOffsets = null;
     this.backgroundSpectrumOffsets = null;
-    this.topBarButton = null;
+    this.topBarContent = null;
   }
 }

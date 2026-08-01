@@ -2,16 +2,18 @@
  * @file playbackControlSurfaces.js
  * @module shared.constants.playbackControlSurfaces
  *
- * Declares the settings policy shared by popup and topbar playback controls.
+ * Declares the settings policy shared by popup and top bar playback controls.
  *
  * The policy is static data only: stable GSettings keys, controller property
  * names, and update flags. Shell and Preferences consume the same definitions
- * while retaining separate actors and GtkBuilder layouts.
+ * while retaining separate actors and GtkBuilder layouts. Keeping each control's
+ * impact beside its setting avoids a second synchronized map when controls are
+ * added; the table imports no runtime objects and does not own actor behavior.
  */
 
 import { PlaybackControlIds } from "./playbackControls.js";
 import { SettingsKeys } from "./settings.js";
-import { WidgetFlags } from "../enums/widget.js";
+import { WidgetFlags } from "../enums/widgetFlags.js";
 
 /** Stable surface IDs used by runtime and preferences code. */
 export const PlaybackControlSurfaces = Object.freeze({

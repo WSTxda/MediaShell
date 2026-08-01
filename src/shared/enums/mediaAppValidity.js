@@ -1,11 +1,11 @@
 /**
- * @file app.js
- * @module shared.enums.app
+ * @file mediaAppValidity.js
+ * @module shared.enums.mediaAppValidity
  *
  * Enum values describing whether an MPRIS endpoint is usable as a media app.
  *
- * PlayerProxy computes MediaAppValidity from root and Player-interface properties, and
- * MediaAppRegistry uses the result to decide whether a proxy should be visible
+ * MprisMediaApp computes MediaAppValidity from root and Player-interface properties, and
+ * MediaAppRegistry uses the result to decide whether a media app should be visible
  * to the top bar and popup. Values are runtime-only and must remain stable for
  * tests that exercise selection policy.
  */

@@ -13,7 +13,7 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as Mpris from "resource:///org/gnome/shell/ui/mpris.js";
 import { InjectionManager } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { MPRIS_PREFIX } from "../../shared/constants/dbus.js";
+import { MPRIS_BUS_NAME_PREFIX } from "../../shared/constants/mpris.js";
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("GnomeShellMediaControlsPatch");
@@ -109,7 +109,7 @@ export default class GnomeShellMediaControlsPatch {
 
     for (const busName of busNames) {
       if (
-        busName.startsWith(MPRIS_PREFIX) &&
+        busName.startsWith(MPRIS_BUS_NAME_PREFIX) &&
         !mediaSource._players?.has?.(busName)
       )
         mediaSource._addPlayer(busName);

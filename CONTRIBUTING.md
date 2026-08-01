@@ -1,33 +1,48 @@
 # Contributing
 
-Thanks for helping improve MediaShell. Keep changes focused, work with the component that already owns the behavior, and test the affected GNOME Shell, Preferences, and MPRIS paths.
+Keep changes focused, work with the component that owns the behavior, and test the affected GNOME Shell, Preferences, and MPRIS paths.
+
+Read [Architecture](docs/ARCHITECTURE.md) before changing ownership or project structure. See [Development](docs/DEVELOPMENT.md) for the toolchain, implementation conventions, validation, and live-testing guidance.
 
 ## Workflow
 
 ```bash
 pnpm install
 pnpm run env:doctor
-pnpm run shell:debug
+pnpm run check:runtime
 pnpm check
 pnpm build
 ```
 
-Use `pnpm run check:runtime` while developing and `pnpm run audit` when reviewing project organization. For release, packaging, compatibility, or EGO-facing changes, also run:
+Run `pnpm verify` for release, packaging, compatibility, or EGO-facing changes. The generated package is under `dist/builds/` and must be installed and tested in GNOME before submission.
 
-```bash
-pnpm verify
-```
-
-The generated package is under `dist/builds/` and should be installed and tested in GNOME before submission.
-
-## Change scope
+## Change rules
 
 - Respect the boundaries between `src/shared/`, `src/shell/`, and `src/prefs/`.
-- Integrate changes with the existing service, renderer, controller, or lifecycle owner whenever possible.
-- Preserve shipped settings, enum values, D-Bus names, resource paths, CSS classes, and `GTypeName` strings unless a compatibility change is intentional and documented.
-- Keep cleanup related to the change being made, and update nearby comments, logs, translations, and documentation when their meaning changes.
+- Extend the existing owner when it already matches the responsibility.
+- Preserve persisted and external contracts unless a compatibility change is intentional and documented.
+- Keep cleanup related to the change being made.
+- Update affected tests, strings, translations, comments, logs, and documentation.
+- Prefer precise names and explicit ownership over broad abstractions.
+- Share code only when its contract, side effects, ownership, lifecycle, teardown, and expected evolution are truly identical.
+- Keep semantic validators parser/AST-based and the Node suite at no more than 20 top-level tests.
 
-See [Architecture](docs/ARCHITECTURE.md) for ownership and [Development](docs/DEVELOPMENT.md) for validation, conventions, and live testing.
+## Translations
+
+The translation template is:
+
+```text
+assets/locale/mediashell@wstxda.github.com.pot
+```
+
+After changing user-visible text, run:
+
+```bash
+pnpm run translations
+pnpm check
+```
+
+Preserve reviewed translations, placeholders, plural forms, source references, translator comments, and valid catalog headers.
 
 ## Pull requests
 
@@ -37,17 +52,6 @@ Describe:
 - the affected GNOME Shell or MPRIS scenario;
 - the automated commands run;
 - the live tests performed and GNOME versions used;
-- relevant logs for lifecycle, D-Bus, identity, or private Shell API problems.
+- relevant logs for lifecycle, D-Bus, identity, artwork, or private Shell API problems.
 
-Keep commits reviewable and avoid mixing unrelated cleanup with functional changes.
-
-## Translations
-
-The template is `assets/locale/mediashell@wstxda.github.com.pot`. After changing visible text, run:
-
-```bash
-pnpm run translations
-pnpm check
-```
-
-Preserve placeholders, plural forms, source references, translator comments, and reviewed translations. JavaScript strings use gettext helpers, while GtkBuilder strings use `translatable="yes"`.
+Keep commits reviewable and do not mix unrelated cleanup with functional changes.

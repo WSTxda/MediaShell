@@ -19,7 +19,7 @@ import {
 } from "../../shared/enums/visualizer.js";
 import { StyleClasses } from "./styleClasses.js";
 
-/** Fixed visualizer actor height used in the compact top bar button. */
+/** Fixed visualizer actor height used in the compact top bar indicator. */
 export const VISUALIZER_HEIGHT = 16;
 
 /** Width of each continuous Beats or Pulse bar. */

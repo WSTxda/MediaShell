@@ -17,8 +17,8 @@ import {
   VOLUME_STEP,
 } from "../shared/constants/inputActions.js";
 import { InputActions } from "../shared/enums/input.js";
-import { SettingsAction } from "../shared/enums/settings.js";
-import { WidgetFlags } from "../shared/enums/widget.js";
+import { SettingsAction } from "../shared/enums/settingsAction.js";
+import { WidgetFlags } from "../shared/enums/widgetFlags.js";
 import { createLogger } from "../shared/utils/log.js";
 import {
   MprisOperationReasons,
@@ -30,10 +30,10 @@ import { executePlaybackControlAction } from "./mpris/playbackControlExecutor.js
 import GlobalShortcutsService from "./services/GlobalShortcutsService.js";
 import GnomeShellMediaControlsPatch from "./services/GnomeShellMediaControlsPatch.js";
 import AlbumArtLoader from "./services/AlbumArtLoader.js";
-import MediaAppResolver from "./services/MediaAppResolver.js";
+import DesktopAppResolver from "./services/DesktopAppResolver.js";
 import ExtensionResourceRegistry from "./services/ExtensionResourceRegistry.js";
 import SettingsStore from "./settings/SettingsStore.js";
-import TopBarButton from "./ui/topBar/TopBarButton.js";
+import MediaShellIndicator from "./ui/indicator/MediaShellIndicator.js";
 import { clearIconCache } from "./utils/icons.js";
 
 const logger = createLogger("ExtensionController");
@@ -52,7 +52,7 @@ export default class ExtensionController {
     // completion. If generations differ, the extension was toggled while the
     // async operation was in flight and the stale result is discarded.
     this.lifecycleGeneration = 0;
-    this.topBarButton = null;
+    this.indicator = null;
     this.extensionResourceRegistry = new ExtensionResourceRegistry(
       this.extensionPath,
     );
@@ -90,8 +90,8 @@ export default class ExtensionController {
 
       this.mediaAppRegistry = new MediaAppRegistry(this.mprisProxyFactory, {
         onAvailableMediaAppsChanged: () =>
-          this.topBarButton?.requestWidgetUpdate(
-            WidgetFlags.POPUP_APP_SELECTOR,
+          this.indicator?.requestWidgetUpdate(
+            WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
           ),
         onActiveMediaAppChanged: (mediaApp) =>
           this.handleActiveMediaAppChanged(mediaApp),
@@ -113,11 +113,11 @@ export default class ExtensionController {
     if (!this.enabled) return;
 
     if (settingSpec.impact)
-      this.topBarButton?.requestWidgetUpdate(settingSpec.impact);
+      this.indicator?.requestWidgetUpdate(settingSpec.impact);
 
     switch (settingSpec.action) {
-      case SettingsAction.REBUILD_TOP_BAR_BUTTON:
-        this.rebuildTopBarButton();
+      case SettingsAction.REBUILD_INDICATOR:
+        this.rebuildIndicator();
         break;
       case SettingsAction.UPDATE_BLOCKED_APPS:
         this.mediaAppRegistry
@@ -136,9 +136,9 @@ export default class ExtensionController {
     }
   }
 
-  rebuildTopBarButton() {
+  rebuildIndicator() {
     const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
-    this.destroyTopBarButton();
+    this.destroyIndicator();
     if (mediaApp) this.handleActiveMediaAppChanged(mediaApp);
   }
 
@@ -146,20 +146,20 @@ export default class ExtensionController {
     if (!this.enabled) return;
 
     if (!mediaApp) {
-      this.destroyTopBarButton();
+      this.destroyIndicator();
       return;
     }
 
-    if (this.topBarButton) {
-      this.topBarButton.setMediaApp(mediaApp);
+    if (this.indicator) {
+      this.indicator.setMediaApp(mediaApp);
       return;
     }
 
-    this.topBarButton = new TopBarButton(mediaApp, this);
+    this.indicator = new MediaShellIndicator(mediaApp, this);
     // Panel slot name — must match the extension's registered status area identifier.
     Main.panel.addToStatusArea(
       "MediaShell",
-      this.topBarButton,
+      this.indicator,
       this.panelIndex,
       this.panelPosition,
     );
@@ -181,12 +181,12 @@ export default class ExtensionController {
     const pinStateChanged =
       this.mediaAppRegistry?.toggleMediaAppPin(mediaApp) ?? false;
     if (pinStateChanged)
-      this.topBarButton?.requestWidgetUpdate(WidgetFlags.POPUP_APP_SELECTOR);
+      this.indicator?.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
     return pinStateChanged;
   }
 
   togglePopup() {
-    this.topBarButton?.menu.toggle();
+    this.indicator?.menu.toggle();
   }
 
   executeInputAction(inputAction) {
@@ -232,15 +232,15 @@ export default class ExtensionController {
     this.extensionInstance.openPreferences();
   }
 
-  destroyTopBarButton() {
-    const topBarButton = this.topBarButton;
-    this.topBarButton = null;
-    if (!topBarButton) return;
+  destroyIndicator() {
+    const indicator = this.indicator;
+    this.indicator = null;
+    if (!indicator) return;
 
     try {
-      topBarButton.destroy();
+      indicator.destroy();
     } catch (error) {
-      logger.error("Failed to destroy the top bar button cleanly", error);
+      logger.error("Failed to destroy the indicator cleanly", error);
     }
   }
 
@@ -265,11 +265,11 @@ export default class ExtensionController {
     // Teardown is deliberately best-effort: one broken third-party media app
     // or Shell object must not prevent the remaining resources from being released.
     this.destroyOwnedComponent("globalShortcutsService");
-    this.destroyTopBarButton();
+    this.destroyIndicator();
     this.destroyOwnedComponent("mediaAppRegistry");
     this.destroyOwnedComponent("mprisProxyFactory");
     AlbumArtLoader.destroyInstance();
-    MediaAppResolver.getInstance().clearCaches();
+    DesktopAppResolver.getInstance().clearCaches();
     clearIconCache();
     this.destroyOwnedComponent("gnomeShellMediaControlsPatch");
     this.destroyOwnedComponent("settingsStore");

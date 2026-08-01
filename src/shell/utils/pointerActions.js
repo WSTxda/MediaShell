@@ -4,7 +4,7 @@
  *
  * Installs Shell pointer gestures and button-release fallbacks for actor actions.
  *
- * TopBarPointerHandler uses this utility to translate click, double-click,
+ * IndicatorPointerHandler uses this utility to translate click, double-click,
  * touch, and scroll events into MediaShell input actions. The fallback path is
  * kept local so top bar UI code does not depend on one Clutter gesture API.
  */

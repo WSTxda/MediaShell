@@ -4,7 +4,7 @@
  *
  * Enum values for normalized MPRIS playback and loop states.
  *
- * PlayerProxy converts raw MPRIS strings into these constants before UI code sees
+ * MprisMediaApp converts raw MPRIS strings into these constants before UI code sees
  * them. Top bar and popup controls use the normalized states to decide button
  * sensitivity, play/pause icons, and repeat-mode toggles.
  */

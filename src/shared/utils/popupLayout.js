@@ -8,7 +8,7 @@
  */
 
 import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../constants/popup.js";
-import { POPUP_WIDTH } from "../constants/settings.js";
+import { POPUP_WIDTH_CONSTRAINTS } from "../constants/settings.js";
 
 /**
  * Resolves the effective popup width for the configured transport controls.
@@ -26,10 +26,10 @@ export function resolvePopupWidth(
   const numericWidth = Number(configuredWidth);
   const width = Number.isFinite(numericWidth)
     ? Math.min(
-        POPUP_WIDTH.MAX,
-        Math.max(POPUP_WIDTH.MIN, Math.trunc(numericWidth)),
+        POPUP_WIDTH_CONSTRAINTS.MAX,
+        Math.max(POPUP_WIDTH_CONSTRAINTS.MIN, Math.trunc(numericWidth)),
       )
-    : POPUP_WIDTH.DEFAULT;
+    : POPUP_WIDTH_CONSTRAINTS.DEFAULT;
   return showSeekBackward || showSeekForward
     ? Math.max(width, POPUP_SEEK_CONTROLS_MIN_WIDTH)
     : width;

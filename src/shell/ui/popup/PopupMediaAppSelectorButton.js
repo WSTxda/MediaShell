@@ -1,10 +1,10 @@
 /**
- * @file PopupAppSelectorButton.js
- * @module shell.ui.popup.PopupAppSelectorButton
+ * @file PopupMediaAppSelectorButton.js
+ * @module shell.ui.popup.PopupMediaAppSelectorButton
  *
- * Renders the popup app-selector trigger for the active media app.
+ * Renders the popup media app selector button for the active media app.
  *
- * The trigger displays the active media app and opens PopupAppSelectorList when
+ * The button displays the active media app and opens PopupMediaAppSelectorList when
  * multiple media apps are available. It owns its actors and click action; row
  * selection and pinning remain the list/controller responsibility.
  */
@@ -15,15 +15,15 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 
 import { IconNames } from "../../../shared/constants/icons.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import MediaAppResolver from "../../services/MediaAppResolver.js";
+import DesktopAppResolver from "../../services/DesktopAppResolver.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { installPrimaryClickAction } from "../../utils/pointerActions.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
 /**
- * Renders the popup app-selector trigger for the active media app.
+ * Renders the popup media app selector button for the active media app.
  */
-export default class PopupAppSelectorButton {
+export default class PopupMediaAppSelectorButton {
   constructor(popupContent, onActivate) {
     this.popupContent = popupContent;
     this.onActivate = onActivate;
@@ -35,7 +35,7 @@ export default class PopupAppSelectorButton {
     this.renderKey = null;
     this.hasMultipleMediaApps = null;
     this.disconnectButtonClickAction = null;
-    this.mediaAppResolver = MediaAppResolver.getInstance();
+    this.desktopAppResolver = DesktopAppResolver.getInstance();
   }
 
   get extensionController() {
@@ -72,34 +72,35 @@ export default class PopupAppSelectorButton {
 
     const identity = this.mediaApp.identity;
     const desktopEntry = this.mediaApp.desktopEntry;
-    const coloredClass = this.extensionController.popupAppIconUseColor
+    const coloredClass = this.extensionController.popupMediaAppIconUseColor
       ? StyleClasses.COLORED_ICON
       : StyleClasses.SYMBOLIC_ICON;
     const renderKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;
     if (renderKey !== this.renderKey) {
-      const app = this.mediaAppResolver.resolveMediaApp(
+      const desktopApp = this.desktopAppResolver.resolveDesktopApp(
         identity,
         desktopEntry,
         this.mediaApp.busName,
       );
-      this.label.text = this.mediaAppResolver.getMediaAppName(
-        app,
+      this.label.text = this.desktopAppResolver.getDesktopAppName(
+        desktopApp,
         identity || _("Unknown app"),
       );
       setGIcon(
         this.icon,
-        this.mediaAppResolver.getMediaAppIcon(app),
+        this.desktopAppResolver.getDesktopAppIcon(desktopApp),
         IconNames.MEDIA,
       );
       this.icon.set_style_class_name(
         styleClassNames(
           StyleClasses.POPUP_MENU_ICON,
-          StyleClasses.POPUP_APP_SELECTOR_TRIGGER_ICON,
+          StyleClasses.POPUP_MEDIA_APP_SELECTOR_BUTTON_ICON,
           coloredClass,
         ),
       );
       this.renderKey =
-        app && this.mediaAppResolver.hasResolvedMediaAppIcon(app)
+        desktopApp &&
+        this.desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
           ? renderKey
           : null;
     }
@@ -114,13 +115,13 @@ export default class PopupAppSelectorButton {
 
     this.container = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_APP_SELECTOR_CONTAINER,
+      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.button = new St.BoxLayout({
       styleClass: styleClassNames(
         StyleClasses.QUICK_MENU_TOGGLE,
-        StyleClasses.POPUP_APP_SELECTOR_TRIGGER,
+        StyleClasses.POPUP_MEDIA_APP_SELECTOR_BUTTON,
       ),
       xAlign: Clutter.ActorAlign.CENTER,
       reactive: true,
@@ -129,13 +130,13 @@ export default class PopupAppSelectorButton {
     this.icon = createIcon({
       styleClass: styleClassNames(
         StyleClasses.POPUP_MENU_ICON,
-        StyleClasses.POPUP_APP_SELECTOR_TRIGGER_ICON,
+        StyleClasses.POPUP_MEDIA_APP_SELECTOR_BUTTON_ICON,
         StyleClasses.SYMBOLIC_ICON,
       ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.label = new St.Label({
-      styleClass: StyleClasses.POPUP_APP_SELECTOR_TRIGGER_LABEL,
+      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_BUTTON_LABEL,
       yAlign: Clutter.ActorAlign.CENTER,
       xAlign: Clutter.ActorAlign.CENTER,
       xExpand: true,
@@ -144,7 +145,7 @@ export default class PopupAppSelectorButton {
       iconName: "go-next-symbolic",
       styleClass: styleClassNames(
         StyleClasses.POPUP_MENU_ICON,
-        StyleClasses.POPUP_APP_SELECTOR_TRIGGER_EXPAND_ICON,
+        StyleClasses.POPUP_MEDIA_APP_SELECTOR_BUTTON_EXPAND_ICON,
       ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
