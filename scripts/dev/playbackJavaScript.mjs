@@ -375,7 +375,8 @@ function importedNames(record, sourceSuffix) {
 function validatePlaybackPositionTrackerOwnership(records) {
   const errors = [];
   const record = records.get("src/shell/mpris/PlaybackPositionTracker.js");
-  if (!record) return ["src/shell/mpris/PlaybackPositionTracker.js: module is missing"];
+  if (!record)
+    return ["src/shell/mpris/PlaybackPositionTracker.js: module is missing"];
 
   const playbackPositionImports = importedNames(
     record,

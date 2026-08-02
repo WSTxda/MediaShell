@@ -376,10 +376,7 @@ export default class DesktopAppResolver {
         busName,
       );
       const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
-      if (
-        pwaAppId &&
-        resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId
-      ) {
+      if (pwaAppId && resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId) {
         const exactDesktopApp = findShellAppByExactDesktopEntry(
           appSystem,
           desktopEntry,
@@ -497,10 +494,7 @@ export default class DesktopAppResolver {
         busName,
       );
       const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
-      if (
-        pwaAppId &&
-        resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId
-      ) {
+      if (pwaAppId && resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId) {
         const exactDesktopApp = findAppInfoByExactDesktopEntry(desktopEntry);
         if (exactDesktopApp)
           return storeBoundedCacheValue(

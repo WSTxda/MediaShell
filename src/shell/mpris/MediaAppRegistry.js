@@ -234,9 +234,8 @@ export default class MediaAppRegistry {
       mediaApp.onPropertyChanged(MediaAppStateProperties.IS_PINNED, () =>
         this.reconcileActiveMediaApp(),
       );
-      mediaApp.onPropertyChanged(
-        MprisPlayerProperties.PLAYBACK_STATUS,
-        () => this.reconcileActiveMediaApp(),
+      mediaApp.onPropertyChanged(MprisPlayerProperties.PLAYBACK_STATUS, () =>
+        this.reconcileActiveMediaApp(),
       );
       mediaApp.onPropertyChanged(
         MediaAppStateProperties.IS_MEDIA_APP_INVALID,
@@ -431,9 +430,9 @@ export default class MediaAppRegistry {
 
   getPinnedMediaApp() {
     return (
-      orderMediaAppsDeterministically([...this.mediaAppsByBusName.values()]).find(
-        (mediaApp) => mediaApp.isPinned,
-      ) ?? null
+      orderMediaAppsDeterministically([
+        ...this.mediaAppsByBusName.values(),
+      ]).find((mediaApp) => mediaApp.isPinned) ?? null
     );
   }
 
@@ -601,8 +600,7 @@ export default class MediaAppRegistry {
     this.pendingRemovalAppStateConnections.clear();
     this.pendingRemovalBusNames.clear();
 
-    for (const mediaApp of this.mediaAppsByBusName.values())
-      mediaApp.destroy();
+    for (const mediaApp of this.mediaAppsByBusName.values()) mediaApp.destroy();
     for (const mediaApp of this.pendingMediaAppsByBusName.values())
       mediaApp.destroy();
 

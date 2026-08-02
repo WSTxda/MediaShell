@@ -106,7 +106,10 @@ export function validateDbusContracts(interfaces) {
       {
         method: Object.values(MprisPlayerMethods),
         signal: Object.values(MprisPlayerSignals),
-        property: [...MPRIS_PLAYER_PROPERTY_NAMES, MprisPlayerProperties.POSITION],
+        property: [
+          ...MPRIS_PLAYER_PROPERTY_NAMES,
+          MprisPlayerProperties.POSITION,
+        ],
       },
     ],
   ];

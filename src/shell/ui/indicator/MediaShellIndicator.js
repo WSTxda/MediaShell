@@ -298,7 +298,7 @@ class MediaShellIndicator extends PanelMenu.Button {
 
         this.requestWidgetUpdate(
           WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
-          WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
+            WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
         );
         this.desktopAppResolutionRetryAttemptsRemaining--;
         if (this.desktopAppResolutionRetryAttemptsRemaining <= 0) {

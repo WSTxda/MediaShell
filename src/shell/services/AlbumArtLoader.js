@@ -338,11 +338,7 @@ export default class AlbumArtLoader {
       .catch((error) => {
         if (this.#destroyed || isCancellationError(error)) return;
         if (this.#invalidateCacheDirectoryIfMissing(error)) return;
-        logger.warnOnce(
-          "cache-prune",
-          "Album-art cache pruning failed",
-          error,
-        );
+        logger.warnOnce("cache-prune", "Album-art cache pruning failed", error);
       })
       .finally(() => {
         if (this.#cachePrunePromise === prunePromise)

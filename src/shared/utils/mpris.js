@@ -9,10 +9,7 @@
  * this file only owns MPRIS value normalization and visibility decisions.
  */
 
-import {
-  MPRIS_NO_TRACK_PATH,
-  MprisMetadataKeys,
-} from "../constants/mpris.js";
+import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "../constants/mpris.js";
 import { MediaAppValidity } from "../enums/mediaAppValidity.js";
 import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
 

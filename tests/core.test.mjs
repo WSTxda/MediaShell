@@ -370,8 +370,7 @@ test("identity and search stay generic, normalized, and service-agnostic", async
         assert.equal(
           scoreBrowserIdentityCandidate(mediaIdentity, {
             desktopId: `org.example.Browser-${PWA_ID}-Default.desktop`,
-            commandline:
-              "browser --app-id=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            commandline: "browser --app-id=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           }).reason,
           "conflicting-candidate-pwa-app-id",
         );

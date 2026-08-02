@@ -8,10 +8,7 @@
  * performs deterministic calculations that remain testable outside GNOME Shell.
  */
 
-import {
-  MPRIS_NO_TRACK_PATH,
-  MprisMetadataKeys,
-} from "../constants/mpris.js";
+import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "../constants/mpris.js";
 import {
   POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
   POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,

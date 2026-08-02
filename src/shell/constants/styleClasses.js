@@ -26,8 +26,7 @@ export const StyleClasses = Object.freeze({
   POPUP_ALBUM_ART_FALLBACK: "mediashell-popup-album-art-fallback",
   POPUP_ALBUM_ART_FRAME: "mediashell-popup-album-art-frame",
   POPUP_MEDIA_APP_SELECTOR: "mediashell-popup-media-app-selector",
-  POPUP_MEDIA_APP_SELECTOR_BUTTON:
-    "mediashell-popup-media-app-selector-button",
+  POPUP_MEDIA_APP_SELECTOR_BUTTON: "mediashell-popup-media-app-selector-button",
   POPUP_MEDIA_APP_SELECTOR_BUTTON_EXPAND_ICON:
     "mediashell-popup-media-app-selector-button-expand-icon",
   POPUP_MEDIA_APP_SELECTOR_BUTTON_ICON:

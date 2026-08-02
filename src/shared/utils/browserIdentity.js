@@ -185,8 +185,7 @@ export function scoreBrowserIdentityCandidate(
   if (appIds.length !== 1)
     return {
       score: 0,
-      reason:
-        appIds.length > 1 ? "ambiguous-pwa-app-id" : "no-pwa-app-id",
+      reason: appIds.length > 1 ? "ambiguous-pwa-app-id" : "no-pwa-app-id",
       appId: "",
     };
 

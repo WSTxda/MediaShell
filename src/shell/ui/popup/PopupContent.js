@@ -19,9 +19,7 @@ import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { resolvePopupWidth } from "../../../shared/utils/popupLayout.js";
-import {
-  isPlaybackControlSurfaceVisible,
-} from "../../../shared/utils/playbackControlSurfaceState.js";
+import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
 import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { styleClassNames } from "../../utils/styleClasses.js";

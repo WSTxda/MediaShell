@@ -62,7 +62,8 @@ export default class TopBarContent {
       orderIndex < this.extensionController.topBarElementOrder.length;
       orderIndex++
     ) {
-      const elementName = this.extensionController.topBarElementOrder[orderIndex];
+      const elementName =
+        this.extensionController.topBarElementOrder[orderIndex];
       const element = TopBarElements[elementName];
       const isVisible = this.isElementVisible(element);
       const isBeforePlayback =

@@ -60,8 +60,7 @@ function resolveMediaAppRows(mediaApps, desktopAppResolver) {
       mediaApp,
       desktopApp,
       resolvedDesktopAppKey:
-        desktopApp &&
-        desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
+        desktopApp && desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
           ? mediaApp.busName
           : null,
     };
@@ -229,17 +228,12 @@ export default class PopupMediaAppSelectorList {
     return mediaAppList;
   }
 
-  createMediaAppRow(
-    { mediaApp, desktopApp },
-    pinnedMediaApp,
-    coloredClass,
-  ) {
+  createMediaAppRow({ mediaApp, desktopApp }, pinnedMediaApp, coloredClass) {
     const displayName = this.desktopAppResolver.getDesktopAppName(
       desktopApp,
       mediaApp.identity || _("Unknown app"),
     );
-    const displayIcon =
-      this.desktopAppResolver.getDesktopAppIcon(desktopApp);
+    const displayIcon = this.desktopAppResolver.getDesktopAppIcon(desktopApp);
     const isActive = this.popupContent.isActiveMediaApp(mediaApp);
     const isPinned = mediaApp.isPinned;
     const canSelect = pinnedMediaApp == null || isPinned;
