@@ -137,6 +137,7 @@ export default class AlbumArtLoader {
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
   #cacheWriteCancellable = null;
+  #destroyed = false;
   #session = null;
 
   #getSession() {
@@ -147,6 +148,8 @@ export default class AlbumArtLoader {
   }
 
   #getCacheWriteCancellable() {
+    if (this.#destroyed) return null;
+
     if (
       !this.#cacheWriteCancellable ||
       this.#cacheWriteCancellable.is_cancelled()
@@ -155,7 +158,14 @@ export default class AlbumArtLoader {
     return this.#cacheWriteCancellable;
   }
 
+  #invalidateCacheDirectoryIfMissing(error) {
+    if (!isFileNotFoundError(error)) return false;
+    this.#cacheDirectoryReady = null;
+    return true;
+  }
+
   #ensureAlbumArtCacheDirectory() {
+    if (this.#destroyed) return false;
     if (this.#cacheDirectoryReady === true) return true;
 
     const directoryReady =
@@ -219,17 +229,20 @@ export default class AlbumArtLoader {
   }
 
   #touchAlbumArtCacheFile(cacheFile, cacheKey) {
-    if (!cacheFile || !cacheKey) return;
+    if (!cacheFile || !cacheKey || this.#destroyed) return;
 
     // Serialize touches for the same entry so an older asynchronous completion
     // cannot overwrite a newer access time. Cache recency maintenance must not
     // delay the cached stream returned to PopupAlbumArt.
     this.#cacheTouchGeneration += 1;
     const cancellable = this.#getCacheWriteCancellable();
+    if (!cancellable) return;
     const previousTouch = this.#cacheTouchPromises.get(cacheKey);
     const touchPromise = (previousTouch ?? Promise.resolve())
       .catch(() => {})
       .then(async () => {
+        if (this.#destroyed || cancellable.is_cancelled()) return;
+
         const info = new Gio.FileInfo();
         info.set_modification_date_time(GLib.DateTime.new_now_utc());
         await cacheFile.set_attributes_async(
@@ -240,84 +253,116 @@ export default class AlbumArtLoader {
         );
       })
       .catch((error) => {
-        if (!isCancellationError(error) && !isFileNotFoundError(error))
-          logger.debugOnce(
-            `cache-touch:${cacheKey}`,
-            "Album-art cache access time could not be updated",
-            error,
-          );
+        if (this.#destroyed || isCancellationError(error)) return;
+        if (this.#invalidateCacheDirectoryIfMissing(error)) return;
+        logger.debugOnce(
+          `cache-touch:${cacheKey}`,
+          "Album-art cache access time could not be updated",
+          error,
+        );
       })
       .finally(() => {
         if (this.#cacheTouchPromises.get(cacheKey) !== touchPromise) return;
         this.#cacheTouchPromises.delete(cacheKey);
-        this.#requestAlbumArtCachePrune();
+        if (!this.#destroyed) this.#requestAlbumArtCachePrune();
       });
 
     this.#cacheTouchPromises.set(cacheKey, touchPromise);
   }
 
   #writeAlbumArtCacheBytes(cacheFile, responseBytes) {
-    if (!cacheFile) return;
+    if (!cacheFile || this.#destroyed) return;
 
-    // Cache persistence and pruning must not delay the first popup paint.
-    cacheFile
-      .replace_contents_bytes_async(
-        responseBytes,
-        null,
-        false,
-        Gio.FileCreateFlags.REPLACE_DESTINATION,
-        this.#getCacheWriteCancellable(),
-      )
-      .then(() => {
-        this.#requestAlbumArtCachePrune();
-      })
-      .catch((error) => {
-        if (!isCancellationError(error))
-          logger.warnOnce(
-            "cache-write",
-            "Failed to persist album art in the cache",
-            error,
-          );
-      });
+    // Cache persistence and pruning must not delay the first popup paint. A
+    // missing parent directory can occur when the user or the system clears
+    // XDG_CACHE_HOME while the extension remains enabled, so recover once.
+    void this.#persistAlbumArtCacheBytes(cacheFile, responseBytes);
+  }
+
+  async #persistAlbumArtCacheBytes(cacheFile, responseBytes) {
+    let recoveredMissingDirectory = false;
+
+    while (!this.#destroyed) {
+      const cancellable = this.#getCacheWriteCancellable();
+      if (!cancellable) return;
+
+      try {
+        await cacheFile.replace_contents_bytes_async(
+          responseBytes,
+          null,
+          false,
+          Gio.FileCreateFlags.REPLACE_DESTINATION,
+          cancellable,
+        );
+        if (!this.#destroyed) this.#requestAlbumArtCachePrune();
+        return;
+      } catch (error) {
+        if (this.#destroyed || isCancellationError(error)) return;
+
+        const cacheDirectoryMissing =
+          this.#invalidateCacheDirectoryIfMissing(error);
+        if (
+          cacheDirectoryMissing &&
+          !recoveredMissingDirectory &&
+          this.#ensureAlbumArtCacheDirectory()
+        ) {
+          recoveredMissingDirectory = true;
+          continue;
+        }
+
+        logger.warnOnce(
+          "cache-write",
+          "Failed to persist album art in the cache",
+          error,
+        );
+        return;
+      }
+    }
   }
 
   #requestAlbumArtCachePrune() {
+    if (this.#destroyed) return;
+
     this.#cachePruneRequested = true;
     if (this.#cachePrunePromise) return;
 
     const prunePromise = (async () => {
-      while (
-        this.#cachePruneRequested &&
-        !this.#getCacheWriteCancellable().is_cancelled()
-      ) {
+      while (this.#cachePruneRequested && !this.#destroyed) {
+        const cancellable = this.#getCacheWriteCancellable();
+        if (!cancellable || cancellable.is_cancelled()) return;
+
         this.#cachePruneRequested = false;
         await this.#pruneAlbumArtCacheOnce();
       }
     })()
       .catch((error) => {
-        if (!isCancellationError(error) && !isFileNotFoundError(error))
-          logger.warnOnce(
-            "cache-prune",
-            "Album-art cache pruning failed",
-            error,
-          );
+        if (this.#destroyed || isCancellationError(error)) return;
+        if (this.#invalidateCacheDirectoryIfMissing(error)) return;
+        logger.warnOnce(
+          "cache-prune",
+          "Album-art cache pruning failed",
+          error,
+        );
       })
       .finally(() => {
         if (this.#cachePrunePromise === prunePromise)
           this.#cachePrunePromise = null;
-        if (this.#cachePruneRequested) this.#requestAlbumArtCachePrune();
+        if (this.#cachePruneRequested && !this.#destroyed)
+          this.#requestAlbumArtCachePrune();
       });
     this.#cachePrunePromise = prunePromise;
   }
 
   async #pruneAlbumArtCacheOnce() {
-    if (!this.#ensureAlbumArtCacheDirectory()) return;
+    if (this.#destroyed || !this.#ensureAlbumArtCacheDirectory()) return;
 
     const touchGeneration = this.#cacheTouchGeneration;
     const pendingTouches = [...this.#cacheTouchPromises.values()];
     if (pendingTouches.length > 0) await Promise.all(pendingTouches);
 
     const cancellable = this.#getCacheWriteCancellable();
+    if (!cancellable) return;
+
     const cacheDirectory = Gio.File.new_for_path(albumArtCacheDirectoryPath);
     const enumerator = await cacheDirectory.enumerate_children_async(
       ALBUM_ART_CACHE_ATTRIBUTES,
@@ -473,7 +518,7 @@ export default class AlbumArtLoader {
     loadCancellable,
     { bypassCacheRead = false } = {},
   ) {
-    if (!albumArtUri) return null;
+    if (this.#destroyed || !albumArtUri) return null;
     const uri = parseAlbumArtUri(albumArtUri);
     if (!uri) return null;
 
@@ -558,6 +603,9 @@ export default class AlbumArtLoader {
   }
 
   destroy() {
+    if (this.#destroyed) return;
+    this.#destroyed = true;
+
     this.#session?.abort();
     this.#session = null;
     this.#cacheWriteCancellable?.cancel();
