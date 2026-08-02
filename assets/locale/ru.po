@@ -17,19 +17,8 @@ msgid "About MediaShell"
 msgstr "О MediaShell"
 
 #: src/prefs/about/AboutDialogController.js:98
-msgid ""
-"MediaShell is a GNOME Shell extension that adds configurable MPRIS media "
-"controls to the top bar. Its customizable popup displays album art, track "
-"information, playback controls, and a selector for switching between active "
-"media apps. The top bar and popup can be configured independently, while "
-"GTK4 and Libadwaita preferences provide a consistent GNOME experience."
-msgstr ""
-"MediaShell — это расширение GNOME Shell, которое добавляет на верхнюю панель "
-"настраиваемые элементы управления мультимедиа MPRIS. Настраиваемое "
-"всплывающее окно показывает обложку альбома, сведения о композиции, элементы "
-"управления воспроизведением и переключатель активных медиапроигрывателей. "
-"Верхнюю панель и всплывающее окно можно настраивать независимо, а параметры "
-"на GTK4 и Libadwaita обеспечивают единообразие с GNOME."
+msgid "A GNOME extension that adds configurable MPRIS media controls to the top bar."
+msgstr "Расширение GNOME, добавляющее на верхнюю панель настраиваемые элементы управления мультимедиа MPRIS."
 
 #: src/prefs/about/AboutDialogController.js:106
 msgid "Donate"

@@ -95,7 +95,7 @@ export default class AboutDialogController {
       developer_name: "WSTxda",
       version: String(metadataVersion ?? fallbackVersion ?? ""),
       comments: _(
-        "MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media apps. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.",
+        "A GNOME extension that adds configurable MPRIS media controls to the top bar.",
       ),
       issue_url: PROJECT_URLS.ISSUES,
       copyright: "Copyright (c) 2026 WSTxda",
