@@ -125,13 +125,7 @@ export default class IndicatorPointerHandler {
 
   #addPointerSignal(actor, signalName, callback) {
     const signalId = actor.connect(signalName, callback);
-    this.pointerActionCleanups.push(() => {
-      try {
-        actor.disconnect(signalId);
-      } catch {
-        // Actor disposal may remove pointer signals before handler teardown.
-      }
-    });
+    this.pointerActionCleanups.push(() => actor.disconnect(signalId));
   }
 
   #addMouseButtonGesture(actor, mouseButton, callback) {
@@ -143,16 +137,8 @@ export default class IndicatorPointerHandler {
     const signalId = gesture.connect("recognize", callback);
     actor.add_action(gesture);
     this.pointerActionCleanups.push(() => {
-      try {
-        gesture.disconnect(signalId);
-      } catch {
-        // Gesture disposal may remove its signal before handler teardown.
-      }
-      try {
-        actor.remove_action(gesture);
-      } catch {
-        // Removing an action is idempotent after actor disposal.
-      }
+      gesture.disconnect(signalId);
+      actor.remove_action(gesture);
     });
   }
 

@@ -36,7 +36,6 @@ export default class TopBarContent {
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
     this.playbackControls = new TopBarPlaybackControls(this);
-    this.isDestroyed = false;
   }
 
   get extensionController() {
@@ -48,7 +47,7 @@ export default class TopBarContent {
   }
 
   updateWidgets(widgetFlags) {
-    if (this.isDestroyed) return;
+    if (!this.indicator) return;
 
     this.ensureLayout();
 
@@ -217,29 +216,27 @@ export default class TopBarContent {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    if (!this.indicator) return;
+    this.indicator = null;
 
-    for (const property of [
-      "playbackControls",
-      "visualizer",
-      "trackInformation",
-      "mediaAppIcon",
-    ]) {
-      const component = this[property];
-      this[property] = null;
-      try {
-        component?.destroy();
-      } catch (error) {
-        logger.error(`Failed to destroy ${property}`, error);
-      }
-    }
+    const playbackControls = this.playbackControls;
+    const visualizer = this.visualizer;
+    const trackInformation = this.trackInformation;
+    const mediaAppIcon = this.mediaAppIcon;
+    this.playbackControls = null;
+    this.visualizer = null;
+    this.trackInformation = null;
+    this.mediaAppIcon = null;
+
+    playbackControls?.destroy();
+    visualizer?.destroy();
+    trackInformation?.destroy();
+    mediaAppIcon?.destroy();
 
     this.topBarBox?.get_parent()?.remove_child(this.topBarBox);
     this.topBarBox?.destroy();
     this.topBarBox = null;
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
-    this.indicator = null;
   }
 }

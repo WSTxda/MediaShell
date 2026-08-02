@@ -29,7 +29,6 @@ class ScrollingLabel extends St.ScrollView {
   label;
   labelBox;
 
-  isDestroyed;
   isScrolling;
   isFixedWidth;
   labelWidth;
@@ -71,7 +70,6 @@ class ScrollingLabel extends St.ScrollView {
       ...defaultParams,
       ...params,
     };
-    this.isDestroyed = false;
     this.sourceText = text;
     this.scrollPauseMilliseconds = scrollPauseMilliseconds;
     this.isScrolling = isScrolling;
@@ -121,7 +119,7 @@ class ScrollingLabel extends St.ScrollView {
   }
 
   canAnimateNow() {
-    return !this.isDestroyed && this.is_mapped() && this.get_stage() !== null;
+    return this.label !== null && this.is_mapped() && this.get_stage() !== null;
   }
 
   handleMappedLifecycleChange() {
@@ -269,7 +267,7 @@ class ScrollingLabel extends St.ScrollView {
   }
 
   handleScrollCompleted(adjustment) {
-    if (this.isDestroyed || !this.scrollTransition) return;
+    if (!this.label || !this.scrollTransition) return;
 
     this.scrollTransition.rewind();
     adjustment.value = 0;
@@ -322,14 +320,14 @@ class ScrollingLabel extends St.ScrollView {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    const label = this.label;
+    if (!label) return;
 
     this.removeScrollTransition();
     this.disconnectAdjustmentChangedSignal();
 
-    if (this.labelShowSignalId !== null && this.label) {
-      this.label.disconnect(this.labelShowSignalId);
+    if (this.labelShowSignalId !== null) {
+      label.disconnect(this.labelShowSignalId);
       this.labelShowSignalId = null;
     }
     if (this.mappedSignalId !== null) {
@@ -348,6 +346,8 @@ class ScrollingLabel extends St.ScrollView {
     this.clearInitializationSource();
     this.clearAdjustmentInitializationSource();
     this.clearCyclePauseSource();
+    this.label = null;
+    this.labelBox = null;
 
     super.destroy();
   }

@@ -254,40 +254,39 @@ export default class PopupContent {
   }
 
   destroy() {
-    if (!this.indicator) return;
+    const indicator = this.indicator;
+    if (!indicator) return;
+    this.indicator = null;
 
-    for (const [object, signalId] of [
-      [this.menu, this.menuOpenSignalId],
-      [this.popupItem, this.popupItemCapturedEventId],
-    ]) {
-      if (!object || signalId === null) continue;
-      try {
-        object.disconnect(signalId);
-      } catch {
-        // PopupMenu may dispose child handlers before MediaShell teardown.
-      }
-    }
+    const menu = indicator.menu;
+    if (this.menuOpenSignalId !== null)
+      menu.disconnect(this.menuOpenSignalId);
+    if (this.popupItem && this.popupItemCapturedEventId !== null)
+      this.popupItem.disconnect(this.popupItemCapturedEventId);
     this.menuOpenSignalId = null;
     this.popupItemCapturedEventId = null;
 
-    for (const property of [
-      "progressBar",
-      "trackInformation",
-      "playbackControls",
-      "albumArt",
-      "mediaAppSelectorController",
-      "popupItem",
-    ]) {
-      const component = this[property];
-      this[property] = null;
-      try {
-        component?.destroy();
-      } catch (error) {
-        logger.error(`Failed to destroy ${property}`, error);
-      }
-    }
+    const progressBar = this.progressBar;
+    const trackInformation = this.trackInformation;
+    const playbackControls = this.playbackControls;
+    const albumArt = this.albumArt;
+    const mediaAppSelectorController = this.mediaAppSelectorController;
+    const popupItem = this.popupItem;
+    this.progressBar = null;
+    this.trackInformation = null;
+    this.playbackControls = null;
+    this.albumArt = null;
+    this.mediaAppSelectorController = null;
+    this.popupItem = null;
+
+    progressBar?.destroy();
+    trackInformation?.destroy();
+    playbackControls?.destroy();
+    albumArt?.destroy();
+    mediaAppSelectorController?.destroy();
+    popupItem?.destroy();
+
     this.pendingWidgetFlags = 0;
     this.appliedPopupOuterWidth = null;
-    this.indicator = null;
   }
 }

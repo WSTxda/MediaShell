@@ -237,11 +237,7 @@ export default class ExtensionController {
     this.indicator = null;
     if (!indicator) return;
 
-    try {
-      indicator.destroy();
-    } catch (error) {
-      logger.error("Failed to destroy the indicator cleanly", error);
-    }
+    indicator.destroy();
   }
 
   destroyOwnedComponent(propertyName) {
@@ -249,11 +245,7 @@ export default class ExtensionController {
     this[propertyName] = null;
     if (!ownedComponent) return;
 
-    try {
-      ownedComponent.destroy();
-    } catch (error) {
-      logger.error(`Failed to destroy ${propertyName}`, error);
-    }
+    ownedComponent.destroy();
   }
 
   destroy() {
@@ -262,8 +254,6 @@ export default class ExtensionController {
     this.enabled = false;
     this.lifecycleGeneration++;
 
-    // Teardown is deliberately best-effort: one broken third-party media app
-    // or Shell object must not prevent the remaining resources from being released.
     this.destroyOwnedComponent("globalShortcutsService");
     this.destroyIndicator();
     this.destroyOwnedComponent("mediaAppRegistry");

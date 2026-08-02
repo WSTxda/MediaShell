@@ -48,7 +48,6 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.widgetUpdateSourceId = null;
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
-    this.isDestroyed = false;
     this.topBarContent = new TopBarContent(this);
     this.popupContent = new PopupContent(this);
     this.pointerHandler = new IndicatorPointerHandler(this);
@@ -64,7 +63,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   setMediaApp(mediaApp) {
-    if (!mediaApp || this.isActiveMediaApp(mediaApp)) return;
+    if (!this.extensionController || !mediaApp || this.isActiveMediaApp(mediaApp)) return;
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
     this.cancelDesktopAppResolutionRetry();
@@ -88,7 +87,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   // PlaybackStatus on track change). Accumulate WidgetFlags and schedule one
   // GLib.idle_add callback so the UI renders once after the main-loop turn.
   requestWidgetUpdate(widgetFlags) {
-    if (this.isDestroyed || !widgetFlags) return;
+    if (!this.extensionController || !widgetFlags) return;
     this.pendingWidgetFlags |= widgetFlags;
     if (this.widgetUpdateSourceId !== null) return;
 
@@ -98,7 +97,7 @@ class MediaShellIndicator extends PanelMenu.Button {
         this.widgetUpdateSourceId = null;
         const pendingWidgetFlags = this.pendingWidgetFlags;
         this.pendingWidgetFlags = 0;
-        if (!this.isDestroyed && pendingWidgetFlags) {
+        if (this.extensionController && pendingWidgetFlags) {
           try {
             this.updateWidgets(pendingWidgetFlags);
           } catch (error) {
@@ -123,7 +122,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   updateWidgets(widgetFlags) {
-    if (this.isDestroyed) return;
+    if (!this.extensionController) return;
 
     this.runWidgetUpdate("top bar", () =>
       this.topBarContent.updateWidgets(widgetFlags),
@@ -281,7 +280,7 @@ class MediaShellIndicator extends PanelMenu.Button {
       GLib.PRIORITY_DEFAULT,
       DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
       () => {
-        if (this.isDestroyed || this.mediaApp !== observedMediaApp) {
+        if (!this.extensionController || this.mediaApp !== observedMediaApp) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
@@ -355,29 +354,28 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   destroyOwnedResources() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    if (!this.extensionController) return;
+
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
     this.cancelDesktopAppResolutionRetry();
-    for (const [name, component] of [
-      ["pointerHandler", this.pointerHandler],
-      ["popupContent", this.popupContent],
-      ["topBarContent", this.topBarContent],
-    ]) {
-      try {
-        component?.destroy();
-      } catch (error) {
-        logger.error(`Failed to destroy ${name}`, error);
-      }
-      this[name] = null;
-    }
+
+    const pointerHandler = this.pointerHandler;
+    const popupContent = this.popupContent;
+    const topBarContent = this.topBarContent;
+    this.pointerHandler = null;
+    this.popupContent = null;
+    this.topBarContent = null;
     this.mediaApp = null;
     this.extensionController = null;
+
+    pointerHandler?.destroy();
+    popupContent?.destroy();
+    topBarContent?.destroy();
   }
 
   destroy() {
-    if (this.isDestroyed) return;
+    if (!this.extensionController) return;
 
     // PanelMenu.Button destroys its PopupMenu children as part of the actor
     // teardown. Clean MediaShell-owned menu items and signals first, while

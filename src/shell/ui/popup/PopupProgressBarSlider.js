@@ -131,7 +131,6 @@ class PopupProgressBarSlider extends St.BoxLayout {
     this.add_child(this.timeLabelsBox);
     this.playbackTransition.pause();
     this.slider.add_transition("progress", this.playbackTransition);
-    this.connect("destroy", () => this.onDestroy());
     this.setProgressDisabled(true);
   }
 
@@ -235,16 +234,19 @@ class PopupProgressBarSlider extends St.BoxLayout {
     }
   }
 
-  onDestroy() {
-    this.slider?.disconnectObject?.(this);
-    this.playbackTransition?.disconnectObject?.(this);
-    this.playbackTransition?.stop();
-    this.slider?.remove_transition?.("progress");
+  destroy() {
+    if (!this.slider) return;
+
+    this.slider.disconnectObject(this);
+    this.playbackTransition.disconnectObject(this);
+    this.playbackTransition.stop();
+    this.slider.remove_transition("progress");
     this.playbackTransition = null;
     this.slider = null;
     this.timeLabelsBox = null;
     this.elapsedLabel = null;
     this.trackDurationLabel = null;
+    super.destroy();
   }
 }
 
