@@ -20,14 +20,12 @@ import {
 } from "../../shared/constants/inputActions.js";
 import { normalizeInputAction } from "../../shared/utils/inputActions.js";
 import { InputActions } from "../../shared/enums/input.js";
-import { createLogger } from "../../shared/utils/log.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../utils/signalConnections.js";
 import { PREFERENCE_WIDGET_BINDINGS } from "./preferenceBindings.js";
 
-const logger = createLogger("PreferenceBinder");
 
 /**
  * Binds GSettings keys to preference widgets declared in preferenceBindings.
@@ -83,18 +81,24 @@ export default class PreferenceBinder {
   }
 
   bindInputAction(key, widget) {
+    let syncingFromSetting = false;
     const syncFromSetting = () => {
       const action = normalizeInputAction(
         this.readEnumIndex(key),
         InputActions.NONE,
       );
       const selected = MOUSE_ACTION_INDEX_BY_VALUE[action] ?? 0;
-      if (widget.selected !== selected) widget.selected = selected;
-      if (this.readEnumIndex(key) !== action) this.writeEnumIndex(key, action);
+      if (widget.selected === selected) return;
+
+      syncingFromSetting = true;
+      widget.selected = selected;
+      syncingFromSetting = false;
     };
 
     syncFromSetting();
     this.connectOwnedSignal(widget, "notify::selected", () => {
+      if (syncingFromSetting) return;
+
       const action = MOUSE_ACTION_VALUES[widget.selected] ?? InputActions.NONE;
       if (this.readEnumIndex(key) !== action) this.writeEnumIndex(key, action);
     });
@@ -115,40 +119,19 @@ export default class PreferenceBinder {
   }
 
   readEnumIndex(key) {
-    try {
-      return this.settings.get_enum(key);
-    } catch (error) {
-      logger.warn(`Failed to read enum setting ${key}; using index 0`, error);
-      return 0;
-    }
+    return this.settings.get_enum(key);
   }
 
   writeEnumIndex(key, selectedIndex) {
-    try {
-      this.settings.set_enum(key, selectedIndex);
-    } catch (error) {
-      logger.warn(`Failed to save enum setting ${key}`, error);
-    }
+    this.settings.set_enum(key, selectedIndex);
   }
 
   readAccelerator(key) {
-    try {
-      return this.settings.get_strv(key)[0] ?? "";
-    } catch (error) {
-      logger.warn(
-        `Failed to read shortcut setting ${key}; using no shortcut`,
-        error,
-      );
-      return "";
-    }
+    return this.settings.get_strv(key)[0] ?? "";
   }
 
   writeAccelerator(key, value) {
-    try {
-      this.settings.set_strv(key, [value]);
-    } catch (error) {
-      logger.warn(`Failed to save shortcut setting ${key}`, error);
-    }
+    this.settings.set_strv(key, [value]);
   }
 
   connectOwnedSignal(object, signal, callback) {
@@ -158,13 +141,8 @@ export default class PreferenceBinder {
   destroy() {
     disconnectOwnedSignals(this.ownedSignalConnections);
 
-    for (const { widget, property } of this.nativeSettingsBindings) {
-      try {
-        Gio.Settings.unbind(widget, property);
-      } catch {
-        // Widget disposal may remove native bindings before binder teardown.
-      }
-    }
+    for (const { widget, property } of this.nativeSettingsBindings)
+      Gio.Settings.unbind(widget, property);
     this.nativeSettingsBindings.length = 0;
     this.settings = null;
     this.builder = null;

@@ -271,42 +271,36 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_enum",
     fallback: InputActions.TOGGLE_POPUP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE]: {
     property: "interactionsMouseActionMiddle",
     read: "get_enum",
     fallback: InputActions.OPEN_PREFERENCES,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT]: {
     property: "interactionsMouseActionRight",
     read: "get_enum",
     fallback: InputActions.RAISE_APP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE]: {
     property: "interactionsMouseActionDouble",
     read: "get_enum",
     fallback: InputActions.NONE,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP]: {
     property: "interactionsMouseActionScrollUp",
     read: "get_enum",
     fallback: InputActions.VOLUME_UP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN]: {
     property: "interactionsMouseActionScrollDown",
     read: "get_enum",
     fallback: InputActions.VOLUME_DOWN,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
-    write: "set_enum",
   },
 
   // Others
