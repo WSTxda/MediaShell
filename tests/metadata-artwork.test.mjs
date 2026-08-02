@@ -181,6 +181,51 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       },
     ],
     [
+      "microsecond LRU recency",
+      () => {
+        assert.deepEqual(
+          selectAlbumArtCacheEvictions(
+            [
+              {
+                name: "recent",
+                sizeBytes: 1,
+                modifiedSeconds: 10,
+                modifiedMicroseconds: 900,
+              },
+              {
+                name: "older",
+                sizeBytes: 1,
+                modifiedSeconds: 10,
+                modifiedMicroseconds: 100,
+              },
+            ],
+            1,
+          ),
+          ["older"],
+        );
+      },
+    ],
+    [
+      "invalid recency falls back safely",
+      () => {
+        assert.deepEqual(
+          selectAlbumArtCacheEvictions(
+            [
+              {
+                name: "invalid",
+                sizeBytes: 1,
+                modifiedSeconds: Number.POSITIVE_INFINITY,
+                modifiedMicroseconds: Number.NaN,
+              },
+              { name: "valid", sizeBytes: 1, modifiedSeconds: 1 },
+            ],
+            1,
+          ),
+          ["invalid"],
+        );
+      },
+    ],
+    [
       "stable tie break",
       () => {
         assert.deepEqual(

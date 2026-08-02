@@ -75,7 +75,7 @@ Artwork responsibilities are intentionally split:
 
 Late asynchronous results must be rejected when their generation, lifecycle, or active endpoint is no longer current.
 
-Compressed artwork input is limited to 16 MiB per image. The optional persistent cache is limited to 128 MiB and evicts the oldest entries first.
+Compressed artwork input is limited to 16 MiB per image. The optional persistent cache is limited to 128 MiB and evicts the least recently used entries first; cache hits refresh recency asynchronously without delaying popup rendering.
 
 ## Stable contracts
 
