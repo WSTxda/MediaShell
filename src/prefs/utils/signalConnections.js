@@ -35,18 +35,10 @@ export function connectOwnedSignal(
 /**
  * Disconnects every signal stored by connectOwnedSignal().
  *
- * GTK may dispose a source object before its page controller. Disconnect is
- * therefore best-effort and intentionally quiet during idempotent teardown.
- *
  * @param {Array<{object: object, signalId: number}>} ownedSignalConnections - Mutable ownership list.
  */
 export function disconnectOwnedSignals(ownedSignalConnections) {
-  for (const { object, signalId } of ownedSignalConnections) {
-    try {
-      object.disconnect(signalId);
-    } catch {
-      // The source object may already be disposed by the preferences window.
-    }
-  }
+  for (const { object, signalId } of ownedSignalConnections)
+    object.disconnect(signalId);
   ownedSignalConnections.length = 0;
 }

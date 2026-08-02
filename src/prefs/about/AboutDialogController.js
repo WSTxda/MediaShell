@@ -114,13 +114,8 @@ export default class AboutDialogController {
   }
 
   destroy() {
-    if (this.aboutButton && this.aboutButtonSignalId !== null) {
-      try {
-        this.aboutButton.disconnect(this.aboutButtonSignalId);
-      } catch {
-        // The preferences window may dispose the button before controller teardown.
-      }
-    }
+    if (this.aboutButton && this.aboutButtonSignalId !== null)
+      this.aboutButton.disconnect(this.aboutButtonSignalId);
     this.aboutButtonSignalId = null;
     this.aboutButton = null;
     this.headerBar = null;

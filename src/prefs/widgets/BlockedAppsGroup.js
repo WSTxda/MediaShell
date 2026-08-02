@@ -41,7 +41,6 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     this.addButton = this._btn_add;
     this.chooseBlockedAppPromise = null;
     this.activeChooser = null;
-    this.isDestroyed = false;
     this.addButton.connect("clicked", () => this.chooseAndAddBlockedApp());
   }
 
@@ -51,14 +50,15 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
   }
 
   chooseAndAddBlockedApp() {
-    if (this.isDestroyed) return null;
+    if (!this.addButton) return null;
     if (this.chooseBlockedAppPromise) return this.chooseBlockedAppPromise;
 
-    this.addButton.sensitive = false;
+    const addButton = this.addButton;
+    addButton.sensitive = false;
     const choosePromise = this.performChooseAndAddBlockedApp().finally(() => {
       if (this.chooseBlockedAppPromise === choosePromise)
         this.chooseBlockedAppPromise = null;
-      if (!this.isDestroyed) this.addButton.sensitive = true;
+      if (this.addButton === addButton) addButton.sensitive = true;
     });
     this.chooseBlockedAppPromise = choosePromise;
     return choosePromise;
@@ -71,15 +71,15 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
       });
       this.activeChooser = blockedAppChooser;
       const appId = await blockedAppChooser.chooseAppId(this.get_root());
-      if (this.activeChooser === blockedAppChooser) this.activeChooser = null;
-      if (this.isDestroyed || !appId || this.blockedAppIds.includes(appId))
-        return;
+      if (this.activeChooser !== blockedAppChooser) return;
+      this.activeChooser = null;
+      if (!appId || this.blockedAppIds.includes(appId)) return;
 
       this.blockedAppIds = [appId, ...this.blockedAppIds];
       this.notify("blocked-app-ids");
       this.render();
     } catch (error) {
-      if (!this.isDestroyed) logger.warn("Failed to choose an app", error);
+      if (this.activeChooser) logger.warn("Failed to choose an app", error);
     } finally {
       this.activeChooser = null;
     }
@@ -148,10 +148,11 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
-    this.activeChooser?.force_close();
+    if (!this.addButton) return;
+
+    const activeChooser = this.activeChooser;
     this.activeChooser = null;
+    activeChooser?.force_close();
     this.chooseBlockedAppPromise = null;
     this.blockedAppIds = [];
     this.addButton = null;

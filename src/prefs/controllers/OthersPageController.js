@@ -38,7 +38,6 @@ export default class OthersPageController {
     this.ownedSignalConnections = [];
     this.albumArtCacheViewGeneration = 0;
     this.clearAlbumArtCachePromise = null;
-    this.isDestroyed = false;
     this.openDialogs = new Set();
   }
 
@@ -129,6 +128,8 @@ export default class OthersPageController {
   }
 
   presentDestructiveConfirmation(heading, body, confirmLabel, confirm) {
+    if (!this.preferencesWindow) return;
+
     const dialog = new Adw.AlertDialog({ heading, body });
     dialog.add_response("cancel", _("Cancel"));
     dialog.add_response("confirm", confirmLabel);
@@ -140,7 +141,7 @@ export default class OthersPageController {
     dialog.close_response = "cancel";
     this.openDialogs.add(dialog);
     dialog.connect("response", (_dialog, response) => {
-      this.openDialogs.delete(dialog);
+      if (!this.openDialogs.delete(dialog)) return;
       if (response === "confirm") confirm();
     });
     dialog.present(this.preferencesWindow);
@@ -148,15 +149,18 @@ export default class OthersPageController {
 
   clearAlbumArtCache() {
     if (this.clearAlbumArtCachePromise) return this.clearAlbumArtCachePromise;
+    if (!this.clearAlbumArtCacheButton) return null;
 
     const albumArtCacheViewGeneration = ++this.albumArtCacheViewGeneration;
-    this.clearAlbumArtCacheButton.sensitive = false;
+    const clearAlbumArtCacheButton = this.clearAlbumArtCacheButton;
+    clearAlbumArtCacheButton.sensitive = false;
     const clearPromise = this.performAlbumArtCacheClear(
       albumArtCacheViewGeneration,
     ).finally(() => {
       if (this.clearAlbumArtCachePromise === clearPromise)
         this.clearAlbumArtCachePromise = null;
-      if (!this.isDestroyed) this.clearAlbumArtCacheButton.sensitive = true;
+      if (this.clearAlbumArtCacheButton === clearAlbumArtCacheButton)
+        clearAlbumArtCacheButton.sensitive = true;
     });
     this.clearAlbumArtCachePromise = clearPromise;
     return clearPromise;
@@ -165,10 +169,7 @@ export default class OthersPageController {
   async performAlbumArtCacheClear(albumArtCacheViewGeneration) {
     try {
       await this.albumArtCacheService.clearAlbumArtCache();
-      if (
-        this.isDestroyed ||
-        albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration
-      )
+      if (albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration)
         return;
       this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(0, 0);
       this.preferencesWindow.add_toast(
@@ -178,10 +179,7 @@ export default class OthersPageController {
         }),
       );
     } catch (error) {
-      if (
-        this.isDestroyed ||
-        albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration
-      )
+      if (albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration)
         return;
       logger.warn("Failed to clear the album-art cache", error);
       this.preferencesWindow.add_toast(
@@ -208,19 +206,13 @@ export default class OthersPageController {
     try {
       const { cachedImageCount, totalBytes } =
         await this.albumArtCacheService.getAlbumArtCacheStats();
-      if (
-        !this.isDestroyed &&
-        albumArtCacheViewGeneration === this.albumArtCacheViewGeneration
-      )
+      if (albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
         this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(
           cachedImageCount,
           totalBytes,
         );
     } catch (error) {
-      if (
-        !this.isDestroyed &&
-        albumArtCacheViewGeneration === this.albumArtCacheViewGeneration
-      )
+      if (albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
         logger.warn(
           "Failed to calculate the album-art cache statistics",
           error,
@@ -233,12 +225,14 @@ export default class OthersPageController {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-
-    this.isDestroyed = true;
+    if (!this.preferencesWindow) return;
+    this.preferencesWindow = null;
     this.albumArtCacheViewGeneration++;
-    for (const dialog of this.openDialogs) dialog.force_close();
+
+    const openDialogs = [...this.openDialogs];
     this.openDialogs.clear();
+    for (const dialog of openDialogs) dialog.force_close();
+
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.blockedAppsGroup?.destroy();
     this.albumArtCacheService.destroy();
@@ -246,12 +240,10 @@ export default class OthersPageController {
     this.clearAlbumArtCachePromise = null;
     this.settings = null;
     this.builder = null;
-    this.preferencesWindow = null;
     this.clearAlbumArtCacheRow = null;
     this.clearAlbumArtCacheButton = null;
     this.blockedAppsGroup = null;
     this.resetGroup = null;
     this.resetSettingsRow = null;
-    this.openDialogs = null;
   }
 }

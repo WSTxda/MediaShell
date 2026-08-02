@@ -107,7 +107,6 @@ export default class InteractionsPageController {
     this.shortcutsOverviewDialog = null;
     this.overviewShortcutLabels = new Map();
     this.resetConfirmationDialog = null;
-    this.isDestroyed = false;
   }
 
   init() {
@@ -138,7 +137,7 @@ export default class InteractionsPageController {
   }
 
   presentShortcutEditor(definition) {
-    if (this.isDestroyed) return;
+    if (!this.preferencesWindow) return;
 
     this.dismissActiveShortcutEditor();
 
@@ -223,8 +222,7 @@ export default class InteractionsPageController {
   }
 
   handleShortcutKeyPressed(session, keyval, keycode, state) {
-    if (this.isDestroyed || this.activeEditorSession !== session)
-      return Gdk.EVENT_STOP;
+    if (this.activeEditorSession !== session) return Gdk.EVENT_STOP;
 
     let mask = state & Gtk.accelerator_get_default_mod_mask();
     mask &= ~Gdk.ModifierType.LOCK_MASK;
@@ -259,7 +257,7 @@ export default class InteractionsPageController {
   }
 
   saveShortcut(session) {
-    if (this.isDestroyed || this.activeEditorSession !== session) return;
+    if (this.activeEditorSession !== session) return;
 
     const shortcut = session.shortcutLabel.accelerator;
     const conflictingDefinition = shortcut
@@ -286,7 +284,7 @@ export default class InteractionsPageController {
   }
 
   presentShortcutsOverview() {
-    if (this.isDestroyed) return;
+    if (!this.preferencesWindow) return;
 
     this.shortcutsOverviewDialog?.force_close();
     this.overviewShortcutLabels.clear();
@@ -338,7 +336,7 @@ export default class InteractionsPageController {
   }
 
   presentResetShortcutsConfirmation(parent = this.preferencesWindow) {
-    if (this.isDestroyed) return;
+    if (!this.preferencesWindow) return;
 
     this.resetConfirmationDialog?.force_close();
 
@@ -353,9 +351,9 @@ export default class InteractionsPageController {
     dialog.default_response = "cancel";
     dialog.close_response = "cancel";
     dialog.connect("response", (_dialog, response) => {
+      if (this.resetConfirmationDialog !== dialog) return;
+      this.resetConfirmationDialog = null;
       if (response === "reset") this.resetKeyboardShortcuts();
-      if (this.resetConfirmationDialog === dialog)
-        this.resetConfirmationDialog = null;
     });
     dialog.present(parent);
   }
@@ -378,24 +376,27 @@ export default class InteractionsPageController {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    if (!this.preferencesWindow) return;
+    this.preferencesWindow = null;
 
     this.dismissActiveShortcutEditor();
-    this.shortcutsOverviewDialog?.force_close();
-    this.resetConfirmationDialog?.force_close();
+
+    const shortcutsOverviewDialog = this.shortcutsOverviewDialog;
+    this.shortcutsOverviewDialog = null;
+    shortcutsOverviewDialog?.force_close();
+
+    const resetConfirmationDialog = this.resetConfirmationDialog;
+    this.resetConfirmationDialog = null;
+    resetConfirmationDialog?.force_close();
 
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.overviewShortcutLabels.clear();
     this.activeEditorSession = null;
-    this.shortcutsOverviewDialog = null;
-    this.resetConfirmationDialog = null;
     this.shortcutOverviewButton = null;
     this.resetShortcutsRow = null;
     this.actionCopy = null;
     this.sectionCopy = null;
     this.settings = null;
     this.builder = null;
-    this.preferencesWindow = null;
   }
 }

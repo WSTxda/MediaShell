@@ -13,7 +13,6 @@
 import Gtk from "gi://Gtk";
 
 import { ResourcePaths } from "../shared/constants/resources.js";
-import { createLogger } from "../shared/utils/log.js";
 import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
 import InteractionsPageController from "./controllers/InteractionsPageController.js";
@@ -24,8 +23,6 @@ import TrackInformationContentController from "./controllers/TrackInformationCon
 import { PREFERENCE_PAGE_IDS } from "./constants/ui.js";
 import { registerPreferencesResources } from "./resources/preferencesResourceLoader.js";
 
-const logger = createLogger("PreferencesController");
-
 /**
  * Builds and owns the full Libadwaita preferences window.
  */
@@ -33,16 +30,16 @@ export default class PreferencesController {
   constructor(preferencesInstance, preferencesWindow) {
     this.preferencesInstance = preferencesInstance;
     this.preferencesWindow = preferencesWindow;
-    this.isDestroyed = false;
     this.closeSignalId = null;
     this.ownedControllers = [];
   }
 
   async init() {
+    const preferencesWindow = this.preferencesWindow;
     registerPreferencesResources(this.preferencesInstance.path);
     const { ensurePreferenceWidgetsRegistered } =
       await import("./widgets/widgetRegistry.js");
-    if (this.isDestroyed) return;
+    if (this.preferencesWindow !== preferencesWindow) return;
     ensurePreferenceWidgetsRegistered();
 
     this.settings = this.preferencesInstance.getSettings();
@@ -51,7 +48,7 @@ export default class PreferencesController {
     for (const pageId of PREFERENCE_PAGE_IDS) {
       const page = this.builder.get_object(pageId);
       if (!page) throw new Error(`Preferences page not found: ${pageId}`);
-      this.preferencesWindow.add(page);
+      preferencesWindow.add(page);
     }
 
     this.preferenceBinder = new PreferenceBinder(this.settings, this.builder);
@@ -64,57 +61,39 @@ export default class PreferencesController {
       new InteractionsPageController(
         this.settings,
         this.builder,
-        this.preferencesWindow,
+        preferencesWindow,
       ),
-      new OthersPageController(
-        this.settings,
-        this.builder,
-        this.preferencesWindow,
-      ),
-      new AboutDialogController(
-        this.preferencesInstance,
-        this.preferencesWindow,
-      ),
+      new OthersPageController(this.settings, this.builder, preferencesWindow),
+      new AboutDialogController(this.preferencesInstance, preferencesWindow),
     ];
     for (const controller of this.ownedControllers) controller.init();
 
-    this.closeSignalId = this.preferencesWindow.connect("close-request", () => {
+    this.closeSignalId = preferencesWindow.connect("close-request", () => {
       this.destroy();
       return false;
     });
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    const preferencesWindow = this.preferencesWindow;
+    if (!preferencesWindow) return;
+    this.preferencesWindow = null;
 
-    if (this.preferencesWindow && this.closeSignalId !== null) {
-      try {
-        this.preferencesWindow.disconnect(this.closeSignalId);
-      } catch {
-        // Window disposal may remove the close signal before controller teardown.
-      }
-    }
+    if (this.closeSignalId !== null)
+      preferencesWindow.disconnect(this.closeSignalId);
     this.closeSignalId = null;
 
-    for (const controller of this.ownedControllers.reverse()) {
-      try {
-        controller.destroy();
-      } catch (error) {
-        logger.warn(`Failed to destroy ${controller.constructor.name}`, error);
-      }
-    }
-    this.ownedControllers.length = 0;
+    const ownedControllers = this.ownedControllers;
+    this.ownedControllers = [];
+    for (const controller of [...ownedControllers].reverse())
+      controller.destroy();
 
-    try {
-      this.preferenceBinder?.destroy();
-    } catch (error) {
-      logger.warn("Preference binder failed during teardown", error);
-    }
+    const preferenceBinder = this.preferenceBinder;
     this.preferenceBinder = null;
+    preferenceBinder?.destroy();
+
     this.settings = null;
     this.builder = null;
-    this.preferencesWindow = null;
     this.preferencesInstance = null;
   }
 }
