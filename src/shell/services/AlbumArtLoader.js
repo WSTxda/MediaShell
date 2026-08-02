@@ -33,6 +33,11 @@ Gio._promisify(Gio.File.prototype, "delete_async", "delete_finish");
 Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 Gio._promisify(
   Gio.File.prototype,
+  "set_attributes_async",
+  "set_attributes_finish",
+);
+Gio._promisify(
+  Gio.File.prototype,
   "enumerate_children_async",
   "enumerate_children_finish",
 );
@@ -58,7 +63,7 @@ Gio._promisify(Gio.InputStream.prototype, "close_async", "close_finish");
 const logger = createLogger("AlbumArtLoader");
 const ALBUM_ART_FILE_ATTRIBUTES = "standard::type,standard::size";
 const ALBUM_ART_CACHE_ATTRIBUTES =
-  "standard::name,standard::type,standard::size,time::modified";
+  "standard::name,standard::type,standard::size,time::modified,time::modified-usec";
 const albumArtCacheDirectoryPath = GLib.build_filenamev([
   GLib.get_user_cache_dir(),
   EXTENSION_UUID,
@@ -129,6 +134,8 @@ export default class AlbumArtLoader {
   #cacheDirectoryReady = null;
   #cachePrunePromise = null;
   #cachePruneRequested = false;
+  #cacheTouchGeneration = 0;
+  #cacheTouchPromises = new Map();
   #cacheWriteCancellable = null;
   #session = null;
 
@@ -211,6 +218,44 @@ export default class AlbumArtLoader {
     }
   }
 
+  #touchAlbumArtCacheFile(cacheFile, cacheKey) {
+    if (!cacheFile || !cacheKey) return;
+
+    // Serialize touches for the same entry so an older asynchronous completion
+    // cannot overwrite a newer access time. Cache recency maintenance must not
+    // delay the cached stream returned to PopupAlbumArt.
+    this.#cacheTouchGeneration += 1;
+    const cancellable = this.#getCacheWriteCancellable();
+    const previousTouch = this.#cacheTouchPromises.get(cacheKey);
+    const touchPromise = (previousTouch ?? Promise.resolve())
+      .catch(() => {})
+      .then(async () => {
+        const info = new Gio.FileInfo();
+        info.set_modification_date_time(GLib.DateTime.new_now_utc());
+        await cacheFile.set_attributes_async(
+          info,
+          Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+          GLib.PRIORITY_DEFAULT,
+          cancellable,
+        );
+      })
+      .catch((error) => {
+        if (!isCancellationError(error) && !isFileNotFoundError(error))
+          logger.debugOnce(
+            `cache-touch:${cacheKey}`,
+            "Album-art cache access time could not be updated",
+            error,
+          );
+      })
+      .finally(() => {
+        if (this.#cacheTouchPromises.get(cacheKey) !== touchPromise) return;
+        this.#cacheTouchPromises.delete(cacheKey);
+        this.#requestAlbumArtCachePrune();
+      });
+
+    this.#cacheTouchPromises.set(cacheKey, touchPromise);
+  }
+
   #writeAlbumArtCacheBytes(cacheFile, responseBytes) {
     if (!cacheFile) return;
 
@@ -268,6 +313,10 @@ export default class AlbumArtLoader {
   async #pruneAlbumArtCacheOnce() {
     if (!this.#ensureAlbumArtCacheDirectory()) return;
 
+    const touchGeneration = this.#cacheTouchGeneration;
+    const pendingTouches = [...this.#cacheTouchPromises.values()];
+    if (pendingTouches.length > 0) await Promise.all(pendingTouches);
+
     const cancellable = this.#getCacheWriteCancellable();
     const cacheDirectory = Gio.File.new_for_path(albumArtCacheDirectoryPath);
     const enumerator = await cacheDirectory.enumerate_children_async(
@@ -293,6 +342,9 @@ export default class AlbumArtLoader {
             name: info.get_name(),
             sizeBytes: info.get_size(),
             modifiedSeconds: info.get_attribute_uint64("time::modified"),
+            modifiedMicroseconds: info.get_attribute_uint32(
+              "time::modified-usec",
+            ),
           });
         }
       }
@@ -307,6 +359,17 @@ export default class AlbumArtLoader {
             error,
           );
       }
+    }
+
+    // A cache hit that begins while enumeration is in progress may still have
+    // the previous timestamp in this snapshot. Defer eviction to the already
+    // coalesced next prune rather than risk deleting an entry just used.
+    if (
+      touchGeneration !== this.#cacheTouchGeneration ||
+      this.#cacheTouchPromises.size > 0
+    ) {
+      this.#cachePruneRequested = true;
+      return;
     }
 
     const evictions = selectAlbumArtCacheEvictions(
@@ -453,7 +516,7 @@ export default class AlbumArtLoader {
           cacheKey,
         );
     if (cachedStream) {
-      this.#requestAlbumArtCachePrune();
+      this.#touchAlbumArtCacheFile(cacheFile, cacheKey);
       return {
         stream: cachedStream,
         albumArtUri,
@@ -500,6 +563,7 @@ export default class AlbumArtLoader {
     this.#cacheWriteCancellable?.cancel();
     this.#cacheWriteCancellable = null;
     this.#cachePruneRequested = false;
+    this.#cacheTouchPromises.clear();
     this.#cacheDirectoryReady = null;
   }
 }

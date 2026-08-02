@@ -16,6 +16,11 @@ function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function normalizeNonNegativeNumber(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? Math.max(0, numericValue) : 0;
+}
+
 function normalizePositiveInteger(value, fallback = 1) {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) && numericValue > 0
@@ -71,11 +76,12 @@ export function createAlbumArtRequest({
 }
 
 /**
- * Selects oldest cache entries until the total byte limit is satisfied.
+ * Selects least-recently-used cache entries until the byte limit is satisfied.
  *
- * @param {{name: string, sizeBytes: number, modifiedSeconds: number}[]} entries - Cache files.
+ * @param {{name: string, sizeBytes: number, modifiedSeconds?: number, modifiedMicroseconds?: number}[]} entries
+ *   Cache files with persisted last-use timestamps.
  * @param {number} maximumBytes - Maximum total cache size in bytes.
- * @returns {string[]} File names to evict, oldest first.
+ * @returns {string[]} File names to evict, least recently used first.
  */
 export function selectAlbumArtCacheEvictions(entries, maximumBytes) {
   const byteLimit = Math.max(0, Math.trunc(Number(maximumBytes) || 0));
@@ -83,14 +89,17 @@ export function selectAlbumArtCacheEvictions(entries, maximumBytes) {
     .map((entry) => ({
       name: normalizeText(entry?.name),
       sizeBytes: Math.max(0, Math.trunc(Number(entry?.sizeBytes) || 0)),
-      modifiedSeconds: Number.isFinite(Number(entry?.modifiedSeconds))
-        ? Number(entry.modifiedSeconds)
-        : 0,
+      lastUsedMicroseconds:
+        normalizeNonNegativeNumber(entry?.modifiedSeconds) * 1_000_000 +
+        Math.min(
+          999_999,
+          Math.trunc(normalizeNonNegativeNumber(entry?.modifiedMicroseconds)),
+        ),
     }))
     .filter((entry) => entry.name)
     .sort(
       (left, right) =>
-        left.modifiedSeconds - right.modifiedSeconds ||
+        left.lastUsedMicroseconds - right.lastUsedMicroseconds ||
         left.name.localeCompare(right.name),
     );
 
