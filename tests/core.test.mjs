@@ -33,8 +33,10 @@ import {
 import {
   buildBrowserIdentityAliases,
   extractChromiumPwaAppIds,
+  extractChromiumPwaCommandLineAppIds,
   isChromiumPwaAppId,
   resolveBrowserIdentityCandidate,
+  resolveChromiumPwaAppId,
   scoreBrowserIdentityCandidate,
 } from "../src/shared/utils/browserIdentity.js";
 import { arraysEqual, moveArrayItem } from "../src/shared/utils/collections.js";
@@ -322,20 +324,77 @@ test("identity and search stay generic, normalized, and service-agnostic", async
           buildBrowserIdentityAliases({
             desktopId: `helium-${PWA_ID}-Default.desktop`,
             startupWmClass: `crx_${PWA_ID}`,
+            commandline: `helium --app-id=${PWA_ID}`,
           }),
           [PWA_ID, `crx_${PWA_ID}`],
+        );
+        assert.deepEqual(
+          extractChromiumPwaCommandLineAppIds(
+            `flatpak run org.example.Browser --app-id=${PWA_ID}`,
+            `browser --app-id "${PWA_ID}"`,
+          ),
+          [PWA_ID],
         );
         const mediaIdentity = {
           identity: "Media app",
           desktopEntry: `chromium-${PWA_ID}-Default`,
           busName: "org.mpris.MediaPlayer2.chromium.instance123",
         };
+        assert.equal(resolveChromiumPwaAppId(mediaIdentity), PWA_ID);
         assert.deepEqual(
           scoreBrowserIdentityCandidate(mediaIdentity, {
             desktopId: `org.example.Browser-${PWA_ID}-Default.desktop`,
             displayName: "Media app",
           }),
-          { score: 1000, reason: "desktopId", appId: PWA_ID },
+          { score: 1200, reason: "desktopId", appId: PWA_ID },
+        );
+        assert.deepEqual(
+          scoreBrowserIdentityCandidate(mediaIdentity, {
+            desktopId: "org.example.Browser.WebApp.desktop",
+            startupWmClass: "custom-web-app",
+            commandline: `flatpak run org.example.Browser --app-id=${PWA_ID}`,
+          }),
+          { score: 1000, reason: "commandline", appId: PWA_ID },
+        );
+        assert.equal(
+          resolveBrowserIdentityCandidate(mediaIdentity, [
+            {
+              desktopId: `org.example.Native-${PWA_ID}-Default.desktop`,
+            },
+            {
+              desktopId: `org.example.Flatpak-${PWA_ID}-Default.desktop`,
+            },
+          ]),
+          null,
+        );
+        assert.equal(
+          scoreBrowserIdentityCandidate(mediaIdentity, {
+            desktopId: `org.example.Browser-${PWA_ID}-Default.desktop`,
+            commandline:
+              "browser --app-id=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          }).reason,
+          "conflicting-candidate-pwa-app-id",
+        );
+        assert.deepEqual(
+          resolveBrowserIdentityCandidate(mediaIdentity, [
+            { desktopId: `same-${PWA_ID}-Default.desktop` },
+            { desktopId: `same-${PWA_ID}-Default` },
+          ]),
+          {
+            descriptor: {
+              desktopId: `same-${PWA_ID}-Default.desktop`,
+            },
+            score: 1200,
+            reason: "desktopId",
+            appId: PWA_ID,
+          },
+        );
+        assert.equal(
+          resolveChromiumPwaAppId({
+            desktopEntry: `browser-${PWA_ID}-Default`,
+            identity: `crx_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`,
+          }),
+          "",
         );
         assert.equal(
           resolveBrowserIdentityCandidate(mediaIdentity, [

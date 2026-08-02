@@ -16,7 +16,10 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
-import { resolveBrowserIdentityCandidate } from "../../shared/utils/browserIdentity.js";
+import {
+  resolveBrowserIdentityCandidate,
+  resolveChromiumPwaAppId,
+} from "../../shared/utils/browserIdentity.js";
 import { IconNames } from "../../shared/constants/icons.js";
 import {
   DESKTOP_APP_RESOLVER_CACHE_LIMIT,
@@ -119,6 +122,27 @@ function createMediaIdentityDescriptor(identity, desktopEntry, busName) {
   return { identity, desktopEntry, busName };
 }
 
+function buildExactDesktopEntryCandidates(desktopEntry) {
+  const basename = stripDesktopFileSuffix(desktopEntry);
+  return basename ? [`${basename}.desktop`, basename] : [];
+}
+
+function findShellAppByExactDesktopEntry(appSystem, desktopEntry) {
+  for (const appId of buildExactDesktopEntryCandidates(desktopEntry)) {
+    const desktopApp = appSystem.lookup_app(appId);
+    if (desktopApp) return desktopApp;
+  }
+  return null;
+}
+
+function findAppInfoByExactDesktopEntry(desktopEntry) {
+  for (const appId of buildExactDesktopEntryCandidates(desktopEntry)) {
+    const desktopApp = Gio.DesktopAppInfo.new(appId);
+    if (desktopApp) return desktopApp;
+  }
+  return null;
+}
+
 /**
  * Reads installed-app metadata into the pure descriptor used by browser/PWA scoring.
  *
@@ -135,15 +159,6 @@ function readDesktopAppDescriptor(desktopApp) {
     desktopId: readAppStringSafely(
       () => desktopApp?.get_id?.() || appInfo?.get_id?.(),
     ),
-    name: readAppStringSafely(
-      () => desktopApp?.get_name?.() || appInfo?.get_name?.(),
-    ),
-    displayName: readAppStringSafely(
-      () => desktopApp?.get_display_name?.() || appInfo?.get_display_name?.(),
-    ),
-    executable: readAppStringSafely(
-      () => desktopApp?.get_executable?.() || appInfo?.get_executable?.(),
-    ),
     startupWmClass: readAppStringSafely(
       () =>
         desktopApp?.get_startup_wm_class?.() ||
@@ -158,9 +173,9 @@ function readDesktopAppDescriptor(desktopApp) {
 /**
  * Resolves a media app against scored browser/PWA candidates.
  *
- * The shared scorer returns a match only for strong evidence such as a desktop ID
- * or StartupWMClass containing the PWA app ID. Weak browser-name matches are
- * ignored so ordinary browser media keeps the existing resolver fallback path.
+ * The shared scorer returns a match only for strong evidence in the desktop ID,
+ * StartupWMClass, or Chromium's explicit `--app-id` launcher argument. Ordinary
+ * browser media keeps the existing resolver fallback path.
  *
  * @param {object} mediaIdentity - MPRIS identity, desktop entry, and bus name.
  * @param {{desktopApp: Shell.App|Gio.AppInfo}[]} entries
@@ -192,10 +207,9 @@ function resolveBrowserIdentityApp(mediaIdentity, entries) {
 /**
  * Finds a Shell.App for browser/PWA media before fuzzy name matching runs.
  *
- * Running Shell apps are preferred because they are already tied to windows. If
- * the PWA exists only as a desktop entry, the resolver maps the strong Gio.AppInfo
- * match back through Shell.AppSystem so the rest of MediaShell still receives a
- * normal Shell.App object.
+ * Running and installed apps are evaluated as one desktop-ID-keyed set. Runtime
+ * state is not identity evidence: two installed launchers with equally strong
+ * metadata remain ambiguous even when only one currently has an open window.
  */
 function findShellAppByBrowserIdentity(
   appSystem,
@@ -204,23 +218,25 @@ function findShellAppByBrowserIdentity(
   desktopEntry,
   busName,
 ) {
-  const mediaIdentity = createMediaIdentityDescriptor(
-    identity,
-    desktopEntry,
-    busName,
-  );
-  const runningMatch = resolveBrowserIdentityApp(
-    mediaIdentity,
-    runningApps.map((desktopApp) => ({ desktopApp })),
-  );
-  if (runningMatch) return runningMatch;
+  const desktopAppsById = new Map();
+  for (const desktopApp of runningApps) {
+    const appId = readAppStringSafely(() => desktopApp.get_id?.());
+    if (appId) desktopAppsById.set(appId, desktopApp);
+  }
+  for (const desktopApp of Gio.AppInfo.get_all()) {
+    const appId = readAppStringSafely(() => desktopApp.get_id?.());
+    if (appId && !desktopAppsById.has(appId))
+      desktopAppsById.set(appId, desktopApp);
+  }
 
-  const appInfoMatch = resolveBrowserIdentityApp(
-    mediaIdentity,
-    Gio.AppInfo.get_all().map((desktopApp) => ({ desktopApp })),
+  const match = resolveBrowserIdentityApp(
+    createMediaIdentityDescriptor(identity, desktopEntry, busName),
+    [...desktopAppsById.values()].map((desktopApp) => ({ desktopApp })),
   );
-  const appId = readAppStringSafely(() => appInfoMatch?.get_id?.());
-  return appId ? appSystem.lookup_app(appId) : null;
+  const appId = readAppStringSafely(() => match?.get_id?.());
+  if (!appId) return null;
+
+  return appSystem.lookup_app(appId) ?? desktopAppsById.get(appId) ?? null;
 }
 
 /**
@@ -353,6 +369,46 @@ export default class DesktopAppResolver {
 
     try {
       const appSystem = Shell.AppSystem.get_default();
+      let runningApps = null;
+      const mediaIdentity = createMediaIdentityDescriptor(
+        identity,
+        desktopEntry,
+        busName,
+      );
+      const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
+      if (
+        pwaAppId &&
+        resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId
+      ) {
+        const exactDesktopApp = findShellAppByExactDesktopEntry(
+          appSystem,
+          desktopEntry,
+        );
+        if (exactDesktopApp)
+          return storeBoundedCacheValue(
+            this.#shellAppCache,
+            appCacheKey,
+            exactDesktopApp,
+          );
+      }
+
+      if (pwaAppId) {
+        runningApps = appSystem.get_running();
+        const browserIdentityApp = findShellAppByBrowserIdentity(
+          appSystem,
+          runningApps,
+          identity,
+          desktopEntry,
+          busName,
+        );
+        if (browserIdentityApp)
+          return storeBoundedCacheValue(
+            this.#shellAppCache,
+            appCacheKey,
+            browserIdentityApp,
+          );
+      }
+
       const appIdCandidates = buildDesktopAppIdCandidates(
         identity,
         desktopEntry,
@@ -373,20 +429,7 @@ export default class DesktopAppResolver {
         desktopEntry,
         busName,
       );
-      const runningApps = appSystem.get_running();
-      const browserIdentityApp = findShellAppByBrowserIdentity(
-        appSystem,
-        runningApps,
-        identity,
-        desktopEntry,
-        busName,
-      );
-      if (browserIdentityApp)
-        return storeBoundedCacheValue(
-          this.#shellAppCache,
-          appCacheKey,
-          browserIdentityApp,
-        );
+      runningApps ??= appSystem.get_running();
 
       const runningApp = findRunningShellApp(runningApps, normalizedCandidates);
       if (runningApp)
@@ -448,6 +491,39 @@ export default class DesktopAppResolver {
     if (cachedApp) return cachedApp;
 
     try {
+      const mediaIdentity = createMediaIdentityDescriptor(
+        identity,
+        desktopEntry,
+        busName,
+      );
+      const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
+      if (
+        pwaAppId &&
+        resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId
+      ) {
+        const exactDesktopApp = findAppInfoByExactDesktopEntry(desktopEntry);
+        if (exactDesktopApp)
+          return storeBoundedCacheValue(
+            this.#appInfoCache,
+            appCacheKey,
+            exactDesktopApp,
+          );
+      }
+
+      if (pwaAppId) {
+        const browserIdentityApp = findAppInfoByBrowserIdentity(
+          identity,
+          desktopEntry,
+          busName,
+        );
+        if (browserIdentityApp)
+          return storeBoundedCacheValue(
+            this.#appInfoCache,
+            appCacheKey,
+            browserIdentityApp,
+          );
+      }
+
       const appIdCandidates = buildDesktopAppIdCandidates(
         identity,
         desktopEntry,
@@ -464,17 +540,6 @@ export default class DesktopAppResolver {
       }
 
       const candidateAppIdSet = new Set(appIdCandidates);
-      const browserIdentityApp = findAppInfoByBrowserIdentity(
-        identity,
-        desktopEntry,
-        busName,
-      );
-      if (browserIdentityApp)
-        return storeBoundedCacheValue(
-          this.#appInfoCache,
-          appCacheKey,
-          browserIdentityApp,
-        );
 
       const normalizedCandidates = buildNormalizedAppIdentityCandidates(
         identity,

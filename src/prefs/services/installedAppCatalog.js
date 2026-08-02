@@ -112,22 +112,11 @@ export function getAppIcon(app) {
  * differ across desktop files and package formats.
  *
  * @param {Gio.AppInfo|null|undefined} app - Application info object.
- * @returns {{desktopId: string, name: string, displayName: string, executable: string, startupWmClass: string, commandline: string}} Pure descriptor.
+ * @returns {{desktopId: string, startupWmClass: string, commandline: string}} Pure descriptor.
  */
 function getAppDescriptor(app) {
   return {
     desktopId: getAppId(app),
-    name: readAppStringSafely(app, "get_name", "app-descriptor-name"),
-    displayName: readAppStringSafely(
-      app,
-      "get_display_name",
-      "app-descriptor-display-name",
-    ),
-    executable: readAppStringSafely(
-      app,
-      "get_executable",
-      "app-descriptor-executable",
-    ),
     startupWmClass: readAppStringSafely(
       app,
       "get_startup_wm_class",
