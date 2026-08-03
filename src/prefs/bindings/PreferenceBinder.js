@@ -26,7 +26,6 @@ import {
 } from "../utils/signalConnections.js";
 import { PREFERENCE_WIDGET_BINDINGS } from "./preferenceBindings.js";
 
-
 /**
  * Binds GSettings keys to preference widgets declared in preferenceBindings.
  */

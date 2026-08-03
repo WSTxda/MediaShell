@@ -11,7 +11,6 @@
 
 import { SETTINGS_SPEC } from "./settingsSpec.js";
 
-
 /**
  * Wraps Gio.Settings with typed accessors and change-impact dispatch.
  */

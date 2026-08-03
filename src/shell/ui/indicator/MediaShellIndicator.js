@@ -63,7 +63,12 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   setMediaApp(mediaApp) {
-    if (!this.extensionController || !mediaApp || this.isActiveMediaApp(mediaApp)) return;
+    if (
+      !this.extensionController ||
+      !mediaApp ||
+      this.isActiveMediaApp(mediaApp)
+    )
+      return;
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
     this.cancelDesktopAppResolutionRetry();

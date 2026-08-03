@@ -342,10 +342,7 @@ export default class AlbumArtLoader {
   }
 
   async #pruneAlbumArtCacheOnce() {
-    if (
-      !this.#cacheWriteCancellable ||
-      !this.#ensureAlbumArtCacheDirectory()
-    )
+    if (!this.#cacheWriteCancellable || !this.#ensureAlbumArtCacheDirectory())
       return;
 
     const touchGeneration = this.#cacheTouchGeneration;
@@ -461,8 +458,9 @@ export default class AlbumArtLoader {
         return null;
       }
 
-      const declaredLength =
-        httpMessage.get_response_headers().get_content_length();
+      const declaredLength = httpMessage
+        .get_response_headers()
+        .get_content_length();
       if (declaredLength > ALBUM_ART_MAX_BYTES) {
         logger.warnOnce(
           "unsafe-content-length",

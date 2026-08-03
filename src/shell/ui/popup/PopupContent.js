@@ -259,8 +259,7 @@ export default class PopupContent {
     this.indicator = null;
 
     const menu = indicator.menu;
-    if (this.menuOpenSignalId !== null)
-      menu.disconnect(this.menuOpenSignalId);
+    if (this.menuOpenSignalId !== null) menu.disconnect(this.menuOpenSignalId);
     if (this.popupItem && this.popupItemCapturedEventId !== null)
       this.popupItem.disconnect(this.popupItemCapturedEventId);
     this.menuOpenSignalId = null;

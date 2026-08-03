@@ -19,7 +19,6 @@ import { isVersionAtLeast } from "./shared/utils/version.js";
 import PreferencesController from "./prefs/PreferencesController.js";
 import { initializePreferencesTranslations } from "./prefs/translations.js";
 
-
 function assertSupportedLibadwaita() {
   const major = Adw.get_major_version();
   const minor = Adw.get_minor_version();
