@@ -68,8 +68,8 @@ export default class PlaybackPositionTracker {
 
   readClockSnapshot() {
     return {
-      monotonicMicroseconds: Number(this.getMonotonicTime?.()),
-      realMicroseconds: Number(this.getRealTime?.()),
+      monotonicMicroseconds: Number(this.getMonotonicTime()),
+      realMicroseconds: Number(this.getRealTime()),
     };
   }
 

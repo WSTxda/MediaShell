@@ -687,7 +687,7 @@ export default class MprisMediaApp {
     return Boolean(this.state.CanQuit);
   }
   get hasBusOwner() {
-    return Boolean(this.rootProxy?.get_name_owner?.());
+    return Boolean(this.rootProxy?.get_name_owner());
   }
   get canRaise() {
     return Boolean(this.state.CanRaise);

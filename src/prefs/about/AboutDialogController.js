@@ -77,7 +77,7 @@ export default class AboutDialogController {
     if (widget instanceof Adw.HeaderBar || widget instanceof Gtk.HeaderBar)
       return widget;
 
-    let child = widget.get_first_child?.();
+    let child = widget.get_first_child();
     while (child) {
       const headerBar = this.findHeaderBar(child);
       if (headerBar) return headerBar;

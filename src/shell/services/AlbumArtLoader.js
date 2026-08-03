@@ -462,7 +462,7 @@ export default class AlbumArtLoader {
       }
 
       const declaredLength =
-        httpMessage.get_response_headers()?.get_content_length?.() ?? -1;
+        httpMessage.get_response_headers().get_content_length();
       if (declaredLength > ALBUM_ART_MAX_BYTES) {
         logger.warnOnce(
           "unsafe-content-length",

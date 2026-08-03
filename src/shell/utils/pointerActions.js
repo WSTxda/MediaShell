@@ -34,12 +34,8 @@ export function installPrimaryClickAction(
 ) {
   if (typeof Clutter.ClickGesture !== "undefined") {
     const gesture = new Clutter.ClickGesture();
-    if (typeof gesture.set_required_button === "function") {
-      gesture.set_required_button(Clutter.BUTTON_PRIMARY);
-    }
-    if (typeof gesture.set_recognize_on_press === "function") {
-      gesture.set_recognize_on_press(false);
-    }
+    gesture.set_required_button(Clutter.BUTTON_PRIMARY);
+    gesture.set_recognize_on_press(false);
 
     const signalId = gesture.connect("recognize", () => {
       if (!shouldActivate?.()) return;

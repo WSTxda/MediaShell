@@ -80,7 +80,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
         final: finalValue,
       }),
     });
-    this.playbackTransition.set_remove_on_complete?.(false);
+    this.playbackTransition.set_remove_on_complete(false);
     this.playbackTransition.connectObject(
       "new-frame",
       (_timeline, timelineElapsedMilliseconds) => {
@@ -200,7 +200,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
   }
 
   ensurePlaybackTransitionAttached() {
-    if (this.slider.get_transition?.("progress") === null)
+    if (this.slider.get_transition("progress") === null)
       this.slider.add_transition("progress", this.playbackTransition);
   }
 

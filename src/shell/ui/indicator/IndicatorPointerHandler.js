@@ -130,10 +130,8 @@ export default class IndicatorPointerHandler {
 
   #addMouseButtonGesture(actor, mouseButton, callback) {
     const gesture = new Clutter.ClickGesture();
-    if (typeof gesture.set_required_button === "function")
-      gesture.set_required_button(mouseButton);
-    if (typeof gesture.set_recognize_on_press === "function")
-      gesture.set_recognize_on_press(true);
+    gesture.set_required_button(mouseButton);
+    gesture.set_recognize_on_press(true);
     const signalId = gesture.connect("recognize", callback);
     actor.add_action(gesture);
     this.pointerActionCleanups.push(() => {

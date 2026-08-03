@@ -21,40 +21,22 @@ const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names([
   IconNames.MISSING,
 ]);
 
-function readAppStringSafely(app, getterName, logKey) {
-  try {
-    return String(app?.[getterName]?.() ?? "");
-  } catch (error) {
-    logger.debugOnce(
-      logKey,
-      "App metadata was unavailable while building the installed-app catalog",
-      error,
-    );
-    return "";
-  }
+function readAppString(app, getterName) {
+  return app ? String(app[getterName]() ?? "") : "";
 }
 
 /**
- * Safely reads a Gio.AppInfo desktop ID.
- *
- * Some AppInfo implementations can throw when metadata is incomplete or backed
- * by a disappearing desktop file. The chooser treats those failures as missing
- * metadata and keeps scanning the rest of the catalog.
+ * Reads a Gio.AppInfo desktop ID.
  *
  * @param {Gio.AppInfo|null|undefined} app - Application info object.
  * @returns {string} Desktop ID or an empty string.
  */
 export function getAppId(app) {
-  try {
-    return app?.get_id?.() || "";
-  } catch (error) {
-    logger.debugOnce("app-id", "App ID metadata was unavailable", error);
-    return "";
-  }
+  return app?.get_id() || "";
 }
 
 /**
- * Safely resolves the display name used in blocked-app rows.
+ * Resolves the display name used in blocked-app rows.
  *
  * The function prefers the localized display name, falls back to the app name,
  * then to the desktop ID so every visible row has searchable text.
@@ -64,43 +46,25 @@ export function getAppId(app) {
  * @returns {string} Best available application label.
  */
 export function getAppName(app, fallback = "") {
-  try {
-    return (
-      app?.get_display_name?.() ||
-      app?.get_name?.() ||
-      getAppId(app) ||
-      fallback
-    );
-  } catch (error) {
-    logger.debugOnce("app-name", "App name metadata was unavailable", error);
-    return fallback;
-  }
+  if (!app) return fallback;
+  return app.get_display_name() || app.get_name() || getAppId(app) || fallback;
 }
 
 /**
- * Safely returns the Gio.Icon used by the blocked-app chooser.
+ * Returns the Gio.Icon used by the blocked-app chooser.
  *
  * The original Gio.Icon is preserved because rebuilding themed icons from names
- * can lose desktop-file icon resolution details. Fallback icons are used only
- * when AppInfo exposes no icon or throws while reading it.
+ * can lose desktop-file icon resolution details. The fallback is used only
+ * when AppInfo exposes no icon.
  *
  * @param {Gio.AppInfo|null|undefined} app - Application info object.
  * @returns {Gio.Icon} App icon or a themed fallback.
  */
 export function getAppIcon(app) {
-  try {
-    // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
-    // its names can discard implementation details used by GTK to resolve
-    // desktop-file icons and caused every chooser row to hit the fallback.
-    return app?.get_icon?.() ?? FALLBACK_APP_ICON;
-  } catch (error) {
-    logger.debugOnce(
-      "app-icon",
-      "App icon metadata was unavailable; using the fallback",
-      error,
-    );
-    return FALLBACK_APP_ICON;
-  }
+  // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
+  // its names can discard implementation details used by GTK to resolve
+  // desktop-file icons and caused every chooser row to hit the fallback.
+  return app?.get_icon() ?? FALLBACK_APP_ICON;
 }
 
 /**
@@ -117,16 +81,8 @@ export function getAppIcon(app) {
 function getAppDescriptor(app) {
   return {
     desktopId: getAppId(app),
-    startupWmClass: readAppStringSafely(
-      app,
-      "get_startup_wm_class",
-      "app-descriptor-wm-class",
-    ),
-    commandline: readAppStringSafely(
-      app,
-      "get_commandline",
-      "app-descriptor-commandline",
-    ),
+    startupWmClass: readAppString(app, "get_startup_wm_class"),
+    commandline: readAppString(app, "get_commandline"),
   };
 }
 
