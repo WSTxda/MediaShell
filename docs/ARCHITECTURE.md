@@ -17,7 +17,7 @@ src/
   prefs/                       GTK4/Libadwaita Preferences runtime
 assets/                        UI templates, schema, D-Bus XML, translations, and images
 scripts/                       Validation, packaging, and development utilities
-tests/                         Pure-logic and parsed-contract tests
+tests/                         Behavior and cross-file integrity tests
 ```
 
 `src/shared/` must not import GNOME Shell or GTK. Shell and Preferences communicate through shared contracts, GSettings, and compiled resources; they do not import each other.
@@ -31,7 +31,7 @@ tests/                         Pure-logic and parsed-contract tests
 - `DesktopAppResolver` maps MPRIS identity to installed applications and browser/PWA desktop entries.
 - `MediaShellIndicator` owns the panel indicator and popup. `TopBarContent` owns the top bar surface, while components under `ui/topBar/` and `ui/popup/` own their respective actors and teardown.
 - `AlbumArtLoader` owns local, cache, and network I/O. `PopupAlbumArt` owns decode requests, cancellation generations, actors, and visible fallback state.
-- `PreferencesController` owns GtkBuilder, bindings, page controllers, custom widgets, and Preferences teardown.
+- `PreferencesController` owns GtkBuilder, bindings, page controllers, custom widgets, and Preferences teardown. `PopupLayoutController` provides user-driven width feedback when seek controls require the popup minimum.
 
 The component that creates a signal, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
 
@@ -92,6 +92,14 @@ Preserve compatibility-sensitive values unless a migration is intentional and do
 Constant modules contain values and frozen declarative data. Reusable normalization, comparison, and resolution behavior belongs under `utils/`. Process-specific policy and runtime state stay with their owner.
 
 Share implementation only when inputs, outputs, side effects, ownership, lifecycle, teardown, and expected evolution are the same. Similar-looking code may remain separate by design.
+
+## Validation boundaries
+
+Development tooling validates facts it can determine exactly: JavaScript parsing, static imports and exports, process boundaries, stable entry points, removed APIs, schema/UI/D-Bus consistency, playback table references, assets, translations, and package contents. GtkBuilder IDs are scoped to the `.ui` file that owns them; references made through the main Preferences builder are checked specifically against `prefs.ui`.
+
+Behavior tests cover pure decisions, compatibility-sensitive values, owner transitions, cancellation, stale-result rejection, and package corruption. Tooling does not infer ownership, teardown reachability, naming quality, or dead code from method names and source patterns; those remain review and live-testing responsibilities. Translation checks require source/template parity, valid headers, and safe placeholders, while incomplete locale coverage may fall back to the source language and is compiled by the native gettext gate.
+
+The shared logger is runtime infrastructure, not a validation mechanism. It centralizes important failures and bounded once-only diagnostics without logging normal successful operation.
 
 ## Private GNOME Shell API
 

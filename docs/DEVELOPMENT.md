@@ -12,21 +12,23 @@ pnpm run shell:debug
 
 ## Commands
 
-| Command                  | Purpose                                                                            |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| `pnpm run check:runtime` | Validate source, parsed contracts, tests, assets, translations, and script syntax. |
-| `pnpm check`             | Run runtime checks, formatting verification, and the organization audit.           |
-| `pnpm run audit`         | Report naming, ownership, logger-scope, and source-layout drift.                   |
-| `pnpm run audit:strict`  | Treat the organization audit as a cleanup gate.                                    |
-| `pnpm check:native`      | Run validation with native GLib and gettext tools.                                 |
-| `pnpm build`             | Validate, compile resources, package, and inspect the archive.                     |
-| `pnpm verify`            | Build and run `shexli` against the final package.                                  |
+| Command                  | Purpose                                                                  |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `pnpm run test`          | Run toolkit-independent behavior and contract tests.                     |
+| `pnpm run check:runtime` | Validate source, tests, declarative contracts, assets, and translations. |
+| `pnpm check`             | Run runtime validation and Prettier verification.                        |
+| `pnpm check:native`      | Compile schemas, resources, and translations with the native toolchain.  |
+| `pnpm build`             | Validate, compile resources, package, and inspect the generated archive. |
+| `pnpm verify`            | Build and run `shexli` against the final package.                        |
 
-Runtime checks cover imports, unresolved identifiers, process boundaries, lifecycle patterns, metadata, settings, GtkBuilder, D-Bus XML, assets, translations, tests, and package contents.
+`check:runtime` has four release-oriented gates:
 
-Semantic JavaScript checks must use the existing parser, AST, and scope analysis. Regex-only checks are not accepted for language semantics.
+1. parse JavaScript and validate imports, exports, cycles, process boundaries, entry points, and stable removed APIs;
+2. run behavior and contract tests;
+3. compare metadata, GSettings, GtkBuilder, playback tables, and D-Bus XML;
+4. validate resources, translation catalogs, and development-script syntax.
 
-Keep the Node suite at no more than 20 top-level `test()` cases. Strengthen an existing behavioral or contract test before adding a narrow new one.
+The validators deliberately do not infer ownership, teardown, naming quality, dead code, or architectural intent from source shape. Those concerns require code review, behavior tests, and live GNOME testing. AST checks are kept only where syntax nodes provide an exact answer, such as static imports or use of a removed API.
 
 ## Working on a change
 
@@ -41,7 +43,9 @@ Keep these boundaries intact:
 
 The creator of a signal, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
 
-Use PascalCase filenames when the primary export is an owning class with the same name. Use camelCase for functional modules, policies, enums, declarative tables, and pure helpers. Constant modules contain values and frozen data; transformation and decision logic belongs in utilities.
+Use PascalCase filenames when the primary export is an owning class with the same name. Use camelCase for functional modules, policies, enums, declarative tables, and pure helpers.
+
+Constant modules contain only pure values and frozen declarative data. Do not move live `GObject` instances, toolkit objects, or one-use trivial literals into shared constants. Reusable normalization, comparison, and decision logic belongs in utilities.
 
 Use lifecycle verbs according to behavior:
 
@@ -85,6 +89,10 @@ A setting change may involve:
 
 Keep these representations aligned and preserve persisted values unless migration is part of the change.
 
+Do not write settings while enabling the extension or constructing Preferences. Native bindings and synchronization callbacks must not turn initial widget state into a write. Persist changes only after an explicit user interaction.
+
+`PopupLayoutController` is a deliberate user-feedback path: after the user enables a popup seek control, it raises `popup-width` to the same minimum used by runtime layout. It performs no write during Preferences initialization and coalesces same-turn changes so bulk resets are evaluated from their final state.
+
 ### MPRIS and D-Bus
 
 Route playback actions through the existing control definitions, state decisions, executor, and `MprisMediaApp`. UI state must follow capabilities and properties confirmed by the endpoint.
@@ -110,17 +118,29 @@ pnpm run translations
 pnpm check
 ```
 
-Preserve reviewed translations, placeholders, plural forms, source references, translator comments, and valid catalog headers.
+Preserve reviewed translations, placeholders, plural forms, translator comments, and valid catalog headers. Runtime checks allow missing, empty, fuzzy, or obsolete locale entries because gettext can fall back to the source language; the native gate remains responsible for compiling every catalog with `msgfmt`.
 
 ### Comments and logs
 
 Document intent where it is not obvious, especially around lifecycle, asynchronous invalidation, signal ownership, MPRIS/D-Bus edge cases, compatibility, and private Shell APIs.
 
-Logs should report failures or meaningful state transitions, not normal rendering or successful cleanup. Logger scopes follow the owning class or classless module.
+The shared logger is retained for failures that matter during diagnosis and bounded once-only diagnostics for repeated endpoint or fallback failures. Do not log successful rendering, normal cleanup, expected capability absence, or routine state changes. Direct `console.*` calls stay inside the logger implementation.
+
+## Test design
+
+Prefer tests that exercise:
+
+- pure decisions and normalization;
+- persisted or external contracts;
+- cross-file references required for build or runtime integrity;
+- cancellation, owner replacement, and stale-result rejection;
+- package safety and exact runtime inventory.
+
+Do not add tests that merely count methods, lock incidental source layout, duplicate a constant without exercising behavior, or infer lifecycle correctness from method names. A small corruption fixture is useful only when it represents a defect the validator can identify exactly.
+
+Automated checks complement review; they do not replace live validation of actors, signals, private Shell APIs, GSettings feedback, or real MPRIS implementations.
 
 ## Live testing
-
-Automated checks cannot prove GNOME actor lifetime, private Shell API compatibility, or the behavior of real MPRIS implementations. Test the scenarios affected by the change.
 
 Runtime and lifecycle changes commonly require:
 
@@ -131,6 +151,8 @@ Runtime and lifecycle changes commonly require:
 - affected top bar, popup, Preferences, artwork, and input paths;
 - local, remote, cached, cancelled, and failed artwork requests;
 - the GNOME media-controls patch when changed.
+
+For settings feedback, run `dconf watch /org/gnome/shell/extensions/mediashell/` and verify that opening Preferences is silent while a user change produces only the expected writes.
 
 Use Shell logs when needed:
 
@@ -157,4 +179,7 @@ The generated package is under `dist/builds/`. Install it, run the relevant live
 - [MPRIS Player interface](https://specifications.freedesktop.org/mpris/latest/Player_Interface.html)
 - [GNOME Shell extension development](https://gjs.guide/extensions/)
 - [Preferences and GSettings](https://gjs.guide/extensions/development/preferences.html)
+- [`Gio.Settings` API](https://docs.gtk.org/gio/class.Settings.html)
 - [GNOME extension review guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html)
+- [GNOME extension best practices](https://gjs.guide/extensions/review-guidelines/best-practices.html)
+- [EGO AI reference](https://blogs.gnome.org/jrahmatzadeh/2026/07/27/ego-ai-reference/)

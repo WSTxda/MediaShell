@@ -25,7 +25,7 @@ Run `pnpm verify` for release, packaging, compatibility, or EGO-facing changes. 
 - Update affected tests, strings, translations, comments, logs, and documentation.
 - Prefer precise names and explicit ownership over broad abstractions.
 - Share code only when its contract, side effects, ownership, lifecycle, teardown, and expected evolution are truly identical.
-- Keep semantic validators parser/AST-based and the Node suite at no more than 20 top-level tests.
+- Test observable behavior and stable contracts; do not enforce incidental source layout through validators.
 
 ## Translations
 
