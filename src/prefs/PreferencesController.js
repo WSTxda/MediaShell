@@ -17,6 +17,7 @@ import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
 import InteractionsPageController from "./controllers/InteractionsPageController.js";
 import OthersPageController from "./controllers/OthersPageController.js";
+import PopupLayoutController from "./controllers/PopupLayoutController.js";
 import PreferenceSensitivityController from "./controllers/PreferenceSensitivityController.js";
 import TopBarLayoutController from "./controllers/TopBarLayoutController.js";
 import TrackInformationContentController from "./controllers/TrackInformationContentController.js";
@@ -55,6 +56,7 @@ export default class PreferencesController {
     this.preferenceBinder.bindAllPreferences();
 
     this.ownedControllers = [
+      new PopupLayoutController(this.settings, this.builder),
       new PreferenceSensitivityController(this.builder),
       new TopBarLayoutController(this.settings, this.builder),
       new TrackInformationContentController(this.settings, this.builder),
