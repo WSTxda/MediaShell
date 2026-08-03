@@ -373,11 +373,7 @@ export default class MediaAppRegistry {
 
     const stateSignal = this.pendingRemovalAppStateConnections.get(busName);
     if (stateSignal) {
-      try {
-        stateSignal.shellApp.disconnect(stateSignal.stateSignalId);
-      } catch {
-        // Shell may dispose the app signal while an owner hand-off is ending.
-      }
+      stateSignal.shellApp.disconnect(stateSignal.stateSignalId);
       this.pendingRemovalAppStateConnections.delete(busName);
       canceled = true;
     }

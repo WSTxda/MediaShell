@@ -35,10 +35,6 @@ export default class MediaShellExtension extends Extension {
   disable() {
     const extensionController = this.extensionController;
     this.extensionController = null;
-    try {
-      extensionController?.destroy();
-    } catch (error) {
-      logger.error("Unhandled extension teardown failure", error);
-    }
+    extensionController?.destroy();
   }
 }

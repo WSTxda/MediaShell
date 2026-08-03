@@ -164,7 +164,13 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
         assert.deepEqual(
           validateMainLoopSourceOwnership(
             "src/shell/OwnedSource.js",
-            `export default class OwnedSource { start() { this.sourceId = GLib.idle_add(0, () => 0); } clearSource() { GLib.Source.remove(this.sourceId); this.sourceId = null; } destroy() { this.clearSource(); } }`,
+            [
+              "export default class OwnedSource {",
+              "start() { this.sourceId = GLib.idle_add(0, () => 0); }",
+              "clearSource() { GLib.Source.remove(this.sourceId); this.sourceId = null; }",
+              "destroy() { this.clearSource(); }",
+              "}",
+            ].join(" "),
           ),
           [],
         );
@@ -174,7 +180,13 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
       "module liveness",
       () => {
         const errors = validateModuleLiveness({
-          "src/extension.js": `import { liveValue, shadowedValue } from "./feature.js"; const rendered = liveValue; function use() { const shadowedValue = "local"; return shadowedValue; } use(); String(rendered); export default class ExtensionEntry {}`,
+          "src/extension.js": [
+            'import { liveValue, shadowedValue } from "./feature.js";',
+            "const rendered = liveValue;",
+            'function use() { const shadowedValue = "local"; return shadowedValue; }',
+            "use(); String(rendered);",
+            "export default class ExtensionEntry {}",
+          ].join(" "),
           "src/prefs.js": `export default class PreferencesEntry {}`,
           "src/feature.js": `export const liveValue = 1; export const shadowedValue = 2; export const textOnly = 3; "textOnly";`,
           "src/orphan.js": `export const orphan = true;`,

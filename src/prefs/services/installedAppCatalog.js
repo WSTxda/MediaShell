@@ -16,10 +16,15 @@ import { buildBrowserIdentityAliases } from "../../shared/utils/browserIdentity.
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("installedAppCatalog");
-const FALLBACK_APP_ICON = Gio.ThemedIcon.new_from_names([
-  IconNames.APP,
-  IconNames.MISSING,
-]);
+let fallbackAppIcon = null;
+
+function getFallbackAppIcon() {
+  fallbackAppIcon ??= Gio.ThemedIcon.new_from_names([
+    IconNames.APP,
+    IconNames.MISSING,
+  ]);
+  return fallbackAppIcon;
+}
 
 function readAppString(app, getterName) {
   return app ? String(app[getterName]() ?? "") : "";
@@ -64,7 +69,7 @@ export function getAppIcon(app) {
   // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
   // its names can discard implementation details used by GTK to resolve
   // desktop-file icons and caused every chooser row to hit the fallback.
-  return app?.get_icon() ?? FALLBACK_APP_ICON;
+  return app?.get_icon() ?? getFallbackAppIcon();
 }
 
 /**

@@ -26,11 +26,10 @@ export default class GnomeShellMediaControlsPatch {
     this.injectionManager = new InjectionManager();
     this.isHidden = false;
     this.restoreGeneration = 0;
-    this.isDestroyed = false;
   }
 
   setGnomeShellMediaControlsHidden(isHidden) {
-    if (this.isDestroyed || this.isHidden === isHidden) return;
+    if (!this.injectionManager || this.isHidden === isHidden) return;
 
     this.restoreGeneration++;
     this.injectionManager.clear();
@@ -130,23 +129,22 @@ export default class GnomeShellMediaControlsPatch {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
+    const injectionManager = this.injectionManager;
+    if (!injectionManager) return;
 
-    if (this.isHidden) {
-      const restoreGeneration = ++this.restoreGeneration;
-      this.injectionManager.clear();
-      this.isHidden = false;
-      this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
+    const shouldRestore = this.isHidden;
+    const restoreGeneration = ++this.restoreGeneration;
+    this.injectionManager = null;
+    this.isHidden = false;
+    injectionManager.clear();
+
+    if (shouldRestore)
+      void this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
         (error) =>
           logger.warn(
             "Failed to restore current GNOME Shell media controls during teardown",
             error,
           ),
       );
-    }
-
-    this.isDestroyed = true;
-    this.injectionManager.clear();
-    this.injectionManager = null;
   }
 }
