@@ -13,8 +13,6 @@
     "check:runtime": "node scripts/dev.mjs runtime",
     "check:native": "pnpm run check:runtime && node scripts/dev.mjs native",
     "check:package": "node scripts/dev.mjs package",
-    "audit": "node scripts/dev.mjs audit",
-    "audit:strict": "node scripts/dev.mjs audit --strict",
     "check:shexli": "shexli dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
     "verify": "pnpm run build && pnpm run check:shexli",
     "test": "node --test",

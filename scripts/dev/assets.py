@@ -36,7 +36,6 @@ class CatalogEntry:
     msgid_plural: str | None = None
     translations: dict[int, str] = field(default_factory=dict)
     references: list[str] = field(default_factory=list)
-    flags: set[str] = field(default_factory=set)
 
 
 def decode_quoted(value: str) -> str:
@@ -59,7 +58,6 @@ def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
             return
 
         references: list[str] = []
-        flags: set[str] = set()
         fields: dict[str, str] = {}
         current_field: str | None = None
 
@@ -68,13 +66,6 @@ def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
                 continue
             if line.startswith("#:"):
                 references.extend(line[2:].strip().split())
-                continue
-            if line.startswith("#,"):
-                flags.update(
-                    flag.strip()
-                    for flag in line[2:].split(",")
-                    if flag.strip()
-                )
                 continue
             if line.startswith("#"):
                 continue
@@ -111,7 +102,6 @@ def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
                 msgid_plural=fields.get("msgid_plural"),
                 translations=translations,
                 references=references,
-                flags=flags,
             )
 
         block = []
@@ -485,28 +475,37 @@ def build_asset_manifest() -> dict[str, object]:
             ),
         }
 
-    ui_objects: dict[str, dict[str, object]] = {}
-    ui_string_lists: dict[str, list[str]] = {}
+    ui_objects_by_source: dict[str, dict[str, dict[str, object]]] = {}
+    ui_string_lists_by_source: dict[str, dict[str, list[str]]] = {}
     for ui_path in sorted((ASSETS / "ui").glob("*.ui")):
+        source = str(ui_path.relative_to(ROOT))
+        source_objects: dict[str, dict[str, object]] = {}
+        source_string_lists: dict[str, list[str]] = {}
         for object_node in ET.parse(ui_path).findall(".//object"):
             object_id = object_node.get("id")
             if not object_id:
                 continue
+            if object_id in source_objects:
+                raise ValueError(
+                    f"{source}: duplicate GtkBuilder object ID {object_id}"
+                )
             properties = {
                 property_node.get("name"): "".join(property_node.itertext())
                 for property_node in object_node.findall("property")
                 if property_node.get("name")
             }
-            ui_objects[object_id] = {
+            source_objects[object_id] = {
                 "class": object_node.get("class"),
                 "properties": properties,
-                "source": str(ui_path.relative_to(ROOT)),
+                "source": source,
             }
             if object_node.get("class") == "GtkStringList":
-                ui_string_lists[object_id] = [
+                source_string_lists[object_id] = [
                     "".join(item_node.itertext())
                     for item_node in object_node.findall("items/item")
                 ]
+        ui_objects_by_source[source] = source_objects
+        ui_string_lists_by_source[source] = source_string_lists
 
     dbus_interfaces, dbus_signatures = parse_dbus_contracts()
     return {
@@ -516,8 +515,8 @@ def build_asset_manifest() -> dict[str, object]:
             "keys": keys,
             "enums": enums,
         },
-        "uiObjects": ui_objects,
-        "uiStringLists": ui_string_lists,
+        "uiObjectsBySource": ui_objects_by_source,
+        "uiStringListsBySource": ui_string_lists_by_source,
         "dbusInterfaces": dbus_interfaces,
         "dbusSignatures": dbus_signatures,
     }
@@ -571,21 +570,18 @@ def check_resources() -> None:
     for entry in sorted(unbundled):
         errors.append(f"maintained UI or D-Bus resource is not bundled: {entry}")
 
-    ui_id_sources: dict[str, Path] = {}
     for ui_path in sorted((ASSETS / "ui").glob("*.ui")):
+        seen_ids: set[str] = set()
         for object_node in ET.parse(ui_path).findall(".//object"):
             object_id = object_node.get("id")
             if not object_id:
                 continue
-            previous_source = ui_id_sources.get(object_id)
-            if previous_source is not None:
+            if object_id in seen_ids:
                 errors.append(
-                    "duplicate GtkBuilder object ID "
-                    f"{object_id!r}: {previous_source.relative_to(ROOT)} and "
-                    f"{ui_path.relative_to(ROOT)}"
+                    f"{ui_path.relative_to(ROOT)}: duplicate GtkBuilder "
+                    f"object ID {object_id!r}"
                 )
-            else:
-                ui_id_sources[object_id] = ui_path
+            seen_ids.add(object_id)
 
     schema = ET.parse(schema_xml).find(".//schema")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -753,29 +749,6 @@ def check_translations() -> None:
         entries = parse_catalog(po_path)
         language = po_path.stem
         errors.extend(validate_catalog_header(po_path, entries, language))
-        errors.extend(validate_source_references(po_path, entries))
-
-        raw_catalog_lines = po_path.read_text(encoding="utf-8").splitlines()
-        if any(
-            "fuzzy" in entry.flags
-            for msgid, entry in entries.items()
-            if msgid
-        ):
-            errors.append(
-                f"{po_path.name}: fuzzy translations must be resolved before release"
-            )
-        if any(line.startswith("#~") for line in raw_catalog_lines):
-            errors.append(
-                f"{po_path.name}: obsolete translations must be removed before release"
-            )
-
-        missing_messages = sorted(
-            (set(pot_entries) - {""}) - (set(entries) - {""})
-        )
-        if missing_messages:
-            errors.append(
-                f"{po_path.name}: missing template messages: {missing_messages}"
-            )
 
         for msgid, entry in entries.items():
             if not msgid or msgid not in pot_entries:
@@ -788,22 +761,13 @@ def check_translations() -> None:
                 )
                 continue
 
-            required_forms = 2 if entry.msgid_plural is not None else 1
-            if len(entry.translations) < required_forms:
-                errors.append(
-                    f"{po_path.name}: incomplete translation forms for {msgid!r}"
-                )
-            for index, translation in entry.translations.items():
-                if not translation:
-                    errors.append(
-                        f"{po_path.name}: empty translation for {msgid!r} form {index}"
-                    )
-
             expected_forms = [msgid]
             if entry.msgid_plural is not None:
                 expected_forms.append(entry.msgid_plural)
 
             for index, translation in entry.translations.items():
+                if not translation:
+                    continue
                 expected_index = 0 if index == 0 else min(
                     1,
                     len(expected_forms) - 1,

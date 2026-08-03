@@ -2,13 +2,13 @@
  * @file dev.mjs
  * @module scripts.dev
  *
- * Runs MediaShell validation through a small set of executable release gates.
+ * Runs MediaShell validation through a small set of release-oriented gates.
  *
- * Runtime gates protect source, lifecycle, declarative assets, translations,
- * and tests. Formatting and organization remain explicit developer diagnostics.
+ * Checks focus on buildability and stable cross-file contracts. Formatting is
+ * separate from runtime validation, while native and package checks use the
+ * actual GNOME toolchain and generated archive.
  */
 
-import { runAudit } from "./dev/audit.mjs";
 import {
   checkExtensionContracts,
   checkSettingsContracts,
@@ -18,9 +18,7 @@ import {
   checkEntryPointContracts,
   checkImportsAndBoundaries,
   checkJavaScriptSyntax,
-  checkModuleLiveness,
-  checkMprisPropertyHydration,
-  checkSourceStructure,
+  checkRuntimeApiUsage,
 } from "./dev/javascript.mjs";
 import { EXTENSION_PACKAGE, checkPackage } from "./dev/package.mjs";
 import { checkPlaybackContracts } from "./dev/playback.mjs";
@@ -30,17 +28,11 @@ async function runGate(label, check) {
   await check();
 }
 
-async function checkSourceGraph() {
+async function checkSource() {
   await checkJavaScriptSyntax();
   await checkImportsAndBoundaries();
-  await checkModuleLiveness();
-}
-
-async function checkRuntimeSafety() {
-  await checkMprisPropertyHydration();
-  await checkSourceStructure();
+  await checkRuntimeApiUsage();
   await checkEntryPointContracts();
-  runCommand("behavioral contracts", process.execPath, ["--test"]);
 }
 
 async function checkDeclarativeContracts() {
@@ -66,8 +58,8 @@ function checkAssetsAndTranslations() {
 
 async function checkRuntime() {
   const gates = [
-    ["source graph", checkSourceGraph],
-    ["runtime safety", checkRuntimeSafety],
+    ["source", checkSource],
+    ["behavior", () => runCommand("tests", process.execPath, ["--test"])],
     ["declarative contracts", checkDeclarativeContracts],
     ["assets and translations", checkAssetsAndTranslations],
   ];
@@ -92,7 +84,6 @@ async function checkDevelopment() {
     "--check",
     ".",
   ]);
-  await runGate("organization audit", runAudit);
   console.log("\nDevelopment checks passed.");
 }
 
@@ -102,14 +93,12 @@ try {
   if (command === "check") await checkDevelopment();
   else if (command === "runtime") await checkRuntime();
   else if (command === "native") await checkNativeCompilation();
-  else if (command === "audit")
-    await runAudit({ strict: argument === "--strict" });
   else if (command === "package")
     await checkPackage(argument ?? EXTENSION_PACKAGE);
   else
     throw new Error(
       `Unknown command: ${command}\n` +
-        "Use 'check', 'runtime', 'native', 'audit [--strict]', or 'package [zip]'.",
+        "Use 'check', 'runtime', 'native', or 'package [zip]'.",
     );
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

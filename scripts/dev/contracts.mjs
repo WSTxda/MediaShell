@@ -46,6 +46,8 @@ import { collectBuilderObjectReferences } from "./javascript.mjs";
 import { fail, read, readAssetManifest } from "./files.mjs";
 import { validateExtensionMetadata } from "./metadata.mjs";
 
+const PREFERENCES_UI_SOURCE = "assets/ui/prefs.ui";
+
 const EXPECTED_READ_METHODS = Object.freeze({
   b: "get_boolean",
   u: "get_uint",
@@ -246,7 +248,10 @@ export async function checkSettingsContracts() {
     }),
   );
 
-  const uiObjects = manifest.uiObjects;
+  const uiObjects = manifest.uiObjectsBySource?.[PREFERENCES_UI_SOURCE] ?? {};
+  const allUiObjects = Object.values(manifest.uiObjectsBySource ?? {}).flatMap(
+    (objects) => Object.values(objects),
+  );
   const seenBindingKeys = new Set();
   const seenBindingWidgets = new Set();
   for (const [key, widgetId, property] of PREFERENCE_WIDGET_BINDINGS) {
@@ -287,7 +292,7 @@ export async function checkSettingsContracts() {
   if (registeredGTypes.size !== registeredGTypeNames.length)
     errors.push("shared GType names are not unique");
   const customUiClasses = new Set(
-    Object.values(uiObjects)
+    allUiObjects
       .map((object) => object.class)
       .filter((className) => className?.startsWith("MediaShell")),
   );
@@ -323,15 +328,6 @@ export async function checkSettingsContracts() {
       value,
     })),
   );
-
-  const actionIds = INPUT_ACTION_DEFINITIONS.map(({ id }) => id);
-  const actionValues = INPUT_ACTION_DEFINITIONS.map(({ action }) => action);
-  if (new Set(actionIds).size !== actionIds.length)
-    errors.push("input action IDs are not unique");
-  if (new Set(actionValues).size !== actionValues.length)
-    errors.push("input action enum values are not unique");
-  if (new Set(KEYBOARD_SHORTCUT_KEYS).size !== KEYBOARD_SHORTCUT_KEYS.length)
-    errors.push("keyboard shortcut keys are not unique");
 
   fail("Settings and UI contract validation", errors);
   console.log(

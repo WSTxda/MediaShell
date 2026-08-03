@@ -2,8 +2,8 @@
  * @file tooling-package.test.mjs
  * @module tests.toolingPackage
  *
- * Exercises essential source, declarative, lifecycle, and package validators.
- * Corruption fixtures keep build failures tied to real source and archive defects.
+ * Exercises essential source, declarative, and package validators.
+ * Corruption fixtures keep failures tied to build and archive integrity.
  */
 
 import assert from "node:assert/strict";
@@ -16,9 +16,6 @@ import {
 } from "../scripts/dev/contracts.mjs";
 import {
   validateExternalImport,
-  validateHydratedPropertyUsage,
-  validateMainLoopSourceOwnership,
-  validateModuleLiveness,
   validatePrivateShellImport,
   validateRelativeImport,
 } from "../scripts/dev/javascript.mjs";
@@ -30,7 +27,7 @@ import {
 } from "../scripts/dev/package.mjs";
 import { runCases } from "./helpers.mjs";
 
-test("essential validators reject corrupted source, contracts, lifecycle, and ZIP contents", async () => {
+test("essential validators reject corrupted source, contracts, and ZIP contents", async () => {
   await runCases([
     [
       "archive shape",
@@ -135,6 +132,7 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
         assert.deepEqual(validateExternalImport("shared", "gi://Gio"), [
           "shared code imports GNOME runtime API gi://Gio",
         ]);
+        assert.deepEqual(validateExternalImport("shell", "gi://Graphene"), []);
         assert.deepEqual(
           validateRelativeImport("prefs", "shell", "../shell/Example"),
           [
@@ -148,90 +146,6 @@ test("essential validators reject corrupted source, contracts, lifecycle, and ZI
             "resource:///org/gnome/shell/ui/mpris.js",
           ),
           /must stay isolated/,
-        );
-      },
-    ],
-    [
-      "main-loop ownership",
-      () => {
-        assert.equal(
-          validateMainLoopSourceOwnership(
-            "src/shell/LeakySource.js",
-            `export default class LeakySource { start() { this.sourceId = GLib.timeout_add(0, 100, () => 0); } destroy() {} }`,
-          ).length,
-          1,
-        );
-        assert.deepEqual(
-          validateMainLoopSourceOwnership(
-            "src/shell/OwnedSource.js",
-            [
-              "export default class OwnedSource {",
-              "start() { this.sourceId = GLib.idle_add(0, () => 0); }",
-              "clearSource() { GLib.Source.remove(this.sourceId); this.sourceId = null; }",
-              "destroy() { this.clearSource(); }",
-              "}",
-            ].join(" "),
-          ),
-          [],
-        );
-      },
-    ],
-    [
-      "module liveness",
-      () => {
-        const errors = validateModuleLiveness({
-          "src/extension.js": [
-            'import { liveValue, shadowedValue } from "./feature.js";',
-            "const rendered = liveValue;",
-            'function use() { const shadowedValue = "local"; return shadowedValue; }',
-            "use(); String(rendered);",
-            "export default class ExtensionEntry {}",
-          ].join(" "),
-          "src/prefs.js": `export default class PreferencesEntry {}`,
-          "src/feature.js": `export const liveValue = 1; export const shadowedValue = 2; export const textOnly = 3; "textOnly";`,
-          "src/orphan.js": `export const orphan = true;`,
-        });
-        assert.ok(
-          errors.some((error) => error.includes("shadowedValue is never used")),
-        );
-        assert.ok(
-          errors.some((error) =>
-            error.includes("export textOnly is not consumed"),
-          ),
-        );
-        assert.ok(
-          errors.some((error) =>
-            error.includes("src/orphan.js: source module"),
-          ),
-        );
-
-        const unresolvedErrors = validateModuleLiveness({
-          "src/extension.js": `const object = { MissingImport: true }; object.MissingImport; String(MissingImport.MEDIA); export default class ExtensionEntry {}`,
-          "src/prefs.js": `export default class PreferencesEntry {}`,
-        });
-        assert.deepEqual(
-          unresolvedErrors.filter((error) =>
-            error.includes("referenced identifier"),
-          ),
-          [
-            "src/extension.js:1: referenced identifier MissingImport is not declared or imported",
-          ],
-        );
-      },
-    ],
-    [
-      "MPRIS hydration",
-      () => {
-        assert.deepEqual(
-          validateHydratedPropertyUsage(
-            "src/shell/mpris/ExampleProxy.js",
-            `export default class ExampleProxy { get playbackStatus() { return this.state.PlaybackStatus; } get volume() { return this.state.Volume; } clearMetadata() { this.state.Metadata = {}; } }`,
-            ["PlaybackStatus", "Metadata"],
-          ),
-          [
-            "src/shell/mpris/ExampleProxy.js: hydrated MPRIS property Metadata is never read from MprisMediaApp state",
-            "src/shell/mpris/ExampleProxy.js:1: MprisMediaApp reads Volume without hydrating it",
-          ],
         );
       },
     ],

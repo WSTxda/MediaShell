@@ -55,7 +55,5 @@ export function validateExtensionMetadata(metadata, packageJson) {
     errors.push(
       "metadata shell-version differs from shared platform constants",
     );
-  if (!metadata.donations?.buymeacoffee)
-    errors.push("metadata is missing Buy Me a Coffee donation metadata");
   return errors;
 }

@@ -2,21 +2,19 @@
  * @file javascript.mjs
  * @module scripts.dev.javascript
  *
- * Validates JavaScript syntax, module imports, process boundaries, and runtime safety.
+ * Validates JavaScript syntax, static imports, process boundaries, and stable
+ * GNOME runtime API constraints.
  *
- * Acorn parses every checked module and acorn-walk inspects semantic nodes, so
- * comments, string contents, or formatting cannot masquerade as executable code.
+ * These checks intentionally avoid guessing lifecycle, ownership, naming, or
+ * module usefulness from source shape. Behavior and teardown belong in tests
+ * and live GNOME validation.
  */
 
 import { dirname, relative, resolve } from "node:path";
 
 import { parse } from "acorn";
-import { ancestor, simple } from "acorn-walk";
+import { simple } from "acorn-walk";
 
-import {
-  MPRIS_PLAYER_PROPERTY_NAMES,
-  MPRIS_ROOT_PROPERTY_NAMES,
-} from "../../src/shared/constants/mpris.js";
 import {
   ROOT,
   collectJavaScript,
@@ -26,67 +24,6 @@ import {
   rootPath,
 } from "./files.mjs";
 
-const SOURCE_ENTRY_POINTS = new Set(["src/extension.js", "src/prefs.js"]);
-
-const GLOBAL_IDENTIFIERS = new Set([
-  "Array",
-  "ArrayBuffer",
-  "BigInt",
-  "Boolean",
-  "Buffer",
-  "Date",
-  "Error",
-  "EvalError",
-  "FinalizationRegistry",
-  "Infinity",
-  "Intl",
-  "JSON",
-  "Map",
-  "Math",
-  "NaN",
-  "Number",
-  "Object",
-  "Promise",
-  "RangeError",
-  "ReferenceError",
-  "Reflect",
-  "RegExp",
-  "Set",
-  "String",
-  "Symbol",
-  "SyntaxError",
-  "TextDecoder",
-  "TextEncoder",
-  "TypeError",
-  "URIError",
-  "URL",
-  "URLSearchParams",
-  "Uint8Array",
-  "WeakMap",
-  "WeakRef",
-  "WeakSet",
-  "arguments",
-  "clearInterval",
-  "clearTimeout",
-  "console",
-  "decodeURI",
-  "decodeURIComponent",
-  "encodeURI",
-  "encodeURIComponent",
-  "global",
-  "globalThis",
-  "isFinite",
-  "isNaN",
-  "parseFloat",
-  "parseInt",
-  "process",
-  "queueMicrotask",
-  "setInterval",
-  "setTimeout",
-  "structuredClone",
-  "undefined",
-]);
-
 let recordsPromise = null;
 
 function lineOf(node) {
@@ -94,15 +31,13 @@ function lineOf(node) {
 }
 
 function parseModule(file, source) {
-  const comments = [];
   const ast = parse(source, {
     ecmaVersion: "latest",
     sourceType: "module",
     locations: true,
     allowHashBang: true,
-    onComment: comments,
   });
-  return { file, source, ast, comments };
+  return { file, source, ast };
 }
 
 async function loadRecords() {
@@ -133,153 +68,30 @@ async function loadRecords() {
   return recordsPromise;
 }
 
-/**
- * Returns the cached parsed JavaScript records used by development checks.
- *
- * Callers must treat the returned map and records as read-only. Sharing the
- * cache keeps architecture checks on the same AST and file set as syntax,
- * import, liveness, and lifecycle validation.
- *
- * @returns {Promise<Map<string, object>>} Parsed module records by path.
- */
+/** Returns cached parsed modules for validators and translation extraction. */
 export async function getJavaScriptRecords() {
   return loadRecords();
 }
 
-function isJSDoc(comment) {
-  return comment?.type === "Block" && comment.value.startsWith("*");
-}
+function declarationNames(declaration) {
+  if (!declaration) return [];
+  if (declaration.id?.type === "Identifier") return [declaration.id.name];
+  if (declaration.type !== "VariableDeclaration") return [];
 
-function leadingJSDoc(record, node) {
-  for (let index = record.comments.length - 1; index >= 0; index--) {
-    const comment = record.comments[index];
-    if (comment.end > node.start) continue;
-    const between = record.source.slice(comment.end, node.start).trim();
-    if (between && !/^export(?:\s+default)?$/.test(between)) return null;
-    return isJSDoc(comment) ? comment : null;
+  const names = [];
+  for (const item of declaration.declarations) {
+    if (item.id.type === "Identifier") names.push(item.id.name);
+    else if (item.id.type === "ObjectPattern") {
+      for (const property of item.id.properties) {
+        if (
+          property.type === "Property" &&
+          property.value.type === "Identifier"
+        )
+          names.push(property.value.name);
+      }
+    }
   }
-  return null;
-}
-
-function classNames(record) {
-  const names = new Set();
-  simple(record.ast, {
-    ClassDeclaration(node) {
-      if (node.id?.name) names.add(node.id.name);
-    },
-  });
   return names;
-}
-
-function exportsClass(record) {
-  const names = classNames(record);
-  for (const node of record.ast.body) {
-    if (
-      node.type === "ExportDefaultDeclaration" &&
-      node.declaration.type === "ClassDeclaration"
-    )
-      return true;
-    if (
-      node.type === "ExportNamedDeclaration" &&
-      node.declaration?.type === "ClassDeclaration"
-    )
-      return true;
-    if (
-      node.type === "ExportDefaultDeclaration" &&
-      node.declaration.type === "CallExpression" &&
-      memberPath(node.declaration.callee)?.endsWith(".registerClass")
-    ) {
-      const registeredClass = node.declaration.arguments.at(-1);
-      if (
-        registeredClass?.type === "Identifier" &&
-        names.has(registeredClass.name)
-      )
-        return true;
-    }
-  }
-  return false;
-}
-
-function loggerScopes(record) {
-  const scopes = [];
-  simple(record.ast, {
-    CallExpression(node) {
-      if (
-        node.callee.type === "Identifier" &&
-        node.callee.name === "createLogger" &&
-        node.arguments[0]?.type === "Literal" &&
-        typeof node.arguments[0].value === "string"
-      )
-        scopes.push({ scope: node.arguments[0].value, line: lineOf(node) });
-    },
-  });
-  return scopes;
-}
-
-export async function checkJavaScriptSyntax() {
-  const records = await loadRecords();
-  console.log(`JavaScript AST parsing passed for ${records.size} modules.`);
-}
-
-export async function inspectModuleDocumentationAndNaming() {
-  const records = await loadRecords();
-  const errors = [];
-
-  for (const record of records.values()) {
-    const { file, source, comments } = record;
-    const header = comments[0];
-    const expectedFile = file.split("/").at(-1);
-    if (!isJSDoc(header) || source.slice(0, header.start).trim()) {
-      errors.push(`${file}: missing leading module JSDoc`);
-      continue;
-    }
-
-    if (!header.value.includes(`@file ${expectedFile}`))
-      errors.push(`${file}: module JSDoc has no matching @file`);
-    if (!/@module\s+[A-Za-z0-9_.-]+/.test(header.value))
-      errors.push(`${file}: module JSDoc has no @module name`);
-
-    const proseLines = header.value
-      .split("\n")
-      .map((line) => line.replace(/^\s*\* ?/, "").trim())
-      .filter((line) => line && !line.startsWith("@"));
-    if (proseLines.length < 2)
-      errors.push(
-        `${file}: module JSDoc must describe responsibility and purpose`,
-      );
-
-    simple(record.ast, {
-      ClassDeclaration(node) {
-        if (!leadingJSDoc(record, node))
-          errors.push(
-            `${file}:${lineOf(node)}: class ${node.id?.name ?? "<anonymous>"} needs adjacent JSDoc`,
-          );
-      },
-    });
-
-    if (!file.startsWith("src/") || SOURCE_ENTRY_POINTS.has(file)) continue;
-    const basename = expectedFile.replace(/\.js$/, "");
-    const isClassModule = /^[A-Z][A-Za-z0-9]*$/.test(basename);
-    const names = classNames(record);
-
-    if (isClassModule && !names.has(basename))
-      errors.push(
-        `${file}: PascalCase module must define its matching ${basename} class`,
-      );
-    if (!isClassModule && exportsClass(record))
-      errors.push(
-        `${file}: class modules use a PascalCase filename matching the owned class`,
-      );
-
-    for (const { scope, line } of loggerScopes(record)) {
-      if (scope !== basename)
-        errors.push(
-          `${file}:${line}: logger scope ${scope} must match ${basename}`,
-        );
-    }
-  }
-
-  return errors;
 }
 
 function moduleSpecifiers(record) {
@@ -288,36 +100,41 @@ function moduleSpecifiers(record) {
     if (
       node.type === "ImportDeclaration" &&
       typeof node.source.value === "string"
-    )
+    ) {
       specifiers.push({
         value: node.source.value,
         line: lineOf(node),
         node,
         kind: "import",
       });
-    else if (
+      continue;
+    }
+    if (
       ["ExportAllDeclaration", "ExportNamedDeclaration"].includes(node.type) &&
       typeof node.source?.value === "string"
-    )
+    ) {
       specifiers.push({
         value: node.source.value,
         line: lineOf(node),
         node,
         kind: "export",
       });
+    }
   }
+
   simple(record.ast, {
     ImportExpression(node) {
       if (
         node.source.type === "Literal" &&
         typeof node.source.value === "string"
-      )
+      ) {
         specifiers.push({
           value: node.source.value,
           line: lineOf(node),
           node,
           kind: "dynamic",
         });
+      }
     },
   });
   return specifiers;
@@ -338,458 +155,6 @@ function exportedNames(record) {
   return names;
 }
 
-function resolveModuleTarget(file, specifier) {
-  return resolve("/", dirname(file), specifier).slice(1).replaceAll("\\", "/");
-}
-
-function declarationNames(declaration) {
-  if (!declaration) return [];
-  if (declaration.id?.type === "Identifier") return [declaration.id.name];
-  if (declaration.type !== "VariableDeclaration") return [];
-
-  const names = [];
-  for (const item of declaration.declarations)
-    collectPatternIdentifiers(item.id, (identifier) =>
-      names.push(identifier.name),
-    );
-  return names;
-}
-
-function exportEntries(record) {
-  const entries = [];
-  for (const node of record.ast.body) {
-    if (node.type === "ExportDefaultDeclaration") {
-      entries.push({
-        exportedName: "default",
-        localName:
-          node.declaration.type === "Identifier"
-            ? node.declaration.name
-            : (node.declaration.id?.name ?? null),
-        line: lineOf(node),
-      });
-      continue;
-    }
-    if (node.type !== "ExportNamedDeclaration") continue;
-    for (const name of declarationNames(node.declaration))
-      entries.push({ exportedName: name, localName: name, line: lineOf(node) });
-    for (const specifier of node.specifiers) {
-      entries.push({
-        exportedName: specifier.exported.name ?? specifier.exported.value,
-        localName: node.source
-          ? null
-          : (specifier.local.name ?? specifier.local.value),
-        line: lineOf(specifier),
-      });
-    }
-  }
-  return entries;
-}
-
-function addConsumedExport(consumedExports, target, name) {
-  if (!consumedExports.has(target)) consumedExports.set(target, new Set());
-  consumedExports.get(target).add(name);
-}
-
-function dynamicImportNames(node, ancestors) {
-  let expression = node;
-  let index = ancestors.length - 2;
-  if (ancestors[index]?.type === "AwaitExpression") {
-    expression = ancestors[index];
-    index--;
-  }
-
-  const parent = ancestors[index];
-  if (parent?.type !== "VariableDeclarator" || parent.init !== expression)
-    return ["*"];
-  if (parent.id.type !== "ObjectPattern") return ["*"];
-
-  const names = [];
-  for (const property of parent.id.properties) {
-    if (property.type === "RestElement") return ["*"];
-    if (property.computed) return ["*"];
-    const name =
-      property.key.type === "Identifier"
-        ? property.key.name
-        : String(property.key.value);
-    names.push(name);
-  }
-  return names;
-}
-
-function collectModuleConsumption(records, entryPoints) {
-  const consumedExports = new Map();
-  const dependencyGraph = new Map(
-    [...records.keys()].map((file) => [file, new Set()]),
-  );
-
-  for (const record of records.values()) {
-    for (const node of record.ast.body) {
-      if (node.type === "ImportDeclaration") {
-        const target = node.source.value.startsWith(".")
-          ? resolveModuleTarget(record.file, node.source.value)
-          : null;
-        if (!target || !records.has(target)) continue;
-        dependencyGraph.get(record.file).add(target);
-        for (const specifier of node.specifiers) {
-          if (specifier.type === "ImportNamespaceSpecifier")
-            addConsumedExport(consumedExports, target, "*");
-          else if (specifier.type === "ImportDefaultSpecifier")
-            addConsumedExport(consumedExports, target, "default");
-          else
-            addConsumedExport(
-              consumedExports,
-              target,
-              specifier.imported.name ?? specifier.imported.value,
-            );
-        }
-        continue;
-      }
-
-      if (
-        ["ExportAllDeclaration", "ExportNamedDeclaration"].includes(
-          node.type,
-        ) &&
-        typeof node.source?.value === "string" &&
-        node.source.value.startsWith(".")
-      ) {
-        const target = resolveModuleTarget(record.file, node.source.value);
-        if (!records.has(target)) continue;
-        dependencyGraph.get(record.file).add(target);
-        if (node.type === "ExportAllDeclaration")
-          addConsumedExport(consumedExports, target, "*");
-        else
-          for (const specifier of node.specifiers) {
-            if (specifier.type === "ExportNamespaceSpecifier")
-              addConsumedExport(consumedExports, target, "*");
-            else
-              addConsumedExport(
-                consumedExports,
-                target,
-                specifier.local.name ?? specifier.local.value,
-              );
-          }
-      }
-    }
-
-    ancestor(record.ast, {
-      ImportExpression(node, _state, ancestors) {
-        if (
-          node.source.type !== "Literal" ||
-          typeof node.source.value !== "string" ||
-          !node.source.value.startsWith(".")
-        )
-          return;
-        const target = resolveModuleTarget(record.file, node.source.value);
-        if (!records.has(target)) return;
-        dependencyGraph.get(record.file).add(target);
-        for (const name of dynamicImportNames(node, ancestors))
-          addConsumedExport(consumedExports, target, name);
-      },
-    });
-  }
-
-  for (const entryPoint of entryPoints) {
-    if (records.has(entryPoint))
-      addConsumedExport(consumedExports, entryPoint, "default");
-  }
-  return { consumedExports, dependencyGraph };
-}
-
-function isScopeNode(node) {
-  return [
-    "Program",
-    "BlockStatement",
-    "CatchClause",
-    "ForStatement",
-    "ForInStatement",
-    "ForOfStatement",
-    "SwitchStatement",
-    "FunctionDeclaration",
-    "FunctionExpression",
-    "ArrowFunctionExpression",
-    "ClassDeclaration",
-    "ClassExpression",
-  ].includes(node.type);
-}
-
-function collectPatternIdentifiers(pattern, callback) {
-  if (!pattern) return;
-  if (pattern.type === "Identifier") {
-    callback(pattern);
-    return;
-  }
-  if (pattern.type === "RestElement") {
-    collectPatternIdentifiers(pattern.argument, callback);
-    return;
-  }
-  if (pattern.type === "AssignmentPattern") {
-    collectPatternIdentifiers(pattern.left, callback);
-    return;
-  }
-  if (pattern.type === "ArrayPattern") {
-    for (const element of pattern.elements)
-      collectPatternIdentifiers(element, callback);
-    return;
-  }
-  if (pattern.type === "ObjectPattern") {
-    for (const property of pattern.properties) {
-      if (property.type === "RestElement")
-        collectPatternIdentifiers(property.argument, callback);
-      else collectPatternIdentifiers(property.value, callback);
-    }
-  }
-}
-
-function analyzeBindings(record, consumedExports) {
-  const scopeByNode = new Map();
-  const declarationIdentifiers = new Set();
-  const bindings = [];
-
-  function ensureScopes(ancestors) {
-    let parent = null;
-    for (const node of ancestors) {
-      if (!isScopeNode(node)) continue;
-      if (!scopeByNode.has(node))
-        scopeByNode.set(node, { node, parent, bindings: new Map() });
-      parent = scopeByNode.get(node);
-    }
-    return parent;
-  }
-
-  function nearestFunctionOrProgram(scope) {
-    for (let current = scope; current; current = current.parent) {
-      if (
-        current.node.type === "Program" ||
-        current.node.type === "FunctionDeclaration" ||
-        current.node.type === "FunctionExpression" ||
-        current.node.type === "ArrowFunctionExpression"
-      )
-        return current;
-    }
-    return scope;
-  }
-
-  function declare(identifier, scope, kind) {
-    declarationIdentifiers.add(identifier);
-    let binding = scope.bindings.get(identifier.name);
-    if (!binding) {
-      binding = {
-        name: identifier.name,
-        kind,
-        line: lineOf(identifier),
-        used: false,
-        exportedNames: new Set(),
-      };
-      scope.bindings.set(identifier.name, binding);
-      bindings.push(binding);
-    }
-    return binding;
-  }
-
-  function declareFunctionParameters(node, ancestors) {
-    const functionScope = ensureScopes(ancestors);
-    if (node.type === "FunctionExpression" && node.id)
-      declare(node.id, functionScope, "function-name");
-    for (const parameter of node.params)
-      collectPatternIdentifiers(parameter, (identifier) =>
-        declare(identifier, functionScope, "parameter"),
-      );
-  }
-
-  ancestor(record.ast, {
-    ImportDeclaration(node, _state, ancestors) {
-      const programScope = ensureScopes(ancestors);
-      for (const specifier of node.specifiers)
-        declare(specifier.local, programScope, "import");
-    },
-    VariableDeclaration(node, _state, ancestors) {
-      const lexicalScope = ensureScopes(ancestors);
-      const targetScope =
-        node.kind === "var"
-          ? nearestFunctionOrProgram(lexicalScope)
-          : lexicalScope;
-      for (const item of node.declarations)
-        collectPatternIdentifiers(item.id, (identifier) =>
-          declare(identifier, targetScope, "variable"),
-        );
-    },
-    FunctionDeclaration(node, _state, ancestors) {
-      const parentScope = ensureScopes(ancestors.slice(0, -1));
-      if (node.id) declare(node.id, parentScope, "function");
-      declareFunctionParameters(node, ancestors);
-    },
-    FunctionExpression(node, _state, ancestors) {
-      declareFunctionParameters(node, ancestors);
-    },
-    ArrowFunctionExpression(node, _state, ancestors) {
-      declareFunctionParameters(node, ancestors);
-    },
-    ClassDeclaration(node, _state, ancestors) {
-      const parentScope = ensureScopes(ancestors.slice(0, -1));
-      if (node.id) declare(node.id, parentScope, "class");
-    },
-    ClassExpression(node, _state, ancestors) {
-      const classScope = ensureScopes(ancestors);
-      if (node.id) declare(node.id, classScope, "class-name");
-    },
-    CatchClause(node, _state, ancestors) {
-      const catchScope = ensureScopes(ancestors);
-      collectPatternIdentifiers(node.param, (identifier) =>
-        declare(identifier, catchScope, "catch-parameter"),
-      );
-    },
-  });
-
-  const programScope = scopeByNode.get(record.ast);
-  for (const entry of exportEntries(record)) {
-    if (!entry.localName) continue;
-    programScope?.bindings
-      .get(entry.localName)
-      ?.exportedNames.add(entry.exportedName);
-  }
-
-  function isReferenceIdentifier(node, ancestors) {
-    if (declarationIdentifiers.has(node)) return false;
-    const parent = ancestors.at(-2);
-    if (!parent) return true;
-    if (
-      parent.type === "MemberExpression" &&
-      parent.property === node &&
-      !parent.computed
-    )
-      return false;
-    if (
-      ["MethodDefinition", "PropertyDefinition"].includes(parent.type) &&
-      parent.key === node &&
-      !parent.computed
-    )
-      return false;
-    if (parent.type === "Property" && parent.key === node && !parent.computed)
-      return parent.shorthand && parent.value === node;
-    if (
-      ["LabeledStatement", "BreakStatement", "ContinueStatement"].includes(
-        parent.type,
-      ) &&
-      parent.label === node
-    )
-      return false;
-    if (["ExportSpecifier", "ExportDefaultDeclaration"].includes(parent.type))
-      return false;
-    return true;
-  }
-
-  const unresolvedReferences = new Map();
-  ancestor(record.ast, {
-    Identifier(node, _state, ancestors) {
-      if (!isReferenceIdentifier(node, ancestors)) return;
-      let scope = ensureScopes(ancestors);
-      while (scope) {
-        const binding = scope.bindings.get(node.name);
-        if (binding) {
-          binding.used = true;
-          return;
-        }
-        scope = scope.parent;
-      }
-      if (
-        !GLOBAL_IDENTIFIERS.has(node.name) &&
-        !unresolvedReferences.has(node.name)
-      )
-        unresolvedReferences.set(node.name, lineOf(node));
-    },
-  });
-
-  const consumed = consumedExports.get(record.file) ?? new Set();
-  const diagnostics = [...unresolvedReferences].map(
-    ([name, line]) =>
-      `${record.file}:${line}: referenced identifier ${name} is not declared or imported`,
-  );
-  for (const binding of bindings) {
-    if (
-      ["parameter", "catch-parameter", "function-name", "class-name"].includes(
-        binding.kind,
-      )
-    )
-      continue;
-    const consumedExternally = [...binding.exportedNames].some(
-      (name) => consumed.has("*") || consumed.has(name),
-    );
-    if (binding.used || consumedExternally) continue;
-    const description =
-      binding.kind === "import"
-        ? `imported binding ${binding.name}`
-        : `${binding.kind} ${binding.name}`;
-    diagnostics.push(
-      `${record.file}:${binding.line}: ${description} is never used`,
-    );
-  }
-  return diagnostics;
-}
-
-function moduleLivenessDiagnostics(records, entryPoints = SOURCE_ENTRY_POINTS) {
-  const { consumedExports, dependencyGraph } = collectModuleConsumption(
-    records,
-    entryPoints,
-  );
-  const diagnostics = [];
-  const reachable = new Set();
-  const pending = [...entryPoints].filter((file) => records.has(file));
-  while (pending.length > 0) {
-    const file = pending.pop();
-    if (reachable.has(file)) continue;
-    reachable.add(file);
-    for (const dependency of dependencyGraph.get(file) ?? [])
-      if (dependency.startsWith("src/")) pending.push(dependency);
-  }
-
-  for (const file of records.keys()) {
-    if (file.startsWith("src/") && !reachable.has(file))
-      diagnostics.push(
-        `${file}: source module is unreachable from the runtime entry points`,
-      );
-  }
-
-  for (const record of records.values()) {
-    diagnostics.push(...analyzeBindings(record, consumedExports));
-    const consumed = consumedExports.get(record.file) ?? new Set();
-    for (const entry of exportEntries(record)) {
-      if (consumed.has("*") || consumed.has(entry.exportedName)) continue;
-      diagnostics.push(
-        `${record.file}:${entry.line}: export ${entry.exportedName} is not consumed by any module`,
-      );
-    }
-  }
-  return diagnostics;
-}
-
-/**
- * Validates module reachability and binding/export liveness for parsed sources.
- *
- * @param {Record<string, string>|Map<string, string>} moduleSources - Repository-relative module sources.
- * @param {Set<string>} entryPoints - Externally loaded source entry points.
- * @returns {string[]} Liveness diagnostics.
- */
-export function validateModuleLiveness(
-  moduleSources,
-  entryPoints = SOURCE_ENTRY_POINTS,
-) {
-  const records = new Map();
-  const sources =
-    moduleSources instanceof Map
-      ? moduleSources
-      : Object.entries(moduleSources);
-  for (const [file, source] of sources)
-    records.set(file, parseModule(file, source));
-  return moduleLivenessDiagnostics(records, entryPoints);
-}
-
-export async function checkModuleLiveness() {
-  const records = await loadRecords();
-  const errors = moduleLivenessDiagnostics(records);
-  fail("Module liveness validation", errors);
-  console.log("Module reachability, imports, bindings, and exports passed.");
-}
-
 function sourceLayer(file) {
   if (file === "src/extension.js" || file.startsWith("src/shell/"))
     return "shell";
@@ -807,18 +172,12 @@ function isShellOnlyImport(specifier) {
 
 function isPreferencesOnlyImport(specifier) {
   return (
-    /^gi:\/\/(?:Gtk|Adw|Gdk|Graphene)(?:\?|$)/.test(specifier) ||
+    /^gi:\/\/(?:Gtk|Adw|Gdk)(?:\?|$)/.test(specifier) ||
     specifier.includes("/extensions/prefs.js")
   );
 }
 
-/**
- * Validates an external import against a process layer.
- *
- * @param {string} layer - Source layer.
- * @param {string} specifier - External module specifier.
- * @returns {string[]} Boundary errors.
- */
+/** Validates an external import against a process layer. */
 export function validateExternalImport(layer, specifier) {
   const errors = [];
   if (layer === "shared" && /^(?:gi|resource):/.test(specifier))
@@ -830,14 +189,7 @@ export function validateExternalImport(layer, specifier) {
   return errors;
 }
 
-/**
- * Validates the static portion of a relative source import.
- *
- * @param {string} layer - Importing source layer.
- * @param {string|null} targetLayer - Resolved target layer.
- * @param {string} specifier - Relative module specifier.
- * @returns {string[]} Boundary errors.
- */
+/** Validates the static portion of a relative source import. */
 export function validateRelativeImport(layer, targetLayer, specifier) {
   const errors = [];
   if (!specifier.endsWith(".js") && !specifier.endsWith(".mjs"))
@@ -852,6 +204,21 @@ export function validateRelativeImport(layer, targetLayer, specifier) {
   )
     errors.push(`${layer} module crosses into ${targetLayer}`);
   return errors;
+}
+
+/** Keeps the private GNOME Shell MPRIS import behind its compatibility adapter. */
+export function validatePrivateShellImport(file, specifier) {
+  if (
+    specifier !== "resource:///org/gnome/shell/ui/mpris.js" ||
+    file === "src/shell/services/GnomeShellMediaControlsPatch.js"
+  )
+    return null;
+  return `${file}: private Shell MPRIS API must stay isolated in GnomeShellMediaControlsPatch`;
+}
+
+export async function checkJavaScriptSyntax() {
+  const records = await loadRecords();
+  console.log(`JavaScript parsing passed for ${records.size} modules.`);
 }
 
 export async function checkImportsAndBoundaries() {
@@ -871,6 +238,12 @@ export async function checkImportsAndBoundaries() {
       if (!specifier.startsWith(".")) {
         for (const error of validateExternalImport(layer, specifier))
           errors.push(`${record.file}:${item.line}: ${error}`);
+        const privateImportError = validatePrivateShellImport(
+          record.file,
+          specifier,
+        );
+        if (privateImportError)
+          errors.push(`${privateImportError} (line ${item.line})`);
         continue;
       }
 
@@ -946,71 +319,6 @@ export function memberPath(node) {
   return owner && property ? `${owner}.${property}` : null;
 }
 
-/**
- * Validates that every property hydrated into MprisMediaApp state is read, and
- * that every direct state read has an initial hydration owner.
- *
- * @param {string} file - Diagnostic source path.
- * @param {string} source - MprisMediaApp source text.
- * @param {string[]} hydratedProperties - Root and Player properties loaded into state.
- * @returns {string[]} Hydration diagnostics.
- */
-export function validateHydratedPropertyUsage(
-  file,
-  source,
-  hydratedProperties,
-) {
-  const record = parseModule(file, source);
-  const reads = new Map();
-  ancestor(record.ast, {
-    MemberExpression(node, _state, ancestors) {
-      const path = memberPath(node);
-      if (!path?.startsWith("this.state.")) return;
-      const property = path.slice("this.state.".length);
-      if (!property || property.includes(".")) return;
-
-      const parent = ancestors.at(-2);
-      if (
-        (parent?.type === "AssignmentExpression" && parent.left === node) ||
-        (parent?.type === "UpdateExpression" && parent.argument === node) ||
-        (parent?.type === "UnaryExpression" &&
-          parent.operator === "delete" &&
-          parent.argument === node)
-      )
-        return;
-      if (!reads.has(property)) reads.set(property, lineOf(node));
-    },
-  });
-
-  const hydrated = new Set(hydratedProperties);
-  const errors = [];
-  for (const property of hydrated) {
-    if (!reads.has(property))
-      errors.push(
-        `${file}: hydrated MPRIS property ${property} is never read from MprisMediaApp state`,
-      );
-  }
-  for (const [property, line] of reads) {
-    if (!hydrated.has(property))
-      errors.push(
-        `${file}:${line}: MprisMediaApp reads ${property} without hydrating it`,
-      );
-  }
-  return errors;
-}
-
-export async function checkMprisPropertyHydration() {
-  const records = await loadRecords();
-  const mprisMediaApp = records.get("src/shell/mpris/MprisMediaApp.js");
-  const errors = validateHydratedPropertyUsage(
-    mprisMediaApp.file,
-    mprisMediaApp.source,
-    [...MPRIS_ROOT_PROPERTY_NAMES, ...MPRIS_PLAYER_PROPERTY_NAMES],
-  );
-  fail("MPRIS property hydration validation", errors);
-  console.log("MPRIS property hydration matches MprisMediaApp state reads.");
-}
-
 function objectPropertyName(property) {
   if (property.computed) return null;
   if (property.key.type === "Identifier") return property.key.name;
@@ -1018,191 +326,16 @@ function objectPropertyName(property) {
   return null;
 }
 
-function mainLoopSourceDiagnostics(record) {
-  const classSources = new Map();
-  const teardownMethods = new Set([
-    "disable",
-    "destroy",
-    "_destroy",
-    "dispose",
-    "cleanup",
-    "stop",
-  ]);
-  const teardownSignals = new Set(["closed", "close-request", "destroy"]);
-
-  function owningClass(ancestors) {
-    return [...ancestors]
-      .reverse()
-      .find((node) =>
-        ["ClassDeclaration", "ClassExpression"].includes(node.type),
-      );
-  }
-
-  function owningMethod(ancestors) {
-    return [...ancestors]
-      .reverse()
-      .find((node) => node.type === "MethodDefinition");
-  }
-
-  function isDirectMethodNode(ancestors, method) {
-    const functionOwner = [...ancestors]
-      .reverse()
-      .find((node) =>
-        [
-          "ArrowFunctionExpression",
-          "FunctionDeclaration",
-          "FunctionExpression",
-        ].includes(node.type),
-      );
-    return functionOwner === method.value;
-  }
-
-  function sourceState(classNode) {
-    if (!classSources.has(classNode))
-      classSources.set(classNode, {
-        assigned: new Map(),
-        callsByMethod: new Map(),
-        eventTeardownMethods: new Set(),
-        removalsByMethod: new Map(),
-      });
-    return classSources.get(classNode);
-  }
-
-  function methodSet(map, method) {
-    if (!map.has(method)) map.set(method, new Set());
-    return map.get(method);
-  }
-
-  ancestor(record.ast, {
-    AssignmentExpression(node, ancestors) {
-      if (
-        node.operator !== "=" ||
-        node.right.type !== "CallExpression" ||
-        ![
-          "GLib.idle_add",
-          "GLib.timeout_add",
-          "GLib.timeout_add_seconds",
-        ].includes(memberPath(node.right.callee))
-      )
-        return;
-
-      const propertyPath = memberPath(node.left);
-      if (!propertyPath?.startsWith("this.")) return;
-      const classNode = owningClass(ancestors);
-      if (!classNode) return;
-      const property = propertyPath.slice("this.".length);
-      const state = sourceState(classNode);
-      if (!state.assigned.has(property))
-        state.assigned.set(property, lineOf(node));
-    },
-    CallExpression(node, ancestors) {
-      const classNode = owningClass(ancestors);
-      const method = owningMethod(ancestors);
-      const methodName = method && objectPropertyName(method);
-      if (!classNode || !methodName || !isDirectMethodNode(ancestors, method))
-        return;
-
-      const state = sourceState(classNode);
-      const calleePath = memberPath(node.callee);
-
-      if (
-        calleePath === "this.connect" &&
-        teardownSignals.has(node.arguments[0]?.value)
-      ) {
-        const callback = node.arguments[1];
-        if (
-          ["ArrowFunctionExpression", "FunctionExpression"].includes(
-            callback?.type,
-          )
-        ) {
-          simple(callback.body, {
-            CallExpression(callbackCall) {
-              const callbackPath = memberPath(callbackCall.callee);
-              if (callbackPath?.startsWith("this."))
-                state.eventTeardownMethods.add(
-                  callbackPath.slice("this.".length),
-                );
-            },
-          });
-        } else if (
-          callback?.type === "CallExpression" &&
-          memberPath(callback.callee)?.endsWith(".bind")
-        ) {
-          const callbackPath = memberPath(callback.callee.object);
-          if (callbackPath?.startsWith("this."))
-            state.eventTeardownMethods.add(callbackPath.slice("this.".length));
-        }
-      }
-
-      if (calleePath?.startsWith("this."))
-        methodSet(state.callsByMethod, methodName).add(
-          calleePath.slice("this.".length),
-        );
-
-      if (calleePath !== "GLib.Source.remove" || node.arguments.length === 0)
-        return;
-
-      const propertyPath = memberPath(node.arguments[0]);
-      if (!propertyPath?.startsWith("this.")) return;
-      methodSet(state.removalsByMethod, methodName).add(
-        propertyPath.slice("this.".length),
-      );
-    },
-  });
-
-  const diagnostics = [];
-  for (const state of classSources.values()) {
-    const reachableTeardown = new Set([
-      ...teardownMethods,
-      ...state.eventTeardownMethods,
-    ]);
-    const pending = [...reachableTeardown];
-    while (pending.length > 0) {
-      const method = pending.pop();
-      for (const called of state.callsByMethod.get(method) ?? []) {
-        if (reachableTeardown.has(called)) continue;
-        reachableTeardown.add(called);
-        pending.push(called);
-      }
-    }
-
-    const removed = new Set();
-    for (const method of reachableTeardown) {
-      for (const property of state.removalsByMethod.get(method) ?? [])
-        removed.add(property);
-    }
-
-    for (const [property, line] of state.assigned) {
-      if (!removed.has(property))
-        diagnostics.push(
-          `${record.file}:${line}: GLib source stored in this.${property} needs a matching GLib.Source.remove(this.${property}) reachable from teardown`,
-        );
-    }
-  }
-  return diagnostics;
-}
-
-/**
- * Validates that class-owned GLib main-loop sources have explicit removals.
- *
- * @param {string} file - Diagnostic source path.
- * @param {string} source - JavaScript module source.
- * @returns {string[]} Lifecycle diagnostics.
- */
-export function validateMainLoopSourceOwnership(file, source) {
-  return mainLoopSourceDiagnostics(parseModule(file, source));
-}
-
-export async function checkSourceStructure() {
+/** Checks only stable, removed, or explicitly unsupported runtime APIs. */
+export async function checkRuntimeApiUsage() {
   const records = await loadRecords();
   const errors = [];
 
   for (const record of records.values()) {
-    const isSource = record.file.startsWith("src/");
-    if (isSource) errors.push(...mainLoopSourceDiagnostics(record));
+    if (!record.file.startsWith("src/")) continue;
     simple(record.ast, {
       NewExpression(node) {
-        if (!isSource || !memberPath(node.callee)?.startsWith("St.")) return;
+        if (!memberPath(node.callee)?.startsWith("St.")) return;
         const properties =
           node.arguments[0]?.type === "ObjectExpression"
             ? node.arguments[0].properties
@@ -1217,7 +350,6 @@ export async function checkSourceStructure() {
           );
       },
       CallExpression(node) {
-        if (!isSource) return;
         const path = memberPath(node.callee);
         if (path?.endsWith(".run_dispose"))
           errors.push(
@@ -1225,7 +357,6 @@ export async function checkSourceStructure() {
           );
       },
       MemberExpression(node) {
-        if (!isSource) return;
         const path = memberPath(node);
         if (["Clutter.ClickAction", "Clutter.TapAction"].includes(path))
           errors.push(
@@ -1239,177 +370,47 @@ export async function checkSourceStructure() {
     });
   }
 
-  fail("Source structure validation", errors);
-  console.log("Runtime API and logging safety passed.");
+  fail("Runtime API validation", errors);
+  console.log("Stable GNOME runtime API constraints passed.");
 }
 
 export async function checkEntryPointContracts() {
   const records = await loadRecords();
-  const extension = records.get("src/extension.js");
   const errors = [];
 
-  let extensionLifecycleMethods = null;
-  for (const node of extension.ast.body) {
-    if (
-      node.type === "ExportDefaultDeclaration" &&
-      node.declaration.type === "ClassDeclaration"
-    ) {
-      extensionLifecycleMethods = new Set(
-        node.declaration.body.body
-          .filter(
-            (item) =>
-              item.type === "MethodDefinition" &&
-              !item.computed &&
-              item.key.type === "Identifier",
-          )
-          .map((item) => item.key.name),
-      );
+  for (const [file, requiredMethods] of [
+    ["src/extension.js", ["enable", "disable"]],
+    ["src/prefs.js", ["fillPreferencesWindow"]],
+  ]) {
+    const record = records.get(file);
+    let methods = null;
+    for (const node of record?.ast.body ?? []) {
+      if (
+        node.type === "ExportDefaultDeclaration" &&
+        node.declaration.type === "ClassDeclaration"
+      ) {
+        methods = new Set(
+          node.declaration.body.body
+            .filter(
+              (item) =>
+                item.type === "MethodDefinition" &&
+                !item.computed &&
+                item.key.type === "Identifier",
+            )
+            .map((item) => item.key.name),
+        );
+      }
     }
-  }
-  for (const method of ["enable", "disable"]) {
-    if (!extensionLifecycleMethods?.has(method))
-      errors.push(`src/extension.js: exported class is missing ${method}()`);
+    for (const method of requiredMethods) {
+      if (!methods?.has(method)) errors.push(`${file}: missing ${method}()`);
+    }
   }
 
   fail("Entry-point contract validation", errors);
-  console.log("Entry-point lifecycle passed.");
+  console.log("Extension and preferences entry points passed.");
 }
 
-/**
- * Returns an advisory diagnostic for a misplaced private Shell MPRIS import.
- *
- * @param {string} file - Repository-relative source path.
- * @param {string} specifier - Imported module specifier.
- * @returns {string|null} Diagnostic, or null when the boundary is respected.
- */
-const RETIRED_NAMING_IDENTIFIERS = new Set([
-  "APP_ICON",
-  "MediaAppResolver",
-  "PlayerProxy",
-  "PopupAppSelectorButton",
-  "PopupAppSelectorController",
-  "PopupAppSelectorList",
-  "PositionTracker",
-  "REBUILD_TOP_BAR_BUTTON",
-  "TOP_BAR_APP_ICON",
-  "TOP_BAR_BUTTON",
-  "TopBarAppIcon",
-  "TopBarButton",
-  "TopBarPointerHandler",
-  "appSelectorButton",
-  "appSelectorController",
-  "appSelectorList",
-  "mediaAppResolver",
-  "popupAppIconUseColor",
-  "topBarAppIcon",
-  "topBarButton",
-]);
-
-const TECHNICAL_PLAYER_IDENTIFIERS = new Set([
-  "MPRIS_PLAYER_IFACE_NAME",
-  "MPRIS_PLAYER_PROPERTY_NAMES",
-  "MprisPlayerMethods",
-  "MprisPlayerProperties",
-  "MprisPlayerSignals",
-  "createPlayerProxy",
-  "playerInterfaceInfo",
-  "playerProxy",
-  "systemPlayer",
-]);
-
-const RETIRED_NAMING_LITERALS = new Set([
-  "APP_ICON",
-  "popup-app-icon-use-color",
-  "rebuild-top-bar-button",
-  "top-bar-app-icon-show",
-  "top-bar-app-icon-use-color",
-]);
-
-export function validatePrivateShellImport(file, specifier) {
-  if (
-    specifier !== "resource:///org/gnome/shell/ui/mpris.js" ||
-    file === "src/shell/services/GnomeShellMediaControlsPatch.js"
-  )
-    return null;
-  return `${file}: private Shell MPRIS API must stay isolated in GnomeShellMediaControlsPatch`;
-}
-
-/**
- * Collects maintainability conventions that should not block a runtime build.
- *
- * @returns {Promise<string[]>} Advisory diagnostics.
- */
-export async function inspectSourceConventions() {
-  const records = await loadRecords();
-  const diagnostics = [];
-
-  for (const record of records.values()) {
-    if (!record.file.startsWith("src/")) continue;
-    for (const item of moduleSpecifiers(record)) {
-      const diagnostic = validatePrivateShellImport(record.file, item.value);
-      if (diagnostic) diagnostics.push(`${diagnostic} (line ${item.line})`);
-    }
-    simple(record.ast, {
-      CallExpression(node) {
-        const path = memberPath(node.callee);
-        if (
-          path?.startsWith("console.") &&
-          record.file !== "src/shared/utils/log.js"
-        )
-          diagnostics.push(
-            `${record.file}:${lineOf(node)}: use shared createLogger() instead of ${path}`,
-          );
-      },
-      ClassDeclaration(node) {
-        if (
-          memberPath(node.superClass) === "PanelMenu.Button" &&
-          record.file !== "src/shell/ui/indicator/MediaShellIndicator.js"
-        )
-          diagnostics.push(
-            `${record.file}:${lineOf(node)}: MediaShellIndicator is the only PanelMenu.Button owner`,
-          );
-      },
-      Identifier(node) {
-        if (RETIRED_NAMING_IDENTIFIERS.has(node.name))
-          diagnostics.push(
-            `${record.file}:${lineOf(node)}: retired naming identifier ${node.name}`,
-          );
-        if (
-          /player/i.test(node.name) &&
-          !TECHNICAL_PLAYER_IDENTIFIERS.has(node.name)
-        )
-          diagnostics.push(
-            `${record.file}:${lineOf(node)}: Player terminology requires an explicit technical MPRIS/GNOME contract (${node.name})`,
-          );
-      },
-      Literal(node) {
-        if (
-          typeof node.value === "string" &&
-          RETIRED_NAMING_LITERALS.has(node.value)
-        )
-          diagnostics.push(
-            `${record.file}:${lineOf(node)}: retired naming literal ${JSON.stringify(node.value)}`,
-          );
-      },
-    });
-
-    if (
-      record.file.startsWith("src/shell/ui/topBar/") &&
-      moduleSpecifiers(record).some((item) => item.value.includes("/popup/"))
-    )
-      diagnostics.push(
-        `${record.file}: top bar components must not import popup components`,
-      );
-
-    if (/active media players?/i.test(record.source))
-      diagnostics.push(
-        `${record.file}: product language uses media app, not active media player`,
-      );
-  }
-
-  return diagnostics;
-}
-
+/** Collects literal GtkBuilder object IDs referenced by preferences code. */
 export async function collectBuilderObjectReferences() {
   const records = await loadRecords();
   const references = [];

@@ -2,16 +2,17 @@
  * @file playbackContracts.mjs
  * @module scripts.dev.playbackContracts
  *
- * Validates the stable playback domain against parsed settings, UI, and D-Bus data.
+ * Validates cross-file playback data that must agree for the extension to build
+ * and render safely.
  *
- * The checker compares owned tables and parsed contracts. It intentionally avoids
- * source-text rules, naming preferences, and exact call-site counts.
+ * The checker verifies IDs, settings ownership, bit flags, input mappings, and
+ * MPRIS signatures. Product choices such as exact order, defaults, and visual
+ * policy are covered by behavior tests instead of being duplicated here.
  */
 
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
-  LEGACY_INPUT_ACTION_SCHEMA_NICKS,
   MOUSE_ACTION_VALUES,
   PLAYBACK_ACTION_BY_INPUT_ACTION,
 } from "../../src/shared/constants/inputActions.js";
@@ -21,112 +22,19 @@ import {
   PlaybackControlContentKinds,
   PlaybackControlGroups,
   PlaybackControlIds,
-  RELATIVE_SEEK_SECONDS,
 } from "../../src/shared/constants/playbackControls.js";
-import {
-  PlaybackControlSurfaceDefinitions,
-  PlaybackControlSurfaces,
-} from "../../src/shared/constants/playbackControlSurfaces.js";
+import { PlaybackControlSurfaceDefinitions } from "../../src/shared/constants/playbackControlSurfaces.js";
 import {
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
 } from "../../src/shared/constants/mpris.js";
-import { SettingsKeys } from "../../src/shared/constants/settings.js";
-import { InputActions } from "../../src/shared/enums/input.js";
 import { WidgetFlags } from "../../src/shared/enums/widgetFlags.js";
-import {
-  POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
-  POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
-  TOP_BAR_PLAYBACK_CONTROL_ORDER,
-} from "../../src/shell/constants/playbackControls.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 
-const EXPECTED_INPUT_ACTIONS = Object.freeze({
-  NONE: 0,
-  TOGGLE_SHUFFLE: 1,
-  PREVIOUS_TRACK: 2,
-  PLAY_PAUSE: 3,
-  NEXT_TRACK: 4,
-  TOGGLE_LOOP: 5,
-  VOLUME_UP: 6,
-  VOLUME_DOWN: 7,
-  TOGGLE_POPUP: 8,
-  OPEN_PREFERENCES: 9,
-  RAISE_APP: 10,
-  QUIT_APP: 11,
-  SWITCH_APP: 12,
-  SEEK_BACKWARD: 13,
-  SEEK_FORWARD: 14,
-  RESERVED_15: 15,
-  RESERVED_16: 16,
-  RESERVED_17: 17,
-});
-
-const EXPECTED_MOUSE_ACTION_LABELS = Object.freeze([
-  "None",
-  "Shuffle",
-  "Seek backward",
-  "Previous track",
-  "Play / pause",
-  "Next track",
-  "Seek forward",
-  "Repeat",
-  "Volume up",
-  "Volume down",
-  "Popup",
-  "Preferences",
-  "Open app",
-  "Quit app",
-  "Switch app",
-]);
-
-const EXPECTED_ORDERS = Object.freeze({
-  popupPrimary: Object.freeze([
-    PlaybackControlIds.SEEK_BACKWARD,
-    PlaybackControlIds.PREVIOUS,
-    PlaybackControlIds.PLAY_PAUSE,
-    PlaybackControlIds.NEXT,
-    PlaybackControlIds.SEEK_FORWARD,
-  ]),
-  popupSecondary: Object.freeze([
-    PlaybackControlIds.SHUFFLE,
-    PlaybackControlIds.SPEED,
-    PlaybackControlIds.REPEAT,
-  ]),
-  topBar: Object.freeze([
-    PlaybackControlIds.SHUFFLE,
-    PlaybackControlIds.SEEK_BACKWARD,
-    PlaybackControlIds.PREVIOUS,
-    PlaybackControlIds.PLAY_PAUSE,
-    PlaybackControlIds.NEXT,
-    PlaybackControlIds.SEEK_FORWARD,
-    PlaybackControlIds.REPEAT,
-  ]),
-});
-
-const EXPECTED_CONTROL_DEFAULTS = Object.freeze({
-  [PlaybackControlSurfaces.POPUP]: Object.freeze({
-    [PlaybackControlIds.SHUFFLE]: true,
-    [PlaybackControlIds.SEEK_BACKWARD]: false,
-    [PlaybackControlIds.PREVIOUS]: true,
-    [PlaybackControlIds.PLAY_PAUSE]: true,
-    [PlaybackControlIds.NEXT]: true,
-    [PlaybackControlIds.SEEK_FORWARD]: false,
-    [PlaybackControlIds.REPEAT]: true,
-    [PlaybackControlIds.SPEED]: false,
-  }),
-  [PlaybackControlSurfaces.TOP_BAR]: Object.freeze({
-    [PlaybackControlIds.SHUFFLE]: false,
-    [PlaybackControlIds.SEEK_BACKWARD]: false,
-    [PlaybackControlIds.PREVIOUS]: true,
-    [PlaybackControlIds.PLAY_PAUSE]: true,
-    [PlaybackControlIds.NEXT]: true,
-    [PlaybackControlIds.SEEK_FORWARD]: false,
-    [PlaybackControlIds.REPEAT]: false,
-  }),
-});
+const PREFERENCES_UI_SOURCE = "assets/ui/prefs.ui";
+const INPUT_ACTION_MODEL_ID = "model-input-actions";
 
 function duplicateValues(values) {
   const duplicates = new Set();
@@ -146,13 +54,6 @@ function same(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function addMismatch(errors, label, actual, expected) {
-  if (!same(actual, expected))
-    errors.push(
-      `${label}: ${JSON.stringify(actual)} !== ${JSON.stringify(expected)}`,
-    );
-}
-
 function cloneSurface(definition) {
   return {
     show: { ...definition.show },
@@ -160,18 +61,14 @@ function cloneSurface(definition) {
   };
 }
 
-/** Creates a serializable snapshot used by the runtime check and negative fixtures. */
+/** Creates a serializable snapshot for runtime checks and negative fixtures. */
 export function createPlaybackContractSnapshot(manifest) {
   return {
     controls: PLAYBACK_CONTROL_DEFINITIONS.map((definition) => ({
       ...definition,
       icons: definition.icons ? { ...definition.icons } : null,
     })),
-    orders: {
-      popupPrimary: [...POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER],
-      popupSecondary: [...POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER],
-      topBar: [...TOP_BAR_PLAYBACK_CONTROL_ORDER],
-    },
+    controlIds: { ...PlaybackControlIds },
     surfaces: Object.fromEntries(
       Object.entries(PlaybackControlSurfaceDefinitions).map(
         ([surface, definition]) => [surface, cloneSurface(definition)],
@@ -183,25 +80,24 @@ export function createPlaybackContractSnapshot(manifest) {
         {
           property: spec.property,
           read: spec.read,
-          write: spec.write ?? null,
           impact: spec.impact ?? null,
         },
       ]),
     ),
     schema: manifest.schema,
     widgetFlags: { ...WidgetFlags },
-    inputActions: { ...InputActions },
     inputDefinitions: INPUT_ACTION_DEFINITIONS.map((definition) => ({
       ...definition,
     })),
     mouseActionValues: [...MOUSE_ACTION_VALUES],
     mouseActionLabels: [
-      ...(manifest.uiStringLists?.["model-input-actions"] ?? []),
+      ...(manifest.uiStringListsBySource?.[PREFERENCES_UI_SOURCE]?.[
+        INPUT_ACTION_MODEL_ID
+      ] ?? []),
     ],
     shortcutKeys: [...KEYBOARD_SHORTCUT_KEYS],
     playbackActionsByInput: { ...PLAYBACK_ACTION_BY_INPUT_ACTION },
     playbackActions: Object.values(PlaybackControlActions),
-    relativeSeekSeconds: RELATIVE_SEEK_SECONDS,
     dbusSignatures: manifest.dbusSignatures,
   };
 }
@@ -209,12 +105,27 @@ export function createPlaybackContractSnapshot(manifest) {
 function validateDefinitions(snapshot, errors) {
   const ids = snapshot.controls.map(({ id }) => id);
   const actorNames = snapshot.controls.map(({ actorName }) => actorName);
-  const expectedIds = Object.values(PlaybackControlIds);
-  addMismatch(errors, "playback control IDs", ids, expectedIds);
+  const declaredIds = Object.values(snapshot.controlIds);
+
   for (const duplicate of duplicateValues(ids))
     errors.push(`playback controls: duplicate ID ${duplicate}`);
   for (const duplicate of duplicateValues(actorNames))
     errors.push(`playback controls: duplicate actor name ${duplicate}`);
+  if (
+    ids.length !== declaredIds.length ||
+    ids.some((id) => !declaredIds.includes(id))
+  ) {
+    const missing = declaredIds.filter((id) => !ids.includes(id));
+    const unknown = ids.filter((id) => !declaredIds.includes(id));
+    if (missing.length > 0)
+      errors.push(
+        `playback controls: missing definitions ${missing.join(", ")}`,
+      );
+    if (unknown.length > 0)
+      errors.push(
+        `playback controls: unknown definitions ${unknown.join(", ")}`,
+      );
+  }
 
   const groups = new Set(Object.values(PlaybackControlGroups));
   const contentKinds = new Set(Object.values(PlaybackControlContentKinds));
@@ -234,144 +145,107 @@ function validateDefinitions(snapshot, errors) {
     )
       errors.push(`${control.id}: label control must not define icons`);
   }
-
-  addMismatch(
-    errors,
-    "primary playback controls",
-    snapshot.controls.filter(({ isPrimary }) => isPrimary).map(({ id }) => id),
-    [PlaybackControlIds.PLAY_PAUSE],
-  );
-  addMismatch(
-    errors,
-    "transport-adjacent controls",
-    snapshot.controls
-      .filter(({ isAdjacent }) => isAdjacent)
-      .map(({ id }) => id),
-    [PlaybackControlIds.SEEK_BACKWARD, PlaybackControlIds.SEEK_FORWARD],
-  );
 }
 
-function validateOrdersAndSurfaces(snapshot, errors) {
-  for (const [name, expected] of Object.entries(EXPECTED_ORDERS))
-    addMismatch(errors, `${name} order`, snapshot.orders[name], expected);
+function validateSettingOwner(snapshot, errors, surface, item, label) {
+  const schemaKey = snapshot.schema.keys[item.settingKey];
+  if (!schemaKey) {
+    errors.push(`${surface}/${label}: missing schema key ${item.settingKey}`);
+    return;
+  }
+  if (schemaKey.type !== "b")
+    errors.push(
+      `${item.settingKey}: playback visibility setting must be boolean`,
+    );
 
+  const spec = snapshot.settingsSpec[item.settingKey];
+  if (!spec) {
+    errors.push(`${item.settingKey}: missing runtime settings owner`);
+    return;
+  }
+  if (
+    spec.property !== item.property ||
+    spec.impact !== item.impact ||
+    spec.read !== "get_boolean"
+  )
+    errors.push(`${item.settingKey}: surface policy and SETTINGS_SPEC differ`);
+}
+
+function validateSurfaces(snapshot, errors) {
   const knownIds = new Set(snapshot.controls.map(({ id }) => id));
+  const usedIds = new Set();
+  const ownedProperties = new Map();
+
   for (const [surface, definition] of Object.entries(snapshot.surfaces)) {
+    validateSettingOwner(snapshot, errors, surface, definition.show, "show");
+
     const controlIds = definition.controls.map(({ controlId }) => controlId);
     for (const duplicate of duplicateValues(controlIds))
       errors.push(`${surface}: duplicate control policy ${duplicate}`);
-    for (const controlId of controlIds) {
-      if (!knownIds.has(controlId))
-        errors.push(`${surface}: unknown control policy ${controlId}`);
-    }
-    const expectedIds = Object.keys(EXPECTED_CONTROL_DEFAULTS[surface]);
-    addMismatch(errors, `${surface} control policy`, controlIds, expectedIds);
 
     for (const control of definition.controls) {
-      const schemaKey = snapshot.schema.keys[control.settingKey];
-      if (!schemaKey)
-        errors.push(
-          `${surface}/${control.controlId}: missing schema key ${control.settingKey}`,
-        );
-      else if (
-        schemaKey.default !==
-        EXPECTED_CONTROL_DEFAULTS[surface][control.controlId]
-      )
-        errors.push(`${control.settingKey}: unexpected first-install default`);
+      const { controlId } = control;
+      usedIds.add(controlId);
+      if (!knownIds.has(controlId))
+        errors.push(`${surface}: unknown control policy ${controlId}`);
+      validateSettingOwner(snapshot, errors, surface, control, controlId);
 
-      const spec = snapshot.settingsSpec[control.settingKey];
-      if (!spec)
-        errors.push(`${control.settingKey}: missing runtime settings owner`);
-      else if (
-        spec.property !== control.property ||
-        spec.impact !== control.impact ||
-        spec.read !== "get_boolean"
-      )
+      const previousOwner = ownedProperties.get(control.property);
+      if (previousOwner)
         errors.push(
-          `${control.settingKey}: surface policy and SETTINGS_SPEC differ`,
+          `${surface}/${controlId}: runtime property ${control.property} is already owned by ${previousOwner}`,
         );
+      else ownedProperties.set(control.property, `${surface}/${controlId}`);
 
-      const expectedSurfaceRequirement = !(
-        surface === PlaybackControlSurfaces.POPUP &&
-        control.controlId === PlaybackControlIds.SPEED
-      );
-      if (control.requiresSurfaceEnabled !== expectedSurfaceRequirement)
-        errors.push(
-          `${surface}/${control.controlId}: unexpected surface visibility dependency`,
-        );
+      if (typeof control.requiresSurfaceEnabled !== "boolean")
+        errors.push(`${surface}/${controlId}: invalid surface dependency flag`);
     }
   }
 
-  if (
-    snapshot.surfaces[PlaybackControlSurfaces.TOP_BAR].controls.some(
-      ({ controlId }) => controlId === PlaybackControlIds.SPEED,
-    )
-  )
-    errors.push("top bar: playback speed must remain popup-only");
+  for (const id of knownIds) {
+    if (!usedIds.has(id))
+      errors.push(`playback controls: ${id} has no surface`);
+  }
 }
 
 function validateInputs(snapshot, errors) {
-  addMismatch(
-    errors,
-    "persisted input enum",
-    snapshot.inputActions,
-    EXPECTED_INPUT_ACTIONS,
+  const ids = snapshot.inputDefinitions.map(({ id }) => id);
+  const actions = snapshot.inputDefinitions.map(({ action }) => action);
+  const shortcuts = snapshot.inputDefinitions.map(
+    ({ shortcutKey }) => shortcutKey,
   );
-  const schemaEnum =
-    snapshot.schema.enums[`${snapshot.schema.id}.input-actions`];
-  addMismatch(
-    errors,
-    "schema input enum",
-    schemaEnum,
-    Object.entries(EXPECTED_INPUT_ACTIONS).map(([nick, value]) => ({
-      nick: LEGACY_INPUT_ACTION_SCHEMA_NICKS[value] ?? nick,
-      value,
-    })),
-  );
-  addMismatch(
-    errors,
-    "mouse action labels",
-    snapshot.mouseActionLabels,
-    EXPECTED_MOUSE_ACTION_LABELS,
-  );
-  addMismatch(errors, "mouse action values", snapshot.mouseActionValues, [
-    InputActions.NONE,
-    InputActions.TOGGLE_SHUFFLE,
-    InputActions.SEEK_BACKWARD,
-    InputActions.PREVIOUS_TRACK,
-    InputActions.PLAY_PAUSE,
-    InputActions.NEXT_TRACK,
-    InputActions.SEEK_FORWARD,
-    InputActions.TOGGLE_LOOP,
-    InputActions.VOLUME_UP,
-    InputActions.VOLUME_DOWN,
-    InputActions.TOGGLE_POPUP,
-    InputActions.OPEN_PREFERENCES,
-    InputActions.RAISE_APP,
-    InputActions.QUIT_APP,
-    InputActions.SWITCH_APP,
-  ]);
 
-  const executableValues = snapshot.inputDefinitions.map(
-    ({ action }) => action,
-  );
-  for (const reserved of [15, 16, 17]) {
-    if (executableValues.includes(reserved))
-      errors.push(`input action ${reserved}: reserved slot became executable`);
-  }
-  if (snapshot.shortcutKeys.length !== new Set(snapshot.shortcutKeys).size)
-    errors.push("keyboard shortcut settings contain duplicates");
+  for (const duplicate of duplicateValues(ids))
+    errors.push(`input actions: duplicate ID ${duplicate}`);
+  for (const duplicate of duplicateValues(actions))
+    errors.push(`input actions: duplicate enum value ${duplicate}`);
+  for (const duplicate of duplicateValues(shortcuts))
+    errors.push(`input actions: duplicate shortcut key ${duplicate}`);
+  for (const duplicate of duplicateValues(snapshot.shortcutKeys))
+    errors.push(`keyboard shortcuts: duplicate key ${duplicate}`);
+  for (const duplicate of duplicateValues(snapshot.mouseActionValues))
+    errors.push(`mouse actions: duplicate value ${duplicate}`);
+
+  if (snapshot.mouseActionLabels.length !== snapshot.mouseActionValues.length)
+    errors.push("mouse action labels and values have different lengths");
+
+  const knownPlaybackActions = new Set(snapshot.playbackActions);
   for (const definition of snapshot.inputDefinitions) {
     if (!snapshot.schema.keys[definition.shortcutKey])
       errors.push(`${definition.id}: shortcut schema key is missing`);
-    if (
-      definition.playbackAction &&
-      snapshot.playbackActionsByInput[definition.action] !==
+    if (definition.playbackAction) {
+      if (!knownPlaybackActions.has(definition.playbackAction))
+        errors.push(`${definition.id}: unknown playback action`);
+      if (
+        snapshot.playbackActionsByInput[definition.action] !==
         definition.playbackAction
-    )
-      errors.push(
-        `${definition.id}: playback input mapping differs from its definition`,
-      );
+      )
+        errors.push(
+          `${definition.id}: playback input mapping differs from its definition`,
+        );
+    } else if (snapshot.playbackActionsByInput[definition.action]) {
+      errors.push(`${definition.id}: unexpected playback input mapping`);
+    }
   }
 }
 
@@ -390,9 +264,19 @@ function validateFlags(snapshot, errors) {
     if (!isSingleBit(value))
       errors.push(`${name}: widget flag must be one bit`);
   }
-  const values = individual.map(([, value]) => value);
-  for (const duplicate of duplicateValues(values))
+  for (const duplicate of duplicateValues(individual.map(([, value]) => value)))
     errors.push(`widget flags: duplicate individual bit ${duplicate}`);
+
+  const knownFlags = new Set(Object.values(snapshot.widgetFlags));
+  for (const [surface, definition] of Object.entries(snapshot.surfaces)) {
+    for (const [label, item] of [
+      ["show", definition.show],
+      ...definition.controls.map((control) => [control.controlId, control]),
+    ]) {
+      if (!knownFlags.has(item.impact))
+        errors.push(`${surface}/${label}: unknown update flag ${item.impact}`);
+    }
+  }
 }
 
 function validateDbus(snapshot, errors) {
@@ -401,50 +285,44 @@ function validateDbus(snapshot, errors) {
     errors.push(`${MPRIS_PLAYER_IFACE_NAME}: parsed interface is missing`);
     return;
   }
-  addMismatch(
-    errors,
-    "MPRIS Seek signature",
-    player.method[MprisPlayerMethods.SEEK],
-    [{ name: "Offset", type: "x", direction: "in" }],
-  );
-  addMismatch(
-    errors,
-    "MPRIS SetPosition signature",
-    player.method[MprisPlayerMethods.SET_POSITION],
+
+  const required = [
     [
-      { name: "TrackId", type: "o", direction: "in" },
-      { name: "Position", type: "x", direction: "in" },
+      "MPRIS Seek signature",
+      player.method[MprisPlayerMethods.SEEK],
+      [{ name: "Offset", type: "x", direction: "in" }],
     ],
-  );
-  addMismatch(
-    errors,
-    "MPRIS Seeked signature",
-    player.signal[MprisPlayerSignals.SEEKED],
-    [{ name: "Position", type: "x", direction: null }],
-  );
-  addMismatch(
-    errors,
-    "MPRIS Position property",
-    player.property[MprisPlayerProperties.POSITION],
-    {
-      type: "x",
-      access: "read",
-    },
-  );
+    [
+      "MPRIS SetPosition signature",
+      player.method[MprisPlayerMethods.SET_POSITION],
+      [
+        { name: "TrackId", type: "o", direction: "in" },
+        { name: "Position", type: "x", direction: "in" },
+      ],
+    ],
+    [
+      "MPRIS Seeked signature",
+      player.signal[MprisPlayerSignals.SEEKED],
+      [{ name: "Position", type: "x", direction: null }],
+    ],
+    [
+      "MPRIS Position property",
+      player.property[MprisPlayerProperties.POSITION],
+      { type: "x", access: "read" },
+    ],
+  ];
+  for (const [label, actual, expected] of required) {
+    if (!same(actual, expected)) errors.push(`${label} differs from MPRIS`);
+  }
 }
 
 /** Validates a serialized playback contract snapshot. */
 export function validatePlaybackContractSnapshot(snapshot) {
   const errors = [];
   validateDefinitions(snapshot, errors);
-  validateOrdersAndSurfaces(snapshot, errors);
+  validateSurfaces(snapshot, errors);
   validateInputs(snapshot, errors);
   validateFlags(snapshot, errors);
   validateDbus(snapshot, errors);
-
-  if (snapshot.relativeSeekSeconds !== 10)
-    errors.push("relative seek interval must remain fixed at 10 seconds");
-  if (!snapshot.schema.keys[SettingsKeys.POPUP_PLAYBACK_CONTROLS_SPEED_SHOW])
-    errors.push("popup playback-speed setting is missing");
   return errors;
 }

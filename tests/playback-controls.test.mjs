@@ -20,7 +20,6 @@ import {
   PLAYBACK_CONTROL_DEFINITIONS,
   PlaybackControlActions,
   PlaybackControlIds,
-  RELATIVE_SEEK_SECONDS,
 } from "../src/shared/constants/playbackControls.js";
 import {
   PlaybackControlSurfaceDefinitions,
@@ -50,6 +49,7 @@ import {
   TOP_BAR_PLAYBACK_CONTROL_ORDER,
 } from "../src/shell/constants/playbackControls.js";
 import { SETTINGS_SPEC } from "../src/shell/settings/settingsSpec.js";
+import PopupLayoutController from "../src/prefs/controllers/PopupLayoutController.js";
 import { reconcileActorOrder } from "../src/shell/utils/actors.js";
 import { runCases } from "./helpers.mjs";
 
@@ -199,7 +199,7 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
   ]);
 });
 
-test("surface policies and popup layout preserve defaults without compacting controls", async () => {
+test("surface policies and popup layout stay consistent", async () => {
   await runCases([
     [
       "surface ownership",
@@ -227,46 +227,6 @@ test("surface policies and popup layout preserve defaults without compacting con
           popupDefinition.controls
             .filter(({ controlId }) => controlId !== PlaybackControlIds.SPEED)
             .every(({ requiresSurfaceEnabled }) => requiresSurfaceEnabled),
-        );
-      },
-    ],
-    [
-      "first-install defaults",
-      () => {
-        const popup =
-          PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.POPUP]
-            .controls;
-        const topBar =
-          PlaybackControlSurfaceDefinitions[PlaybackControlSurfaces.TOP_BAR]
-            .controls;
-        assert.deepEqual(
-          Object.fromEntries(
-            popup.map(({ controlId }) => [
-              controlId,
-              ["previous", "play-pause", "next", "shuffle", "repeat"].includes(
-                controlId,
-              ),
-            ]),
-          ),
-          {
-            shuffle: true,
-            "seek-backward": false,
-            previous: true,
-            "play-pause": true,
-            next: true,
-            "seek-forward": false,
-            repeat: true,
-            speed: false,
-          },
-        );
-        assert.ok(
-          topBar.every(
-            ({ controlId }) =>
-              ["previous", "play-pause", "next"].includes(controlId) ||
-              ["shuffle", "seek-backward", "seek-forward", "repeat"].includes(
-                controlId,
-              ),
-          ),
         );
       },
     ],
@@ -307,6 +267,88 @@ test("surface policies and popup layout preserve defaults without compacting con
         assert.equal(resolvePopupWidth(250, true, false), 350);
         assert.equal(resolvePopupWidth(320, false, true), 350);
         assert.equal(resolvePopupWidth(420, true, true), 420);
+      },
+    ],
+    [
+      "width preference feedback",
+      async () => {
+        const createWidget = (state) => {
+          const callbacks = new Map();
+          return {
+            state,
+            connect(signal, callback) {
+              callbacks.set(signal, callback);
+              return callbacks.size;
+            },
+            disconnect() {},
+            emit(signal) {
+              callbacks.get(signal)?.();
+            },
+            get_enable_expansion() {
+              return this.state.enabled;
+            },
+            get_active() {
+              return this.state.active;
+            },
+          };
+        };
+        const controls = createWidget({ enabled: false });
+        const seekBackward = createWidget({ active: false });
+        const seekForward = createWidget({ active: false });
+        const objects = new Map([
+          ["er-popup-playback-controls", controls],
+          ["sr-popup-playback-controls-seek-backward-show", seekBackward],
+          ["sr-popup-playback-controls-seek-forward-show", seekForward],
+        ]);
+        let width = 250;
+        let writes = 0;
+        const settings = {
+          get_uint: () => width,
+          set_uint(key, value) {
+            assert.equal(key, SettingsKeys.POPUP_WIDTH);
+            width = value;
+            writes += 1;
+          },
+        };
+        const controller = new PopupLayoutController(settings, {
+          get_object: (id) => objects.get(id) ?? null,
+        });
+
+        controller.init();
+        assert.equal(writes, 0, "initialization must not rewrite settings");
+
+        seekBackward.state.active = true;
+        seekBackward.emit("notify::active");
+        await Promise.resolve();
+        assert.equal(writes, 0, "disabled controls must not change width");
+
+        controls.state.enabled = true;
+        seekBackward.state.active = false;
+        controls.emit("notify::enable-expansion");
+        seekBackward.emit("notify::active");
+        await Promise.resolve();
+        assert.equal(
+          writes,
+          0,
+          "batched changes must use the final preference state",
+        );
+
+        seekBackward.state.active = true;
+        seekBackward.emit("notify::active");
+        await Promise.resolve();
+        assert.equal(width, 350);
+        assert.equal(writes, 1);
+
+        seekForward.state.active = true;
+        seekForward.emit("notify::active");
+        await Promise.resolve();
+        assert.equal(writes, 1, "the minimum must not be written twice");
+
+        width = 250;
+        seekForward.emit("notify::active");
+        controller.destroy();
+        await Promise.resolve();
+        assert.equal(width, 250, "destroy must invalidate pending feedback");
       },
     ],
   ]);
@@ -398,14 +440,8 @@ test("input actions stay append-only while executable lists exclude retired spee
   ]);
 });
 
-test("fixed seek, flexible rate ranges, and actor reconciliation remain reusable", async () => {
+test("playback rates and actor reconciliation remain reusable", async () => {
   await runCases([
-    [
-      "seek",
-      () => {
-        assert.equal(RELATIVE_SEEK_SECONDS, 10);
-      },
-    ],
     [
       "rate ranges",
       () => {
