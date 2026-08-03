@@ -67,8 +67,11 @@ export default class MediaAppRegistry {
     this.nameOwnerChangedSignalId = null;
     this.busDaemonOwnerSignalId = null;
     this.operationCancellable = new Gio.Cancellable();
-    this.isDestroyed = false;
     this.lifecycleGeneration = 0;
+  }
+
+  get isDestroyed() {
+    return this.operationCancellable === null;
   }
 
   async init() {
@@ -572,27 +575,17 @@ export default class MediaAppRegistry {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
-    this.lifecycleGeneration++;
+    const operationCancellable = this.operationCancellable;
+    if (!operationCancellable) return;
 
-    this.operationCancellable?.cancel();
     this.operationCancellable = null;
+    this.lifecycleGeneration++;
+    operationCancellable.cancel();
 
-    if (this.busDaemonProxy && this.nameOwnerChangedSignalId !== null) {
-      try {
-        this.busDaemonProxy.disconnectSignal(this.nameOwnerChangedSignalId);
-      } catch {
-        // The proxy may already be disposed during registry teardown.
-      }
-    }
-    if (this.busDaemonProxy && this.busDaemonOwnerSignalId !== null) {
-      try {
-        this.busDaemonProxy.disconnect(this.busDaemonOwnerSignalId);
-      } catch {
-        // The proxy may already be disposed during registry teardown.
-      }
-    }
+    if (this.busDaemonProxy && this.nameOwnerChangedSignalId !== null)
+      this.busDaemonProxy.disconnectSignal(this.nameOwnerChangedSignalId);
+    if (this.busDaemonProxy && this.busDaemonOwnerSignalId !== null)
+      this.busDaemonProxy.disconnect(this.busDaemonOwnerSignalId);
 
     for (const busName of [...this.pendingRemovalBusNames])
       this.cancelScheduledRemoval(busName);

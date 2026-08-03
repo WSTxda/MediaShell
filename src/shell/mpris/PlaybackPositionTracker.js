@@ -62,7 +62,6 @@ export default class PlaybackPositionTracker {
     this.anchorRealMicroseconds = clockSnapshot.realMicroseconds;
     this.positionChangeListeners = new Map();
     this.nextPositionChangeListenerId = 1;
-    this.isDestroyed = false;
     this.positionRefreshGeneration = 0;
     this.positionRefreshPromise = null;
   }
@@ -109,7 +108,7 @@ export default class PlaybackPositionTracker {
   }
 
   updatePlaybackState(playbackStatus, playbackRate) {
-    if (this.isDestroyed) return;
+    if (!this.propertiesProxy) return;
 
     const nextPlaybackStatus = playbackStatus ?? PlaybackStatus.STOPPED;
     const nextPlaybackRate = normalizePositionPlaybackRate(playbackRate);
@@ -141,7 +140,7 @@ export default class PlaybackPositionTracker {
     { identity = null, durationMicroseconds = null } = {},
     { refresh = true } = {},
   ) {
-    if (this.isDestroyed) return false;
+    if (!this.propertiesProxy) return false;
 
     const nextIdentity = identity == null ? null : String(identity);
     const nextDurationMicroseconds =
@@ -166,7 +165,7 @@ export default class PlaybackPositionTracker {
   }
 
   resetForOwnerChange() {
-    if (this.isDestroyed) return;
+    if (!this.propertiesProxy) return;
 
     this.positionRefreshGeneration++;
     this.positionRefreshPromise = null;
@@ -181,12 +180,12 @@ export default class PlaybackPositionTracker {
   }
 
   handleSeeked(positionMicroseconds) {
-    if (this.isDestroyed) return;
+    if (!this.propertiesProxy) return;
     this.setPositionAnchor(positionMicroseconds, { emit: true });
   }
 
   getEstimatedPositionMicroseconds() {
-    if (this.isDestroyed) return this.positionMicroseconds;
+    if (!this.propertiesProxy) return this.positionMicroseconds;
 
     const estimate = this.resolveCurrentEstimate();
     if (estimate.shouldRefresh)
@@ -225,7 +224,7 @@ export default class PlaybackPositionTracker {
   }
 
   refreshPosition(force = false) {
-    if (this.isDestroyed || !this.propertiesProxy)
+    if (!this.propertiesProxy)
       return Promise.resolve(this.positionMicroseconds);
     if (this.positionRefreshPromise && !force)
       return this.positionRefreshPromise;
@@ -258,7 +257,7 @@ export default class PlaybackPositionTracker {
     );
 
     if (
-      this.isDestroyed ||
+      propertiesProxy !== this.propertiesProxy ||
       refreshGeneration !== this.positionRefreshGeneration
     )
       return this.positionMicroseconds;
@@ -271,7 +270,8 @@ export default class PlaybackPositionTracker {
   }
 
   onPositionChanged(callback) {
-    if (this.isDestroyed || typeof callback !== "function") return () => {};
+    if (!this.propertiesProxy || typeof callback !== "function")
+      return () => {};
     const listenerId = this.nextPositionChangeListenerId++;
     this.positionChangeListeners.set(listenerId, callback);
     return () => this.positionChangeListeners.delete(listenerId);
@@ -292,8 +292,7 @@ export default class PlaybackPositionTracker {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    if (!this.propertiesProxy) return;
     this.positionRefreshGeneration++;
     this.positionChangeListeners.clear();
     this.positionRefreshPromise = null;

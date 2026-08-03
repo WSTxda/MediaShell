@@ -102,7 +102,6 @@ export default class MprisMediaApp {
     this.mprisProxyFactory = mprisProxyFactory;
     this.pinned = false;
     this.isMediaAppInvalid = true;
-    this.isDestroyed = false;
     this.propertyChangeListeners = new Map();
     this.nextPropertyChangeListenerId = 1;
     this.proxySignalConnections = [];
@@ -613,6 +612,10 @@ export default class MprisMediaApp {
     this.emitPropertyChanged(MediaAppStateProperties.IS_PINNED, false);
   }
 
+  get isDestroyed() {
+    return this.operationCancellable === null;
+  }
+
   get isPinned() {
     return this.pinned;
   }
@@ -1024,11 +1027,11 @@ export default class MprisMediaApp {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    const operationCancellable = this.operationCancellable;
+    if (!operationCancellable) return;
 
-    this.operationCancellable?.cancel();
     this.operationCancellable = null;
+    operationCancellable.cancel();
 
     if (this.pollSourceId !== null) {
       GLib.Source.remove(this.pollSourceId);
@@ -1038,12 +1041,8 @@ export default class MprisMediaApp {
 
     for (const { proxy, signalId, isDbusSignal } of this
       .proxySignalConnections) {
-      try {
-        if (isDbusSignal) proxy.disconnectSignal(signalId);
-        else proxy.disconnect(signalId);
-      } catch {
-        // The proxy or remote owner may already be disposed during teardown.
-      }
+      if (isDbusSignal) proxy.disconnectSignal(signalId);
+      else proxy.disconnect(signalId);
     }
     this.proxySignalConnections.length = 0;
     this.positionTracker?.destroy();

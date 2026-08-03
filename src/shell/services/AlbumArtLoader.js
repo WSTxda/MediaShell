@@ -136,8 +136,7 @@ export default class AlbumArtLoader {
   #cachePruneRequested = false;
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
-  #cacheWriteCancellable = null;
-  #destroyed = false;
+  #cacheWriteCancellable = new Gio.Cancellable();
   #session = null;
 
   #getSession() {
@@ -148,13 +147,6 @@ export default class AlbumArtLoader {
   }
 
   #getCacheWriteCancellable() {
-    if (this.#destroyed) return null;
-
-    if (
-      !this.#cacheWriteCancellable ||
-      this.#cacheWriteCancellable.is_cancelled()
-    )
-      this.#cacheWriteCancellable = new Gio.Cancellable();
     return this.#cacheWriteCancellable;
   }
 
@@ -165,7 +157,7 @@ export default class AlbumArtLoader {
   }
 
   #ensureAlbumArtCacheDirectory() {
-    if (this.#destroyed) return false;
+    if (!this.#cacheWriteCancellable) return false;
     if (this.#cacheDirectoryReady === true) return true;
 
     const directoryReady =
@@ -229,7 +221,7 @@ export default class AlbumArtLoader {
   }
 
   #touchAlbumArtCacheFile(cacheFile, cacheKey) {
-    if (!cacheFile || !cacheKey || this.#destroyed) return;
+    if (!cacheFile || !cacheKey || !this.#cacheWriteCancellable) return;
 
     // Serialize touches for the same entry so an older asynchronous completion
     // cannot overwrite a newer access time. Cache recency maintenance must not
@@ -241,7 +233,7 @@ export default class AlbumArtLoader {
     const touchPromise = (previousTouch ?? Promise.resolve())
       .catch(() => {})
       .then(async () => {
-        if (this.#destroyed || cancellable.is_cancelled()) return;
+        if (!this.#cacheWriteCancellable || cancellable.is_cancelled()) return;
 
         const info = new Gio.FileInfo();
         info.set_modification_date_time(GLib.DateTime.new_now_utc());
@@ -253,7 +245,7 @@ export default class AlbumArtLoader {
         );
       })
       .catch((error) => {
-        if (this.#destroyed || isCancellationError(error)) return;
+        if (!this.#cacheWriteCancellable || isCancellationError(error)) return;
         if (this.#invalidateCacheDirectoryIfMissing(error)) return;
         logger.debugOnce(
           `cache-touch:${cacheKey}`,
@@ -264,14 +256,14 @@ export default class AlbumArtLoader {
       .finally(() => {
         if (this.#cacheTouchPromises.get(cacheKey) !== touchPromise) return;
         this.#cacheTouchPromises.delete(cacheKey);
-        if (!this.#destroyed) this.#requestAlbumArtCachePrune();
+        if (this.#cacheWriteCancellable) this.#requestAlbumArtCachePrune();
       });
 
     this.#cacheTouchPromises.set(cacheKey, touchPromise);
   }
 
   #writeAlbumArtCacheBytes(cacheFile, responseBytes) {
-    if (!cacheFile || this.#destroyed) return;
+    if (!cacheFile || !this.#cacheWriteCancellable) return;
 
     // Cache persistence and pruning must not delay the first popup paint. A
     // missing parent directory can occur when the user or the system clears
@@ -282,7 +274,7 @@ export default class AlbumArtLoader {
   async #persistAlbumArtCacheBytes(cacheFile, responseBytes) {
     let recoveredMissingDirectory = false;
 
-    while (!this.#destroyed) {
+    while (this.#cacheWriteCancellable) {
       const cancellable = this.#getCacheWriteCancellable();
       if (!cancellable) return;
 
@@ -294,10 +286,10 @@ export default class AlbumArtLoader {
           Gio.FileCreateFlags.REPLACE_DESTINATION,
           cancellable,
         );
-        if (!this.#destroyed) this.#requestAlbumArtCachePrune();
+        if (this.#cacheWriteCancellable) this.#requestAlbumArtCachePrune();
         return;
       } catch (error) {
-        if (this.#destroyed || isCancellationError(error)) return;
+        if (!this.#cacheWriteCancellable || isCancellationError(error)) return;
 
         const cacheDirectoryMissing =
           this.#invalidateCacheDirectoryIfMissing(error);
@@ -321,13 +313,13 @@ export default class AlbumArtLoader {
   }
 
   #requestAlbumArtCachePrune() {
-    if (this.#destroyed) return;
+    if (!this.#cacheWriteCancellable) return;
 
     this.#cachePruneRequested = true;
     if (this.#cachePrunePromise) return;
 
     const prunePromise = (async () => {
-      while (this.#cachePruneRequested && !this.#destroyed) {
+      while (this.#cachePruneRequested && this.#cacheWriteCancellable) {
         const cancellable = this.#getCacheWriteCancellable();
         if (!cancellable || cancellable.is_cancelled()) return;
 
@@ -336,21 +328,25 @@ export default class AlbumArtLoader {
       }
     })()
       .catch((error) => {
-        if (this.#destroyed || isCancellationError(error)) return;
+        if (!this.#cacheWriteCancellable || isCancellationError(error)) return;
         if (this.#invalidateCacheDirectoryIfMissing(error)) return;
         logger.warnOnce("cache-prune", "Album-art cache pruning failed", error);
       })
       .finally(() => {
         if (this.#cachePrunePromise === prunePromise)
           this.#cachePrunePromise = null;
-        if (this.#cachePruneRequested && !this.#destroyed)
+        if (this.#cachePruneRequested && this.#cacheWriteCancellable)
           this.#requestAlbumArtCachePrune();
       });
     this.#cachePrunePromise = prunePromise;
   }
 
   async #pruneAlbumArtCacheOnce() {
-    if (this.#destroyed || !this.#ensureAlbumArtCacheDirectory()) return;
+    if (
+      !this.#cacheWriteCancellable ||
+      !this.#ensureAlbumArtCacheDirectory()
+    )
+      return;
 
     const touchGeneration = this.#cacheTouchGeneration;
     const pendingTouches = [...this.#cacheTouchPromises.values()];
@@ -514,7 +510,7 @@ export default class AlbumArtLoader {
     loadCancellable,
     { bypassCacheRead = false } = {},
   ) {
-    if (this.#destroyed || !albumArtUri) return null;
+    if (!this.#cacheWriteCancellable || !albumArtUri) return null;
     const uri = parseAlbumArtUri(albumArtUri);
     if (!uri) return null;
 
@@ -599,13 +595,13 @@ export default class AlbumArtLoader {
   }
 
   destroy() {
-    if (this.#destroyed) return;
-    this.#destroyed = true;
+    const cacheWriteCancellable = this.#cacheWriteCancellable;
+    if (!cacheWriteCancellable) return;
 
+    this.#cacheWriteCancellable = null;
     this.#session?.abort();
     this.#session = null;
-    this.#cacheWriteCancellable?.cancel();
-    this.#cacheWriteCancellable = null;
+    cacheWriteCancellable.cancel();
     this.#cachePruneRequested = false;
     this.#cacheTouchPromises.clear();
     this.#cacheDirectoryReady = null;

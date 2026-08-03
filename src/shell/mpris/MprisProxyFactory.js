@@ -77,13 +77,13 @@ async function loadMprisIntrospectionData(cancellable) {
  */
 export default class MprisProxyFactory {
   constructor() {
-    this.isDestroyed = false;
     this.initializationGeneration = 0;
     this.initializationCancellable = null;
     this.introspectionDataPromise = null;
   }
 
   async init() {
+    if (this.initializationGeneration === null) return false;
     const initializationGeneration = ++this.initializationGeneration;
     this.initializationCancellable?.cancel();
     const initializationCancellable = new Gio.Cancellable();
@@ -95,10 +95,7 @@ export default class MprisProxyFactory {
 
     try {
       const introspectionData = await introspectionDataPromise;
-      if (
-        this.isDestroyed ||
-        initializationGeneration !== this.initializationGeneration
-      )
+      if (initializationGeneration !== this.initializationGeneration)
         return false;
 
       // Introspection XML is loaded once per enable cycle rather than per proxy.
@@ -110,8 +107,7 @@ export default class MprisProxyFactory {
     } catch (error) {
       if (
         isCancellationError(error) &&
-        (this.isDestroyed ||
-          initializationGeneration !== this.initializationGeneration)
+        initializationGeneration !== this.initializationGeneration
       )
         return false;
       throw error;
@@ -178,11 +174,12 @@ export default class MprisProxyFactory {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
-    this.initializationGeneration++;
-    this.initializationCancellable?.cancel();
+    if (this.initializationGeneration === null) return;
+
+    const initializationCancellable = this.initializationCancellable;
+    this.initializationGeneration = null;
     this.initializationCancellable = null;
+    initializationCancellable?.cancel();
     this.introspectionDataPromise = null;
     this.mprisNodeInfo = null;
     this.dbusWatchNodeInfo = null;
