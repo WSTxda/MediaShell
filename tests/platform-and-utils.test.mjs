@@ -45,7 +45,13 @@ import {
 import { VisualizerStyles } from "../src/shared/enums/visualizer.js";
 
 test("platform policy is the exact supported baseline", () => {
-  assert.deepEqual(SUPPORTED_GNOME_SHELL_VERSIONS, ["47", "48", "49", "50"]);
+  assert.deepEqual(SUPPORTED_GNOME_SHELL_VERSIONS, [
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+  ]);
   assert.deepEqual(MINIMUM_LIBADWAITA_VERSION, { major: 1, minor: 6 });
   assert.equal(isVersionAtLeast(1, 5), false);
   assert.equal(isVersionAtLeast(1, 6), true);

@@ -15,6 +15,7 @@ export const SUPPORTED_GNOME_SHELL_VERSIONS = Object.freeze([
   "48",
   "49",
   "50",
+  "51",
 ]);
 
 /** Minimum Libadwaita version required by preferences widgets. */
