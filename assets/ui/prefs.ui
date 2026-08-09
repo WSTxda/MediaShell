@@ -477,11 +477,6 @@
             <property name="expanded">false</property>
           </object>
         </child>
-      </object>
-    </child>
-    <child>
-      <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Apps</property>
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-media-app-icon">
             <property name="show-enable-switch">true</property>

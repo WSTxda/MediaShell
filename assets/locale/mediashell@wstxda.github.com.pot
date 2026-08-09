@@ -695,10 +695,10 @@ msgstr ""
 msgid "Add text"
 msgstr ""
 
-#: assets/ui/prefs.ui:488
+#: assets/ui/prefs.ui:483
 msgid "Top bar image"
 msgstr ""
 
-#: assets/ui/prefs.ui:489
+#: assets/ui/prefs.ui:484
 msgid "Show the selected image"
 msgstr ""
