@@ -14,6 +14,7 @@ import Gio from "gi://Gio";
 
 import { IconNames } from "../../../shared/constants/icons.js";
 import { TopBarImageStyles } from "../../../shared/enums/topBar.js";
+import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
@@ -25,6 +26,7 @@ import {
 import { placeActorAtIndex } from "../../utils/actors.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
+import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
 const THUMBNAIL_SIZE = 20;
@@ -136,18 +138,19 @@ export default class TopBarMediaAppIcon {
     this.usesColoredIcon = null;
     this.attach(index, parentBox);
 
-    const thumbnailKey = [
-      this.mediaApp.busName,
-      this.mediaApp.metadata?.["mpris:artUrl"] ?? "",
+    const request = createAlbumArtRequest({
+      busName: this.mediaApp.busName,
+      metadata: this.mediaApp.metadata,
+      width: THUMBNAIL_SIZE,
       radius,
-      this.extensionController.albumArtCacheEnabled,
-    ].join("\u0000");
-    if (thumbnailKey === this.iconKey) return;
+      cacheEnabled: this.extensionController.albumArtCacheEnabled,
+    });
+    if (request.key === this.iconKey) return;
 
     this.cancelThumbnailLoad();
-    this.iconKey = thumbnailKey;
+    this.iconKey = request.key;
     this.setThumbnailFallback();
-    this.loadThumbnail(thumbnailKey, radius);
+    this.loadThumbnail(request);
   }
 
   replaceActor(index, styleClass, fallbackIconName) {
@@ -166,28 +169,25 @@ export default class TopBarMediaAppIcon {
     previous?.destroy();
   }
 
-  async loadThumbnail(thumbnailKey, radius) {
-    const albumArtUri = this.mediaApp.metadata?.["mpris:artUrl"];
-    if (!albumArtUri) return;
-
+  async loadThumbnail(request) {
     const loadGeneration = ++this.thumbnailLoadGeneration;
     const loadCancellable = new Gio.Cancellable();
     this.thumbnailLoadCancellable = loadCancellable;
     try {
-      const source = await this.albumArtLoader.loadAlbumArt(
-        albumArtUri,
-        this.extensionController.albumArtCacheEnabled,
+      const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
+        albumArtLoader: this.albumArtLoader,
+        ...request,
         loadCancellable,
-      );
+      });
       const pixbuf = await this.decodeThumbnail(
-        source?.stream,
+        albumArtSource?.stream,
         loadCancellable,
       );
       if (
         !this.isCurrentThumbnailLoad(
           loadGeneration,
           loadCancellable,
-          thumbnailKey,
+          request.key,
         )
       )
         return;
@@ -195,18 +195,20 @@ export default class TopBarMediaAppIcon {
         const thumbnail = cropPixbufToSquare(pixbuf, THUMBNAIL_SIZE * 2);
         setGIcon(
           this.actor,
-          roundPixbufCorners(thumbnail, radius * 2),
+          request.radius > 0
+            ? roundPixbufCorners(thumbnail, request.radius * 2)
+            : thumbnail,
           IconNames.MEDIA,
         );
         this.actor.set_icon_size(THUMBNAIL_SIZE);
-      }
+      } else this.setThumbnailFallback(fallbackIcon);
     } catch (error) {
       if (
         !isCancellationError(error) &&
         this.isCurrentThumbnailLoad(
           loadGeneration,
           loadCancellable,
-          thumbnailKey,
+          request.key,
         )
       )
         logger.debugOnce(
@@ -219,7 +221,7 @@ export default class TopBarMediaAppIcon {
         this.isCurrentThumbnailLoad(
           loadGeneration,
           loadCancellable,
-          thumbnailKey,
+          request.key,
         )
       )
         this.thumbnailLoadCancellable = null;
@@ -277,8 +279,8 @@ export default class TopBarMediaAppIcon {
     this.thumbnailLoadCancellable = null;
   }
 
-  setThumbnailFallback() {
-    setGIcon(this.actor, this.fallbackThumbnailIcon, IconNames.MEDIA);
+  setThumbnailFallback(icon = this.fallbackThumbnailIcon) {
+    setGIcon(this.actor, icon ?? this.fallbackThumbnailIcon, IconNames.MEDIA);
     this.actor.set_icon_size(THUMBNAIL_SIZE);
   }
 

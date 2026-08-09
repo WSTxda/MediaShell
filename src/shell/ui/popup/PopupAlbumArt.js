@@ -12,7 +12,6 @@
 import Clutter from "gi://Clutter";
 import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
-import GLib from "gi://GLib";
 import St from "gi://St";
 
 import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
@@ -33,6 +32,7 @@ import {
 } from "../../utils/albumArtPixbuf.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
+import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 
 if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
   Gio._promisify(
@@ -125,10 +125,11 @@ export default class PopupAlbumArt {
     this.loadingAlbumArtKey = request.key;
 
     try {
-      const { albumArtSource, fallbackIcon } = await this.resolveAlbumArtSource(
-        request,
+      const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
+        albumArtLoader: this.albumArtLoader,
+        ...request,
         loadCancellable,
-      );
+      });
       if (
         !this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
@@ -170,94 +171,6 @@ export default class PopupAlbumArt {
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
       }
-    }
-  }
-
-  async resolveAlbumArtSource(request, loadCancellable) {
-    let fallbackIcon = null;
-    let albumArtSource = await this.tryLoadAlbumArt(
-      request.albumArtUri,
-      loadCancellable,
-      "MPRIS album art",
-      request.busName,
-      request.cacheEnabled,
-    );
-    if (albumArtSource || !request.trackUri)
-      return { albumArtSource, fallbackIcon };
-
-    let trackUri;
-    try {
-      trackUri = GLib.Uri.parse(request.trackUri, GLib.UriFlags.NONE);
-    } catch (error) {
-      logger.debugOnce(
-        `track-uri:${request.busName}`,
-        "Ignoring an invalid local track URI",
-        error,
-      );
-      return { albumArtSource: null, fallbackIcon };
-    }
-
-    if (trackUri.get_scheme() !== "file")
-      return { albumArtSource: null, fallbackIcon };
-
-    const file = Gio.File.new_for_uri(trackUri.to_string());
-    let info;
-    try {
-      info = await file.query_info_async(
-        `${Gio.FILE_ATTRIBUTE_THUMBNAIL_PATH},${Gio.FILE_ATTRIBUTE_STANDARD_ICON}`,
-        Gio.FileQueryInfoFlags.NONE,
-        GLib.PRIORITY_DEFAULT,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error)) throw error;
-      logger.debugOnce(
-        `track-metadata:${request.busName}`,
-        "Local track metadata did not provide album art",
-        error,
-      );
-      return { albumArtSource: null, fallbackIcon };
-    }
-
-    fallbackIcon = info.get_icon();
-    const thumbnailPath = info.get_attribute_byte_string(
-      Gio.FILE_ATTRIBUTE_THUMBNAIL_PATH,
-    );
-    if (thumbnailPath)
-      albumArtSource = await this.tryLoadAlbumArt(
-        Gio.File.new_for_path(thumbnailPath).get_uri(),
-        loadCancellable,
-        "thumbnail",
-        request.busName,
-        request.cacheEnabled,
-      );
-
-    return { albumArtSource, fallbackIcon };
-  }
-
-  async tryLoadAlbumArt(
-    albumArtUri,
-    loadCancellable,
-    sourceName,
-    busName,
-    cacheEnabled,
-  ) {
-    if (!albumArtUri) return null;
-
-    try {
-      return await this.albumArtLoader.loadAlbumArt(
-        albumArtUri,
-        cacheEnabled,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error)) throw error;
-      logger.debugOnce(
-        `source-load:${busName}:${sourceName}`,
-        `Failed to load ${sourceName}; trying the next fallback`,
-        error,
-      );
-      return null;
     }
   }
 

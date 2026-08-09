@@ -706,9 +706,3 @@ msgstr "Afegeix un camp"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Afegeix text"
-
-msgid "Top bar image"
-msgstr ""
-
-msgid "Show the selected image"
-msgstr ""

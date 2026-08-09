@@ -503,22 +503,35 @@ export default class AlbumArtLoader {
     }
   }
 
-  #getRemoteAlbumArtRequest(albumArtUri, uri) {
+  #getRemoteAlbumArtRequest(albumArtUri, uri, cacheKey, cacheFile) {
     const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
-    if (existingRequest) return existingRequest;
+    if (existingRequest) {
+      if (cacheKey && cacheFile)
+        existingRequest.cacheTargets.set(cacheKey, cacheFile);
+      return existingRequest;
+    }
 
     const request = {
       cancellable: new Gio.Cancellable(),
+      cacheTargets: new Map(),
       consumerCount: 0,
       promise: null,
     };
+    if (cacheKey && cacheFile) request.cacheTargets.set(cacheKey, cacheFile);
     request.promise = this.#readRemoteAlbumArtBytes(
       new Soup.Message({ method: "GET", uri }),
       request.cancellable,
-    ).finally(() => {
-      if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
-        this.#remoteAlbumArtRequests.delete(albumArtUri);
-    });
+    )
+      .then((responseBytes) => {
+        if (responseBytes)
+          for (const targetFile of request.cacheTargets.values())
+            this.#writeAlbumArtCacheBytes(targetFile, responseBytes);
+        return responseBytes;
+      })
+      .finally(() => {
+        if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
+          this.#remoteAlbumArtRequests.delete(albumArtUri);
+      });
     this.#remoteAlbumArtRequests.set(albumArtUri, request);
     return request;
   }
@@ -617,7 +630,12 @@ export default class AlbumArtLoader {
       };
     }
 
-    const remoteRequest = this.#getRemoteAlbumArtRequest(albumArtUri, uri);
+    const remoteRequest = this.#getRemoteAlbumArtRequest(
+      albumArtUri,
+      uri,
+      cacheKey,
+      cacheFile,
+    );
     const responseBytes = await this.#waitForRemoteAlbumArtRequest(
       remoteRequest,
       albumArtUri,
@@ -625,7 +643,6 @@ export default class AlbumArtLoader {
     );
     if (!responseBytes) return null;
 
-    this.#writeAlbumArtCacheBytes(cacheFile, responseBytes);
     return {
       stream: Gio.MemoryInputStream.new_from_bytes(responseBytes),
       albumArtUri,
