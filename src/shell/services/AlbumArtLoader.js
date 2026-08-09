@@ -514,7 +514,6 @@ export default class AlbumArtLoader {
     const request = {
       cancellable: new Gio.Cancellable(),
       cacheTargets: new Map(),
-      consumerCount: 0,
       promise: null,
     };
     if (cacheKey && cacheFile) request.cacheTargets.set(cacheKey, cacheFile);
@@ -536,25 +535,18 @@ export default class AlbumArtLoader {
     return request;
   }
 
-  #waitForRemoteAlbumArtRequest(request, albumArtUri, loadCancellable) {
+  #waitForRemoteAlbumArtRequest(request, loadCancellable) {
     return new Promise((resolve, reject) => {
       let settled = false;
       let cancellationSignalId = null;
-      request.consumerCount++;
-
-      const releaseConsumer = () => {
-        request.consumerCount--;
-        if (request.consumerCount > 0) return;
-        if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
-          this.#remoteAlbumArtRequests.delete(albumArtUri);
-        request.cancellable.cancel();
-      };
+      // A consumer may become stale while a metadata burst is still settling.
+      // Its cancellation only stops this wait: the shared, bounded download
+      // remains available to any later top-bar or popup consumer.
       const settle = (callback, value) => {
         if (settled) return;
         settled = true;
         if (cancellationSignalId !== null)
           loadCancellable.disconnect(cancellationSignalId);
-        releaseConsumer();
         callback(value);
       };
 
@@ -638,7 +630,6 @@ export default class AlbumArtLoader {
     );
     const responseBytes = await this.#waitForRemoteAlbumArtRequest(
       remoteRequest,
-      albumArtUri,
       loadCancellable,
     );
     if (!responseBytes) return null;
