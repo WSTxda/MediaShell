@@ -701,3 +701,9 @@ msgstr "Adicionar campo"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Adicionar texto"
+
+msgid "Top bar image"
+msgstr ""
+
+msgid "Show the selected image"
+msgstr ""

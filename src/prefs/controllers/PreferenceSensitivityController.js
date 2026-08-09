@@ -87,9 +87,30 @@ export default class PreferenceSensitivityController {
       "notify::enable-expansion",
       () => this.updateVisualizerSensitivity(),
     );
+    this.topBarMediaAppIconRow = this.builder.get_object(
+      "er-top-bar-media-app-icon",
+    );
+    this.topBarImageStyleRow = this.builder.get_object(
+      "cr-top-bar-image-style",
+    );
+    this.topBarMediaAppIconColorRow = this.builder.get_object(
+      "sr-top-bar-media-app-icon-use-color",
+    );
+    this.topBarThumbnailCornerRadiusRow = this.builder.get_object(
+      "sp-top-bar-thumbnail-corner-radius",
+    );
+    this.connectOwnedSignal(
+      this.topBarMediaAppIconRow,
+      "notify::enable-expansion",
+      () => this.updateTopBarImageSensitivity(),
+    );
+    this.connectOwnedSignal(this.topBarImageStyleRow, "notify::selected", () =>
+      this.updateTopBarImageSensitivity(),
+    );
 
     this.updateScrollingSensitivity();
     this.updateVisualizerSensitivity();
+    this.updateTopBarImageSensitivity();
   }
 
   updateScrollingSensitivity() {
@@ -117,6 +138,14 @@ export default class PreferenceSensitivityController {
     this.visualizerSpeedRow.sensitive = visualizerEnabled;
   }
 
+  updateTopBarImageSensitivity() {
+    const imageEnabled = this.topBarMediaAppIconRow.enableExpansion;
+    const usesAlbumArt = this.topBarImageStyleRow.selected === 1;
+    this.topBarMediaAppIconColorRow.sensitive = imageEnabled && !usesAlbumArt;
+    this.topBarThumbnailCornerRadiusRow.sensitive =
+      imageEnabled && usesAlbumArt;
+  }
+
   connectOwnedSignal(object, signal, callback) {
     connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
   }
@@ -137,5 +166,9 @@ export default class PreferenceSensitivityController {
     this.visualizerRow = null;
     this.visualizerStyleRow = null;
     this.visualizerSpeedRow = null;
+    this.topBarMediaAppIconRow = null;
+    this.topBarImageStyleRow = null;
+    this.topBarMediaAppIconColorRow = null;
+    this.topBarThumbnailCornerRadiusRow = null;
   }
 }

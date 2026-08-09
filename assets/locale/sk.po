@@ -702,3 +702,9 @@ msgstr "Pridať pole"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Pridať text"
+
+msgid "Top bar image"
+msgstr ""
+
+msgid "Show the selected image"
+msgstr ""

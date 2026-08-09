@@ -56,6 +56,8 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
   TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
   TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
+  TOP_BAR_IMAGE_STYLE: "top-bar-image-style",
+  TOP_BAR_THUMBNAIL_CORNER_RADIUS: "top-bar-thumbnail-corner-radius",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
@@ -136,6 +138,13 @@ export const TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS = Object.freeze({
   DEFAULT: 200,
 });
 
+/** Constraints for top-bar album-art thumbnail corner radius, in pixels. */
+export const TOP_BAR_THUMBNAIL_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+  MIN: 0,
+  MAX: 10,
+  DEFAULT: 4,
+});
+
 /** Constraints for popup and top bar track-information scroll speed. */
 export const TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS = Object.freeze({
   MIN: 1,
@@ -212,6 +221,8 @@ export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_THUMBNAIL_CORNER_RADIUS]:
+    TOP_BAR_THUMBNAIL_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
   [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });

@@ -137,6 +137,7 @@ export default class AlbumArtLoader {
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
   #cacheWriteCancellable = new Gio.Cancellable();
+  #remoteAlbumArtRequests = new Map();
   #session = null;
 
   #getSession() {
@@ -502,6 +503,62 @@ export default class AlbumArtLoader {
     }
   }
 
+  #getRemoteAlbumArtRequest(albumArtUri, uri) {
+    const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
+    if (existingRequest) return existingRequest;
+
+    const request = {
+      cancellable: new Gio.Cancellable(),
+      consumerCount: 0,
+      promise: null,
+    };
+    request.promise = this.#readRemoteAlbumArtBytes(
+      new Soup.Message({ method: "GET", uri }),
+      request.cancellable,
+    ).finally(() => {
+      if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
+        this.#remoteAlbumArtRequests.delete(albumArtUri);
+    });
+    this.#remoteAlbumArtRequests.set(albumArtUri, request);
+    return request;
+  }
+
+  #waitForRemoteAlbumArtRequest(request, albumArtUri, loadCancellable) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      let cancellationSignalId = null;
+      request.consumerCount++;
+
+      const releaseConsumer = () => {
+        request.consumerCount--;
+        if (request.consumerCount > 0) return;
+        if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
+          this.#remoteAlbumArtRequests.delete(albumArtUri);
+        request.cancellable.cancel();
+      };
+      const settle = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        if (cancellationSignalId !== null)
+          loadCancellable.disconnect(cancellationSignalId);
+        releaseConsumer();
+        callback(value);
+      };
+
+      if (loadCancellable?.is_cancelled()) {
+        settle(resolve, null);
+        return;
+      }
+      cancellationSignalId =
+        loadCancellable?.connect("cancelled", () => settle(resolve, null)) ??
+        null;
+      request.promise.then(
+        (responseBytes) => settle(resolve, responseBytes),
+        (error) => settle(reject, error),
+      );
+    });
+  }
+
   async loadAlbumArt(
     albumArtUri,
     isCacheEnabled,
@@ -560,9 +617,10 @@ export default class AlbumArtLoader {
       };
     }
 
-    const httpMessage = new Soup.Message({ method: "GET", uri });
-    const responseBytes = await this.#readRemoteAlbumArtBytes(
-      httpMessage,
+    const remoteRequest = this.#getRemoteAlbumArtRequest(albumArtUri, uri);
+    const responseBytes = await this.#waitForRemoteAlbumArtRequest(
+      remoteRequest,
+      albumArtUri,
       loadCancellable,
     );
     if (!responseBytes) return null;
@@ -597,6 +655,9 @@ export default class AlbumArtLoader {
     if (!cacheWriteCancellable) return;
 
     this.#cacheWriteCancellable = null;
+    for (const request of this.#remoteAlbumArtRequests.values())
+      request.cancellable.cancel();
+    this.#remoteAlbumArtRequests.clear();
     this.#session?.abort();
     this.#session = null;
     cacheWriteCancellable.cancel();

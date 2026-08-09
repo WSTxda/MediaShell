@@ -262,7 +262,9 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   requestMetadataWidgetUpdate() {
-    let widgetFlags = WidgetFlags.TOP_BAR_TRACK_INFORMATION;
+    let widgetFlags =
+      WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
+      WidgetFlags.TOP_BAR_TRACK_INFORMATION;
     if (this.menu?.isOpen) {
       widgetFlags |=
         WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION;

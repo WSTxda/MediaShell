@@ -155,10 +155,16 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "er-top-bar-media-app-icon",
     "enable-expansion",
   ],
+  [SettingsKeys.TOP_BAR_IMAGE_STYLE, "cr-top-bar-image-style", "selected"],
   [
     SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR,
     "sr-top-bar-media-app-icon-use-color",
     "active",
+  ],
+  [
+    SettingsKeys.TOP_BAR_THUMBNAIL_CORNER_RADIUS,
+    "sp-top-bar-thumbnail-corner-radius",
+    "value",
   ],
 ]);
 

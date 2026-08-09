@@ -513,10 +513,6 @@ msgstr ""
 msgid "App icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:489
-msgid "Show the app icon"
-msgstr ""
-
 #: assets/ui/prefs.ui:503
 msgid "Panel"
 msgstr ""
@@ -697,4 +693,12 @@ msgstr ""
 
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
+msgstr ""
+
+#: assets/ui/prefs.ui:488
+msgid "Top bar image"
+msgstr ""
+
+#: assets/ui/prefs.ui:489
+msgid "Show the selected image"
 msgstr ""

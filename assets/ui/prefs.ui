@@ -485,13 +485,39 @@
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-media-app-icon">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">App icon</property>
-            <property name="subtitle" translatable="yes">Show the app icon</property>
+            <property name="title" translatable="yes">Top bar image</property>
+            <property name="subtitle" translatable="yes">Show the selected image</property>
             <property name="expanded">false</property>
+            <child>
+              <object class="AdwComboRow" id="cr-top-bar-image-style">
+                <property name="title" translatable="yes">Style</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">App icon</item>
+                      <item translatable="yes">Album art</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-media-app-icon-use-color">
                 <property name="title" translatable="yes">Colored app icon</property>
                 <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSpinRow" id="sp-top-bar-thumbnail-corner-radius">
+                <property name="title" translatable="yes">Corner radius</property>
+                <property name="adjustment">
+                  <object class="GtkAdjustment">
+                    <property name="lower">0</property>
+                    <property name="upper">10</property>
+                    <property name="step-increment">1</property>
+                    <property name="value">4</property>
+                  </object>
+                </property>
               </object>
             </child>
           </object>

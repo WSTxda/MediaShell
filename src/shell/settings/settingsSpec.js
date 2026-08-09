@@ -20,6 +20,7 @@ import {
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
+  TOP_BAR_THUMBNAIL_CORNER_RADIUS_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
 } from "../../shared/constants/settings.js";
 import {
@@ -31,6 +32,7 @@ import { InputActions } from "../../shared/enums/input.js";
 import { SettingsAction } from "../../shared/enums/settingsAction.js";
 import { PanelPositions } from "../../shared/enums/panel.js";
 import { VisualizerStyles } from "../../shared/enums/visualizer.js";
+import { TopBarImageStyles } from "../../shared/enums/topBar.js";
 import { WidgetFlags } from "../../shared/enums/widgetFlags.js";
 import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
 import {
@@ -222,6 +224,20 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR]: {
     property: "topBarMediaAppIconUseColor",
     read: "get_boolean",
+    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
+  },
+  [SettingsKeys.TOP_BAR_IMAGE_STYLE]: {
+    property: "topBarImageStyle",
+    read: "get_enum",
+    fallback: TopBarImageStyles.APP_ICON,
+    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
+  },
+  [SettingsKeys.TOP_BAR_THUMBNAIL_CORNER_RADIUS]: {
+    property: "topBarThumbnailCornerRadius",
+    read: "get_uint",
+    transform: createNumericConstraint(
+      TOP_BAR_THUMBNAIL_CORNER_RADIUS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {

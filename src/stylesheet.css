@@ -49,6 +49,10 @@
   padding-right: 6px;
 }
 
+.mediashell-top-bar-album-art-thumbnail {
+  border-radius: 4px;
+}
+
 /* St.ScrollView reapplies its fade from theme properties whenever its style
  * changes. Keeping the offset in CSS makes the effect survive popup, focus,
  * hover, playback, and remapping state changes. */
