@@ -555,8 +555,7 @@ export default class AlbumArtLoader {
         return;
       }
       cancellationSignalId =
-        loadCancellable?.connect("cancelled", () => settle(resolve, null)) ??
-        null;
+        loadCancellable?.connect(() => settle(resolve, null)) ?? null;
       request.promise.then(
         (responseBytes) => settle(resolve, responseBytes),
         (error) => settle(reject, error),
