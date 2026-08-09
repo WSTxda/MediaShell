@@ -125,14 +125,7 @@ export default class TopBarMediaAppIcon {
   renderThumbnail(index, parentBox) {
     const radius = this.extensionController.topBarThumbnailCornerRadius;
     if (!this.actor || this.imageStyle !== TopBarImageStyles.ALBUM_ART)
-      this.replaceActor(
-        index,
-        styleClassNames(
-          StyleClasses.NO_MARGIN,
-          StyleClasses.TOP_BAR_ALBUM_ART_THUMBNAIL,
-        ),
-        IconNames.MEDIA,
-      );
+      this.replaceActor(index, StyleClasses.NO_MARGIN, IconNames.MEDIA);
 
     this.imageStyle = TopBarImageStyles.ALBUM_ART;
     this.usesColoredIcon = null;
