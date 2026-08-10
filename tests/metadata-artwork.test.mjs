@@ -16,6 +16,7 @@ import {
 } from "../src/shell/constants/albumArt.js";
 import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
 import {
+  calculateAlbumArtDisplaySize,
   createAlbumArtRequest,
   selectAlbumArtCacheEvictions,
 } from "../src/shared/utils/albumArt.js";
@@ -119,6 +120,10 @@ test("metadata normalization produces one stable and display-safe domain shape",
 });
 
 test("album-art requests snapshot ownership and reject stale-equivalent ambiguity", () => {
+  assert.equal(calculateAlbumArtDisplaySize(32, 65), 21);
+  assert.equal(calculateAlbumArtDisplaySize(64, 65), 42);
+  assert.equal(calculateAlbumArtDisplaySize(18, 90), 16);
+  assert.equal(calculateAlbumArtDisplaySize(0, 65), 1);
   const first = createAlbumArtRequest({
     busName: "org.mpris.MediaPlayer2.first",
     metadata: {

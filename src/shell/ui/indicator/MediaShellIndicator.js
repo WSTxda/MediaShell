@@ -48,6 +48,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.widgetUpdateSourceId = null;
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
+    this.panelGeometrySignalIds = [];
     this.topBarContent = new TopBarContent(this);
     this.popupContent = new PopupContent(this);
     this.pointerHandler = new IndicatorPointerHandler(this);
@@ -56,6 +57,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.scheduleDesktopAppResolutionRetry();
     this.pointerHandler.install();
     this.menu.box.add_style_class_name(StyleClasses.POPUP_CONTAINER);
+    this.connectPanelGeometrySignals();
   }
 
   vfunc_event() {
@@ -85,6 +87,21 @@ class MediaShellIndicator extends PanelMenu.Button {
     return Boolean(
       this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName,
     );
+  }
+
+  connectPanelGeometrySignals() {
+    const requestAlbumArtUpdate = () =>
+      this.requestWidgetUpdate(WidgetFlags.TOP_BAR_ALBUM_ART);
+    this.panelGeometrySignalIds.push(
+      this.connect("notify::height", requestAlbumArtUpdate),
+      this.connect("style-changed", requestAlbumArtUpdate),
+    );
+  }
+
+  disconnectPanelGeometrySignals() {
+    for (const signalId of this.panelGeometrySignalIds)
+      this.disconnect(signalId);
+    this.panelGeometrySignalIds.length = 0;
   }
 
   // Update coalescing:
@@ -363,6 +380,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     if (!this.extensionController) return;
 
     this.removeMediaAppPropertyListeners();
+    this.disconnectPanelGeometrySignals();
     this.cancelPendingWidgetUpdate();
     this.cancelDesktopAppResolutionRetry();
 

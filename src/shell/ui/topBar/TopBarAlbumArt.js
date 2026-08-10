@@ -8,7 +8,10 @@
 import Gio from "gi://Gio";
 
 import { IconNames } from "../../../shared/constants/icons.js";
-import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
+import {
+  calculateAlbumArtDisplaySize,
+  createAlbumArtRequest,
+} from "../../../shared/utils/albumArt.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
@@ -23,6 +26,7 @@ import { createIcon, setGIcon } from "../../utils/icons.js";
 import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 
 const RENDER_SCALE = 2;
+const DEFAULT_PANEL_HEIGHT = 32;
 const logger = createLogger("TopBarAlbumArt");
 
 /** Displays configurable album art in the GNOME top bar. */
@@ -50,7 +54,7 @@ export default class TopBarAlbumArt {
   }
 
   render(index, parentBox) {
-    const size = this.extensionController.topBarAlbumArtSize;
+    const size = this.getAlbumArtSize();
     const radius = Math.min(
       this.extensionController.topBarAlbumArtCornerRadius,
       Math.round(size / 2),
@@ -74,6 +78,32 @@ export default class TopBarAlbumArt {
     this.cancelAlbumArtLoad();
     this.setFallback(request.width, request.radius);
     this.loadAlbumArt(request);
+  }
+
+  getAlbumArtSize() {
+    const indicator = this.topBarContent.indicator;
+    const measuredHeight = Number(indicator?.height);
+    const panelHeight =
+      Number.isFinite(measuredHeight) && measuredHeight > 0
+        ? Math.round(measuredHeight)
+        : DEFAULT_PANEL_HEIGHT;
+    let availableHeight = panelHeight;
+    if (indicator?.get_stage?.()) {
+      try {
+        availableHeight = Math.max(
+          1,
+          Math.round(
+            panelHeight - indicator.get_theme_node().get_vertical_padding(),
+          ),
+        );
+      } catch {
+        // A Shell theme can be replaced while the indicator is being mapped.
+      }
+    }
+    return calculateAlbumArtDisplaySize(
+      availableHeight,
+      this.extensionController.topBarAlbumArtSizePercent,
+    );
   }
 
   ensureActor(size, radius) {

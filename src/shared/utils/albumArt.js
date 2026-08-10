@@ -29,6 +29,22 @@ function normalizePositiveInteger(value, fallback = 1) {
 }
 
 /**
+ * Converts a panel-relative artwork preference to an actor size.
+ *
+ * @param {number} availableHeight - The themed content height available to the actor.
+ * @param {number} percentage - Requested percentage of the available height.
+ * @returns {number} A positive integer size in the actor's coordinate space.
+ */
+export function calculateAlbumArtDisplaySize(availableHeight, percentage) {
+  const safeHeight = normalizePositiveInteger(availableHeight);
+  const safePercentage = Math.min(
+    100,
+    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
+  );
+  return Math.max(1, Math.round((safeHeight * safePercentage) / 100));
+}
+
+/**
  * Builds one immutable snapshot for an album-art render request.
  *
  * @param {object} input - Current app, metadata, geometry, and cache state.

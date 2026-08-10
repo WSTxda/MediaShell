@@ -57,7 +57,7 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
   TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
   TOP_BAR_ALBUM_ART_SHOW: "top-bar-album-art-show",
-  TOP_BAR_ALBUM_ART_SIZE: "top-bar-album-art-size",
+  TOP_BAR_ALBUM_ART_SIZE_PERCENT: "top-bar-album-art-size-percent",
   TOP_BAR_ALBUM_ART_CORNER_RADIUS: "top-bar-album-art-corner-radius",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
@@ -140,11 +140,11 @@ export const TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS = Object.freeze({
   DEFAULT: 200,
 });
 
-/** Constraints for top-bar album-art size, in logical pixels. */
-export const TOP_BAR_ALBUM_ART_SIZE_CONSTRAINTS = Object.freeze({
-  MIN: 12,
-  MAX: 32,
-  DEFAULT: 20,
+/** Constraints for top-bar album-art size, relative to panel content height. */
+export const TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS = Object.freeze({
+  MIN: 25,
+  MAX: 90,
+  DEFAULT: 65,
 });
 
 /** Constraints for top-bar album-art corner radius, in logical pixels. */
@@ -230,7 +230,8 @@ export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
-  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE]: TOP_BAR_ALBUM_ART_SIZE_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT]:
+    TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]:
     TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,

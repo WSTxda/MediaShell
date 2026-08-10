@@ -21,7 +21,7 @@ import {
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
   TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
-  TOP_BAR_ALBUM_ART_SIZE_CONSTRAINTS,
+  TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
 } from "../../shared/constants/settings.js";
 import {
@@ -231,10 +231,12 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_ALBUM_ART,
   },
-  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE]: {
-    property: "topBarAlbumArtSize",
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT]: {
+    property: "topBarAlbumArtSizePercent",
     read: "get_uint",
-    transform: createNumericConstraint(TOP_BAR_ALBUM_ART_SIZE_CONSTRAINTS),
+    transform: createNumericConstraint(
+      TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_ALBUM_ART,
   },
   [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]: {

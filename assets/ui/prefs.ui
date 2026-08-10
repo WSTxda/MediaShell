@@ -484,15 +484,15 @@
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSpinRow" id="sp-top-bar-album-art-size">
+              <object class="AdwSpinRow" id="sp-top-bar-album-art-size-percent">
                 <property name="title" translatable="yes">Size</property>
-                <property name="subtitle" translatable="yes">Album art size in the top bar</property>
+                <property name="subtitle" translatable="yes">Percentage of the panel height</property>
                 <property name="adjustment">
                   <object class="GtkAdjustment">
-                    <property name="lower">12</property>
-                    <property name="upper">32</property>
+                    <property name="lower">25</property>
+                    <property name="upper">90</property>
                     <property name="step-increment">1</property>
-                    <property name="value">20</property>
+                    <property name="value">65</property>
                   </object>
                 </property>
               </object>
