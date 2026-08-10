@@ -15,6 +15,8 @@ import { isCancellationError } from "./errors.js";
 
 const logger = createLogger("AlbumArtSource");
 
+Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
+
 /**
  * Loads MPRIS artwork, then falls back to a local track thumbnail when one is
  * available. The returned fallback icon represents the local track when no

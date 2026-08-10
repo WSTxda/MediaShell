@@ -2,15 +2,16 @@
  * @file AlbumArtLoader.js
  * @module shell.services.AlbumArtLoader
  *
- * Loads local or remote album art without blocking popup rendering.
+ * Loads local or remote album art without blocking Shell rendering.
  *
  * The singleton owns the Soup.Session, bounded persistent cache, cache-write
- * cancellable, and album-art cache directory readiness state. PopupAlbumArt
- * requests streams from this service while keeping decoding and actor rendering
- * local to the popup widget. ExtensionController shuts the service down on
- * disable to abort network work and cancel pending cache writes/pruning.
+ * cancellable, shared in-flight requests, and album-art cache directory readiness
+ * state. Renderers request independent streams from this service while keeping
+ * actor ownership local. ExtensionController shuts the service down on disable
+ * to abort network work and cancel pending cache writes/pruning.
  *
  * @see src/shell/ui/popup/PopupAlbumArt.js
+ * @see src/shell/ui/topBar/TopBarAlbumArt.js
  */
 
 import Gio from "gi://Gio";
@@ -115,7 +116,7 @@ function isFileNotFoundError(error) {
 }
 
 /**
- * Loads local or remote album art without blocking popup rendering.
+ * Loads local or remote album art without blocking Shell rendering.
  */
 export default class AlbumArtLoader {
   static #instance = null;
@@ -226,7 +227,7 @@ export default class AlbumArtLoader {
 
     // Serialize touches for the same entry so an older asynchronous completion
     // cannot overwrite a newer access time. Cache recency maintenance must not
-    // delay the cached stream returned to PopupAlbumArt.
+    // delay the cached stream returned to a renderer.
     this.#cacheTouchGeneration += 1;
     const cancellable = this.#getCacheWriteCancellable();
     if (!cancellable) return;

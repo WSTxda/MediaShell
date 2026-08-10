@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-29 19:25-0300\n"
+"POT-Creation-Date: 2026-08-10 16:03+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,8 @@ msgid "About MediaShell"
 msgstr ""
 
 #: src/prefs/about/AboutDialogController.js:98
-msgid "A GNOME extension that adds configurable MPRIS media controls to the top bar."
+msgid ""
+"A GNOME extension that adds configurable MPRIS media controls to the top bar."
 msgstr ""
 
 #: src/prefs/about/AboutDialogController.js:106
@@ -36,78 +37,78 @@ msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:42
 #: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:266 assets/ui/prefs.ui:558 assets/ui/prefs.ui:921
+#: assets/ui/prefs.ui:266 assets/ui/prefs.ui:594 assets/ui/prefs.ui:957
 msgid "Shuffle"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:46
 #: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:575 assets/ui/prefs.ui:922
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:611 assets/ui/prefs.ui:958
 msgid "Seek backward"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:50
 #: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:592 assets/ui/prefs.ui:923
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:628 assets/ui/prefs.ui:959
 msgid "Previous track"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:54
 #: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:609 assets/ui/prefs.ui:924
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:645 assets/ui/prefs.ui:960
 msgid "Play / pause"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:58
 #: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:626 assets/ui/prefs.ui:925
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:662 assets/ui/prefs.ui:961
 msgid "Next track"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:62
 #: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:643 assets/ui/prefs.ui:926
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:679 assets/ui/prefs.ui:962
 msgid "Seek forward"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:65
 #: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:660 assets/ui/prefs.ui:927
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:696 assets/ui/prefs.ui:963
 msgid "Repeat"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:66
-#: assets/ui/prefs.ui:677 assets/ui/prefs.ui:928
+#: assets/ui/prefs.ui:713 assets/ui/prefs.ui:964
 msgid "Volume up"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:67
-#: assets/ui/prefs.ui:694 assets/ui/prefs.ui:929
+#: assets/ui/prefs.ui:730 assets/ui/prefs.ui:965
 msgid "Volume down"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:68 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:711 assets/ui/prefs.ui:930
+#: assets/ui/prefs.ui:747 assets/ui/prefs.ui:966
 msgid "Popup"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:70
-#: assets/ui/prefs.ui:728 assets/ui/prefs.ui:931
+#: assets/ui/prefs.ui:764 assets/ui/prefs.ui:967
 msgid "Preferences"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:74
-#: assets/ui/prefs.ui:745 assets/ui/prefs.ui:932
+#: assets/ui/prefs.ui:781 assets/ui/prefs.ui:968
 msgid "Open app"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:77
-#: assets/ui/prefs.ui:762 assets/ui/prefs.ui:933
+#: assets/ui/prefs.ui:798 assets/ui/prefs.ui:969
 msgid "Quit app"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:78
-#: assets/ui/prefs.ui:779 assets/ui/prefs.ui:934
+#: assets/ui/prefs.ui:815 assets/ui/prefs.ui:970
 msgid "Switch app"
 msgstr ""
 
@@ -120,7 +121,7 @@ msgid "Audio"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:86
-#: assets/ui/prefs.ui:222 assets/ui/prefs.ui:484
+#: assets/ui/prefs.ui:222 assets/ui/prefs.ui:520
 msgid "Apps"
 msgstr ""
 
@@ -128,98 +129,98 @@ msgstr ""
 msgid "Interface"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:165
+#: src/prefs/controllers/InteractionsPageController.js:164
 msgid ""
 "Press Escape to cancel.\n"
 "Press Enter to save.\n"
 "Press Backspace to clear the shortcut."
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:173
+#: src/prefs/controllers/InteractionsPageController.js:172
 msgid "Press a shortcut"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:275
+#: src/prefs/controllers/InteractionsPageController.js:273
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:295
-#: assets/ui/prefs.ui:549
+#: src/prefs/controllers/InteractionsPageController.js:293
+#: assets/ui/prefs.ui:585
 msgid "Keyboard shortcuts"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:318
+#: src/prefs/controllers/InteractionsPageController.js:316
 msgid "Not set"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:346
+#: src/prefs/controllers/InteractionsPageController.js:344
 msgid "Reset keyboard shortcuts?"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:347
+#: src/prefs/controllers/InteractionsPageController.js:345
 msgid "Every keyboard shortcut will be disabled."
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:350
-#: src/prefs/controllers/OthersPageController.js:133
+#: src/prefs/controllers/InteractionsPageController.js:348
+#: src/prefs/controllers/OthersPageController.js:134
 #: src/prefs/widgets/BlockedAppChooserDialog.js:68
 msgid "Cancel"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:351
-#: src/prefs/controllers/OthersPageController.js:106
+#: src/prefs/controllers/InteractionsPageController.js:349
+#: src/prefs/controllers/OthersPageController.js:105
 msgid "Reset"
 msgstr ""
 
-#: src/prefs/controllers/InteractionsPageController.js:370
+#: src/prefs/controllers/InteractionsPageController.js:368
 msgid "Keyboard shortcuts reset"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:90
+#: src/prefs/controllers/OthersPageController.js:89
 msgid "Reset all settings"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:104
+#: src/prefs/controllers/OthersPageController.js:103
 msgid "Reset all settings?"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:105
+#: src/prefs/controllers/OthersPageController.js:104
 msgid "Every MediaShell preference will return to its default value."
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:116
+#: src/prefs/controllers/OthersPageController.js:115
 msgid "Settings reset"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:124
+#: src/prefs/controllers/OthersPageController.js:123
 msgid "Clear the cache?"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:125
+#: src/prefs/controllers/OthersPageController.js:124
 msgid "Cached content will be downloaded again when needed."
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:126 assets/ui/prefs.ui:889
+#: src/prefs/controllers/OthersPageController.js:125 assets/ui/prefs.ui:925
 msgid "Clear cache"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:176
+#: src/prefs/controllers/OthersPageController.js:177
 msgid "Cache cleared"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:189
+#: src/prefs/controllers/OthersPageController.js:187
 msgid "Could not clear the cache"
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:199
+#: src/prefs/controllers/OthersPageController.js:197
 #, javascript-format
 msgid "%d cached image — %s"
 msgid_plural "%d cached images — %s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/prefs/controllers/TrackInformationContentController.js:55
+#: src/prefs/controllers/TrackInformationContentController.js:42
 msgid "by"
 msgstr ""
 
@@ -309,7 +310,7 @@ msgstr ""
 msgid "Playlist"
 msgstr ""
 
-#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:920
+#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:956
 msgid "None"
 msgstr ""
 
@@ -318,7 +319,7 @@ msgid "Playback speed"
 msgstr ""
 
 #: src/shell/ui/popup/PopupMediaAppSelectorButton.js:87
-#: src/shell/ui/popup/PopupMediaAppSelectorList.js:239
+#: src/shell/ui/popup/PopupMediaAppSelectorList.js:234
 msgid "Unknown app"
 msgstr ""
 
@@ -347,7 +348,7 @@ msgid "Total width in pixels"
 msgstr ""
 
 #: assets/ui/prefs.ui:26 assets/ui/prefs.ui:261
-#: assets/ui/top-bar-element-order.ui:49
+#: assets/ui/top-bar-element-order.ui:60
 msgid "Playback controls"
 msgstr ""
 
@@ -371,24 +372,25 @@ msgstr ""
 msgid "Metadata"
 msgstr ""
 
-#: assets/ui/prefs.ui:121
+#: assets/ui/prefs.ui:121 assets/ui/prefs.ui:483
+#: assets/ui/top-bar-element-order.ui:27
 msgid "Album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:122
+#: assets/ui/prefs.ui:122 assets/ui/prefs.ui:484
 msgid "Show album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:126
+#: assets/ui/prefs.ui:126 assets/ui/prefs.ui:502
 msgid "Corner radius"
 msgstr ""
 
-#: assets/ui/prefs.ui:127
+#: assets/ui/prefs.ui:127 assets/ui/prefs.ui:503
 msgid "0 disables rounded corners"
 msgstr ""
 
 #: assets/ui/prefs.ui:143 assets/ui/prefs.ui:405
-#: assets/ui/top-bar-element-order.ui:27
+#: assets/ui/top-bar-element-order.ui:38
 msgid "Track information"
 msgstr ""
 
@@ -438,11 +440,11 @@ msgstr ""
 msgid "Choose and reorder track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:225 assets/ui/prefs.ui:493
+#: assets/ui/prefs.ui:225 assets/ui/prefs.ui:529
 msgid "Colored app icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:226 assets/ui/prefs.ui:494
+#: assets/ui/prefs.ui:226 assets/ui/prefs.ui:530
 msgid "Use the media app's full-color icon"
 msgstr ""
 
@@ -462,7 +464,7 @@ msgstr ""
 msgid "Keep the configured width for short text"
 msgstr ""
 
-#: assets/ui/prefs.ui:338 assets/ui/top-bar-element-order.ui:38
+#: assets/ui/prefs.ui:338 assets/ui/top-bar-element-order.ui:49
 msgid "Visualizer"
 msgstr ""
 
@@ -509,159 +511,171 @@ msgstr ""
 msgid "Higher values animate faster"
 msgstr ""
 
-#: assets/ui/prefs.ui:488 assets/ui/top-bar-element-order.ui:16
+#: assets/ui/prefs.ui:488
+msgid "Size"
+msgstr ""
+
+#: assets/ui/prefs.ui:489
+msgid "Album art size in the top bar"
+msgstr ""
+
+#: assets/ui/prefs.ui:524 assets/ui/top-bar-element-order.ui:16
 msgid "App icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:503
+#: assets/ui/prefs.ui:525
+msgid "Show the app icon"
+msgstr ""
+
+#: assets/ui/prefs.ui:539
 msgid "Panel"
 msgstr ""
 
-#: assets/ui/prefs.ui:507
+#: assets/ui/prefs.ui:543
 msgid "Extension placement"
 msgstr ""
 
-#: assets/ui/prefs.ui:508
+#: assets/ui/prefs.ui:544
 msgid "Choose where the extension appears"
 msgstr ""
 
-#: assets/ui/prefs.ui:511
+#: assets/ui/prefs.ui:547
 msgid "Position"
 msgstr ""
 
-#: assets/ui/prefs.ui:512
+#: assets/ui/prefs.ui:548
 msgid "Section where the extension appears in the top bar"
 msgstr ""
 
-#: assets/ui/prefs.ui:516
+#: assets/ui/prefs.ui:552
 msgid "Left"
 msgstr ""
 
-#: assets/ui/prefs.ui:517
+#: assets/ui/prefs.ui:553
 msgid "Center"
 msgstr ""
 
-#: assets/ui/prefs.ui:518
+#: assets/ui/prefs.ui:554
 msgid "Right"
 msgstr ""
 
-#: assets/ui/prefs.ui:526
+#: assets/ui/prefs.ui:562
 msgid "Index"
 msgstr ""
 
-#: assets/ui/prefs.ui:527
+#: assets/ui/prefs.ui:563
 msgid "Order among items in the same top bar section"
 msgstr ""
 
-#: assets/ui/prefs.ui:545
+#: assets/ui/prefs.ui:581
 msgid "Interactions"
 msgstr ""
 
-#: assets/ui/prefs.ui:550
+#: assets/ui/prefs.ui:586
 msgid "Assign global keyboard shortcuts to media actions"
 msgstr ""
 
-#: assets/ui/prefs.ui:553
+#: assets/ui/prefs.ui:589
 msgid "Shortcut assignments"
 msgstr ""
 
-#: assets/ui/prefs.ui:554
+#: assets/ui/prefs.ui:590
 msgid "Configure each keyboard action"
 msgstr ""
 
-#: assets/ui/prefs.ui:566 assets/ui/prefs.ui:583 assets/ui/prefs.ui:600
-#: assets/ui/prefs.ui:617 assets/ui/prefs.ui:634 assets/ui/prefs.ui:651
-#: assets/ui/prefs.ui:668 assets/ui/prefs.ui:685 assets/ui/prefs.ui:702
-#: assets/ui/prefs.ui:719 assets/ui/prefs.ui:736 assets/ui/prefs.ui:753
-#: assets/ui/prefs.ui:770 assets/ui/prefs.ui:787
+#: assets/ui/prefs.ui:602 assets/ui/prefs.ui:619 assets/ui/prefs.ui:636
+#: assets/ui/prefs.ui:653 assets/ui/prefs.ui:670 assets/ui/prefs.ui:687
+#: assets/ui/prefs.ui:704 assets/ui/prefs.ui:721 assets/ui/prefs.ui:738
+#: assets/ui/prefs.ui:755 assets/ui/prefs.ui:772 assets/ui/prefs.ui:789
+#: assets/ui/prefs.ui:806 assets/ui/prefs.ui:823
 msgid "Set"
 msgstr ""
 
-#: assets/ui/prefs.ui:797
+#: assets/ui/prefs.ui:833
 msgid "Shortcut overview"
 msgstr ""
 
-#: assets/ui/prefs.ui:798
+#: assets/ui/prefs.ui:834
 msgid "View all assigned shortcuts"
 msgstr ""
 
-#: assets/ui/prefs.ui:803
+#: assets/ui/prefs.ui:839
 msgid "View"
 msgstr ""
 
-#: assets/ui/prefs.ui:811
+#: assets/ui/prefs.ui:847
 msgid "Reset keyboard shortcuts"
 msgstr ""
 
-#: assets/ui/prefs.ui:822
+#: assets/ui/prefs.ui:858
 msgid "Mouse actions"
 msgstr ""
 
-#: assets/ui/prefs.ui:823
+#: assets/ui/prefs.ui:859
 msgid "Assign actions to clicks and scrolling on the top bar indicator"
 msgstr ""
 
-#: assets/ui/prefs.ui:826
+#: assets/ui/prefs.ui:862
 msgid "Left click / tap"
 msgstr ""
 
-#: assets/ui/prefs.ui:832
+#: assets/ui/prefs.ui:868
 msgid "Middle click"
 msgstr ""
 
-#: assets/ui/prefs.ui:838
+#: assets/ui/prefs.ui:874
 msgid "Right click"
 msgstr ""
 
-#: assets/ui/prefs.ui:844
+#: assets/ui/prefs.ui:880
 msgid "Double click / tap"
 msgstr ""
 
-#: assets/ui/prefs.ui:850
+#: assets/ui/prefs.ui:886
 msgid "Scroll up"
 msgstr ""
 
-#: assets/ui/prefs.ui:856
+#: assets/ui/prefs.ui:892
 msgid "Scroll down"
 msgstr ""
 
-#: assets/ui/prefs.ui:864
+#: assets/ui/prefs.ui:900
 msgid "Others"
 msgstr ""
 
-#: assets/ui/prefs.ui:868
+#: assets/ui/prefs.ui:904
 msgid "System"
 msgstr ""
 
-#: assets/ui/prefs.ui:869
+#: assets/ui/prefs.ui:905
 msgid "Control how MediaShell integrates with GNOME"
 msgstr ""
 
-#: assets/ui/prefs.ui:872
+#: assets/ui/prefs.ui:908
 msgid "Hide GNOME media controls"
 msgstr ""
 
-#: assets/ui/prefs.ui:873
+#: assets/ui/prefs.ui:909
 msgid "Remove GNOME's default media controls from the notification list"
 msgstr ""
 
-#: assets/ui/prefs.ui:880
+#: assets/ui/prefs.ui:916
 msgid "Cache"
 msgstr ""
 
-#: assets/ui/prefs.ui:881
+#: assets/ui/prefs.ui:917
 msgid "Store content on disk to load it faster"
 msgstr ""
 
-#: assets/ui/prefs.ui:884
+#: assets/ui/prefs.ui:920
 msgid "Store album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:899
+#: assets/ui/prefs.ui:935
 msgid "Clear"
 msgstr ""
 
-#: assets/ui/prefs.ui:914
+#: assets/ui/prefs.ui:950
 msgid "Extension settings"
 msgstr ""
 
@@ -693,12 +707,4 @@ msgstr ""
 
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
-msgstr ""
-
-#: assets/ui/prefs.ui:483
-msgid "Top bar image"
-msgstr ""
-
-#: assets/ui/prefs.ui:484
-msgid "Show the selected image"
 msgstr ""

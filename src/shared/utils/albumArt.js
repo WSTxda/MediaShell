@@ -4,7 +4,7 @@
  *
  * Pure album-art request identity and persistent-cache capacity policy.
  *
- * PopupAlbumArt uses immutable request snapshots to reject stale async results.
+ * Album-art renderers use immutable request snapshots to reject stale async results.
  * AlbumArtLoader uses the eviction helper after background cache writes. Keeping
  * both policies free of Gio and Shell objects makes race and capacity behavior
  * deterministic in Node tests.

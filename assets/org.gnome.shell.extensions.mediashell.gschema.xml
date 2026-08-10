@@ -36,11 +36,6 @@
     <value nick="SPECTRUM" value="3" />
   </enum>
 
-  <enum id="org.gnome.shell.extensions.mediashell.top-bar-image-styles">
-    <value nick="APP_ICON"  value="0" />
-    <value nick="ALBUM_ART" value="1" />
-  </enum>
-
   <schema id="org.gnome.shell.extensions.mediashell"
           path="/org/gnome/shell/extensions/mediashell/">
 
@@ -138,12 +133,15 @@
     <key name="top-bar-media-app-icon-use-color" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-image-style"
-         enum="org.gnome.shell.extensions.mediashell.top-bar-image-styles">
-      <default>'APP_ICON'</default>
+    <key name="top-bar-album-art-show" type="b">
+      <default>false</default>
     </key>
-    <key name="top-bar-thumbnail-corner-radius" type="u">
-      <range min="0" max="10" />
+    <key name="top-bar-album-art-size" type="u">
+      <range min="12" max="32" />
+      <default>20</default>
+    </key>
+    <key name="top-bar-album-art-corner-radius" type="u">
+      <range min="0" max="16" />
       <default>4</default>
     </key>
     <key name="top-bar-visualizer-show" type="b">
@@ -182,7 +180,7 @@
       <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
-      <default>['MEDIA_APP_ICON', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
+      <default>['MEDIA_APP_ICON', 'ALBUM_ART', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
     </key>
 
     <!-- Panel -->

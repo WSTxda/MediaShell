@@ -16,10 +16,5 @@ export const TopBarElements = Object.freeze({
   TRACK_INFORMATION: 1,
   PLAYBACK_CONTROLS: 2,
   VISUALIZER: 3,
-});
-
-/** Available visual styles for the top-bar media image element. */
-export const TopBarImageStyles = Object.freeze({
-  APP_ICON: 0,
-  ALBUM_ART: 1,
+  ALBUM_ART: 4,
 });

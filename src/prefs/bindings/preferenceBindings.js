@@ -155,15 +155,20 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "er-top-bar-media-app-icon",
     "enable-expansion",
   ],
-  [SettingsKeys.TOP_BAR_IMAGE_STYLE, "cr-top-bar-image-style", "selected"],
   [
     SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR,
     "sr-top-bar-media-app-icon-use-color",
     "active",
   ],
   [
-    SettingsKeys.TOP_BAR_THUMBNAIL_CORNER_RADIUS,
-    "sp-top-bar-thumbnail-corner-radius",
+    SettingsKeys.TOP_BAR_ALBUM_ART_SHOW,
+    "er-top-bar-album-art",
+    "enable-expansion",
+  ],
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE, "sp-top-bar-album-art-size", "value"],
+  [
+    SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS,
+    "sp-top-bar-album-art-corner-radius",
     "value",
   ],
 ]);

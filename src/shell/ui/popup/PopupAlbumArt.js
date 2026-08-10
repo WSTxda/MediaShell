@@ -10,7 +10,6 @@
  */
 
 import Clutter from "gi://Clutter";
-import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
 import St from "gi://St";
 
@@ -26,6 +25,7 @@ import {
 } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
+import { decodeAlbumArtSource } from "../../utils/albumArtDecode.js";
 import {
   cropPixbufToSquare,
   roundPixbufCorners,
@@ -33,16 +33,6 @@ import {
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
-
-if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
-  Gio._promisify(
-    GdkPixbuf.Pixbuf,
-    "new_from_stream_at_scale_async",
-    "new_from_stream_finish",
-  );
-}
-
-Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 
 const logger = createLogger("PopupAlbumArt");
 
@@ -137,11 +127,12 @@ export default class PopupAlbumArt {
         return;
       }
 
-      const pixbuf = await this.decodeAlbumArtSource(
+      const pixbuf = await decodeAlbumArtSource({
+        albumArtLoader: this.albumArtLoader,
         albumArtSource,
-        request.width,
+        size: request.width,
         loadCancellable,
-      );
+      });
       if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
         return;
 
@@ -171,70 +162,6 @@ export default class PopupAlbumArt {
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
       }
-    }
-  }
-
-  async decodeAlbumArtSource(albumArtSource, width, loadCancellable) {
-    if (!albumArtSource) return null;
-
-    try {
-      return await this.decodeAlbumArtStream(
-        albumArtSource.stream,
-        width,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error) || !albumArtSource.loadedFromCache)
-        throw error;
-
-      // A partial or corrupt cached response must not become a permanent
-      // fallback. Remove it and retry the same request once from its
-      // original source; the successful response is cached again.
-      logger.debugOnce(
-        `invalid-cache:${albumArtSource.albumArtUri}`,
-        "Discarding an invalid album-art cache entry",
-        albumArtSource.albumArtUri,
-        error,
-      );
-      await this.albumArtLoader.removeCachedAlbumArt(
-        albumArtSource.albumArtUri,
-        loadCancellable,
-      );
-      const refreshedSource = await this.albumArtLoader.loadAlbumArt(
-        albumArtSource.albumArtUri,
-        albumArtSource.cacheEnabled,
-        loadCancellable,
-        { bypassCacheRead: true },
-      );
-      return this.decodeAlbumArtStream(
-        refreshedSource?.stream ?? null,
-        width,
-        loadCancellable,
-      );
-    }
-  }
-
-  async decodeAlbumArtStream(stream, width, loadCancellable) {
-    if (!stream) return null;
-
-    if (
-      typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async !== "function"
-    ) {
-      this.closeInputStream(stream);
-      return null;
-    }
-
-    try {
-      const decodeSize = Math.max(1, Math.round(width * 2));
-      return await GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(
-        stream,
-        decodeSize,
-        decodeSize,
-        true,
-        loadCancellable,
-      );
-    } finally {
-      this.closeInputStream(stream);
     }
   }
 

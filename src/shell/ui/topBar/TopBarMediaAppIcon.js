@@ -2,60 +2,27 @@
  * @file TopBarMediaAppIcon.js
  * @module shell.ui.topBar.TopBarMediaAppIcon
  *
- * Displays either the active media app's icon or its album-art thumbnail.
+ * Displays the active media app's icon in the GNOME top bar.
  *
- * TopBarContent owns this component and supplies the selected display style.
- * It keeps app resolution and asynchronous artwork loading isolated from the
- * rest of the top-bar layout.
+ * Album art is intentionally rendered by TopBarAlbumArt as an independent,
+ * reorderable metadata element.
  */
 
-import GdkPixbuf from "gi://GdkPixbuf";
-import Gio from "gi://Gio";
-
 import { IconNames } from "../../../shared/constants/icons.js";
-import { TopBarImageStyles } from "../../../shared/enums/topBar.js";
-import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
-import { createLogger } from "../../../shared/utils/log.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import AlbumArtLoader from "../../services/AlbumArtLoader.js";
 import DesktopAppResolver from "../../services/DesktopAppResolver.js";
-import {
-  cropPixbufToSquare,
-  roundPixbufCorners,
-} from "../../utils/albumArtPixbuf.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
-import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
-import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
-const THUMBNAIL_SIZE = 20;
-const logger = createLogger("TopBarMediaAppIcon");
-
-if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
-  Gio._promisify(
-    GdkPixbuf.Pixbuf,
-    "new_from_stream_at_scale_async",
-    "new_from_stream_finish",
-  );
-}
-
-/** Displays the configured media image in the GNOME top bar. */
+/** Displays the active media app's icon in the GNOME top bar. */
 export default class TopBarMediaAppIcon {
   constructor(topBarContent) {
     this.topBarContent = topBarContent;
     this.actor = null;
     this.iconKey = null;
-    this.imageStyle = null;
     this.usesColoredIcon = null;
-    this.thumbnailLoadGeneration = 0;
-    this.thumbnailLoadCancellable = null;
-    this.albumArtLoader = AlbumArtLoader.getInstance();
     this.desktopAppResolver = DesktopAppResolver.getInstance();
-    this.fallbackThumbnailIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
-    ]);
   }
 
   get extensionController() {
@@ -67,37 +34,13 @@ export default class TopBarMediaAppIcon {
   }
 
   render(index, parentBox) {
-    if (
-      this.extensionController.topBarImageStyle === TopBarImageStyles.ALBUM_ART
-    )
-      this.renderThumbnail(index, parentBox);
-    else this.renderAppIcon(index, parentBox);
-  }
-
-  renderAppIcon(index, parentBox) {
     const identity = this.mediaApp.identity;
     const desktopEntry = this.mediaApp.desktopEntry;
     const useColoredIcon = this.extensionController.topBarMediaAppIconUseColor;
     const iconKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
 
-    this.cancelThumbnailLoad();
-    if (
-      !this.actor ||
-      this.imageStyle !== TopBarImageStyles.APP_ICON ||
-      this.usesColoredIcon !== useColoredIcon
-    )
-      this.replaceActor(
-        index,
-        styleClassNames(
-          StyleClasses.SYSTEM_STATUS_ICON,
-          StyleClasses.TOP_BAR_MEDIA_APP_ICON,
-          StyleClasses.NO_MARGIN,
-          useColoredIcon
-            ? StyleClasses.COLORED_ICON
-            : StyleClasses.SYMBOLIC_ICON,
-        ),
-        IconNames.MEDIA,
-      );
+    if (!this.actor || this.usesColoredIcon !== useColoredIcon)
+      this.replaceIconActor(index, useColoredIcon);
 
     if (iconKey !== this.iconKey) {
       const desktopApp = this.desktopAppResolver.resolveDesktopApp(
@@ -117,41 +60,30 @@ export default class TopBarMediaAppIcon {
           : null;
     }
 
-    this.imageStyle = TopBarImageStyles.APP_ICON;
-    this.usesColoredIcon = useColoredIcon;
-    this.attach(index, parentBox);
+    placeActorAtIndex(this.actor, parentBox, index);
   }
 
-  renderThumbnail(index, parentBox) {
-    const radius = this.extensionController.topBarThumbnailCornerRadius;
-    if (!this.actor || this.imageStyle !== TopBarImageStyles.ALBUM_ART)
-      this.replaceActor(index, StyleClasses.NO_MARGIN, IconNames.MEDIA);
-
-    this.imageStyle = TopBarImageStyles.ALBUM_ART;
-    this.usesColoredIcon = null;
-    this.attach(index, parentBox);
-
-    const request = createAlbumArtRequest({
-      busName: this.mediaApp.busName,
-      metadata: this.mediaApp.metadata,
-      width: THUMBNAIL_SIZE,
-      radius,
-      cacheEnabled: this.extensionController.albumArtCacheEnabled,
-    });
-    if (request.key === this.iconKey) return;
-
-    this.cancelThumbnailLoad();
-    this.iconKey = request.key;
-    this.setThumbnailFallback();
-    this.loadThumbnail(request);
-  }
-
-  replaceActor(index, styleClass, fallbackIconName) {
+  replaceIconActor(index, useColoredIcon) {
     const previous = this.actor;
     const parent = previous?.get_parent() ?? null;
     const previousIndex = parent ? parent.get_children().indexOf(previous) : -1;
-    this.actor = createIcon({ styleClass }, fallbackIconName);
+
+    this.actor = createIcon(
+      {
+        styleClass: styleClassNames(
+          StyleClasses.SYSTEM_STATUS_ICON,
+          StyleClasses.TOP_BAR_MEDIA_APP_ICON,
+          StyleClasses.NO_MARGIN,
+          useColoredIcon
+            ? StyleClasses.COLORED_ICON
+            : StyleClasses.SYMBOLIC_ICON,
+        ),
+      },
+      IconNames.MEDIA,
+    );
     this.iconKey = null;
+    this.usesColoredIcon = useColoredIcon;
+
     if (parent) {
       parent.insert_child_at_index(
         this.actor,
@@ -162,140 +94,18 @@ export default class TopBarMediaAppIcon {
     previous?.destroy();
   }
 
-  async loadThumbnail(request) {
-    const loadGeneration = ++this.thumbnailLoadGeneration;
-    const loadCancellable = new Gio.Cancellable();
-    this.thumbnailLoadCancellable = loadCancellable;
-    try {
-      const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
-        albumArtLoader: this.albumArtLoader,
-        ...request,
-        loadCancellable,
-      });
-      const pixbuf = await this.decodeThumbnail(
-        albumArtSource?.stream,
-        loadCancellable,
-      );
-      if (
-        !this.isCurrentThumbnailLoad(
-          loadGeneration,
-          loadCancellable,
-          request.key,
-        )
-      )
-        return;
-      if (pixbuf) {
-        const thumbnail = cropPixbufToSquare(pixbuf, THUMBNAIL_SIZE * 2);
-        setGIcon(
-          this.actor,
-          request.radius > 0
-            ? roundPixbufCorners(thumbnail, request.radius * 2)
-            : thumbnail,
-          IconNames.MEDIA,
-        );
-        this.actor.set_icon_size(THUMBNAIL_SIZE);
-      } else this.setThumbnailFallback(fallbackIcon);
-    } catch (error) {
-      if (
-        !isCancellationError(error) &&
-        this.isCurrentThumbnailLoad(
-          loadGeneration,
-          loadCancellable,
-          request.key,
-        )
-      )
-        logger.debugOnce(
-          `thumbnail:${this.mediaApp.busName}`,
-          "Top-bar album-art thumbnail could not be loaded",
-          error,
-        );
-    } finally {
-      if (
-        this.isCurrentThumbnailLoad(
-          loadGeneration,
-          loadCancellable,
-          request.key,
-        )
-      )
-        this.thumbnailLoadCancellable = null;
-    }
-  }
-
-  async decodeThumbnail(stream, loadCancellable) {
-    if (!stream) return null;
-    if (
-      typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async !== "function"
-    ) {
-      this.closeStream(stream);
-      return null;
-    }
-    try {
-      return await GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(
-        stream,
-        THUMBNAIL_SIZE * 2,
-        THUMBNAIL_SIZE * 2,
-        true,
-        loadCancellable,
-      );
-    } finally {
-      this.closeStream(stream);
-    }
-  }
-
-  isCurrentThumbnailLoad(loadGeneration, loadCancellable, thumbnailKey) {
-    return (
-      this.actor &&
-      this.imageStyle === TopBarImageStyles.ALBUM_ART &&
-      loadGeneration === this.thumbnailLoadGeneration &&
-      !loadCancellable.is_cancelled() &&
-      this.iconKey === thumbnailKey
-    );
-  }
-
-  closeStream(stream) {
-    if (!stream) return;
-    try {
-      stream.close(null);
-    } catch (error) {
-      logger.debugOnce(
-        "thumbnail-stream-close",
-        "Thumbnail stream was already closed",
-        error,
-      );
-    }
-  }
-
-  cancelThumbnailLoad() {
-    if (!this.thumbnailLoadCancellable) return;
-    this.thumbnailLoadGeneration++;
-    this.thumbnailLoadCancellable.cancel();
-    this.thumbnailLoadCancellable = null;
-  }
-
-  setThumbnailFallback(icon = this.fallbackThumbnailIcon) {
-    setGIcon(this.actor, icon ?? this.fallbackThumbnailIcon, IconNames.MEDIA);
-    this.actor.set_icon_size(THUMBNAIL_SIZE);
-  }
-
-  attach(index, parentBox) {
-    placeActorAtIndex(this.actor, parentBox, index);
-  }
-
   remove() {
-    this.cancelThumbnailLoad();
-    this.actor?.get_parent()?.remove_child(this.actor);
-    this.actor?.destroy();
+    if (!this.actor) return;
+    this.actor.get_parent()?.remove_child(this.actor);
+    this.actor.destroy();
     this.actor = null;
     this.iconKey = null;
-    this.imageStyle = null;
     this.usesColoredIcon = null;
   }
 
   destroy() {
     this.remove();
-    this.albumArtLoader = null;
     this.desktopAppResolver = null;
-    this.fallbackThumbnailIcon = null;
     this.topBarContent = null;
   }
 }

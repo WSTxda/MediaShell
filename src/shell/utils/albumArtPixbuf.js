@@ -2,9 +2,9 @@
  * @file albumArtPixbuf.js
  * @module shell.utils.albumArtPixbuf
  *
- * Provides stateless GdkPixbuf transforms used by popup album-art rendering.
+ * Provides stateless GdkPixbuf transforms used by album-art renderers.
  *
- * PopupAlbumArt retains request, cancellation, actor, and fallback ownership;
+ * Each renderer retains request, cancellation, actor, and fallback ownership;
  * this module only scales, crops, and rounds already decoded pixel buffers.
  */
 

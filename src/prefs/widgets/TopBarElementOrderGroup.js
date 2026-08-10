@@ -31,10 +31,12 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     this.dragControllersInitialized = false;
     this.listBox = this._lb_top_bar_element_order;
     this.mediaAppIconRow = this._row_media_app_icon;
+    this.albumArtRow = this._row_album_art;
     this.trackInformationRow = this._row_track_information;
     this.visualizerRow = this._row_visualizer;
     this.playbackControlsRow = this._row_playback_controls;
     this.mediaAppIconRow.elementKey = "MEDIA_APP_ICON";
+    this.albumArtRow.elementKey = "ALBUM_ART";
     this.trackInformationRow.elementKey = "TRACK_INFORMATION";
     this.visualizerRow.elementKey = "VISUALIZER";
     this.playbackControlsRow.elementKey = "PLAYBACK_CONTROLS";
@@ -74,6 +76,7 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     this.elementOrder = [...elementOrder];
     if (!this.dragControllersInitialized) {
       this.addDragControllers(this.mediaAppIconRow);
+      this.addDragControllers(this.albumArtRow);
       this.addDragControllers(this.trackInformationRow);
       this.addDragControllers(this.visualizerRow);
       this.addDragControllers(this.playbackControlsRow);
@@ -115,6 +118,7 @@ export default GObject.registerClass(
     InternalChildren: [
       "lb-top-bar-element-order",
       "row-media-app-icon",
+      "row-album-art",
       "row-track-information",
       "row-visualizer",
       "row-playback-controls",
