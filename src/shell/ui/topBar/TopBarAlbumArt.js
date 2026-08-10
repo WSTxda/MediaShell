@@ -15,7 +15,10 @@ import {
 import { createLogger } from "../../../shared/utils/log.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
-import { decodeAlbumArtSource } from "../../utils/albumArtDecode.js";
+import {
+  closeAlbumArtSource,
+  decodeAlbumArtSource,
+} from "../../utils/albumArtDecode.js";
 import {
   cropPixbufToSquare,
   roundPixbufCorners,
@@ -132,11 +135,7 @@ export default class TopBarAlbumArt {
         loadCancellable,
       });
       if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
-        try {
-          albumArtSource?.stream?.close(null);
-        } catch {
-          // Cancellation may close a stale stream before this continuation.
-        }
+        closeAlbumArtSource(albumArtSource);
         return;
       }
 

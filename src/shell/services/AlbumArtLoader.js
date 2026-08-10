@@ -264,15 +264,6 @@ export default class AlbumArtLoader {
     this.#cacheTouchPromises.set(cacheKey, touchPromise);
   }
 
-  #writeAlbumArtCacheBytes(cacheFile, responseBytes) {
-    if (!cacheFile || !this.#cacheWriteCancellable) return;
-
-    // Cache persistence and pruning must not delay the first popup paint. A
-    // missing parent directory can occur when the user or the system clears
-    // XDG_CACHE_HOME while the extension remains enabled, so recover once.
-    void this.#persistAlbumArtCacheBytes(cacheFile, responseBytes);
-  }
-
   async #persistAlbumArtCacheBytes(cacheFile, responseBytes) {
     let recoveredMissingDirectory = false;
 
@@ -504,71 +495,228 @@ export default class AlbumArtLoader {
     }
   }
 
-  #getRemoteAlbumArtRequest(albumArtUri, uri, cacheKey, cacheFile) {
-    const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
-    if (existingRequest) {
-      if (cacheKey && cacheFile)
-        existingRequest.cacheTargets.set(cacheKey, cacheFile);
-      return existingRequest;
+  async #removeCachedAlbumArtFile(albumArtUri, cancellable) {
+    const cacheFile = createAlbumArtCacheFile(albumArtUri);
+    try {
+      await cacheFile.delete_async(GLib.PRIORITY_DEFAULT, cancellable);
+    } catch (error) {
+      if (!isFileNotFoundError(error) && !isCancellationError(error))
+        logger.warnOnce(
+          "cache-delete",
+          "Could not remove an invalid album-art cache entry",
+          error,
+        );
     }
+  }
+
+  #ensureRemoteAlbumArtCacheInvalidation(albumArtUri, request) {
+    if (request.cacheInvalidationPromise)
+      return request.cacheInvalidationPromise;
+
+    const cancellable = this.#getCacheWriteCancellable();
+    if (!cancellable) return Promise.resolve();
+    request.cacheInvalidationPromise = this.#removeCachedAlbumArtFile(
+      albumArtUri,
+      cancellable,
+    );
+    return request.cacheInvalidationPromise;
+  }
+
+  #tryFinalizeRemoteAlbumArtRequest(albumArtUri, request) {
+    if (this.#remoteAlbumArtRequests.get(albumArtUri) !== request) return;
+    if (!request.responseSettled || request.consumerCount > 0) return;
+    if (request.cacheWritePromise && !request.cacheWriteSettled) return;
+    this.#remoteAlbumArtRequests.delete(albumArtUri);
+  }
+
+  #ensureRemoteAlbumArtCacheWrite(albumArtUri, request) {
+    if (
+      request.cacheWritePromise ||
+      request.cacheWriteSettled ||
+      !request.responseBytes ||
+      request.cacheWriteConsumerCount <= 0 ||
+      !request.cacheFile ||
+      !this.#cacheWriteCancellable
+    )
+      return;
+
+    // Persistence is shared by every consumer of this URI. Keep the resolved
+    // request available until the write settles so a renderer arriving in the
+    // narrow download-to-disk window can reuse the same bytes immediately.
+    request.cacheWritePromise = this.#persistAlbumArtCacheBytes(
+      request.cacheFile,
+      request.responseBytes,
+    )
+      .catch((error) => {
+        if (!this.#cacheWriteCancellable || isCancellationError(error)) return;
+        logger.warnOnce(
+          `cache-write:${albumArtUri}`,
+          "Unexpected album-art cache persistence failure",
+          error,
+        );
+      })
+      .finally(() => {
+        request.cacheWriteSettled = true;
+        this.#tryFinalizeRemoteAlbumArtRequest(albumArtUri, request);
+      });
+  }
+
+  #getRemoteAlbumArtRequest(albumArtUri, uri) {
+    const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
+    if (existingRequest) return existingRequest;
 
     const request = {
       cancellable: new Gio.Cancellable(),
-      cacheTargets: new Map(),
+      consumerCount: 0,
+      cacheWriteConsumerCount: 0,
+      cacheFile: null,
+      cacheInvalidationPromise: null,
+      cacheWritePromise: null,
+      cacheWriteSettled: false,
+      responseBytes: null,
+      responseSettled: false,
       promise: null,
     };
-    if (cacheKey && cacheFile) request.cacheTargets.set(cacheKey, cacheFile);
     request.promise = this.#readRemoteAlbumArtBytes(
       new Soup.Message({ method: "GET", uri }),
       request.cancellable,
     )
       .then((responseBytes) => {
+        request.responseBytes = responseBytes;
+        request.responseSettled = true;
         if (responseBytes)
-          for (const targetFile of request.cacheTargets.values())
-            this.#writeAlbumArtCacheBytes(targetFile, responseBytes);
+          this.#ensureRemoteAlbumArtCacheWrite(albumArtUri, request);
         return responseBytes;
       })
+      .catch((error) => {
+        request.responseSettled = true;
+        throw error;
+      })
       .finally(() => {
-        if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
-          this.#remoteAlbumArtRequests.delete(albumArtUri);
+        this.#tryFinalizeRemoteAlbumArtRequest(albumArtUri, request);
       });
     this.#remoteAlbumArtRequests.set(albumArtUri, request);
     return request;
   }
 
-  #waitForRemoteAlbumArtRequest(request, loadCancellable) {
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      let cancellationSignalId = null;
-      // A consumer may become stale while a metadata burst is still settling.
-      // Its cancellation only stops this wait: the shared, bounded download
-      // remains available to any later top-bar or popup consumer.
-      const settle = (callback, value) => {
-        if (settled) return;
-        settled = true;
-        if (cancellationSignalId !== null)
-          loadCancellable.disconnect(cancellationSignalId);
-        callback(value);
-      };
+  #acquireRemoteAlbumArtRequest(albumArtUri, uri, cacheFile) {
+    const request = this.#getRemoteAlbumArtRequest(albumArtUri, uri);
+    const cacheWriteRequested = Boolean(cacheFile);
+    request.consumerCount++;
+    if (cacheWriteRequested) {
+      request.cacheWriteConsumerCount++;
+      request.cacheFile ??= cacheFile;
+      if (request.responseSettled && request.responseBytes)
+        this.#ensureRemoteAlbumArtCacheWrite(albumArtUri, request);
+    }
 
-      if (loadCancellable?.is_cancelled()) {
-        settle(resolve, null);
-        return;
+    return { albumArtUri, request, cacheWriteRequested };
+  }
+
+  #releaseRemoteAlbumArtConsumer(consumer) {
+    const { albumArtUri, request, cacheWriteRequested } = consumer;
+    request.consumerCount--;
+    if (cacheWriteRequested) request.cacheWriteConsumerCount--;
+
+    if (!request.responseSettled && request.consumerCount === 0) {
+      // No renderer can use this in-flight result anymore. Remove it before
+      // cancellation so a later request never joins a request already dying.
+      if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
+        this.#remoteAlbumArtRequests.delete(albumArtUri);
+      request.cancellable.cancel();
+      return;
+    }
+
+    this.#tryFinalizeRemoteAlbumArtRequest(albumArtUri, request);
+  }
+
+  async #waitForRemoteAlbumArtRequest(consumer, loadCancellable) {
+    const cancelledResult = Symbol("cancelled-album-art-consumer");
+    let cancellationSignalId = 0;
+
+    try {
+      if (!loadCancellable) return await consumer.request.promise;
+
+      // GCancellable.connect() also covers cancellation racing with this
+      // subscription, including a cancellable that is already cancelled.
+      const cancellationPromise = new Promise((resolve) => {
+        cancellationSignalId = loadCancellable.connect(() => {
+          resolve(cancelledResult);
+        });
+      });
+      const result = await Promise.race([
+        consumer.request.promise,
+        cancellationPromise,
+      ]);
+      return result === cancelledResult ? null : result;
+    } finally {
+      // Promise continuations run after the cancellation callback returns, so
+      // disconnecting here cannot call GCancellable.disconnect() from inside
+      // its own callback (which GLib documents as a deadlock).
+      if (cancellationSignalId !== 0)
+        loadCancellable.disconnect(cancellationSignalId);
+    }
+  }
+
+  async #loadRemoteAlbumArtSource(
+    albumArtUri,
+    uri,
+    cacheFile,
+    cacheEnabled,
+    loadCancellable,
+    refreshCache = false,
+  ) {
+    const remoteConsumer = this.#acquireRemoteAlbumArtRequest(
+      albumArtUri,
+      uri,
+      cacheFile,
+    );
+
+    try {
+      let responseBytes;
+      try {
+        responseBytes = await this.#waitForRemoteAlbumArtRequest(
+          remoteConsumer,
+          loadCancellable,
+        );
+      } catch (error) {
+        if (
+          refreshCache &&
+          !isCancellationError(error) &&
+          !loadCancellable?.is_cancelled()
+        )
+          await this.#ensureRemoteAlbumArtCacheInvalidation(
+            albumArtUri,
+            remoteConsumer.request,
+          );
+        throw error;
       }
-      cancellationSignalId =
-        loadCancellable?.connect(() => settle(resolve, null)) ?? null;
-      request.promise.then(
-        (responseBytes) => settle(resolve, responseBytes),
-        (error) => settle(reject, error),
-      );
-    });
+
+      if (!responseBytes) {
+        if (refreshCache && !loadCancellable?.is_cancelled())
+          await this.#ensureRemoteAlbumArtCacheInvalidation(
+            albumArtUri,
+            remoteConsumer.request,
+          );
+        return null;
+      }
+
+      return {
+        stream: Gio.MemoryInputStream.new_from_bytes(responseBytes),
+        albumArtUri,
+        loadedFromCache: false,
+        cacheEnabled: Boolean(cacheEnabled),
+      };
+    } finally {
+      this.#releaseRemoteAlbumArtConsumer(remoteConsumer);
+    }
   }
 
   async loadAlbumArt(
     albumArtUri,
     isCacheEnabled,
     loadCancellable,
-    { bypassCacheRead = false } = {},
+    { refreshCache = false } = {},
   ) {
     if (!this.#cacheWriteCancellable || !albumArtUri) return null;
     const uri = parseAlbumArtUri(albumArtUri);
@@ -605,13 +753,28 @@ export default class AlbumArtLoader {
     const cacheFile = isCacheEnabled
       ? this.#getAlbumArtCacheFile(albumArtUri)
       : null;
-    const cachedStream = bypassCacheRead
-      ? null
-      : await this.#openCachedAlbumArtInputStream(
-          cacheFile,
-          loadCancellable,
-          cacheKey,
-        );
+
+    // A renderer already fetching this URI is the freshest source. Join it
+    // before touching persistent cache so popup and top bar never race the
+    // same remote artwork through separate paths.
+    if (this.#remoteAlbumArtRequests.has(albumArtUri))
+      return this.#loadRemoteAlbumArtSource(
+        albumArtUri,
+        uri,
+        cacheFile,
+        isCacheEnabled,
+        loadCancellable,
+        refreshCache,
+      );
+
+    const cachedStream =
+      !isCacheEnabled || refreshCache
+        ? null
+        : await this.#openCachedAlbumArtInputStream(
+            cacheFile,
+            loadCancellable,
+            cacheKey,
+          );
     if (cachedStream) {
       this.#touchAlbumArtCacheFile(cacheFile, cacheKey);
       return {
@@ -622,40 +785,14 @@ export default class AlbumArtLoader {
       };
     }
 
-    const remoteRequest = this.#getRemoteAlbumArtRequest(
+    return this.#loadRemoteAlbumArtSource(
       albumArtUri,
       uri,
-      cacheKey,
       cacheFile,
-    );
-    const responseBytes = await this.#waitForRemoteAlbumArtRequest(
-      remoteRequest,
+      isCacheEnabled,
       loadCancellable,
+      refreshCache,
     );
-    if (!responseBytes) return null;
-
-    return {
-      stream: Gio.MemoryInputStream.new_from_bytes(responseBytes),
-      albumArtUri,
-      loadedFromCache: false,
-      cacheEnabled: Boolean(isCacheEnabled),
-    };
-  }
-
-  async removeCachedAlbumArt(albumArtUri, cancellable = null) {
-    if (!albumArtUri) return;
-
-    const cacheFile = createAlbumArtCacheFile(albumArtUri);
-    try {
-      await cacheFile.delete_async(GLib.PRIORITY_DEFAULT, cancellable);
-    } catch (error) {
-      if (!isFileNotFoundError(error))
-        logger.warnOnce(
-          "cache-delete",
-          "Could not remove an invalid album-art cache entry",
-          error,
-        );
-    }
   }
 
   destroy() {

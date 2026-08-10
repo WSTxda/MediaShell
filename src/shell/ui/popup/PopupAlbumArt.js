@@ -27,7 +27,10 @@ import {
 } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
-import { decodeAlbumArtSource } from "../../utils/albumArtDecode.js";
+import {
+  closeAlbumArtSource,
+  decodeAlbumArtSource,
+} from "../../utils/albumArtDecode.js";
 import {
   cropPixbufToSquare,
   roundPixbufCorners,
@@ -123,7 +126,7 @@ export default class PopupAlbumArt {
       if (
         !this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
-        this.closeInputStream(albumArtSource?.stream);
+        closeAlbumArtSource(albumArtSource);
         return;
       }
 
@@ -311,16 +314,6 @@ export default class PopupAlbumArt {
       this.loadingAlbumArtKey === request.key &&
       this.mediaApp?.busName === request.busName
     );
-  }
-
-  closeInputStream(stream) {
-    if (!stream) return;
-
-    try {
-      stream.close(null);
-    } catch {
-      // Cancellation and GdkPixbuf may close the stream before teardown.
-    }
   }
 
   destroy() {

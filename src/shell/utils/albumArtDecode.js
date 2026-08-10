@@ -2,8 +2,8 @@
  * @file albumArtDecode.js
  * @module shell.utils.albumArtDecode
  *
- * Shares asynchronous album-art decoding and corrupt-cache recovery between
- * popup and top-bar renderers.
+ * Shares album-art stream ownership, asynchronous decoding, and corrupt-cache
+ * recovery between popup and top-bar renderers.
  */
 
 import GdkPixbuf from "gi://GdkPixbuf";
@@ -29,6 +29,11 @@ function closeInputStream(stream) {
   } catch {
     // Cancellation and GdkPixbuf may close the stream before teardown.
   }
+}
+
+/** Closes a loaded source that will not be passed to the decoder. */
+export function closeAlbumArtSource(albumArtSource) {
+  closeInputStream(albumArtSource?.stream);
 }
 
 async function decodeAlbumArtStream(stream, size, loadCancellable) {
@@ -77,15 +82,11 @@ export async function decodeAlbumArtSource({
       albumArtSource.albumArtUri,
       error,
     );
-    await albumArtLoader.removeCachedAlbumArt(
-      albumArtSource.albumArtUri,
-      loadCancellable,
-    );
     const refreshedSource = await albumArtLoader.loadAlbumArt(
       albumArtSource.albumArtUri,
       albumArtSource.cacheEnabled,
       loadCancellable,
-      { bypassCacheRead: true },
+      { refreshCache: true },
     );
     return decodeAlbumArtStream(
       refreshedSource?.stream ?? null,
