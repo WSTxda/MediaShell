@@ -87,7 +87,6 @@ export default class PreferenceSensitivityController {
       "notify::enable-expansion",
       () => this.updateVisualizerSensitivity(),
     );
-
     this.updateScrollingSensitivity();
     this.updateVisualizerSensitivity();
   }

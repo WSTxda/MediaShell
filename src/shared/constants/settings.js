@@ -56,6 +56,10 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
   TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
   TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
+  TOP_BAR_ALBUM_ART_SHOW: "top-bar-album-art-show",
+  TOP_BAR_ALBUM_ART_SIZE_PERCENT: "top-bar-album-art-size-percent",
+  TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT:
+    "top-bar-album-art-corner-radius-percent",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
@@ -112,11 +116,12 @@ export const SettingsKeys = Object.freeze({
 /**
  * Default order for top bar elements when the order setting is unset or repaired.
  *
- * The order mirrors the initial user experience: app identity first, track information
- * next, then optional activity feedback and compact playback controls.
+ * The order mirrors the initial user experience: app identity and album art first,
+ * followed by track information, optional activity feedback, and compact controls.
  */
 export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([
   "MEDIA_APP_ICON",
+  "ALBUM_ART",
   "TRACK_INFORMATION",
   "VISUALIZER",
   "PLAYBACK_CONTROLS",
@@ -135,6 +140,21 @@ export const TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS = Object.freeze({
   MAX: 1000,
   DEFAULT: 200,
 });
+
+/** Constraints for top-bar album-art size, relative to panel content height. */
+export const TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS = Object.freeze({
+  MIN: 60,
+  MAX: 100,
+  DEFAULT: 65,
+});
+
+/** Constraints for top-bar album-art corner radius, relative to a circle. */
+export const TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS =
+  Object.freeze({
+    MIN: 0,
+    MAX: 100,
+    DEFAULT: 40,
+  });
 
 /** Constraints for popup and top bar track-information scroll speed. */
 export const TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS = Object.freeze({
@@ -212,6 +232,10 @@ export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT]:
+    TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT]:
+    TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
   [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });

@@ -23,6 +23,17 @@
           </object>
         </child>
         <child>
+          <object class="AdwActionRow" id="row-album-art">
+            <property name="title" translatable="yes">Album art</property>
+            <property name="activatable">true</property>
+            <child type="suffix">
+              <object class="GtkImage">
+                <property name="icon-name">list-drag-handle-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="AdwActionRow" id="row-track-information">
             <property name="title" translatable="yes">Track information</property>
             <property name="activatable">true</property>

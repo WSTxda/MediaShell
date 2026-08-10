@@ -2,15 +2,16 @@
  * @file AlbumArtLoader.js
  * @module shell.services.AlbumArtLoader
  *
- * Loads local or remote album art without blocking popup rendering.
+ * Loads local or remote album art without blocking Shell rendering.
  *
  * The singleton owns the Soup.Session, bounded persistent cache, cache-write
- * cancellable, and album-art cache directory readiness state. PopupAlbumArt
- * requests streams from this service while keeping decoding and actor rendering
- * local to the popup widget. ExtensionController shuts the service down on
- * disable to abort network work and cancel pending cache writes/pruning.
+ * cancellable, shared in-flight requests, and album-art cache directory readiness
+ * state. Renderers request independent streams from this service while keeping
+ * actor ownership local. ExtensionController shuts the service down on disable
+ * to abort network work and cancel pending cache writes/pruning.
  *
  * @see src/shell/ui/popup/PopupAlbumArt.js
+ * @see src/shell/ui/topBar/TopBarAlbumArt.js
  */
 
 import Gio from "gi://Gio";
@@ -115,7 +116,7 @@ function isFileNotFoundError(error) {
 }
 
 /**
- * Loads local or remote album art without blocking popup rendering.
+ * Loads local or remote album art without blocking Shell rendering.
  */
 export default class AlbumArtLoader {
   static #instance = null;
@@ -137,6 +138,7 @@ export default class AlbumArtLoader {
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
   #cacheWriteCancellable = new Gio.Cancellable();
+  #remoteAlbumArtRequests = new Map();
   #session = null;
 
   #getSession() {
@@ -225,7 +227,7 @@ export default class AlbumArtLoader {
 
     // Serialize touches for the same entry so an older asynchronous completion
     // cannot overwrite a newer access time. Cache recency maintenance must not
-    // delay the cached stream returned to PopupAlbumArt.
+    // delay the cached stream returned to a renderer.
     this.#cacheTouchGeneration += 1;
     const cancellable = this.#getCacheWriteCancellable();
     if (!cancellable) return;
@@ -502,6 +504,66 @@ export default class AlbumArtLoader {
     }
   }
 
+  #getRemoteAlbumArtRequest(albumArtUri, uri, cacheKey, cacheFile) {
+    const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
+    if (existingRequest) {
+      if (cacheKey && cacheFile)
+        existingRequest.cacheTargets.set(cacheKey, cacheFile);
+      return existingRequest;
+    }
+
+    const request = {
+      cancellable: new Gio.Cancellable(),
+      cacheTargets: new Map(),
+      promise: null,
+    };
+    if (cacheKey && cacheFile) request.cacheTargets.set(cacheKey, cacheFile);
+    request.promise = this.#readRemoteAlbumArtBytes(
+      new Soup.Message({ method: "GET", uri }),
+      request.cancellable,
+    )
+      .then((responseBytes) => {
+        if (responseBytes)
+          for (const targetFile of request.cacheTargets.values())
+            this.#writeAlbumArtCacheBytes(targetFile, responseBytes);
+        return responseBytes;
+      })
+      .finally(() => {
+        if (this.#remoteAlbumArtRequests.get(albumArtUri) === request)
+          this.#remoteAlbumArtRequests.delete(albumArtUri);
+      });
+    this.#remoteAlbumArtRequests.set(albumArtUri, request);
+    return request;
+  }
+
+  #waitForRemoteAlbumArtRequest(request, loadCancellable) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      let cancellationSignalId = null;
+      // A consumer may become stale while a metadata burst is still settling.
+      // Its cancellation only stops this wait: the shared, bounded download
+      // remains available to any later top-bar or popup consumer.
+      const settle = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        if (cancellationSignalId !== null)
+          loadCancellable.disconnect(cancellationSignalId);
+        callback(value);
+      };
+
+      if (loadCancellable?.is_cancelled()) {
+        settle(resolve, null);
+        return;
+      }
+      cancellationSignalId =
+        loadCancellable?.connect(() => settle(resolve, null)) ?? null;
+      request.promise.then(
+        (responseBytes) => settle(resolve, responseBytes),
+        (error) => settle(reject, error),
+      );
+    });
+  }
+
   async loadAlbumArt(
     albumArtUri,
     isCacheEnabled,
@@ -560,14 +622,18 @@ export default class AlbumArtLoader {
       };
     }
 
-    const httpMessage = new Soup.Message({ method: "GET", uri });
-    const responseBytes = await this.#readRemoteAlbumArtBytes(
-      httpMessage,
+    const remoteRequest = this.#getRemoteAlbumArtRequest(
+      albumArtUri,
+      uri,
+      cacheKey,
+      cacheFile,
+    );
+    const responseBytes = await this.#waitForRemoteAlbumArtRequest(
+      remoteRequest,
       loadCancellable,
     );
     if (!responseBytes) return null;
 
-    this.#writeAlbumArtCacheBytes(cacheFile, responseBytes);
     return {
       stream: Gio.MemoryInputStream.new_from_bytes(responseBytes),
       albumArtUri,
@@ -597,6 +663,9 @@ export default class AlbumArtLoader {
     if (!cacheWriteCancellable) return;
 
     this.#cacheWriteCancellable = null;
+    for (const request of this.#remoteAlbumArtRequests.values())
+      request.cancellable.cancel();
+    this.#remoteAlbumArtRequests.clear();
     this.#session?.abort();
     this.#session = null;
     cacheWriteCancellable.cancel();

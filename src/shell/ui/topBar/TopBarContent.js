@@ -17,6 +17,7 @@ import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
+import TopBarAlbumArt from "./TopBarAlbumArt.js";
 import TopBarMediaAppIcon from "./TopBarMediaAppIcon.js";
 import TopBarPlaybackControls from "./TopBarPlaybackControls.js";
 import TopBarTrackInformation from "./TopBarTrackInformation.js";
@@ -32,6 +33,7 @@ export default class TopBarContent {
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
     this.mediaAppIcon = new TopBarMediaAppIcon(this);
+    this.albumArt = new TopBarAlbumArt(this);
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
@@ -82,6 +84,17 @@ export default class TopBarContent {
         this.runWidgetUpdate("top bar media app icon", () => {
           if (isVisible) this.mediaAppIcon.render(targetIndex, targetBox);
           else this.mediaAppIcon.remove();
+        });
+      }
+
+      if (
+        element === TopBarElements.ALBUM_ART &&
+        (widgetFlags & WidgetFlags.TOP_BAR_ALBUM_ART ||
+          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+      ) {
+        this.runWidgetUpdate("top bar album art", () => {
+          if (isVisible) this.albumArt.render(targetIndex, targetBox);
+          else this.albumArt.remove();
         });
       }
 
@@ -180,6 +193,8 @@ export default class TopBarContent {
   isElementVisible(element) {
     if (element === TopBarElements.MEDIA_APP_ICON)
       return this.extensionController.topBarMediaAppIconShow;
+    if (element === TopBarElements.ALBUM_ART)
+      return this.extensionController.topBarAlbumArtShow;
     if (element === TopBarElements.TRACK_INFORMATION)
       return this.extensionController.topBarTrackInformationShow;
     if (element === TopBarElements.VISUALIZER)
@@ -223,15 +238,18 @@ export default class TopBarContent {
     const visualizer = this.visualizer;
     const trackInformation = this.trackInformation;
     const mediaAppIcon = this.mediaAppIcon;
+    const albumArt = this.albumArt;
     this.playbackControls = null;
     this.visualizer = null;
     this.trackInformation = null;
     this.mediaAppIcon = null;
+    this.albumArt = null;
 
     playbackControls?.destroy();
     visualizer?.destroy();
     trackInformation?.destroy();
     mediaAppIcon?.destroy();
+    albumArt?.destroy();
 
     this.topBarBox?.get_parent()?.remove_child(this.topBarBox);
     this.topBarBox?.destroy();

@@ -20,6 +20,8 @@ import {
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
+  TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS,
+  TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
 } from "../../shared/constants/settings.js";
 import {
@@ -224,6 +226,27 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_boolean",
     impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
   },
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SHOW]: {
+    property: "topBarAlbumArtShow",
+    read: "get_boolean",
+    impact: WidgetFlags.TOP_BAR_ALBUM_ART,
+  },
+  [SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT]: {
+    property: "topBarAlbumArtSizePercent",
+    read: "get_uint",
+    transform: createNumericConstraint(
+      TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
+    ),
+    impact: WidgetFlags.TOP_BAR_ALBUM_ART,
+  },
+  [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT]: {
+    property: "topBarAlbumArtCornerRadiusPercent",
+    read: "get_uint",
+    transform: createNumericConstraint(
+      TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS,
+    ),
+    impact: WidgetFlags.TOP_BAR_ALBUM_ART,
+  },
   [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {
     property: "topBarVisualizerShow",
     read: "get_boolean",
@@ -312,7 +335,7 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.ALBUM_ART_CACHE_ENABLED]: {
     property: "albumArtCacheEnabled",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_ALBUM_ART,
+    impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.TOP_BAR_ALBUM_ART,
   },
   [SettingsKeys.BLOCKED_APPS]: {
     property: "blockedAppIds",

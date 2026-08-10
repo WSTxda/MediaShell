@@ -16,4 +16,5 @@ export const TopBarElements = Object.freeze({
   TRACK_INFORMATION: 1,
   PLAYBACK_CONTROLS: 2,
   VISUALIZER: 3,
+  ALBUM_ART: 4,
 });

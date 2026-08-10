@@ -4,7 +4,7 @@
  *
  * Pure album-art request identity and persistent-cache capacity policy.
  *
- * PopupAlbumArt uses immutable request snapshots to reject stale async results.
+ * Album-art renderers use immutable request snapshots to reject stale async results.
  * AlbumArtLoader uses the eviction helper after background cache writes. Keeping
  * both policies free of Gio and Shell objects makes race and capacity behavior
  * deterministic in Node tests.
@@ -26,6 +26,38 @@ function normalizePositiveInteger(value, fallback = 1) {
   return Number.isFinite(numericValue) && numericValue > 0
     ? Math.max(1, Math.round(numericValue))
     : fallback;
+}
+
+/**
+ * Converts a panel-relative artwork preference to an actor size.
+ *
+ * @param {number} availableHeight - The themed content height available to the actor.
+ * @param {number} percentage - Requested percentage of the available height.
+ * @returns {number} A positive integer size in the actor's coordinate space.
+ */
+export function calculateAlbumArtDisplaySize(availableHeight, percentage) {
+  const safeHeight = normalizePositiveInteger(availableHeight);
+  const safePercentage = Math.min(
+    100,
+    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
+  );
+  return Math.max(1, Math.round((safeHeight * safePercentage) / 100));
+}
+
+/**
+ * Converts a relative corner preference to a radius for a square artwork actor.
+ *
+ * @param {number} size - Artwork actor size.
+ * @param {number} percentage - Percentage of the maximum circular radius.
+ * @returns {number} A non-negative integer radius.
+ */
+export function calculateAlbumArtCornerRadius(size, percentage) {
+  const safeSize = normalizePositiveInteger(size);
+  const safePercentage = Math.min(
+    100,
+    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
+  );
+  return Math.round((safeSize * safePercentage) / 200);
 }
 
 /**

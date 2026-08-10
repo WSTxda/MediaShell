@@ -160,6 +160,21 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "sr-top-bar-media-app-icon-use-color",
     "active",
   ],
+  [
+    SettingsKeys.TOP_BAR_ALBUM_ART_SHOW,
+    "er-top-bar-album-art",
+    "enable-expansion",
+  ],
+  [
+    SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT,
+    "sp-top-bar-album-art-size-percent",
+    "value",
+  ],
+  [
+    SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT,
+    "sp-top-bar-album-art-corner-radius-percent",
+    "value",
+  ],
 ]);
 
 const PANEL_BINDINGS = Object.freeze([

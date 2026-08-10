@@ -10,9 +10,7 @@
  */
 
 import Clutter from "gi://Clutter";
-import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
-import GLib from "gi://GLib";
 import St from "gi://St";
 
 import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
@@ -27,22 +25,14 @@ import {
 } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
+import { decodeAlbumArtSource } from "../../utils/albumArtDecode.js";
 import {
   cropPixbufToSquare,
   roundPixbufCorners,
 } from "../../utils/albumArtPixbuf.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
-
-if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
-  Gio._promisify(
-    GdkPixbuf.Pixbuf,
-    "new_from_stream_at_scale_async",
-    "new_from_stream_finish",
-  );
-}
-
-Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
+import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 
 const logger = createLogger("PopupAlbumArt");
 
@@ -125,10 +115,11 @@ export default class PopupAlbumArt {
     this.loadingAlbumArtKey = request.key;
 
     try {
-      const { albumArtSource, fallbackIcon } = await this.resolveAlbumArtSource(
-        request,
+      const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
+        albumArtLoader: this.albumArtLoader,
+        ...request,
         loadCancellable,
-      );
+      });
       if (
         !this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
@@ -136,11 +127,12 @@ export default class PopupAlbumArt {
         return;
       }
 
-      const pixbuf = await this.decodeAlbumArtSource(
+      const pixbuf = await decodeAlbumArtSource({
+        albumArtLoader: this.albumArtLoader,
         albumArtSource,
-        request.width,
+        size: request.width,
         loadCancellable,
-      );
+      });
       if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
         return;
 
@@ -170,158 +162,6 @@ export default class PopupAlbumArt {
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
       }
-    }
-  }
-
-  async resolveAlbumArtSource(request, loadCancellable) {
-    let fallbackIcon = null;
-    let albumArtSource = await this.tryLoadAlbumArt(
-      request.albumArtUri,
-      loadCancellable,
-      "MPRIS album art",
-      request.busName,
-      request.cacheEnabled,
-    );
-    if (albumArtSource || !request.trackUri)
-      return { albumArtSource, fallbackIcon };
-
-    let trackUri;
-    try {
-      trackUri = GLib.Uri.parse(request.trackUri, GLib.UriFlags.NONE);
-    } catch (error) {
-      logger.debugOnce(
-        `track-uri:${request.busName}`,
-        "Ignoring an invalid local track URI",
-        error,
-      );
-      return { albumArtSource: null, fallbackIcon };
-    }
-
-    if (trackUri.get_scheme() !== "file")
-      return { albumArtSource: null, fallbackIcon };
-
-    const file = Gio.File.new_for_uri(trackUri.to_string());
-    let info;
-    try {
-      info = await file.query_info_async(
-        `${Gio.FILE_ATTRIBUTE_THUMBNAIL_PATH},${Gio.FILE_ATTRIBUTE_STANDARD_ICON}`,
-        Gio.FileQueryInfoFlags.NONE,
-        GLib.PRIORITY_DEFAULT,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error)) throw error;
-      logger.debugOnce(
-        `track-metadata:${request.busName}`,
-        "Local track metadata did not provide album art",
-        error,
-      );
-      return { albumArtSource: null, fallbackIcon };
-    }
-
-    fallbackIcon = info.get_icon();
-    const thumbnailPath = info.get_attribute_byte_string(
-      Gio.FILE_ATTRIBUTE_THUMBNAIL_PATH,
-    );
-    if (thumbnailPath)
-      albumArtSource = await this.tryLoadAlbumArt(
-        Gio.File.new_for_path(thumbnailPath).get_uri(),
-        loadCancellable,
-        "thumbnail",
-        request.busName,
-        request.cacheEnabled,
-      );
-
-    return { albumArtSource, fallbackIcon };
-  }
-
-  async tryLoadAlbumArt(
-    albumArtUri,
-    loadCancellable,
-    sourceName,
-    busName,
-    cacheEnabled,
-  ) {
-    if (!albumArtUri) return null;
-
-    try {
-      return await this.albumArtLoader.loadAlbumArt(
-        albumArtUri,
-        cacheEnabled,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error)) throw error;
-      logger.debugOnce(
-        `source-load:${busName}:${sourceName}`,
-        `Failed to load ${sourceName}; trying the next fallback`,
-        error,
-      );
-      return null;
-    }
-  }
-
-  async decodeAlbumArtSource(albumArtSource, width, loadCancellable) {
-    if (!albumArtSource) return null;
-
-    try {
-      return await this.decodeAlbumArtStream(
-        albumArtSource.stream,
-        width,
-        loadCancellable,
-      );
-    } catch (error) {
-      if (isCancellationError(error) || !albumArtSource.loadedFromCache)
-        throw error;
-
-      // A partial or corrupt cached response must not become a permanent
-      // fallback. Remove it and retry the same request once from its
-      // original source; the successful response is cached again.
-      logger.debugOnce(
-        `invalid-cache:${albumArtSource.albumArtUri}`,
-        "Discarding an invalid album-art cache entry",
-        albumArtSource.albumArtUri,
-        error,
-      );
-      await this.albumArtLoader.removeCachedAlbumArt(
-        albumArtSource.albumArtUri,
-        loadCancellable,
-      );
-      const refreshedSource = await this.albumArtLoader.loadAlbumArt(
-        albumArtSource.albumArtUri,
-        albumArtSource.cacheEnabled,
-        loadCancellable,
-        { bypassCacheRead: true },
-      );
-      return this.decodeAlbumArtStream(
-        refreshedSource?.stream ?? null,
-        width,
-        loadCancellable,
-      );
-    }
-  }
-
-  async decodeAlbumArtStream(stream, width, loadCancellable) {
-    if (!stream) return null;
-
-    if (
-      typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async !== "function"
-    ) {
-      this.closeInputStream(stream);
-      return null;
-    }
-
-    try {
-      const decodeSize = Math.max(1, Math.round(width * 2));
-      return await GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(
-        stream,
-        decodeSize,
-        decodeSize,
-        true,
-        loadCancellable,
-      );
-    } finally {
-      this.closeInputStream(stream);
     }
   }
 
