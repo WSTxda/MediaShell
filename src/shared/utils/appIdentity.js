@@ -4,20 +4,31 @@
  *
  * Normalizes MPRIS bus names, identities, and desktop-entry hints into app IDs.
  *
- * MediaAppResolver and installed-app search rely on these helpers to strip
+ * DesktopAppResolver and installed-app search rely on these helpers to strip
  * unstable browser/session suffixes and desktop-file extensions. The functions
  * are pure so both Shell and preferences code can use the same matching rules.
  */
 
 import { extractChromiumPwaAppIds } from "./browserIdentity.js";
 
+import { MPRIS_BUS_NAME_PREFIX } from "../constants/mpris.js";
+
 const DESKTOP_FILE_SUFFIX = ".desktop";
-const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 const EPHEMERAL_BUS_SEGMENT_PATTERN =
   /^(?:instance|pid|process|tab|window)[-_]?[a-z0-9]*$/i;
 
-function normalizeInput(value) {
-  return String(value ?? "").trim();
+/**
+ * Normalizes one MPRIS identity or desktop-entry hint for display and lookup.
+ *
+ * @param {unknown} value - Raw MPRIS identity value.
+ * @returns {string} Safe single-line string, or an empty string.
+ */
+export function normalizeAppIdentityHint(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -27,7 +38,7 @@ function normalizeInput(value) {
  * @returns {string} Identifier without a desktop-file suffix.
  */
 export function stripDesktopFileSuffix(value) {
-  const normalizedValue = normalizeInput(value);
+  const normalizedValue = normalizeAppIdentityHint(value);
   return normalizedValue.toLowerCase().endsWith(DESKTOP_FILE_SUFFIX)
     ? normalizedValue.slice(0, -DESKTOP_FILE_SUFFIX.length)
     : normalizedValue;
@@ -75,7 +86,7 @@ function addBrowserIdentityHints(hints, ...values) {
 }
 
 function addBusNameHints(hints, busName) {
-  const normalizedBusName = normalizeInput(busName);
+  const normalizedBusName = normalizeAppIdentityHint(busName);
   if (!normalizedBusName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
 
   const busSuffix = normalizedBusName.slice(MPRIS_BUS_NAME_PREFIX.length);

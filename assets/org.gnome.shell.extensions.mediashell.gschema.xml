@@ -15,6 +15,12 @@
     <value nick="RAISE_APP"        value="10" />
     <value nick="QUIT_APP"         value="11" />
     <value nick="SWITCH_APP"       value="12" />
+    <value nick="SEEK_BACKWARD"    value="13" />
+    <value nick="SEEK_FORWARD"     value="14" />
+    <!-- Legacy rate-action nicks remain readable but are no longer executable. -->
+    <value nick="RATE_DECREASE"     value="15" />
+    <value nick="RATE_INCREASE"     value="16" />
+    <value nick="RATE_RESET"        value="17" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
@@ -24,8 +30,10 @@
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.visualizer-styles">
-    <value nick="BEATS" value="0" />
-    <value nick="PULSE" value="1" />
+    <value nick="BEATS"    value="0" />
+    <value nick="PULSE"    value="1" />
+    <value nick="CLASSIC"  value="2" />
+    <value nick="SPECTRUM" value="3" />
   </enum>
 
   <schema id="org.gnome.shell.extensions.mediashell"
@@ -52,6 +60,33 @@
     <key name="popup-progress-bar-show" type="b">
       <default>true</default>
     </key>
+    <key name="popup-playback-controls-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-shuffle-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-seek-backward-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="popup-playback-controls-previous-track-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-play-pause-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-next-track-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-seek-forward-show" type="b">
+      <default>false</default>
+    </key>
+    <key name="popup-playback-controls-repeat-show" type="b">
+      <default>true</default>
+    </key>
+    <key name="popup-playback-controls-speed-show" type="b">
+      <default>false</default>
+    </key>
     <key name="popup-track-information-scroll-enabled" type="b">
       <default>false</default>
     </key>
@@ -61,9 +96,9 @@
     </key>
     <key name="popup-track-information-scroll-pause-time" type="u">
       <range min="0" max="10" />
-      <default>0</default>
+      <default>1</default>
     </key>
-    <key name="popup-app-icon-use-color" type="b">
+    <key name="popup-media-app-icon-use-color" type="b">
       <default>true</default>
     </key>
 
@@ -87,15 +122,15 @@
     </key>
     <key name="top-bar-track-information-scroll-pause-time" type="u">
       <range min="0" max="10" />
-      <default>0</default>
+      <default>1</default>
     </key>
     <key name="top-bar-track-information-content" type="as">
       <default>['TITLE', '•', 'ARTIST']</default>
     </key>
-    <key name="top-bar-app-icon-show" type="b">
+    <key name="top-bar-media-app-icon-show" type="b">
       <default>true</default>
     </key>
-    <key name="top-bar-app-icon-use-color" type="b">
+    <key name="top-bar-media-app-icon-use-color" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-visualizer-show" type="b">
@@ -115,6 +150,9 @@
     <key name="top-bar-playback-controls-shuffle-show" type="b">
       <default>false</default>
     </key>
+    <key name="top-bar-playback-controls-seek-backward-show" type="b">
+      <default>false</default>
+    </key>
     <key name="top-bar-playback-controls-previous-track-show" type="b">
       <default>true</default>
     </key>
@@ -124,11 +162,14 @@
     <key name="top-bar-playback-controls-next-track-show" type="b">
       <default>true</default>
     </key>
+    <key name="top-bar-playback-controls-seek-forward-show" type="b">
+      <default>false</default>
+    </key>
     <key name="top-bar-playback-controls-repeat-show" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
-      <default>['APP_ICON', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
+      <default>['MEDIA_APP_ICON', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
     </key>
 
     <!-- Panel -->
@@ -155,6 +196,12 @@
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-toggle-loop" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-seek-backward" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-seek-forward" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-volume-up" type="as">

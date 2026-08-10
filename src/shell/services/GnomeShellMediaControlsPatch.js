@@ -13,7 +13,7 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as Mpris from "resource:///org/gnome/shell/ui/mpris.js";
 import { InjectionManager } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { MPRIS_PREFIX } from "../../shared/constants/dbus.js";
+import { MPRIS_BUS_NAME_PREFIX } from "../../shared/constants/mpris.js";
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("GnomeShellMediaControlsPatch");
@@ -26,28 +26,23 @@ export default class GnomeShellMediaControlsPatch {
     this.injectionManager = new InjectionManager();
     this.isHidden = false;
     this.restoreGeneration = 0;
-    this.isDestroyed = false;
   }
 
   setGnomeShellMediaControlsHidden(isHidden) {
-    if (this.isDestroyed || this.isHidden === isHidden) return;
+    if (!this.injectionManager || this.isHidden === isHidden) return;
 
     this.restoreGeneration++;
     this.injectionManager.clear();
     this.isHidden = false;
     if (!isHidden) {
       const restoreGeneration = this.restoreGeneration;
-      this.restoreCurrentGnomeShellMediaControls(restoreGeneration)
-        .then(() => {
-          if (!this.isDestroyed && restoreGeneration === this.restoreGeneration)
-            logger.debug("Restored GNOME Shell media controls");
-        })
-        .catch((error) =>
+      void this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
+        (error) =>
           logger.warn(
             "Failed to restore current GNOME Shell media controls",
             error,
           ),
-        );
+      );
       return;
     }
 
@@ -68,7 +63,6 @@ export default class GnomeShellMediaControlsPatch {
     );
     this.isHidden = true;
     this.removeCurrentGnomeShellMediaControls();
-    logger.debug("Hid GNOME Shell media controls");
   }
 
   getGnomeShellMediaSourceClass() {
@@ -104,7 +98,7 @@ export default class GnomeShellMediaControlsPatch {
     if (!mediaSource?._proxy?.ListNamesAsync || !mediaSource?._addPlayer)
       return;
 
-    // _proxy is Shell's own DBus proxy for the session bus — same one used for
+    // _proxy is Shell's own D-Bus proxy for the session bus — same one used for
     // NameOwnerChanged. _onProxyReady() sets it up; we reuse it here without
     // calling _onProxyReady() again because that would install duplicate
     // subscriptions. Replay current names only, and discard the result if the
@@ -114,7 +108,7 @@ export default class GnomeShellMediaControlsPatch {
 
     for (const busName of busNames) {
       if (
-        busName.startsWith(MPRIS_PREFIX) &&
+        busName.startsWith(MPRIS_BUS_NAME_PREFIX) &&
         !mediaSource._players?.has?.(busName)
       )
         mediaSource._addPlayer(busName);
@@ -135,23 +129,22 @@ export default class GnomeShellMediaControlsPatch {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
+    const injectionManager = this.injectionManager;
+    if (!injectionManager) return;
 
-    if (this.isHidden) {
-      const restoreGeneration = ++this.restoreGeneration;
-      this.injectionManager.clear();
-      this.isHidden = false;
-      this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
+    const shouldRestore = this.isHidden;
+    const restoreGeneration = ++this.restoreGeneration;
+    this.injectionManager = null;
+    this.isHidden = false;
+    injectionManager.clear();
+
+    if (shouldRestore)
+      void this.restoreCurrentGnomeShellMediaControls(restoreGeneration).catch(
         (error) =>
           logger.warn(
             "Failed to restore current GNOME Shell media controls during teardown",
             error,
           ),
       );
-    }
-
-    this.isDestroyed = true;
-    this.injectionManager.clear();
-    this.injectionManager = null;
   }
 }

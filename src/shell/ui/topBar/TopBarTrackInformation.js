@@ -4,36 +4,53 @@
  *
  * Renders configurable track metadata inside the GNOME top bar.
  *
- * TopBarButton owns this component and passes the ordered metadata fields chosen
+ * TopBarContent owns this component and passes the ordered metadata fields chosen
  * in preferences. It uses ScrollingLabel for long text and shared metadata
- * helpers for field assembly, keeping compact top bar layout separate from
- * metadata normalization.
+ * helpers for field assembly. TopBarContent owns layout orchestration, while this
+ * component preserves the original metadata width and Lock width contract.
  */
 
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { buildTrackInformationText } from "../../../shared/utils/metadata.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
+import { placeActorAtIndex } from "../../utils/actors.js";
 import ScrollingLabel from "../ScrollingLabel.js";
 
 /**
  * Renders configurable track metadata inside the GNOME top bar.
  */
 export default class TopBarTrackInformation {
-  constructor(topBarButton) {
-    this.topBarButton = topBarButton;
+  constructor(topBarContent) {
+    this.topBarContent = topBarContent;
     this.actor = null;
     this.renderKey = null;
+    this.width = normalizeWidth(
+      this.extensionController.topBarTrackInformationWidth,
+    );
+    this.isFixedWidth = Boolean(
+      this.extensionController.topBarTrackInformationWidthLock,
+    );
+  }
+
+  get extensionController() {
+    return this.topBarContent.extensionController;
+  }
+
+  get mediaApp() {
+    return this.topBarContent.mediaApp;
   }
 
   render(index, parentBox) {
-    const text = this.buildTrackInformationText();
+    const text = buildTrackInformationText(
+      this.mediaApp.metadata,
+      this.extensionController.topBarTrackInformationContent,
+    );
     const renderKey = [
       text,
-      this.topBarButton.extensionController.topBarTrackInformationWidth,
-      this.topBarButton.extensionController.topBarTrackInformationWidthLock,
-      this.topBarButton.extensionController.topBarTrackInformationScrollEnabled,
-      this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
-      this.topBarButton.extensionController
-        .topBarTrackInformationScrollPauseMilliseconds,
+      this.width,
+      this.isFixedWidth,
+      this.extensionController.topBarTrackInformationScrollEnabled,
+      this.extensionController.topBarTrackInformationScrollSpeed,
+      this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
     ].join("\u0001");
 
     if (this.actor && renderKey === this.renderKey) {
@@ -43,20 +60,15 @@ export default class TopBarTrackInformation {
 
     const label = new ScrollingLabel({
       text,
-      width: this.topBarButton.extensionController.topBarTrackInformationWidth,
-      isFixedWidth:
-        this.topBarButton.extensionController.topBarTrackInformationWidthLock,
-      isScrolling:
-        this.topBarButton.extensionController
-          .topBarTrackInformationScrollEnabled,
-      isPaused:
-        this.topBarButton.mediaApp.playbackStatus !== PlaybackStatus.PLAYING,
-      scrollSpeed:
-        this.topBarButton.extensionController.topBarTrackInformationScrollSpeed,
+      width: this.width,
+      isFixedWidth: this.isFixedWidth,
+      isScrolling: this.extensionController.topBarTrackInformationScrollEnabled,
+      scrollSpeed: this.extensionController.topBarTrackInformationScrollSpeed,
       scrollPauseMilliseconds:
-        this.topBarButton.extensionController
-          .topBarTrackInformationScrollPauseMilliseconds,
+        this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
     });
+
+    label.add_style_class_name(StyleClasses.TOP_BAR_TRACK_INFORMATION);
 
     const oldLabel = this.actor;
     this.actor = label;
@@ -65,29 +77,26 @@ export default class TopBarTrackInformation {
     oldLabel?.destroy();
   }
 
+  setWidth(width, isFixedWidth) {
+    const normalizedWidth = normalizeWidth(width);
+    const normalizedFixedWidth = Boolean(isFixedWidth);
+    if (
+      normalizedWidth === this.width &&
+      normalizedFixedWidth === this.isFixedWidth
+    )
+      return;
+
+    this.width = normalizedWidth;
+    this.isFixedWidth = normalizedFixedWidth;
+    const parentBox = this.actor?.get_parent();
+    if (!parentBox) return;
+
+    const index = parentBox.get_children().indexOf(this.actor);
+    this.render(Math.max(0, index), parentBox);
+  }
+
   attach(index, parentBox) {
-    const parent = this.actor.get_parent();
-    const currentIndex =
-      parent === parentBox ? parentBox.get_children().indexOf(this.actor) : -1;
-    if (currentIndex === index) return;
-
-    parent?.remove_child(this.actor);
-    parentBox.insert_child_at_index(this.actor, index);
-  }
-
-  buildTrackInformationText() {
-    return buildTrackInformationText(
-      this.topBarButton.mediaApp.metadata,
-      this.topBarButton.extensionController.topBarTrackInformationContent,
-    );
-  }
-
-  pause() {
-    this.actor?.pauseScrolling();
-  }
-
-  resume() {
-    this.actor?.resumeScrolling();
+    placeActorAtIndex(this.actor, parentBox, index);
   }
 
   remove() {
@@ -100,6 +109,13 @@ export default class TopBarTrackInformation {
 
   destroy() {
     this.remove();
-    this.topBarButton = null;
+    this.topBarContent = null;
   }
+}
+
+function normalizeWidth(width) {
+  const numericWidth = Number(width);
+  return Number.isFinite(numericWidth)
+    ? Math.max(0, Math.ceil(numericWidth))
+    : 0;
 }

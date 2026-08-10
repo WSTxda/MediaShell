@@ -9,7 +9,7 @@
  * use this helper instead of direct console calls so logs stay consistent.
  */
 
-import { LOG_ONCE_CACHE_LIMIT } from "../constants/limits.js";
+import { LOG_ONCE_CACHE_LIMIT } from "../constants/log.js";
 
 const PREFIX = "[MediaShell]";
 

@@ -9,7 +9,7 @@ A GNOME extension that adds configurable MPRIS media controls to the top bar.
 
 ![Banner](https://raw.githubusercontent.com/WSTxda/MediaShell/main/assets/images/banner.svg)
 
-MediaShell is a GNOME extension that adds media controls to your top bar. Click the icon to open a popup featuring album art, playback controls, and an app selector for any app currently playing media. The top bar widget and popup use the GNOME UI toolkit, and preferences are built with GTK4 and Libadwaita to match the rest of the desktop.
+MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media apps. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.
 
 <details>
   <summary><h3>Screenshots</h3></summary>
@@ -19,12 +19,12 @@ MediaShell is a GNOME extension that adds media controls to your top bar. Click 
 <table>
   <tr>
     <td align="center"><strong>Popup</strong></td>
-    <td align="center"><strong>Popup app selector</strong></td>
+    <td align="center"><strong>Popup media app selector</strong></td>
     <td align="center"><strong>Popup theming</strong></td>
   </tr>
   <tr>
     <td><img src="assets/images/screenshots/screen_popup.png" alt="MediaShell popup" width="100%"></td>
-    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup app selector" width="100%"></td>
+    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup media app selector" width="100%"></td>
     <td><img src="assets/images/screenshots/screen_popup_theming.png" alt="MediaShell popup theming" width="100%"></td>
   </tr>
 </table>
@@ -63,42 +63,49 @@ MediaShell is a GNOME extension that adds media controls to your top bar. Click 
 
 #### Fits into GNOME
 
-- The top bar and popup use the GNOME UI toolkit and follow the same design as Quick Settings.
-- Preferences are built with GTK4 and Libadwaita, adhering to the GNOME Human Interface Guidelines.
+- The top bar and popup use GNOME Shell widgets and follow the desktop's visual language.
+- Preferences are built with GTK4 and Libadwaita.
 
-#### App selector
+#### Playback controls
 
-- The app selector in the popup switches between any active media app.
-- The pin feature keeps a media app selected while it is playing, but this selection does not save across shell restarts.
-- You can raise or quit an app's window if its MPRIS implementation supports it.
-- Block apps that you don't want MediaShell to detect, without affecting their MPRIS service.
+- Configure the popup and top bar independently.
+- Available controls include previous, play/pause, next, seek, shuffle, repeat, and popup playback speed.
+- Controls react to the capabilities reported by the active media app.
+
+#### Media app selector
+
+- Switch between media apps currently available through MPRIS.
+- Pin the selected media app for the current Shell session.
+- Open or quit an app when its MPRIS implementation supports the action.
+- Block apps you do not want MediaShell to display without changing their MPRIS service.
 
 #### Album art
 
-- Supports local and remote artwork with a configurable corner radius.
-- Optional disk cache for faster loads, adjustable from settings.
+- Supports local and remote album art with configurable presentation.
+- An optional persistent cache improves repeated loads and can be inspected or cleared from Preferences.
 
 #### Mouse and keyboard
 
-- Left, middle, and right click actions as well as scroll actions on the top bar button.
-- Global keyboard shortcuts for playback, volume, app selection, raising or quitting, opening the popup, and accessing settings.
+- Configure left, middle, and right click actions, scroll actions, and touch behavior on the top bar indicator.
+- Use global shortcuts for playback, volume, media app switching, opening the popup, and Preferences.
 
 #### Layout
 
-- Choose where the button is placed in the top bar.
-- Configure track information, playback controls, and the optional top bar visualizer in a stable element order.
-- Use Hide GNOME media controls to remove the default notification controls and use MediaShell instead.
+- Choose the panel position and the order of top bar elements.
+- Configure track information, playback controls, the app icon, and the optional visualizer.
+- Enabling popup seek controls raises the configured popup width to the minimum needed to keep the controls full-sized.
+- Optionally hide GNOME's built-in media controls while MediaShell is enabled.
 
 ## Requirements
 
-- **GNOME** 47–51
-- An **MPRIS** compatible media app or browser playback source like Spotify, VLC, Firefox, Vinyl, etc.
+- **GNOME Shell** 47–51
+- An **MPRIS-compatible** media app or browser media session
 
 > [!IMPORTANT]
-> Available controls depend on the features provided by each media app through MPRIS. Seeking, shuffle, repeat, volume, artwork, and application actions may not be supported by every app.
+> Available controls depend on the capabilities reported by each MPRIS implementation. Seeking, speed, shuffle, repeat, volume, album art, and media-app actions may not be supported by every media app or track.
 
 > [!NOTE]
-> Browsers decide how each website appears to GNOME. MediaShell follows what the browser reports, so web players can appear, change, or disappear when you switch tabs, navigate pages, or move playback between websites.
+> Browsers decide how websites are exposed through MPRIS. A browser session may change identity or disappear when tabs, pages, or playback ownership change.
 
 ## Download
 
@@ -115,29 +122,21 @@ gnome-extensions install --force mediashell@wstxda.github.com.shell-extension.zi
 gnome-extensions enable mediashell@wstxda.github.com
 ```
 
-3. Log out and back in to activate the extension. On X11 you can restart GNOME in place with `Alt+F2`, type `r`, and press Enter.
+3. Log out and back in after the first installation. On X11, GNOME Shell can instead be restarted with `Alt+F2`, `r`, and Enter.
 
 ## Development
 
-Use the Node.js and pnpm versions listed in `package.json`, along with GJS, GNU gettext, GLib development tools, GNOME Shell, and `gnome-extensions`. Release verification also expects `shexli` in `PATH`.
+Use the Node.js and pnpm versions declared in `package.json`. GNOME development also requires GJS, GNU gettext, GLib tools, GNOME Shell, and `gnome-extensions`; release verification uses `shexli`.
 
 ```bash
 pnpm install
-pnpm doctor
+pnpm run env:doctor
 pnpm check
 pnpm build
 pnpm verify
 ```
 
-The generated extension package is saved to `dist/builds/`. `pnpm build` validates source and package contents; `pnpm verify` runs the full release-oriented path, including `shexli` against the generated archive.
-
-From the repository root, inspect or install the generated package with the full path:
-
-```bash
-pnpm run check:package
-pnpm run check:shexli
-gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip
-```
+The generated extension package is written to `dist/builds/`.
 
 ### Documentation
 

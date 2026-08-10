@@ -4,9 +4,8 @@
  *
  * Enum values for mouse, scroll, and keyboard actions supported by MediaShell.
  *
- * ExtensionController dispatches these values when global shortcuts or top bar
- * pointer gestures fire. The numeric values are schema enum values and must match the
- * combo model order used by preferences.
+ * Values are persisted by GSettings. Existing executable values are stable, and
+ * deprecated values 15–17 remain reserved so old settings are never repurposed.
  */
 
 export const InputActions = Object.freeze({
@@ -23,4 +22,9 @@ export const InputActions = Object.freeze({
   RAISE_APP: 10,
   QUIT_APP: 11,
   SWITCH_APP: 12,
+  SEEK_BACKWARD: 13,
+  SEEK_FORWARD: 14,
+  RESERVED_15: 15,
+  RESERVED_16: 16,
+  RESERVED_17: 17,
 });

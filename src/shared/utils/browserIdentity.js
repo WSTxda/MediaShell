@@ -4,53 +4,53 @@
  *
  * Resolves browser and PWA identity hints without depending on browser brand lists.
  *
- * Chromium-based PWAs expose a stable 32-character app ID in several runtime and
- * desktop-entry fields, but the launcher prefix depends on the browser, package
- * format, profile, and distribution. These helpers score installed-app metadata
- * by evidence instead of hardcoding browser names, keeping Shell and preferences
- * identity resolution consistent and testable under Node.
+ * Chromium-based PWAs expose a stable 32-character app ID in runtime and
+ * desktop-entry fields, while launcher prefixes vary by browser, package, profile,
+ * and distribution. These helpers compare the stable app ID instead of guessing
+ * from browser names, windows, process IDs, or media-service titles.
  *
- * The resolver is deliberately conservative. It improves PWA identity only when
- * desktop-entry or runtime metadata expose a strong app-ID match; inconsistent
- * browser launchers fall back to the normal media-app identity path instead of
- * risking a wrong icon, display name, blocklist match, or focus target.
+ * The resolver is deliberately conservative. A PWA is selected only when MPRIS
+ * exposes one unambiguous Chromium app ID and one installed desktop entry has the
+ * strongest matching metadata. Missing or conflicting evidence falls back to the
+ * normal media-app identity path.
  */
 
 const CHROMIUM_PWA_APP_ID_PATTERN = /^[a-p]{32}$/;
 const CHROMIUM_PWA_TOKEN_PATTERN =
   /(?:^|[._-])(?:crx_)?([a-p]{32})(?=$|[._-])/gi;
 const EXACT_CHROMIUM_PWA_TOKEN_PATTERN = /^(?:crx_)?([a-p]{32})$/i;
-const STRONG_BROWSER_IDENTITY_SCORE = 900;
+const CHROMIUM_PWA_COMMANDLINE_APP_ID_PATTERN =
+  /(?:^|\s)--app-id(?:=|\s+)(?:"([a-p]{32})"|'([a-p]{32})'|([a-p]{32}))(?=$|\s)/gi;
 
-function normalizeText(value) {
+const BROWSER_IDENTITY_SCORES = Object.freeze({
+  desktopId: 1200,
+  startupWmClass: 1100,
+  commandline: 1000,
+});
+
+function normalizeDesktopId(value) {
   return String(value ?? "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function normalizeComparable(value) {
-  return normalizeText(value)
-    .replace(/\.desktop$/i, "")
-    .replace(/[^a-z0-9]+/g, " ")
     .trim()
-    .replace(/\s+/g, " ");
-}
-
-function normalizeCompact(value) {
-  return normalizeText(value)
-    .replace(/\.desktop$/i, "")
-    .replace(/[^a-z0-9]+/g, "");
+    .replace(/\.desktop$/i, "");
 }
 
 function addUnique(values, value) {
   if (value) values.add(value);
 }
 
+function extractMediaPwaAppIds(mediaIdentity) {
+  return extractChromiumPwaAppIds(
+    mediaIdentity.identity,
+    mediaIdentity.desktopEntry,
+    mediaIdentity.busName,
+    mediaIdentity.extraHints ?? [],
+  );
+}
+
 /**
  * Returns whether a value is a Chromium-style PWA app ID.
  *
- * Chromium extension/PWA IDs are 32 lowercase characters in the `a-p` range. The
+ * Chromium web-app IDs are 32 lowercase characters in the `a-p` range. The
  * check is intentionally generic and does not assume a browser prefix such as
  * `chrome`, `brave`, or `chromium`.
  *
@@ -64,12 +64,12 @@ export function isChromiumPwaAppId(value) {
 /**
  * Extracts Chromium-style PWA app IDs from runtime or desktop-entry text.
  *
- * Supported examples include `crx_<id>`, `<browser>-<id>-Default`, Flatpak-style
- * desktop IDs that embed `<id>`, and profile-specific variants. The function is
- * pure and only returns the stable app ID, leaving candidate scoring to the
- * caller.
+ * Supported examples include `crx_<id>`, `<browser>-<id>-Default`, Flatpak
+ * desktop IDs prefixed with the package ID, and profile-specific variants. The
+ * function requires token boundaries so a matching sequence embedded in a
+ * larger identifier is not accepted accidentally.
  *
- * @param {...unknown} values - Runtime classes, desktop IDs, command lines, or names.
+ * @param {...unknown} values - Runtime classes, desktop IDs, or identity hints.
  * @returns {string[]} Unique lowercase PWA app IDs in discovery order.
  */
 export function extractChromiumPwaAppIds(...values) {
@@ -93,6 +93,50 @@ export function extractChromiumPwaAppIds(...values) {
 }
 
 /**
+ * Extracts app IDs from Chromium's explicit `--app-id` launcher argument.
+ *
+ * The command-line parser deliberately accepts only the documented switch form
+ * instead of searching arbitrary executable text for a 32-character sequence.
+ * Both `--app-id=<id>` and `--app-id <id>` are supported, with optional quotes.
+ *
+ * @param {...unknown} values - Desktop-entry command lines.
+ * @returns {string[]} Unique lowercase PWA app IDs in discovery order.
+ */
+export function extractChromiumPwaCommandLineAppIds(...values) {
+  const appIds = new Set();
+
+  for (const value of values.flat()) {
+    const commandline = String(value ?? "").toLowerCase();
+    if (!commandline) continue;
+
+    for (const match of commandline.matchAll(
+      CHROMIUM_PWA_COMMANDLINE_APP_ID_PATTERN,
+    ))
+      appIds.add(match[1] ?? match[2] ?? match[3]);
+  }
+
+  return [...appIds];
+}
+
+/**
+ * Resolves one unambiguous Chromium PWA app ID from MPRIS identity metadata.
+ *
+ * Conflicting IDs are not ranked. Returning an empty string forces the caller to
+ * keep the normal browser identity instead of choosing one source arbitrarily.
+ *
+ * @param {object} mediaIdentity - MPRIS identity hints for one media app.
+ * @param {unknown} [mediaIdentity.identity] - MPRIS Identity.
+ * @param {unknown} [mediaIdentity.desktopEntry] - MPRIS DesktopEntry.
+ * @param {unknown} [mediaIdentity.busName] - MPRIS bus name.
+ * @param {unknown[]} [mediaIdentity.extraHints] - Optional explicit identity hints.
+ * @returns {string} The unique lowercase app ID, or an empty string.
+ */
+export function resolveChromiumPwaAppId(mediaIdentity = {}) {
+  const appIds = extractMediaPwaAppIds(mediaIdentity);
+  return appIds.length === 1 ? appIds[0] : "";
+}
+
+/**
  * Builds normalized aliases for an installed app descriptor.
  *
  * Preferences use these aliases for search and Shell code uses the same shape to
@@ -101,25 +145,19 @@ export function extractChromiumPwaAppIds(...values) {
  *
  * @param {object} descriptor - Desktop app metadata.
  * @param {string} [descriptor.desktopId] - Desktop ID or file name.
- * @param {string} [descriptor.name] - App name.
- * @param {string} [descriptor.displayName] - Localized display name.
- * @param {string} [descriptor.executable] - Executable name.
  * @param {string} [descriptor.startupWmClass] - StartupWMClass desktop-entry key.
  * @param {string} [descriptor.commandline] - Desktop command line when available.
  * @returns {string[]} Search aliases derived from browser/PWA metadata.
  */
 export function buildBrowserIdentityAliases(descriptor = {}) {
   const aliases = new Set();
-  const values = [
-    descriptor.desktopId,
-    descriptor.name,
-    descriptor.displayName,
-    descriptor.executable,
-    descriptor.startupWmClass,
-    descriptor.commandline,
-  ];
+  const metadataValues = [descriptor.desktopId, descriptor.startupWmClass];
+  const appIds = new Set([
+    ...extractChromiumPwaAppIds(metadataValues),
+    ...extractChromiumPwaCommandLineAppIds(descriptor.commandline),
+  ]);
 
-  for (const appId of extractChromiumPwaAppIds(values)) {
+  for (const appId of appIds) {
     addUnique(aliases, appId);
     addUnique(aliases, `crx_${appId}`);
   }
@@ -130,16 +168,12 @@ export function buildBrowserIdentityAliases(descriptor = {}) {
 /**
  * Scores how strongly an installed app descriptor matches a browser media app.
  *
- * The score is intentionally evidence based: desktop IDs and StartupWMClass are
- * strong signals, executable/command-line matches are weaker, and display names
- * are used only as a small tiebreaker when a PWA app ID was already discovered.
- * Low-confidence matches are expected to be ignored by the caller.
+ * The score uses only deterministic Chromium desktop integration metadata:
+ * desktop ID, StartupWMClass, and the explicit `--app-id` launcher argument.
+ * Display names, executable names, window titles, process IDs, and browser-brand
+ * lists are intentionally excluded.
  *
  * @param {object} mediaIdentity - MPRIS/runtime identity hints for one media app.
- * @param {unknown} [mediaIdentity.identity] - MPRIS Identity.
- * @param {unknown} [mediaIdentity.desktopEntry] - MPRIS DesktopEntry.
- * @param {unknown} [mediaIdentity.busName] - MPRIS bus name.
- * @param {unknown[]} [mediaIdentity.extraHints] - Optional runtime hints such as WM_CLASS.
  * @param {object} descriptor - Installed app descriptor.
  * @returns {{score: number, reason: string, appId: string}} Match score and explanation.
  */
@@ -147,80 +181,85 @@ export function scoreBrowserIdentityCandidate(
   mediaIdentity = {},
   descriptor = {},
 ) {
-  const mediaValues = [
-    mediaIdentity.identity,
-    mediaIdentity.desktopEntry,
-    mediaIdentity.busName,
-    ...(mediaIdentity.extraHints ?? []),
+  const appIds = extractMediaPwaAppIds(mediaIdentity);
+  if (appIds.length !== 1)
+    return {
+      score: 0,
+      reason: appIds.length > 1 ? "ambiguous-pwa-app-id" : "no-pwa-app-id",
+      appId: "",
+    };
+
+  const [appId] = appIds;
+  const descriptorAppIds = new Set([
+    ...extractChromiumPwaAppIds(
+      descriptor.desktopId,
+      descriptor.startupWmClass,
+    ),
+    ...extractChromiumPwaCommandLineAppIds(descriptor.commandline),
+  ]);
+  if (descriptorAppIds.size > 1)
+    return {
+      score: 0,
+      reason: "conflicting-candidate-pwa-app-id",
+      appId,
+    };
+
+  const evidence = [
+    {
+      field: "desktopId",
+      score: BROWSER_IDENTITY_SCORES.desktopId,
+      appIds: extractChromiumPwaAppIds(descriptor.desktopId),
+    },
+    {
+      field: "startupWmClass",
+      score: BROWSER_IDENTITY_SCORES.startupWmClass,
+      appIds: extractChromiumPwaAppIds(descriptor.startupWmClass),
+    },
+    {
+      field: "commandline",
+      score: BROWSER_IDENTITY_SCORES.commandline,
+      appIds: extractChromiumPwaCommandLineAppIds(descriptor.commandline),
+    },
   ];
-  const appIds = extractChromiumPwaAppIds(mediaValues);
-  if (appIds.length === 0)
-    return { score: 0, reason: "no-pwa-app-id", appId: "" };
 
-  const descriptorValues = {
-    desktopId: normalizeText(descriptor.desktopId),
-    startupWmClass: normalizeText(descriptor.startupWmClass),
-    commandline: normalizeText(descriptor.commandline),
-    executable: normalizeText(descriptor.executable),
-    name: normalizeComparable(descriptor.name),
-    displayName: normalizeComparable(descriptor.displayName),
-  };
-  const descriptorCompactName = normalizeCompact(
-    `${descriptor.name ?? ""} ${descriptor.displayName ?? ""}`,
-  );
-
-  let best = { score: 0, reason: "no-match", appId: appIds[0] ?? "" };
-  for (const appId of appIds) {
-    const candidates = [
-      { field: "desktopId", score: 1000, value: descriptorValues.desktopId },
-      {
-        field: "startupWmClass",
-        score: 950,
-        value: descriptorValues.startupWmClass,
-      },
-      { field: "commandline", score: 700, value: descriptorValues.commandline },
-      { field: "executable", score: 450, value: descriptorValues.executable },
-    ];
-
-    for (const candidate of candidates) {
-      if (!candidate.value.includes(appId)) continue;
-      if (candidate.score > best.score)
-        best = { score: candidate.score, reason: candidate.field, appId };
-    }
-
-    if (descriptorCompactName.includes(appId) && 250 > best.score)
-      best = { score: 250, reason: "name", appId };
+  for (const candidate of evidence) {
+    if (candidate.appIds.includes(appId))
+      return { score: candidate.score, reason: candidate.field, appId };
   }
 
-  return best;
+  return { score: 0, reason: "no-match", appId };
 }
 
 /**
- * Selects the best installed-app candidate for a browser/PWA media app.
+ * Selects one deterministic installed-app candidate for browser/PWA media.
  *
- * The function returns `null` unless the best candidate crosses the strong-match
- * threshold. This conservative fallback keeps ordinary browser media endpoints
- * on the current identity path when the installed desktop database does not
- * provide enough evidence for a PWA-specific app.
+ * The best score must identify one desktop ID. Equal-strength matches for
+ * different launchers are ambiguous and therefore return `null`; enumeration
+ * order must never decide which browser profile or package owns the media app.
  *
  * @param {object} mediaIdentity - MPRIS/runtime identity hints for one media app.
  * @param {object[]} descriptors - Installed app descriptors to score.
- * @returns {{descriptor: object, score: number, reason: string, appId: string}|null} Best strong match.
+ * @returns {{descriptor: object, score: number, reason: string, appId: string}|null} Best unambiguous match.
  */
 export function resolveBrowserIdentityCandidate(mediaIdentity, descriptors) {
-  let best = null;
+  const matches = [];
 
   for (const descriptor of descriptors ?? []) {
     const result = scoreBrowserIdentityCandidate(mediaIdentity, descriptor);
     if (result.score <= 0) continue;
-    if (!best || result.score > best.score)
-      best = {
-        descriptor,
-        score: result.score,
-        reason: result.reason,
-        appId: result.appId,
-      };
+    matches.push({ descriptor, ...result });
   }
 
-  return best && best.score >= STRONG_BROWSER_IDENTITY_SCORE ? best : null;
+  if (matches.length === 0) return null;
+
+  const bestScore = Math.max(...matches.map((match) => match.score));
+  const bestMatches = matches.filter((match) => match.score === bestScore);
+  const bestDesktopIds = new Set(
+    bestMatches
+      .map((match) => normalizeDesktopId(match.descriptor.desktopId))
+      .filter(Boolean),
+  );
+
+  if (bestDesktopIds.size !== 1) return null;
+  return bestMatches[0];
 }

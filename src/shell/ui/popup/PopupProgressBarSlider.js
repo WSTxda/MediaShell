@@ -15,11 +15,13 @@ import St from "gi://St";
 
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
+import { GTypeNames } from "../../../shared/constants/gtypes.js";
 import { formatDurationMilliseconds } from "../../../shared/utils/format.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 
 /**
  * Provides the popup seek slider and animated progress bar value.
@@ -28,7 +30,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
   constructor() {
     super({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: "mediashell-popup-progress-bar",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR,
     });
     this.playbackRate = 1;
     this.shouldResumeAfterDrag = false;
@@ -37,16 +39,16 @@ class PopupProgressBarSlider extends St.BoxLayout {
 
     this.slider = new Slider.Slider(0);
     this.timeLabelsBox = new St.BoxLayout({
-      styleClass: "mediashell-popup-progress-bar-time",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME,
     });
     this.elapsedLabel = new St.Label({
-      styleClass: "mediashell-popup-progress-bar-time-label",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.START,
     });
     this.trackDurationLabel = new St.Label({
-      styleClass: "mediashell-popup-progress-bar-time-label",
+      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.END,
@@ -78,7 +80,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
         final: finalValue,
       }),
     });
-    this.playbackTransition.set_remove_on_complete?.(false);
+    this.playbackTransition.set_remove_on_complete(false);
     this.playbackTransition.connectObject(
       "new-frame",
       (_timeline, timelineElapsedMilliseconds) => {
@@ -129,7 +131,6 @@ class PopupProgressBarSlider extends St.BoxLayout {
     this.add_child(this.timeLabelsBox);
     this.playbackTransition.pause();
     this.slider.add_transition("progress", this.playbackTransition);
-    this.connect("destroy", () => this.onDestroy());
     this.setProgressDisabled(true);
   }
 
@@ -199,7 +200,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
   }
 
   ensurePlaybackTransitionAttached() {
-    if (this.slider.get_transition?.("progress") === null)
+    if (this.slider.get_transition("progress") === null)
       this.slider.add_transition("progress", this.playbackTransition);
   }
 
@@ -233,22 +234,25 @@ class PopupProgressBarSlider extends St.BoxLayout {
     }
   }
 
-  onDestroy() {
-    this.slider?.disconnectObject?.(this);
-    this.playbackTransition?.disconnectObject?.(this);
-    this.playbackTransition?.stop();
-    this.slider?.remove_transition?.("progress");
+  destroy() {
+    if (!this.slider) return;
+
+    this.slider.disconnectObject(this);
+    this.playbackTransition.disconnectObject(this);
+    this.playbackTransition.stop();
+    this.slider.remove_transition("progress");
     this.playbackTransition = null;
     this.slider = null;
     this.timeLabelsBox = null;
     this.elapsedLabel = null;
     this.trackDurationLabel = null;
+    super.destroy();
   }
 }
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellPopupProgressBarSlider",
+    GTypeName: GTypeNames.POPUP_PROGRESS_BAR_SLIDER,
     Signals: {
       "seek-requested": {
         param_types: [GObject.TYPE_INT64],

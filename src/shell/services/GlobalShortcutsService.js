@@ -54,9 +54,6 @@ export default class GlobalShortcutsService {
         );
       }
     }
-    logger.debug(
-      `Registered ${this.registeredShortcutKeys.size} global media shortcuts`,
-    );
   }
 
   destroy() {
@@ -64,10 +61,7 @@ export default class GlobalShortcutsService {
       try {
         Main.wm.removeKeybinding(shortcutKey);
       } catch (error) {
-        logger.debug(
-          `Keyboard shortcut was already unavailable: ${shortcutKey}`,
-          error,
-        );
+        logger.warn(`Failed to remove keyboard shortcut ${shortcutKey}`, error);
       }
     }
 

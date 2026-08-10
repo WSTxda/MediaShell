@@ -43,6 +43,9 @@
     <method name="PlayPause"/>
     <method name="Stop"/>
     <method name="Play"/>
+    <method name="Seek">
+      <arg type="x" name="Offset" direction="in"/>
+    </method>
     <method name="SetPosition">
       <arg type="o" name="TrackId" direction="in"/>
       <arg type="x" name="Position" direction="in"/>

@@ -4,7 +4,7 @@
   <requires lib="gtk" version="4.0"/>
   <template class="MediaShellTopBarElementOrderGroup" parent="AdwPreferencesGroup">
     <property name="title" translatable="yes">Element order</property>
-    <property name="description" translatable="yes">Drag to reorder elements inside the top bar button</property>
+    <property name="description" translatable="yes">Drag to reorder elements inside the top bar indicator</property>
     <child>
       <object class="GtkListBox" id="lb-top-bar-element-order">
         <style>
@@ -12,7 +12,7 @@
         </style>
         <property name="selection-mode">3</property>
         <child>
-          <object class="AdwActionRow" id="row-app-icon">
+          <object class="AdwActionRow" id="row-media-app-icon">
             <property name="title" translatable="yes">App icon</property>
             <property name="activatable">true</property>
             <child type="suffix">

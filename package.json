@@ -1,6 +1,6 @@
 {
   "name": "mediashell",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "A GNOME extension that adds configurable MPRIS media controls to the top bar.",
   "type": "module",
@@ -9,20 +9,24 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node scripts/check.mjs",
-    "check:package": "node scripts/check.mjs --package",
+    "check": "node scripts/dev.mjs check",
+    "check:runtime": "node scripts/dev.mjs runtime",
+    "check:native": "pnpm run check:runtime && node scripts/dev.mjs native",
+    "check:package": "node scripts/dev.mjs package",
     "check:shexli": "shexli dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
     "verify": "pnpm run build && pnpm run check:shexli",
     "test": "node --test",
-    "doctor": "bash scripts/development.sh doctor",
-    "debug": "bash scripts/development.sh debug",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "env:doctor": "bash scripts/development.sh doctor",
+    "shell:debug": "bash scripts/development.sh debug",
     "build:clean": "rm -rf dist",
     "build:dirs": "mkdir -p dist/temp dist/builds",
     "build:copy": "cp -r src/* dist/temp/",
     "build:resources": "glib-compile-resources assets/org.gnome.shell.extensions.mediashell.gresource.xml --target=dist/temp/org.gnome.shell.extensions.mediashell.gresource --sourcedir=assets",
     "build:pack": "cd dist/temp && gnome-extensions pack -f -o ../builds/ --schema='../../assets/org.gnome.shell.extensions.mediashell.gschema.xml' --podir='../../assets/locale' --extra-source=shell --extra-source=prefs --extra-source=shared --extra-source=icons --extra-source=org.gnome.shell.extensions.mediashell.gresource .",
     "build:stage": "pnpm run build:clean && pnpm run build:dirs && pnpm run build:copy && pnpm run build:resources",
-    "build": "pnpm run check && pnpm run build:stage && pnpm run build:pack && pnpm run check:package",
+    "build": "pnpm run check:runtime && pnpm run build:stage && pnpm run build:pack && pnpm run check:package",
     "ext:install": "gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
     "ext:uninstall": "gnome-extensions uninstall mediashell@wstxda.github.com",
     "ext:enable": "gnome-extensions enable mediashell@wstxda.github.com",
@@ -30,11 +34,13 @@
     "ext:prefs": "gnome-extensions prefs mediashell@wstxda.github.com",
     "ext:reinstall": "pnpm run build && pnpm run ext:install && pnpm run ext:enable",
     "ext:upload": "gnome-extensions upload --accept-tos --user WSTxda ${EGO_ARGS} dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
-    "translations:extract": "rm -f assets/locale/mediashell@wstxda.github.com.pot && xgettext --from-code=UTF-8 --add-comments --keyword=_ --keyword=ngettext:1,2 --keyword=C_:1c,2 --language=Javascript --output=assets/locale/mediashell@wstxda.github.com.pot $(find . -type f -name '*.js' -not -path './node_modules/*' -not -path './dist/*') && xgettext --from-code=UTF-8 --add-comments --join-existing --language=Glade --output=assets/locale/mediashell@wstxda.github.com.pot $(find assets/ui -type f -name '*.ui')",
+    "translations:extract": "python3 scripts/dev/assets.py --extract-translations",
     "translations:merge": "for po in assets/locale/*.po; do msgmerge -U \"$po\" assets/locale/mediashell@wstxda.github.com.pot; done && rm -f assets/locale/*.po~",
     "translations": "pnpm run translations:extract && pnpm run translations:merge"
   },
   "devDependencies": {
-    "prettier": "^3.9.4"
+    "acorn": "^8.17.0",
+    "acorn-walk": "^8.3.5",
+    "prettier": "^3.9.6"
   }
 }

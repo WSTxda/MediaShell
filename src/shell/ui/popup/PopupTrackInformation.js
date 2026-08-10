@@ -13,9 +13,9 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { TrackInformationFields } from "../../../shared/enums/trackInformation.js";
 import { buildTrackInformationItems } from "../../../shared/utils/metadata.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import ScrollingLabel from "../ScrollingLabel.js";
 
 /**
@@ -55,14 +55,6 @@ export default class PopupTrackInformation {
     return this.popupContent.getTrackInformationWidth();
   }
 
-  pause() {
-    for (const label of this.trackInformationLabels) label.pauseScrolling();
-  }
-
-  resume() {
-    for (const label of this.trackInformationLabels) label.resumeScrolling();
-  }
-
   render() {
     const metadata = this.mediaApp.metadata;
     const width = this.getTrackInformationWidth();
@@ -84,18 +76,13 @@ export default class PopupTrackInformation {
     }
     this.renderKey = renderKey;
     this.ensureContainer(width);
-    this.clearFields();
+    this.destroyLabels();
 
-    const paused = this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING;
     for (const item of items) {
       const label = this.createLabel(
         item.text,
-        this.resolveStyleClass(item.field),
+        this.resolveFieldStyleClass(item.field),
         width,
-        paused,
-        item.field === TrackInformationFields.ARTIST
-          ? Clutter.TimelineDirection.BACKWARD
-          : Clutter.TimelineDirection.FORWARD,
       );
       this.trackInformationLabels.push(label);
       this.trackInformationBox.add_child(label);
@@ -114,7 +101,7 @@ export default class PopupTrackInformation {
     if (!this.trackInformationBox) {
       this.trackInformationBox = new St.BoxLayout({
         orientation: Clutter.Orientation.VERTICAL,
-        styleClass: "mediashell-popup-track-information",
+        styleClass: StyleClasses.POPUP_TRACK_INFORMATION,
       });
     }
     const widthStyle = this.buildFixedWidthStyle(width);
@@ -124,18 +111,10 @@ export default class PopupTrackInformation {
     this.trackInformationBox.xAlign = Clutter.ActorAlign.FILL;
   }
 
-  createLabel(
-    text,
-    styleClass,
-    width,
-    isPaused,
-    direction = Clutter.TimelineDirection.FORWARD,
-  ) {
+  createLabel(text, styleClass, width) {
     const label = new ScrollingLabel({
       text,
       isScrolling: this.extensionController.popupTrackInformationScrollEnabled,
-      isPaused,
-      direction,
       width,
       scrollSpeed: this.extensionController.popupTrackInformationScrollSpeed,
       scrollPauseMilliseconds:
@@ -154,15 +133,15 @@ export default class PopupTrackInformation {
     return label;
   }
 
-  resolveStyleClass(field) {
+  resolveFieldStyleClass(field) {
     if (field === TrackInformationFields.TITLE)
-      return "mediashell-popup-track-information-title";
+      return StyleClasses.POPUP_TRACK_INFORMATION_TITLE;
     if (field === TrackInformationFields.ARTIST)
-      return "mediashell-popup-track-information-artist";
-    return "mediashell-popup-track-information-album";
+      return StyleClasses.POPUP_TRACK_INFORMATION_ARTIST;
+    return StyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 
-  clearFields() {
+  destroyLabels() {
     for (const label of this.trackInformationLabels) {
       label.get_parent()?.remove_child(label);
       label.destroy();
@@ -194,7 +173,7 @@ export default class PopupTrackInformation {
   }
 
   remove() {
-    this.clearFields();
+    this.destroyLabels();
     this.trackInformationBox
       ?.get_parent()
       ?.remove_child(this.trackInformationBox);

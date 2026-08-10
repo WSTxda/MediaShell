@@ -1,122 +1,106 @@
 # Architecture
 
-MediaShell is organized around process boundaries and UI surfaces. Shell code owns actors, MPRIS, and GNOME Shell integration. Preferences code owns GTK4/Libadwaita UI. Shared code owns toolkit-independent constants, enums, settings helpers, and pure helpers.
+MediaShell is organized by process boundary and ownership. GNOME Shell owns the runtime UI and MPRIS integration, Preferences owns the GTK4/Libadwaita interface, and shared code contains toolkit-independent contracts and helpers.
 
-The installable package contains only runtime files. Repository docs, tests, screenshots, source catalogs, and development-only assets stay outside the extension archive.
+The installable archive contains runtime files only. Documentation, tests, screenshots, source catalogs, and development tooling stay outside the extension package.
 
-## Layers
+## Repository layout
 
 ```text
 src/
-  extension.js                 Shell entry point
+  extension.js                 GNOME Shell entry point
   prefs.js                     Preferences entry point
-  stylesheet.css               Shell stylesheet
   metadata.json                Extension manifest
-  shared/                      Toolkit-independent constants, enums, settings helpers
-  shell/                       GNOME Shell runtime code
-  prefs/                       GTK4/Libadwaita preferences code
-assets/                        GtkBuilder UI, schemas, D-Bus XML, translations, images
-scripts/                       Validation, packaging, development helpers
-tests/                         Node tests for pure logic and policies
+  stylesheet.css               Shell styles
+  shared/                      Toolkit-independent contracts and helpers
+  shell/                       GNOME Shell runtime
+  prefs/                       GTK4/Libadwaita Preferences runtime
+assets/                        UI templates, schema, D-Bus XML, translations, and images
+scripts/                       Validation, packaging, and development utilities
+tests/                         Behavior and cross-file integrity tests
 ```
 
-### `src/shared/`
+`src/shared/` must not import GNOME Shell or GTK. Shell and Preferences communicate through shared contracts, GSettings, and compiled resources; they do not import each other.
 
-`shared` must remain independent from GNOME runtime APIs. It contains constants, enums, formatting, track information normalization, MPRIS helpers, logging, app identity, browser/PWA identity scoring, search, playback-control decisions, and visualizer math.
+## Runtime ownership
 
-Use this layer for pure logic that can be tested with Node and reused by Shell and Preferences code without importing St, Clutter, Shell, Meta, GTK, Adw, or Gdk.
+- `ExtensionController` owns enable/disable ordering, settings, services, registry creation, and top bar mounting.
+- `MediaAppRegistry` owns D-Bus discovery and active media-app selection.
+- `MprisMediaApp` owns one MPRIS endpoint: method calls, property writes, cached properties, capabilities, and signals.
+- `PlaybackPositionTracker` projects playback position from confirmed endpoint state, track identity, rate, and monotonic time.
+- `DesktopAppResolver` maps MPRIS identity to installed applications and browser/PWA desktop entries.
+- `MediaShellIndicator` owns the panel indicator and popup. `TopBarContent` owns the top bar surface, while components under `ui/topBar/` and `ui/popup/` own their respective actors and teardown.
+- `AlbumArtLoader` owns local, cache, and network I/O. `PopupAlbumArt` owns decode requests, cancellation generations, actors, and visible fallback state.
+- `PreferencesController` owns GtkBuilder, bindings, page controllers, custom widgets, and Preferences teardown. `PopupLayoutController` provides user-driven width feedback when seek controls require the popup minimum.
 
-### `src/shell/`
+The component that creates a signal, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
 
-`shell` runs inside GNOME Shell. It may use St, Clutter, Shell, Meta, Gio, GLib, and Shell UI resources.
+## Lifecycle
 
-Important owners:
+`ExtensionController.enable()` initializes resources, settings, services, shortcuts, and the MPRIS registry before mounting the UI. `destroy()` tears them down in reverse ownership order and invalidates pending asynchronous work.
 
-- `ExtensionController`: enable/disable lifecycle, settings, services, MPRIS registry, and top bar mounting.
-- `mpris/`: D-Bus discovery, `PlayerProxy`, position tracking, proxy creation, and active media-app selection.
-- `services/`: album art, app resolution, global shortcuts, resources, and isolated GNOME Shell patches.
-- `settings/`: runtime settings specification and store.
-- `ui/topBar/`: compact top bar button, app icon, track information, playback controls, pointer actions, and visualizer.
-- `ui/popup/`: popup container, app selector, album art, track information, progress bar, and playback controls.
-- `utils/`: Shell-only helpers such as icon creation, pointer actions, and cancellation classification.
+`lifecycleGeneration` prevents callbacks from an older enable/destroy cycle from mutating current state. Local generation counters and cancellables provide the same protection for component-owned asynchronous work.
 
-### `src/prefs/`
+## MPRIS model and selection
 
-`prefs` runs in the preferences process. It may use GTK4, Libadwaita, Gio, GLib, and GObject, but must not import Shell-only APIs.
+`MediaAppRegistry` watches `org.mpris.MediaPlayer2.*` names. D-Bus ownership defines endpoint lifetime; desktop and browser identity improve presentation, blocked-app matching, and media-app actions without replacing that authority.
 
-Important owners:
+Active selection is deterministic: pinned, playing, previous active, paused, then the first valid endpoint. Pinning is runtime-only. Owner and metadata grace periods preserve useful state during short hand-offs.
 
-- `PreferencesController`: preferences lifecycle, builder, bindings, page controllers, and teardown.
-- `bindings/`: standard widget-to-GSettings bindings.
-- `groups/`: page-level controllers for compound preferences.
-- `widgets/`: custom GTK/Libadwaita widgets registered with `MediaShell`-prefixed `GTypeName` values.
-- `utils/`: preferences-only catalog, shortcut validation, cache service, and signal ownership helpers.
-
-## Surfaces
-
-MediaShell has separate configuration surfaces:
-
-- **Panel** controls where the extension appears in the GNOME panel/top bar area: position, index, and element order.
-- **Top bar** controls the compact top bar button: app icon, track information, playback controls, and visualizer.
-- **Popup** controls the menu opened by the top bar button: app selector, album art, track information, progress bar, and playback controls.
-- **Interactions** controls mouse actions and keyboard shortcuts.
-- **Others** contains blocked apps, cache maintenance, reset actions, and the Hide media controls option.
-
-Do not use Panel, Top bar, and Popup interchangeably. Panel sets the position. Top bar is the visible button. Popup is the menu opened from that button.
-
-## Runtime lifecycle
+Playback commands follow one path:
 
 ```text
-[disabled]
-    │ enable()
-    ▼
-[register resources]
-    │ read settings
-    ▼
-[start services]
-    │ shortcuts + Shell patches
-    ▼
-[initialize MPRIS]
-    │ proxy factory + media app registry
-    ▼
-[active]
-    │ active media app appears
-    ▼
-[mount top bar button]
-    │ settings and MPRIS updates drive focused widget updates
-    ▼
-[disable]
-    │ destroy in reverse dependency order
-    ▼
-[disabled]
+control definition and state policy
+  -> popup or top bar renderer
+  -> executePlaybackControlAction()
+  -> MprisMediaApp
+  -> MPRIS
 ```
 
-`ExtensionController.lifecycleGeneration` guards asynchronous work. Each enable or destroy increments the generation; callbacks completed for a stale generation must discard their result instead of mutating current state.
+Popup and top bar have separate actor trees. They share pure decisions and execution paths only when the contracts are identical. Actor creation, placement, styling, and teardown remain surface-owned.
 
-## MPRIS lifecycle and selection
+Shell updates are coalesced. Popup regions invalidated while the popup is closed are synchronized when it opens. Preserve this behavior when changing update propagation.
 
-`MediaAppRegistry` watches names under `org.mpris.MediaPlayer2.*`. D-Bus name ownership is the lifecycle authority. Desktop identity improves display names, icons, blocked-app checks, and browser/PWA resolution, but presentation heuristics must not keep a vanished endpoint alive.
+Relative seek controls use `Seek(x)`. Position changes from the progress control use `SetPosition(ox)`. Playback-speed UI reflects the rate confirmed by the MPRIS endpoint.
 
-Browser/PWA identity is evidence-based. MediaShell may use desktop IDs, `StartupWMClass`, command lines, and MPRIS/runtime hints to recognize a web app launcher, but it must fall back to the normal media-app identity path when those fields are missing or contradictory. This keeps browser handling useful without turning package-specific quirks into lifecycle authority.
+## Metadata and artwork
 
-`PlayerProxy` normalizes one MPRIS endpoint into stable state, commands, metadata, capabilities, and property notifications. `PositionTracker` estimates position from explicit reads, `Seeked`, and monotonic time so the UI does not poll D-Bus every frame.
+Treat MPRIS metadata as untrusted input. `MprisMediaApp` normalizes values before they reach the UI and prefers `mpris:trackid` for track identity, with a conservative fallback for incomplete endpoints.
 
-Active selection priority is: pinned media app, playing media app, current media app, paused media app, then first valid media app. Pinning is runtime-only.
+Artwork responsibilities are intentionally split:
 
-## Widget updates
+- `AlbumArtLoader` handles local, cache, and network I/O, stream limits, cache recovery, and persistent storage.
+- `PopupAlbumArt` handles request generations, cancellation, actors, and visible fallback state.
+- `shell/utils/albumArtPixbuf.js` contains stateless GdkPixbuf transformations.
 
-MPRIS endpoints often emit related property changes in bursts. `TopBarButton.requestWidgetUpdate()` and `PopupContent.requestWidgetUpdate()` collect `WidgetFlags` and reconcile affected regions together. Individual flags represent renderable regions; compound flags exist only for bulk resets.
+Late asynchronous results must be rejected when their generation, lifecycle, or active endpoint is no longer current.
 
-Top bar and popup share pure decisions where useful, not actors. Track information shares metadata normalization. Playback controls share play/pause/stop resolution. Rendering, layout, and lifecycle remain surface-specific.
+Compressed artwork input is limited to 16 MiB per image. The optional persistent cache is limited to 128 MiB and evicts the least recently used entries first; cache hits refresh recency asynchronously without delaying popup rendering.
 
-## Settings and contracts
+## Stable contracts
 
-The GSettings schema is the public contract for keys, defaults, enum IDs, and value ranges. `SettingsSpec` maps raw schema values into runtime values only when Shell code consumes them. Add a migration layer only for shipped schema upgrades that need one, and keep migrations idempotent and explicit.
+Preserve compatibility-sensitive values unless a migration is intentional and documented:
 
-Stable contracts include GSettings key names, schema enum IDs, D-Bus names, GTypeName strings, and CSS classes. Do not reuse them for new semantics.
+- extension identity and supported GNOME versions;
+- GSettings keys and enum values;
+- MPRIS and D-Bus members;
+- resource paths and GtkBuilder IDs/classes;
+- CSS classes and `GTypeName` strings;
+- persisted input-action values and playback-control IDs;
+- package contents.
 
-Module headers document local ownership. Use them to identify what a file owns before changing its imports, lifecycle, or public contracts. Broader cross-module flow belongs in this document; local maintenance context belongs beside the code.
+Constant modules contain values and frozen declarative data. Reusable normalization, comparison, and resolution behavior belongs under `utils/`. Process-specific policy and runtime state stay with their owner.
 
-## Private Shell API boundary
+Share implementation only when inputs, outputs, side effects, ownership, lifecycle, teardown, and expected evolution are the same. Similar-looking code may remain separate by design.
 
-`GnomeShellMediaControlsPatch` is the only intentional private GNOME Shell patch. It must remain isolated, capability-checked, reversible, and fail-open. Other code should integrate through public Shell, Gio, GLib, St, Clutter, settings, or MPRIS APIs.
+## Validation boundaries
+
+Development tooling validates facts it can determine exactly: JavaScript parsing, static imports and exports, process boundaries, stable entry points, removed APIs, schema/UI/D-Bus consistency, playback table references, assets, translations, and package contents. GtkBuilder IDs are scoped to the `.ui` file that owns them; references made through the main Preferences builder are checked specifically against `prefs.ui`.
+
+Behavior tests cover pure decisions, compatibility-sensitive values, owner transitions, cancellation, stale-result rejection, and package corruption. Tooling does not infer ownership, teardown reachability, naming quality, or dead code from method names and source patterns; those remain review and live-testing responsibilities. Translation checks require source/template parity, valid headers, and safe placeholders, while incomplete locale coverage may fall back to the source language and is compiled by the native gettext gate.
+
+The shared logger is runtime infrastructure, not a validation mechanism. It centralizes important failures and bounded once-only diagnostics without logging normal successful operation.
+
+## Private GNOME Shell API
+
+`GnomeShellMediaControlsPatch` isolates the optional modification of GNOME's native media controls. Other unavoidable private Shell access must remain local, capability-checked, reversible, documented beside the code, and tested on supported GNOME releases.

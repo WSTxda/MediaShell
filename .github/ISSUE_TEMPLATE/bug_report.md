@@ -28,7 +28,7 @@ Describe the problem and the result you expected.
 
 - [ ] Top bar
 - [ ] Popup
-- [ ] App selector
+- [ ] Media app selector
 - [ ] Track information
 - [ ] Playback controls
 - [ ] Progress bar

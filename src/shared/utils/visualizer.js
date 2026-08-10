@@ -2,22 +2,99 @@
  * @file visualizer.js
  * @module shared.utils.visualizer
  *
- * Produces bounded visualizer level arrays from runtime style settings.
+ * Produces deterministic visualizer frames from pure animation definitions.
  *
- * TopBarVisualizer uses this pure generator to create deterministic bar heights
- * without allocating Shell actors during tests. The output is clamped so every
- * visualizer style remains within the fixed top bar drawing budget.
+ * Shell renderers reuse the returned arrays during playback, while style
+ * presentation remains outside this module. Every animation uses the same
+ * normalized user-speed multiplier and fixed playback clock.
  */
 
-import { TOP_BAR_VISUALIZER_SPEED } from "../constants/settings.js";
-import { VisualizerStyles } from "../enums/visualizer.js";
+import { TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS } from "../constants/settings.js";
+import {
+  TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
+  VISUALIZER_LEVEL_ANIMATION_DEFINITIONS,
+  VISUALIZER_SPECTRUM_DEFINITION,
+} from "../constants/visualizer.js";
+import {
+  VisualizerAnimationKinds,
+  VisualizerSpectrumLayers,
+  VisualizerStyles,
+} from "../enums/visualizer.js";
 
-/** Number of bars rendered by the top-bar visualizer. */
-export const TOP_BAR_VISUALIZER_BAR_COUNT = 4;
+const TAU = Math.PI * 2;
 
-const PULSE_SPEEDS = Object.freeze([1.15, 1.7, 1.35, 1.9]);
-const BEATS_FREQUENCIES = Object.freeze([1.5, 2.0, 2.6, 3.2]);
-const BEATS_PHASES = Object.freeze([0, 0.7, 1.4, 2.1]);
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+function gaussian(value, center, width) {
+  const distance = (value - center) / width;
+  return Math.exp(-0.5 * distance * distance);
+}
+
+function getAnimationTime(elapsedSeconds, speed) {
+  const time = Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0;
+  const speedMultiplier =
+    normalizeVisualizerSpeed(speed) /
+    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT;
+  return time * speedMultiplier;
+}
+
+function fillLevelAnimation(animationTime, definition, levels) {
+  for (let index = 0; index < definition.levelCount; index++) {
+    const value =
+      (Math.sin(
+        animationTime *
+          definition.frequencies[index] *
+          definition.angularFrequencyScale +
+          definition.phaseOffsets[index],
+      ) +
+        1) /
+      2;
+    levels[index] = clamp(
+      definition.minimumLevel + value * definition.amplitude,
+      definition.minimumLevel,
+      1,
+    );
+  }
+}
+
+function fillSpectrumOffsets(animationTime, offsets, layerDefinition) {
+  const lastIndex = TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT - 1;
+
+  for (let index = 0; index <= lastIndex; index++) {
+    if (index === 0 || index === lastIndex) {
+      offsets[index] = 0;
+      continue;
+    }
+
+    const position = index / lastIndex;
+    const edgeEnvelope = Math.sin(Math.PI * position);
+    let offset = 0;
+    let overlap = 0;
+
+    for (const band of layerDefinition.bands) {
+      const spatialWeight = gaussian(position, band.center, band.width);
+      const fundamental = Math.sin(
+        animationTime * band.frequency * TAU + band.phase,
+      );
+      const overtone =
+        Math.sin(
+          animationTime * band.frequency * 2 * TAU +
+            band.phase * VISUALIZER_SPECTRUM_DEFINITION.overtonePhaseScale,
+        ) * VISUALIZER_SPECTRUM_DEFINITION.overtoneAmplitude;
+
+      offset += (fundamental + overtone) * band.amplitude * spatialWeight;
+      overlap += band.amplitude * spatialWeight;
+    }
+
+    const normalization = Math.max(
+      1,
+      overlap * VISUALIZER_SPECTRUM_DEFINITION.overlapNormalization,
+    );
+    offsets[index] = clamp((offset / normalization) * edgeEnvelope, -1, 1);
+  }
+}
 
 /**
  * Clamps user-configured visualizer speed to the supported settings range.
@@ -27,64 +104,93 @@ const BEATS_PHASES = Object.freeze([0, 0.7, 1.4, 2.1]);
  */
 export function normalizeVisualizerSpeed(speed) {
   const numericSpeed = Number(speed);
-  if (!Number.isFinite(numericSpeed)) return TOP_BAR_VISUALIZER_SPEED.DEFAULT;
+  if (!Number.isFinite(numericSpeed))
+    return TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT;
   return Math.min(
-    TOP_BAR_VISUALIZER_SPEED.MAX,
-    Math.max(TOP_BAR_VISUALIZER_SPEED.MIN, numericSpeed),
+    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.MAX,
+    Math.max(TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.MIN, numericSpeed),
   );
 }
 
 /**
- * Generates normalized visualizer bar levels for the requested style and time.
+ * Resolves unknown persisted or runtime style values to Beats.
  *
- * The function mutates `outputLevels` when a correctly sized array is supplied,
- * which lets TopBarVisualizer reuse one array per frame and avoid animation-time
- * allocations in the Shell process.
- *
- * @param {number} style - VisualizerStyles value.
- * @param {number} elapsedSeconds - Animation clock in seconds.
- * @param {number} speed - User-configured visualizer speed.
- * @param {number[]|null} outputLevels - Optional reusable output array.
- * @returns {number[]} Four values clamped to the supported visualizer level range.
+ * @param {unknown} style - Raw VisualizerStyles value.
+ * @returns {number} Supported visualizer style.
  */
-export function getVisualizerBarLevels(
-  style,
+export function normalizeVisualizerStyle(style) {
+  return Object.values(VisualizerStyles).includes(style)
+    ? style
+    : VisualizerStyles.BEATS;
+}
+
+/**
+ * Generates normalized levels for a bar-compatible animation.
+ *
+ * The function mutates `outputLevels` when it has the expected shape, allowing
+ * Shell renderers to avoid per-frame allocations. Unknown animation identities
+ * explicitly fall back to Beats.
+ *
+ * @param {string} animationKind - VisualizerAnimationKinds value.
+ * @param {number} elapsedSeconds - Animation clock in seconds.
+ * @param {number} speed - Shared user-configured visualizer speed.
+ * @param {number[]|null} outputLevels - Optional reusable output array.
+ * @returns {number[]} Normalized animation levels.
+ */
+export function getVisualizerLevels(
+  animationKind,
   elapsedSeconds,
-  speed = TOP_BAR_VISUALIZER_SPEED.DEFAULT,
+  speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
   outputLevels = null,
 ) {
-  const time = Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0;
-  const speedMultiplier =
-    normalizeVisualizerSpeed(speed) / TOP_BAR_VISUALIZER_SPEED.DEFAULT;
-  const animationTime = time * speedMultiplier;
+  const definition =
+    VISUALIZER_LEVEL_ANIMATION_DEFINITIONS[animationKind] ??
+    VISUALIZER_LEVEL_ANIMATION_DEFINITIONS[VisualizerAnimationKinds.BEATS];
   const levels =
-    Array.isArray(outputLevels) &&
-    outputLevels.length === TOP_BAR_VISUALIZER_BAR_COUNT
+    Array.isArray(outputLevels) && outputLevels.length === definition.levelCount
       ? outputLevels
-      : new Array(TOP_BAR_VISUALIZER_BAR_COUNT);
+      : new Array(definition.levelCount);
 
-  for (let index = 0; index < TOP_BAR_VISUALIZER_BAR_COUNT; index++) {
-    let level;
-    if (style === VisualizerStyles.PULSE) {
-      const pulse =
-        (Math.sin(
-          animationTime * PULSE_SPEEDS[index] * Math.PI * 2 + index * 0.7,
-        ) +
-          1) /
-        2;
-      level = 0.25 + pulse * 0.75;
-    } else {
-      const value =
-        (Math.sin(
-          animationTime * BEATS_FREQUENCIES[index] * Math.PI +
-            BEATS_PHASES[index],
-        ) +
-          1) /
-        2;
-      level = 0.2 + value * 0.8;
-    }
-    levels[index] = Math.min(1, Math.max(0.2, level));
-  }
-
+  fillLevelAnimation(
+    getAnimationTime(elapsedSeconds, speed),
+    definition,
+    levels,
+  );
   return levels;
+}
+
+/**
+ * Generates signed offsets for one continuous Spectrum layer.
+ *
+ * Both layers use the same animation clock and speed. Each layer has its own
+ * spatial and temporal band definition restored from the refined source.
+ *
+ * @param {number} elapsedSeconds - Animation clock in seconds.
+ * @param {number} speed - Shared user-configured visualizer speed.
+ * @param {number[]|null} outputOffsets - Optional reusable output array.
+ * @param {string} layer - VisualizerSpectrumLayers value.
+ * @returns {number[]} Signed offsets clamped from -1 to 1.
+ */
+export function getVisualizerSpectrumOffsets(
+  elapsedSeconds,
+  speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
+  outputOffsets = null,
+  layer = VisualizerSpectrumLayers.PRIMARY,
+) {
+  const normalizedLayer =
+    layer === VisualizerSpectrumLayers.SECONDARY
+      ? VisualizerSpectrumLayers.SECONDARY
+      : VisualizerSpectrumLayers.PRIMARY;
+  const offsets =
+    Array.isArray(outputOffsets) &&
+    outputOffsets.length === TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT
+      ? outputOffsets
+      : new Array(TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT);
+
+  fillSpectrumOffsets(
+    getAnimationTime(elapsedSeconds, speed),
+    offsets,
+    VISUALIZER_SPECTRUM_DEFINITION.layers[normalizedLayer],
+  );
+  return offsets;
 }

@@ -6,7 +6,7 @@
  *
  * Creates one MediaShellExtension instance per Shell lifecycle and delegates all
  * runtime work to ExtensionController. The entry point intentionally owns no UI
- * or DBus state itself so enable() and disable() stay small, auditable, and
+ * or D-Bus state itself so enable() and disable() stay small, auditable, and
  * aligned with GNOME Shell extension lifecycle rules.
  *
  * @see src/shell/ExtensionController.js
@@ -35,10 +35,6 @@ export default class MediaShellExtension extends Extension {
   disable() {
     const extensionController = this.extensionController;
     this.extensionController = null;
-    try {
-      extensionController?.destroy();
-    } catch (error) {
-      logger.error("Unhandled extension teardown failure", error);
-    }
+    extensionController?.destroy();
   }
 }

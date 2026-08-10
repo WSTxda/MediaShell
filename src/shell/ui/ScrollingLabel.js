@@ -4,9 +4,9 @@
  *
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
  *
- * TopBarTrackInformation uses this actor for long track metadata in constrained
- * top bar space. The actor owns its Clutter transition, pause timers, and fade
- * adjustment so callers only need to set text and playback pause state.
+ * TopBarTrackInformation and PopupTrackInformation use this actor for long track
+ * metadata. The actor owns its Clutter transition, cycle pause, and mapping
+ * lifecycle so callers only provide text and scrolling settings.
  */
 
 import Clutter from "gi://Clutter";
@@ -15,58 +15,67 @@ import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+import { GTypeNames } from "../../shared/constants/gtypes.js";
+import {
+  SCROLL_CYCLE_COPIES,
+  SCROLL_CYCLE_GAP,
+} from "../constants/scrollingLabel.js";
+import { StyleClasses } from "../constants/styleClasses.js";
+
 /**
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
  */
 class ScrollingLabel extends St.ScrollView {
   label;
   labelBox;
-  adjustmentChangedSignalId;
-  labelShowSignalId;
 
   isScrolling;
   isFixedWidth;
-  isPaused;
   labelWidth;
-  direction;
+  sourceText;
+  cycleWidth;
+  scrollPauseMilliseconds;
   scrollTransition;
-  scrollSpeed;
+  scrollPixelsPerMillisecond;
 
-  // Scrolling animation state:
-  // States: idle → scrolling → pause → scrolling (loop) | paused externally.
-  // GLib sources schedule pauses between transition cycles, while pauseScrolling()
-  // suspends movement without resetting the current scroll offset.
+  labelShowSignalId;
+  mappedSignalId;
+  animationMappedSignalId;
+  lifecycleMappedSignalId;
+  adjustmentChangedSignalId;
+  scrollCompletedSignalId;
+
+  initializationSourceId;
+  adjustmentInitializationSourceId;
+  cyclePauseSourceId;
+
   constructor(params) {
     super({
       hscrollbarPolicy: St.PolicyType.NEVER,
       vscrollbarPolicy: St.PolicyType.NEVER,
-      styleClass: "mediashell-scrolling-label",
+      styleClass: StyleClasses.SCROLLING_LABEL,
     });
     const defaultParams = {
-      direction: Clutter.TimelineDirection.FORWARD,
       isFixedWidth: true,
       scrollPauseMilliseconds: 0,
     };
     const {
       text,
       width,
-      direction,
       isFixedWidth,
       isScrolling,
-      isPaused,
       scrollSpeed,
       scrollPauseMilliseconds,
     } = {
       ...defaultParams,
       ...params,
     };
-    this.isDestroyed = false;
+    this.sourceText = text;
     this.scrollPauseMilliseconds = scrollPauseMilliseconds;
     this.isScrolling = isScrolling;
     this.isFixedWidth = isFixedWidth;
-    this.isPaused = isPaused;
     this.labelWidth = width;
-    this.direction = direction;
+    this.cycleWidth = 0;
     this.labelShowSignalId = null;
     this.adjustmentChangedSignalId = null;
     this.mappedSignalId = null;
@@ -76,10 +85,10 @@ class ScrollingLabel extends St.ScrollView {
       this.handleMappedLifecycleChange.bind(this),
     );
     this.scrollCompletedSignalId = null;
-    this.initialPauseSourceId = null;
+    this.initializationSourceId = null;
     this.cyclePauseSourceId = null;
     this.adjustmentInitializationSourceId = null;
-    this.scrollSpeed = Math.max((scrollSpeed ?? 4) / 100, 0.01);
+    this.scrollPixelsPerMillisecond = Math.max((scrollSpeed ?? 4) / 100, 0.01);
     this.labelBox = new St.BoxLayout({
       xExpand: true,
       yExpand: true,
@@ -110,137 +119,128 @@ class ScrollingLabel extends St.ScrollView {
   }
 
   canAnimateNow() {
-    return (
-      !this.isDestroyed &&
-      !this.isPaused &&
-      this.is_mapped() &&
-      this.get_stage() !== null
-    );
+    return this.label !== null && this.is_mapped() && this.get_stage() !== null;
   }
 
   handleMappedLifecycleChange() {
     if (!this.scrollTransition) return;
-    if (!this.is_mapped() || this.get_stage() === null) {
+    if (!this.canAnimateNow()) {
       this.scrollTransition.pause();
       return;
     }
-    if (
-      this.canAnimateNow() &&
-      this.initialPauseSourceId === null &&
-      this.cyclePauseSourceId === null
-    ) {
-      this.scrollTransition.start();
-    }
-  }
-
-  pauseScrolling() {
-    this.isPaused = true;
-    this.scrollTransition?.pause();
-  }
-
-  resumeScrolling() {
-    this.isPaused = false;
-    if (!this.scrollTransition) return;
-    if (
-      this.canAnimateNow() &&
-      this.initialPauseSourceId === null &&
-      this.cyclePauseSourceId === null
-    )
-      this.scrollTransition.start();
+    if (this.cyclePauseSourceId === null) this.scrollTransition.start();
   }
 
   initializeScrollAnimation() {
     const adjustment = this.get_hadjustment();
-    const originalText = this.label.text + "     ";
+    const cycleText = `${this.sourceText}${SCROLL_CYCLE_GAP}`;
 
-    // Clean up any existing handler first
-    if (this.adjustmentChangedSignalId !== null) {
-      adjustment.disconnect(this.adjustmentChangedSignalId);
-      this.adjustmentChangedSignalId = null;
-    }
+    this.disconnectAdjustmentChangedSignal(adjustment);
+    this.label.clutterText.ellipsize = Pango.EllipsizeMode.NONE;
+    this.label.text = cycleText;
+    const [, naturalCycleWidth] = this.label.get_preferred_width(-1);
+    this.cycleWidth = Math.max(1, naturalCycleWidth);
+    this.label.text = cycleText.repeat(SCROLL_CYCLE_COPIES);
 
     this.adjustmentChangedSignalId = adjustment.connect(
       "changed",
-      this.handleAdjustmentChanged.bind(this, adjustment, originalText),
+      this.handleAdjustmentChanged.bind(this, adjustment),
     );
-    this.label.text = `${originalText} `;
-    this.label.clutterText.ellipsize = Pango.EllipsizeMode.NONE;
+    this.clearAdjustmentInitializationSource();
     this.adjustmentInitializationSourceId = GLib.idle_add(
       GLib.PRIORITY_DEFAULT_IDLE,
       () => {
         this.adjustmentInitializationSourceId = null;
-        if (this.adjustmentChangedSignalId !== null) {
-          this.handleAdjustmentChanged(adjustment, originalText);
-        }
+        if (this.adjustmentChangedSignalId !== null)
+          this.handleAdjustmentChanged(adjustment);
         return GLib.SOURCE_REMOVE;
       },
     );
   }
 
-  handleAdjustmentChanged(adjustment, originalText) {
-    if (adjustment.upper <= adjustment.pageSize) {
-      return;
-    }
+  handleAdjustmentChanged(adjustment) {
+    const isContinuous = this.scrollPauseMilliseconds === 0;
+    const finalOffset = this.cycleWidth * (isContinuous ? 2 : 1);
+    const maximumOffset = Math.max(0, adjustment.upper - adjustment.pageSize);
+    if (maximumOffset < finalOffset) return;
 
-    if (!this.is_mapped() || this.get_stage() === null) {
+    if (!this.canAnimateNow()) {
       if (this.animationMappedSignalId === null) {
         this.animationMappedSignalId = this.connect("notify::mapped", () => {
-          if (!this.is_mapped() || this.get_stage() === null) return;
+          if (!this.canAnimateNow()) return;
           this.disconnect(this.animationMappedSignalId);
           this.animationMappedSignalId = null;
-          this.createScrollAnimation(adjustment, originalText);
+          this.createScrollAnimation(adjustment);
         });
       }
       return;
     }
 
-    this.createScrollAnimation(adjustment, originalText);
+    this.createScrollAnimation(adjustment);
   }
 
-  createScrollAnimation(adjustment, originalText) {
+  clearInitializationSource() {
+    if (this.initializationSourceId === null) return;
+    GLib.Source.remove(this.initializationSourceId);
+    this.initializationSourceId = null;
+  }
+
+  clearAdjustmentInitializationSource() {
+    if (this.adjustmentInitializationSourceId === null) return;
+    GLib.Source.remove(this.adjustmentInitializationSourceId);
+    this.adjustmentInitializationSourceId = null;
+  }
+
+  clearCyclePauseSource() {
+    if (this.cyclePauseSourceId === null) return;
+    GLib.Source.remove(this.cyclePauseSourceId);
+    this.cyclePauseSourceId = null;
+  }
+
+  disconnectAdjustmentChangedSignal(adjustment = this.get_hadjustment()) {
+    if (this.adjustmentChangedSignalId === null || !adjustment) return;
+    adjustment.disconnect(this.adjustmentChangedSignalId);
+    this.adjustmentChangedSignalId = null;
+  }
+
+  removeScrollTransition(adjustment = this.get_hadjustment()) {
+    if (!this.scrollTransition) return;
+    if (this.scrollCompletedSignalId !== null) {
+      this.scrollTransition.disconnect(this.scrollCompletedSignalId);
+      this.scrollCompletedSignalId = null;
+    }
+    adjustment?.remove_transition("scroll");
+    this.scrollTransition = null;
+  }
+
+  createScrollAnimation(adjustment) {
     if (this.animationMappedSignalId !== null) {
       this.disconnect(this.animationMappedSignalId);
       this.animationMappedSignalId = null;
     }
 
-    // Remove any existing scroll transition first
-    if (this.scrollTransition) {
-      if (this.scrollCompletedSignalId !== null) {
-        this.scrollTransition.disconnect(this.scrollCompletedSignalId);
-        this.scrollCompletedSignalId = null;
-      }
-      adjustment.remove_transition("scroll");
-      this.scrollTransition = null;
-    }
-    if (this.adjustmentInitializationSourceId !== null) {
-      GLib.Source.remove(this.adjustmentInitializationSourceId);
-      this.adjustmentInitializationSourceId = null;
-    }
+    this.removeScrollTransition(adjustment);
+    this.clearAdjustmentInitializationSource();
+    this.clearCyclePauseSource();
+    this.disconnectAdjustmentChangedSignal(adjustment);
 
-    if (this.initialPauseSourceId !== null) {
-      GLib.Source.remove(this.initialPauseSourceId);
-      this.initialPauseSourceId = null;
-    }
-    if (this.cyclePauseSourceId !== null) {
-      GLib.Source.remove(this.cyclePauseSourceId);
-      this.cyclePauseSourceId = null;
-    }
-
-    // Keep explicit GObject.Value wrappers so Clutter.Interval receives typed values
-    const initialValue = new GObject.Value();
-    initialValue.init(GObject.TYPE_DOUBLE);
-    initialValue.set_double(adjustment.value);
-    const finalValue = new GObject.Value();
-    finalValue.init(GObject.TYPE_DOUBLE);
-    finalValue.set_double(Math.max(0, adjustment.upper - adjustment.pageSize));
-    const distance = Math.max(
-      1,
-      adjustment.upper - adjustment.pageSize - adjustment.value,
-    );
+    const isContinuous = this.scrollPauseMilliseconds === 0;
+    // Continuous mode scrolls between equivalent internal copies so the
+    // repeated transition never resets at an adjustment boundary.
+    const initialOffset = isContinuous ? this.cycleWidth : 0;
+    const finalOffset = initialOffset + this.cycleWidth;
     const durationMilliseconds = Math.max(
       1,
-      Math.round(distance / this.scrollSpeed),
+      Math.round(this.cycleWidth / this.scrollPixelsPerMillisecond),
     );
+    adjustment.value = initialOffset;
+
+    const initialValue = new GObject.Value();
+    initialValue.init(GObject.TYPE_DOUBLE);
+    initialValue.set_double(initialOffset);
+    const finalValue = new GObject.Value();
+    finalValue.init(GObject.TYPE_DOUBLE);
+    finalValue.set_double(finalOffset);
     const pspec = adjustment.find_property("value");
     const interval = new Clutter.Interval({
       valueType: pspec.value_type,
@@ -250,82 +250,43 @@ class ScrollingLabel extends St.ScrollView {
     this.scrollTransition = new Clutter.PropertyTransition({
       propertyName: "value",
       progressMode: Clutter.AnimationMode.LINEAR,
-      direction: this.direction,
-      repeatCount: 0,
+      repeatCount: isContinuous ? -1 : 0,
       duration: durationMilliseconds,
       interval,
     });
-    this.label.text = `${originalText} ${originalText}`;
 
-    // Disconnect the adjustment changed handler if it's still connected
-    if (this.adjustmentChangedSignalId !== null) {
-      adjustment.disconnect(this.adjustmentChangedSignalId);
-      this.adjustmentChangedSignalId = null;
-    }
-
-    this.scrollCompletedSignalId = this.scrollTransition.connect(
-      "completed",
-      () => {
-        if (this.isDestroyed || !this.scrollTransition) return;
-        this.resetScrollPosition(adjustment);
-
-        if (this.scrollPauseMilliseconds > 0) {
-          if (this.cyclePauseSourceId !== null) {
-            GLib.Source.remove(this.cyclePauseSourceId);
-          }
-          this.cyclePauseSourceId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-            this.scrollPauseMilliseconds,
-            () => {
-              this.cyclePauseSourceId = null;
-              if (this.canAnimateNow() && this.scrollTransition)
-                this.scrollTransition.start();
-              return GLib.SOURCE_REMOVE;
-            },
-          );
-        } else {
-          if (this.canAnimateNow()) this.scrollTransition.start();
-        }
-      },
-    );
-
-    if (this.scrollPauseMilliseconds > 0) {
-      this.initialPauseSourceId = GLib.timeout_add(
-        GLib.PRIORITY_DEFAULT,
-        this.scrollPauseMilliseconds,
-        () => {
-          this.initialPauseSourceId = null;
-          if (this.isDestroyed || !this.scrollTransition)
-            return GLib.SOURCE_REMOVE;
-          adjustment.add_transition("scroll", this.scrollTransition);
-          if (!this.canAnimateNow()) this.scrollTransition.pause();
-          return GLib.SOURCE_REMOVE;
-        },
+    if (!isContinuous) {
+      this.scrollCompletedSignalId = this.scrollTransition.connect(
+        "completed",
+        () => this.handleScrollCompleted(adjustment),
       );
-    } else {
-      adjustment.add_transition("scroll", this.scrollTransition);
-      if (!this.canAnimateNow()) {
-        this.scrollTransition.pause();
-      }
     }
+
+    adjustment.add_transition("scroll", this.scrollTransition);
+    if (!this.canAnimateNow()) this.scrollTransition.pause();
   }
 
-  resetScrollPosition(adjustment) {
-    // PropertyTransition.rewind() resets the timeline, but the St.Adjustment
-    // value is the visible scroll offset. Set it explicitly before the pause
-    // so the next cycle waits at the beginning instead of the end.
-    this.scrollTransition?.rewind();
+  handleScrollCompleted(adjustment) {
+    if (!this.label || !this.scrollTransition) return;
+
+    this.scrollTransition.rewind();
     adjustment.value = 0;
+    this.clearCyclePauseSource();
+    this.cyclePauseSourceId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      this.scrollPauseMilliseconds,
+      () => {
+        this.cyclePauseSourceId = null;
+        if (this.canAnimateNow() && this.scrollTransition)
+          this.scrollTransition.start();
+        return GLib.SOURCE_REMOVE;
+      },
+    );
   }
 
   handleVisibilityOrMappingChange() {
-    if (this.label.visible === false) {
-      return;
-    }
-
-    if (!this.is_mapped() || this.get_stage() === null) {
-      return;
-    }
+    if (this.label.visible === false) return;
+    if (!this.canAnimateNow()) return;
 
     this.updateLayoutAndScrolling();
     if (this.labelShowSignalId !== null) {
@@ -344,9 +305,7 @@ class ScrollingLabel extends St.ScrollView {
     const availableWidth =
       this.labelWidth > 0 ? this.labelWidth : Math.max(0, this.width);
     const isLabelWider = measuredWidth > availableWidth && availableWidth > 0;
-    if (isLabelWider && this.isScrolling) {
-      this.initializeScrollAnimation();
-    }
+    if (isLabelWider && this.isScrolling) this.initializeScrollAnimation();
     if (this.isFixedWidth && this.labelWidth > 0) {
       this.labelBox.width = this.labelWidth;
       this.label.xAlign = Clutter.ActorAlign.CENTER;
@@ -359,37 +318,18 @@ class ScrollingLabel extends St.ScrollView {
   vfunc_scroll_event() {
     return Clutter.EVENT_PROPAGATE;
   }
+
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
+    const label = this.label;
+    if (!label) return;
 
-    // Stop and remove any active scroll transitions before destroying
-    if (this.scrollTransition) {
-      if (this.scrollCompletedSignalId !== null) {
-        this.scrollTransition.disconnect(this.scrollCompletedSignalId);
-        this.scrollCompletedSignalId = null;
-      }
-      const adjustment = this.get_hadjustment();
-      if (adjustment) {
-        adjustment.remove_transition("scroll");
-      }
-      this.scrollTransition = null;
-    }
+    this.removeScrollTransition();
+    this.disconnectAdjustmentChangedSignal();
 
-    // Disconnect any pending signal handlers
-    if (this.adjustmentChangedSignalId !== null) {
-      const adjustment = this.get_hadjustment();
-      if (adjustment) {
-        adjustment.disconnect(this.adjustmentChangedSignalId);
-      }
-      this.adjustmentChangedSignalId = null;
-    }
-
-    if (this.labelShowSignalId !== null && this.label) {
-      this.label.disconnect(this.labelShowSignalId);
+    if (this.labelShowSignalId !== null) {
+      label.disconnect(this.labelShowSignalId);
       this.labelShowSignalId = null;
     }
-
     if (this.mappedSignalId !== null) {
       this.disconnect(this.mappedSignalId);
       this.mappedSignalId = null;
@@ -403,25 +343,11 @@ class ScrollingLabel extends St.ScrollView {
       this.lifecycleMappedSignalId = null;
     }
 
-    if (this.initializationSourceId !== null) {
-      GLib.Source.remove(this.initializationSourceId);
-      this.initializationSourceId = null;
-    }
-
-    if (this.adjustmentInitializationSourceId !== null) {
-      GLib.Source.remove(this.adjustmentInitializationSourceId);
-      this.adjustmentInitializationSourceId = null;
-    }
-
-    if (this.initialPauseSourceId !== null) {
-      GLib.Source.remove(this.initialPauseSourceId);
-      this.initialPauseSourceId = null;
-    }
-
-    if (this.cyclePauseSourceId !== null) {
-      GLib.Source.remove(this.cyclePauseSourceId);
-      this.cyclePauseSourceId = null;
-    }
+    this.clearInitializationSource();
+    this.clearAdjustmentInitializationSource();
+    this.clearCyclePauseSource();
+    this.label = null;
+    this.labelBox = null;
 
     super.destroy();
   }
@@ -429,7 +355,7 @@ class ScrollingLabel extends St.ScrollView {
 
 const RegisteredScrollingLabel = GObject.registerClass(
   {
-    GTypeName: "MediaShellScrollingLabel",
+    GTypeName: GTypeNames.SCROLLING_LABEL,
   },
   ScrollingLabel,
 );

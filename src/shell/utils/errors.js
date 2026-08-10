@@ -15,7 +15,7 @@ import Gio from "gi://Gio";
  * Returns true when the error is a Gio cancellation error.
  *
  * Use this to distinguish intentional async teardown from real failures.
- * Cancelled operations should be silently dropped; genuine errors should be
+ * Canceled operations should be silently dropped; genuine errors should be
  * logged at warn or error level by the caller.
  *
  * @param {unknown} error - Error object thrown by a GI async operation.
@@ -23,4 +23,33 @@ import Gio from "gi://Gio";
  */
 export function isCancellationError(error) {
   return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED));
+}
+
+/**
+ * Returns the remote D-Bus error name without exposing a raw GError.
+ *
+ * @param {unknown} error - Error returned by a Gio D-Bus operation.
+ * @returns {string|null} Remote D-Bus error name when present.
+ */
+function getRemoteDbusErrorName(error) {
+  try {
+    if (!Gio.DBusError.is_remote_error(error)) return null;
+    return Gio.DBusError.get_remote_error(error) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns a stable diagnostic error name for an operation result.
+ *
+ * @param {unknown} error - Error returned by a delegate or Gio call.
+ * @returns {string|null} Remote D-Bus name, local error name, or null.
+ */
+export function getOperationErrorName(error) {
+  const remoteErrorName = getRemoteDbusErrorName(error);
+  if (remoteErrorName) return remoteErrorName;
+  return typeof error?.name === "string" && error.name.length > 0
+    ? error.name
+    : null;
 }

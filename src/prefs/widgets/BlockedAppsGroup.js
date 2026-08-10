@@ -12,8 +12,10 @@
 import Adw from "gi://Adw";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
-import { gettext as _ } from "../PreferencesTranslations.js";
+import { gettext as _ } from "../translations.js";
 
+import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { ResourceUris } from "../../shared/constants/resources.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { normalizeUniqueStrings } from "../../shared/utils/format.js";
 import {
@@ -21,7 +23,8 @@ import {
   getAppId,
   getAppName,
   listInstalledApps,
-} from "../utils/InstalledAppCatalog.js";
+} from "../services/installedAppCatalog.js";
+import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import BlockedAppChooserDialog from "./BlockedAppChooserDialog.js";
 
 const logger = createLogger("BlockedAppsGroup");
@@ -38,7 +41,6 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     this.addButton = this._btn_add;
     this.chooseBlockedAppPromise = null;
     this.activeChooser = null;
-    this.isDestroyed = false;
     this.addButton.connect("clicked", () => this.chooseAndAddBlockedApp());
   }
 
@@ -48,14 +50,15 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
   }
 
   chooseAndAddBlockedApp() {
-    if (this.isDestroyed) return null;
+    if (!this.addButton) return null;
     if (this.chooseBlockedAppPromise) return this.chooseBlockedAppPromise;
 
-    this.addButton.sensitive = false;
+    const addButton = this.addButton;
+    addButton.sensitive = false;
     const choosePromise = this.performChooseAndAddBlockedApp().finally(() => {
       if (this.chooseBlockedAppPromise === choosePromise)
         this.chooseBlockedAppPromise = null;
-      if (!this.isDestroyed) this.addButton.sensitive = true;
+      if (this.addButton === addButton) addButton.sensitive = true;
     });
     this.chooseBlockedAppPromise = choosePromise;
     return choosePromise;
@@ -64,19 +67,19 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
   async performChooseAndAddBlockedApp() {
     try {
       const blockedAppChooser = new BlockedAppChooserDialog({
-        excludedAppIds: this.blockedAppIds,
+        blockedAppIds: this.blockedAppIds,
       });
       this.activeChooser = blockedAppChooser;
       const appId = await blockedAppChooser.chooseAppId(this.get_root());
-      if (this.activeChooser === blockedAppChooser) this.activeChooser = null;
-      if (this.isDestroyed || !appId || this.blockedAppIds.includes(appId))
-        return;
+      if (this.activeChooser !== blockedAppChooser) return;
+      this.activeChooser = null;
+      if (!appId || this.blockedAppIds.includes(appId)) return;
 
       this.blockedAppIds = [appId, ...this.blockedAppIds];
       this.notify("blocked-app-ids");
       this.render();
     } catch (error) {
-      if (!this.isDestroyed) logger.warn("Failed to choose an app", error);
+      if (this.activeChooser) logger.warn("Failed to choose an app", error);
     } finally {
       this.activeChooser = null;
     }
@@ -97,13 +100,13 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
         icon_name: "action-unavailable-symbolic",
         pixel_size: 32,
       });
-      icon.add_css_class("dim-label");
+      icon.add_css_class(PreferencesStyleClasses.DIM_LABEL);
       const label = new Gtk.Label({
         label: _("No apps are blocked"),
         halign: Gtk.Align.CENTER,
       });
-      label.add_css_class("dim-label");
-      label.add_css_class("caption");
+      label.add_css_class(PreferencesStyleClasses.DIM_LABEL);
+      label.add_css_class(PreferencesStyleClasses.CAPTION);
       emptyState.append(icon);
       emptyState.append(label);
       row.set_child(emptyState);
@@ -132,8 +135,8 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
       const removeButton = new Gtk.Button({ icon_name: "user-trash-symbolic" });
       removeButton.marginTop = 10;
       removeButton.marginBottom = 10;
-      removeButton.add_css_class("flat");
-      removeButton.add_css_class("circular");
+      removeButton.add_css_class(PreferencesStyleClasses.FLAT);
+      removeButton.add_css_class(PreferencesStyleClasses.CIRCULAR);
       removeButton.connect("clicked", () => {
         this.blockedAppIds = this.blockedAppIds.filter((id) => id !== appId);
         this.notify("blocked-app-ids");
@@ -145,10 +148,11 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
   }
 
   destroy() {
-    if (this.isDestroyed) return;
-    this.isDestroyed = true;
-    this.activeChooser?.force_close();
+    if (!this.addButton) return;
+
+    const activeChooser = this.activeChooser;
     this.activeChooser = null;
+    activeChooser?.force_close();
     this.chooseBlockedAppPromise = null;
     this.blockedAppIds = [];
     this.addButton = null;
@@ -158,9 +162,8 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
 
 export default GObject.registerClass(
   {
-    GTypeName: "MediaShellBlockedAppsGroup",
-    Template:
-      "resource:///org/gnome/shell/extensions/mediashell/ui/blocked-apps.ui",
+    GTypeName: GTypeNames.BLOCKED_APPS_GROUP,
+    Template: ResourceUris.BLOCKED_APPS_UI,
     InternalChildren: ["lb-blocked-apps", "btn-add"],
     Properties: {
       "blocked-app-ids": GObject.ParamSpec.jsobject(

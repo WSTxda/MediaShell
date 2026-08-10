@@ -2,14 +2,30 @@
  * @file visualizer.js
  * @module shared.enums.visualizer
  *
- * Enum values for supported top bar visualizer styles.
+ * Defines stable visualizer style IDs and reusable animation identities.
  *
- * The preferences page stores these style IDs and TopBarVisualizer passes them
- * to the pure visualizer generator. Keeping styles in their own file prevents
- * visualizer policy from drifting into top bar placement enums.
+ * GSettings persists the numeric style IDs, while Shell presentation maps each
+ * style to an animation and renderer. Animation identities remain independent
+ * so multiple styles can intentionally share the same motion.
  */
 
+/** Stable style IDs stored by the top bar visualizer preference. */
 export const VisualizerStyles = Object.freeze({
   BEATS: 0,
   PULSE: 1,
+  CLASSIC: 2,
+  SPECTRUM: 3,
+});
+
+/** Pure animation identities consumed by visualizer generators and renderers. */
+export const VisualizerAnimationKinds = Object.freeze({
+  BEATS: "beats",
+  PULSE: "pulse",
+  SPECTRUM: "spectrum",
+});
+
+/** Layers drawn by the continuous Spectrum renderer. */
+export const VisualizerSpectrumLayers = Object.freeze({
+  PRIMARY: "primary",
+  SECONDARY: "secondary",
 });

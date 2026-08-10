@@ -2,11 +2,11 @@
  * @file PopupAlbumArt.js
  * @module shell.ui.popup.PopupAlbumArt
  *
- * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
  *
- * PopupContent delegates cover art to this component so async file/network loads
+ * PopupContent delegates album art to this component so async file/network loads
  * are isolated from the rest of the popup. The component cancels stale loads by
- * generation, decodes images into Shell textures, and falls back to a themed icon.
+ * generation, delegates stateless pixbuf transforms, and falls back to a themed icon.
  */
 
 import Clutter from "gi://Clutter";
@@ -15,11 +15,22 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
 import { IconNames } from "../../../shared/constants/icons.js";
-import { POPUP_ALBUM_ART_CORNER_RADIUS } from "../../../shared/constants/settings.js";
+import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
+import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/popup.js";
+import {
+  POPUP_ALBUM_ART_OUTLINE_WIDTH,
+  POPUP_ALBUM_ART_PAUSED_SCALE,
+  POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
+} from "../../constants/popup.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import AlbumArtLoader from "../../services/AlbumArtLoader.js";
+import {
+  cropPixbufToSquare,
+  roundPixbufCorners,
+} from "../../utils/albumArtPixbuf.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 
@@ -36,7 +47,7 @@ Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 const logger = createLogger("PopupAlbumArt");
 
 /**
- * Owns popup album-art loading, safe fallbacks, square cropping, and actor lifecycle.
+ * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
  */
 export default class PopupAlbumArt {
   constructor(popupContent) {
@@ -45,6 +56,7 @@ export default class PopupAlbumArt {
     this.albumArtLoadCancellable = null;
     this.loadedAlbumArtKey = null;
     this.loadingAlbumArtKey = null;
+    this.playbackScaleTarget = null;
     this.albumArtLoader = AlbumArtLoader.getInstance();
     this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
@@ -61,8 +73,8 @@ export default class PopupAlbumArt {
   get popupItem() {
     return this.popupContent.popupItem;
   }
-  get appSelectorActor() {
-    return this.popupContent.appSelectorController.actor;
+  get mediaAppSelectorActor() {
+    return this.popupContent.mediaAppSelectorController.actor;
   }
   get actor() {
     return this.albumArtFrame;
@@ -80,17 +92,6 @@ export default class PopupAlbumArt {
     this.loadingAlbumArtKey = null;
   }
 
-  remove() {
-    this.cancelAlbumArtLoad();
-    this.loadedAlbumArtKey = null;
-    if (!this.albumArtFrame) return;
-
-    this.albumArtFrame.get_parent()?.remove_child(this.albumArtFrame);
-    this.albumArtFrame.destroy();
-    this.albumArtFrame = null;
-    this.albumArtImage = null;
-  }
-
   async render() {
     const metadata = this.mediaApp.metadata;
     const width = this.getAlbumArtWidth();
@@ -98,22 +99,22 @@ export default class PopupAlbumArt {
       this.extensionController.popupAlbumArtCornerRadius,
     )
       ? this.extensionController.popupAlbumArtCornerRadius
-      : POPUP_ALBUM_ART_CORNER_RADIUS.DEFAULT;
+      : POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
     const radius = Math.min(configuredRadius, Math.round(width / 2));
-    const albumArtKey = [
-      this.mediaApp.busName,
-      metadata["mpris:artUrl"] ?? "",
-      metadata["xesam:url"] ?? "",
+    const request = createAlbumArtRequest({
+      busName: this.mediaApp.busName,
+      metadata,
       width,
       radius,
-      this.extensionController.albumArtCacheEnabled,
-    ].join("\u0000");
+      cacheEnabled: this.extensionController.albumArtCacheEnabled,
+    });
 
-    this.ensureAlbumArtActor(width, radius);
+    this.ensureAlbumArtActor(request.width, request.radius);
     this.attach();
+    this.syncPlaybackState(this.mediaApp.playbackStatus, false);
     if (
-      this.loadedAlbumArtKey === albumArtKey ||
-      this.loadingAlbumArtKey === albumArtKey
+      this.loadedAlbumArtKey === request.key ||
+      this.loadingAlbumArtKey === request.key
     )
       return;
 
@@ -121,19 +122,15 @@ export default class PopupAlbumArt {
     const loadGeneration = ++this.albumArtLoadGeneration;
     const loadCancellable = new Gio.Cancellable();
     this.albumArtLoadCancellable = loadCancellable;
-    this.loadingAlbumArtKey = albumArtKey;
+    this.loadingAlbumArtKey = request.key;
 
     try {
       const { albumArtSource, fallbackIcon } = await this.resolveAlbumArtSource(
-        metadata,
+        request,
         loadCancellable,
       );
       if (
-        !this.isCurrentAlbumArtLoad(
-          loadGeneration,
-          loadCancellable,
-          albumArtKey,
-        )
+        !this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
         this.closeInputStream(albumArtSource?.stream);
         return;
@@ -141,68 +138,59 @@ export default class PopupAlbumArt {
 
       const pixbuf = await this.decodeAlbumArtSource(
         albumArtSource,
-        width,
+        request.width,
         loadCancellable,
       );
-      if (
-        !this.isCurrentAlbumArtLoad(
-          loadGeneration,
-          loadCancellable,
-          albumArtKey,
-        )
-      )
+      if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
         return;
 
-      if (pixbuf) this.setAlbumArtPixbuf(width, radius, pixbuf);
+      if (pixbuf) this.setAlbumArtPixbuf(request.width, request.radius, pixbuf);
       else {
-        this.setAlbumArtFallback(width, radius, fallbackIcon);
-        logger.debugOnce(
-          `fallback:${this.mediaApp.busName}`,
-          "Using album-art fallback for",
-          this.mediaApp.busName,
-        );
+        this.setAlbumArtFallback(request.width, request.radius, fallbackIcon);
       }
     } catch (error) {
       if (
         !isCancellationError(error) &&
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, albumArtKey)
+        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
         logger.warnOnce(
-          `processing:${this.mediaApp.busName}`,
+          `processing:${request.busName}`,
           "Album-art processing failed; using the fallback icon",
           error,
         );
-        this.setAlbumArtFallback(width, radius, null);
+        this.setAlbumArtFallback(request.width, request.radius, null);
       }
     } finally {
       if (
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, albumArtKey)
+        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
         // Remember fallback results too, otherwise every metadata update
         // would retry the same unavailable URL and hurt popup latency.
-        this.loadedAlbumArtKey = albumArtKey;
+        this.loadedAlbumArtKey = request.key;
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
       }
     }
   }
 
-  async resolveAlbumArtSource(metadata, loadCancellable) {
+  async resolveAlbumArtSource(request, loadCancellable) {
     let fallbackIcon = null;
     let albumArtSource = await this.tryLoadAlbumArt(
-      metadata["mpris:artUrl"],
+      request.albumArtUri,
       loadCancellable,
       "MPRIS album art",
+      request.busName,
+      request.cacheEnabled,
     );
-    if (albumArtSource || !metadata["xesam:url"])
+    if (albumArtSource || !request.trackUri)
       return { albumArtSource, fallbackIcon };
 
     let trackUri;
     try {
-      trackUri = GLib.Uri.parse(metadata["xesam:url"], GLib.UriFlags.NONE);
+      trackUri = GLib.Uri.parse(request.trackUri, GLib.UriFlags.NONE);
     } catch (error) {
       logger.debugOnce(
-        `track-uri:${this.mediaApp.busName}`,
+        `track-uri:${request.busName}`,
         "Ignoring an invalid local track URI",
         error,
       );
@@ -224,7 +212,7 @@ export default class PopupAlbumArt {
     } catch (error) {
       if (isCancellationError(error)) throw error;
       logger.debugOnce(
-        `track-metadata:${this.mediaApp.busName}`,
+        `track-metadata:${request.busName}`,
         "Local track metadata did not provide album art",
         error,
       );
@@ -240,26 +228,32 @@ export default class PopupAlbumArt {
         Gio.File.new_for_path(thumbnailPath).get_uri(),
         loadCancellable,
         "thumbnail",
+        request.busName,
+        request.cacheEnabled,
       );
 
     return { albumArtSource, fallbackIcon };
   }
 
-  async tryLoadAlbumArt(albumArtUri, loadCancellable, sourceName) {
+  async tryLoadAlbumArt(
+    albumArtUri,
+    loadCancellable,
+    sourceName,
+    busName,
+    cacheEnabled,
+  ) {
     if (!albumArtUri) return null;
-
-    logger.debug("Loading album art", albumArtUri.slice(0, 60));
 
     try {
       return await this.albumArtLoader.loadAlbumArt(
         albumArtUri,
-        this.extensionController.albumArtCacheEnabled,
+        cacheEnabled,
         loadCancellable,
       );
     } catch (error) {
       if (isCancellationError(error)) throw error;
       logger.debugOnce(
-        `source-load:${this.mediaApp.busName}:${sourceName}`,
+        `source-load:${busName}:${sourceName}`,
         `Failed to load ${sourceName}; trying the next fallback`,
         error,
       );
@@ -295,7 +289,7 @@ export default class PopupAlbumArt {
       );
       const refreshedSource = await this.albumArtLoader.loadAlbumArt(
         albumArtSource.albumArtUri,
-        this.extensionController.albumArtCacheEnabled,
+        albumArtSource.cacheEnabled,
         loadCancellable,
         { bypassCacheRead: true },
       );
@@ -334,16 +328,17 @@ export default class PopupAlbumArt {
   setAlbumArtPixbuf(width, radius, pixbuf) {
     const imageSize = this.getImageSize(width);
     const imageRadius = this.getImageRadius(radius);
-    const squarePixbuf = this.cropPixbufToSquare(pixbuf, imageSize);
+    const orientedPixbuf = pixbuf.apply_embedded_orientation?.() ?? pixbuf;
+    const squarePixbuf = cropPixbufToSquare(orientedPixbuf, imageSize);
     const renderPixbuf =
       imageRadius > 0
-        ? this.roundAlbumArtPixbufCorners(squarePixbuf, imageRadius)
+        ? roundPixbufCorners(squarePixbuf, imageRadius)
         : squarePixbuf;
 
     this.albumArtImage.content = null;
-    this.albumArtImage.remove_style_class_name("button");
+    this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
     this.albumArtImage.remove_style_class_name(
-      "mediashell-popup-album-art-fallback",
+      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
     );
     setGIcon(this.albumArtImage, renderPixbuf, IconNames.MEDIA);
     this.albumArtImage.set_icon_size(imageSize);
@@ -357,7 +352,7 @@ export default class PopupAlbumArt {
 
     this.albumArtImage = createIcon(
       {
-        styleClass: "mediashell-popup-album-art",
+        styleClass: StyleClasses.POPUP_ALBUM_ART,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -366,29 +361,59 @@ export default class PopupAlbumArt {
       IconNames.MEDIA,
     );
     this.albumArtFrame = new St.Bin({
-      styleClass: "mediashell-popup-album-art-frame",
+      styleClass: StyleClasses.POPUP_ALBUM_ART_FRAME,
       xExpand: false,
       yExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
     });
+    this.albumArtFrame.set_pivot_point(0.5, 0.5);
     this.albumArtFrame.set_child(this.albumArtImage);
     this.setAlbumArtFallback(width, radius, null);
   }
 
+  syncPlaybackState(playbackStatus, animate = true) {
+    if (!this.albumArtFrame) return;
+
+    const targetScale =
+      playbackStatus === PlaybackStatus.PLAYING
+        ? 1
+        : POPUP_ALBUM_ART_PAUSED_SCALE;
+    if (targetScale === this.playbackScaleTarget) return;
+
+    this.playbackScaleTarget = targetScale;
+    if (!animate) {
+      this.stopPlaybackScaleTransition();
+      this.albumArtFrame.set_scale(targetScale, targetScale);
+      return;
+    }
+
+    this.albumArtFrame.ease({
+      scale_x: targetScale,
+      scale_y: targetScale,
+      duration: POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
+      mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+    });
+  }
+
+  stopPlaybackScaleTransition() {
+    this.albumArtFrame?.remove_transition("scale-x");
+    this.albumArtFrame?.remove_transition("scale-y");
+  }
+
   getImageSize(width) {
-    return Math.max(1, Math.round(width - ALBUM_ART_OUTLINE_WIDTH * 2));
+    return Math.max(1, Math.round(width - POPUP_ALBUM_ART_OUTLINE_WIDTH * 2));
   }
 
   getImageRadius(radius) {
-    return Math.max(0, radius - ALBUM_ART_OUTLINE_WIDTH);
+    return Math.max(0, radius - POPUP_ALBUM_ART_OUTLINE_WIDTH);
   }
 
   syncAlbumArtGeometry(width, radius) {
     const imageSize = this.getImageSize(width);
     const imageRadius = this.getImageRadius(radius);
 
-    this.albumArtFrame.style = `border-radius: ${radius}px; padding: ${ALBUM_ART_OUTLINE_WIDTH}px;`;
+    this.albumArtFrame.style = `border-radius: ${radius}px; padding: ${POPUP_ALBUM_ART_OUTLINE_WIDTH}px;`;
     this.albumArtFrame.width = width;
     this.albumArtFrame.height = width;
     this.albumArtImage.style = `border-radius: ${imageRadius}px;`;
@@ -397,18 +422,14 @@ export default class PopupAlbumArt {
   }
 
   setAlbumArtFallback(width, radius, icon) {
-    logger.debug(
-      "Album art unavailable, using fallback icon",
-      this.mediaApp?.busName,
-    );
     const imageSize = this.getImageSize(width);
     this.syncAlbumArtGeometry(width, radius);
     this.albumArtImage.content = null;
     // Reuse the Shell's native button surface so the empty album-art fallback follows
     // the active light/dark theme instead of relying on a fixed gray.
-    this.albumArtImage.add_style_class_name("button");
+    this.albumArtImage.add_style_class_name(StyleClasses.BUTTON);
     this.albumArtImage.add_style_class_name(
-      "mediashell-popup-album-art-fallback",
+      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
     );
     setGIcon(
       this.albumArtImage,
@@ -422,19 +443,33 @@ export default class PopupAlbumArt {
 
   attach() {
     if (this.albumArtFrame.get_parent()) return;
-    if (this.appSelectorActor?.get_parent() === this.popupItem)
+    if (this.mediaAppSelectorActor?.get_parent() === this.popupItem)
       this.popupItem.insert_child_above(
         this.albumArtFrame,
-        this.appSelectorActor,
+        this.mediaAppSelectorActor,
       );
     else this.popupItem.add_child(this.albumArtFrame);
   }
 
-  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, albumArtKey) {
+  remove() {
+    this.cancelAlbumArtLoad();
+    this.loadedAlbumArtKey = null;
+    this.playbackScaleTarget = null;
+    if (!this.albumArtFrame) return;
+
+    this.stopPlaybackScaleTransition();
+    this.albumArtFrame.get_parent()?.remove_child(this.albumArtFrame);
+    this.albumArtFrame.destroy();
+    this.albumArtFrame = null;
+    this.albumArtImage = null;
+  }
+
+  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request) {
     return (
       loadGeneration === this.albumArtLoadGeneration &&
       !loadCancellable.is_cancelled() &&
-      this.loadingAlbumArtKey === albumArtKey
+      this.loadingAlbumArtKey === request.key &&
+      this.mediaApp?.busName === request.busName
     );
   }
 
@@ -443,126 +478,8 @@ export default class PopupAlbumArt {
 
     try {
       stream.close(null);
-    } catch (error) {
+    } catch {
       // Cancellation and GdkPixbuf may close the stream before teardown.
-      logger.debugOnce(
-        "stream-close",
-        "Album-art stream was already closed",
-        error,
-      );
-    }
-  }
-
-  cropPixbufToSquare(pixbuf, size) {
-    const targetSize = Math.max(1, Math.round(size));
-    const sourceWidth = pixbuf.get_width();
-    const sourceHeight = pixbuf.get_height();
-    if (sourceWidth <= 0 || sourceHeight <= 0) return pixbuf;
-
-    // Scale like CSS `cover`: the shortest side fills the square and the
-    // excess on the longest side is cropped equally around the center.
-    const scale = Math.max(targetSize / sourceWidth, targetSize / sourceHeight);
-    const scaledWidth = Math.max(targetSize, Math.round(sourceWidth * scale));
-    const scaledHeight = Math.max(targetSize, Math.round(sourceHeight * scale));
-    const scaled = pixbuf.scale_simple(
-      scaledWidth,
-      scaledHeight,
-      GdkPixbuf.InterpType.BILINEAR,
-    );
-    if (!scaled) return pixbuf;
-
-    const cropX = Math.max(0, Math.floor((scaledWidth - targetSize) / 2));
-    const cropY = Math.max(0, Math.floor((scaledHeight - targetSize) / 2));
-    return scaled.new_subpixbuf(cropX, cropY, targetSize, targetSize).copy();
-  }
-
-  roundAlbumArtPixbufCorners(pixbuf, radius) {
-    let source = pixbuf;
-    if (!source.get_has_alpha()) source = source.add_alpha(false, 0, 0, 0);
-
-    const width = source.get_width();
-    const height = source.get_height();
-    const cornerRadius = Math.min(
-      Math.floor(radius),
-      Math.floor(Math.min(width, height) / 2),
-    );
-    if (cornerRadius <= 0) return source;
-
-    const rowstride = source.get_rowstride();
-    const channels = source.get_n_channels();
-    const pixels = new Uint8Array(source.get_pixels());
-    const samples = [0.125, 0.375, 0.625, 0.875];
-    const sampleCount = samples.length * samples.length;
-    const radiusSquared = cornerRadius * cornerRadius;
-
-    // Only the four corner squares are touched; the center remains a fast
-    // direct copy even for large album-art settings.
-    for (let y = 0; y < cornerRadius; y++) {
-      this.roundAlbumArtCornerRow(
-        pixels,
-        rowstride,
-        channels,
-        y,
-        cornerRadius,
-        width,
-        cornerRadius,
-        radiusSquared,
-        samples,
-        sampleCount,
-      );
-      this.roundAlbumArtCornerRow(
-        pixels,
-        rowstride,
-        channels,
-        height - 1 - y,
-        height - cornerRadius,
-        width,
-        cornerRadius,
-        radiusSquared,
-        samples,
-        sampleCount,
-      );
-    }
-
-    return GdkPixbuf.Pixbuf.new_from_bytes(
-      GLib.Bytes.new(pixels),
-      source.get_colorspace(),
-      source.get_has_alpha(),
-      source.get_bits_per_sample(),
-      width,
-      height,
-      rowstride,
-    );
-  }
-
-  roundAlbumArtCornerRow(
-    pixels,
-    rowstride,
-    channels,
-    y,
-    centerY,
-    width,
-    radius,
-    radiusSquared,
-    samples,
-    sampleCount,
-  ) {
-    for (let xOffset = 0; xOffset < radius; xOffset++) {
-      for (const x of [xOffset, width - 1 - xOffset]) {
-        const centerX = x < radius ? radius : width - radius;
-        let inside = 0;
-        for (const sampleY of samples) {
-          const deltaY = y + sampleY - centerY;
-          const deltaYSquared = deltaY * deltaY;
-          for (const sampleX of samples) {
-            const deltaX = x + sampleX - centerX;
-            if (deltaX * deltaX + deltaYSquared <= radiusSquared) inside++;
-          }
-        }
-        if (inside === sampleCount) continue;
-        const offset = y * rowstride + x * channels + 3;
-        pixels[offset] = Math.round((pixels[offset] * inside) / sampleCount);
-      }
     }
   }
 

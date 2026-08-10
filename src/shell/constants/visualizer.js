@@ -2,24 +2,112 @@
  * @file visualizer.js
  * @module shell.constants.visualizer
  *
- * Defines Shell actor geometry, timing, and opacity policy for the top bar visualizer.
+ * Defines Shell geometry, renderer identities, and style presentation policy.
  *
- * TopBarVisualizer keeps animation state local, while this file stores the fixed
- * drawing budget and frame timing that must stay consistent when visualizer
- * styles or speed settings change.
+ * Pure animation tuning remains in shared constants. This module owns only
+ * pixel dimensions and the mapping from a persisted style to its Shell renderer,
+ * CSS classes, pivot, and shared animation identity.
  */
 
-/** Fixed visualizer actor height used in the compact top bar button. */
+import {
+  TOP_BAR_VISUALIZER_BAND_COUNT,
+  TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+} from "../../shared/constants/visualizer.js";
+import {
+  VisualizerAnimationKinds,
+  VisualizerStyles,
+} from "../../shared/enums/visualizer.js";
+import { StyleClasses } from "./styleClasses.js";
+
+/** Fixed visualizer actor height used in the compact top bar indicator. */
 export const VISUALIZER_HEIGHT = 16;
 
-/** Width of each visualizer bar actor. */
+/** Width of each continuous Beats or Pulse bar. */
 export const VISUALIZER_BAR_WIDTH = 2;
 
-/** Maximum rendered height for each visualizer bar. */
+/** Maximum rendered height for each continuous bar. */
 export const VISUALIZER_BAR_HEIGHT = 14;
+
+/** Width of each spaced Classic block column. */
+export const VISUALIZER_CLASSIC_COLUMN_WIDTH = 3;
+
+/** Number of stacked LED-style blocks in each Classic column. */
+export const VISUALIZER_CLASSIC_SEGMENT_COUNT = 5;
+
+/** Height of one Classic block. */
+export const VISUALIZER_CLASSIC_SEGMENT_HEIGHT = 2;
+
+/** Opacity applied to Classic blocks that are not currently lit. */
+export const VISUALIZER_CLASSIC_UNLIT_OPACITY = 60;
+
+/** Width of the continuous Spectrum drawing surface. */
+export const VISUALIZER_SPECTRUM_WIDTH = 24;
+
+/** Stroke width shared by both Spectrum layers. */
+export const VISUALIZER_SPECTRUM_STROKE_WIDTH = 1.5;
+
+/** Horizontal inset that keeps rounded Spectrum caps inside the surface. */
+export const VISUALIZER_SPECTRUM_HORIZONTAL_PADDING =
+  VISUALIZER_SPECTRUM_STROKE_WIDTH / 2;
+
+/** Maximum vertical displacement of Spectrum layers from their center axis. */
+export const VISUALIZER_SPECTRUM_AMPLITUDE = 6;
 
 /** Base animation timeline duration before the user speed multiplier is applied. */
 export const VISUALIZER_TIMELINE_DURATION_MS = 1000;
 
-/** Bar level used when playback is idle but the visualizer remains visible. */
+/** Minimum time between visualizer redraws, targeting 30 frames per second. */
+export const VISUALIZER_FRAME_INTERVAL_MS = Math.round(1000 / 30);
+
+/** Level used when playback is idle but a bar renderer remains visible. */
 export const VISUALIZER_IDLE_LEVEL = 0.22;
+
+/** Shell renderer identities used by style definitions. */
+export const VisualizerRendererKinds = Object.freeze({
+  CONTINUOUS_BARS: "continuous-bars",
+  SEGMENTED_BARS: "segmented-bars",
+  SPECTRUM: "spectrum",
+});
+
+function createStyleDefinition(definition) {
+  return Object.freeze(definition);
+}
+
+/**
+ * Canonical presentation policy for every top bar visualizer style.
+ *
+ * Adding a style that reuses an existing animation or renderer requires one new
+ * definition instead of additional conditionals across the component lifecycle.
+ */
+export const TOP_BAR_VISUALIZER_STYLE_DEFINITIONS = Object.freeze({
+  [VisualizerStyles.BEATS]: createStyleDefinition({
+    animationKind: VisualizerAnimationKinds.BEATS,
+    rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
+    elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
+    pivotY: 1,
+    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_BEATS,
+    barStyleClass: StyleClasses.TOP_BAR_VISUALIZER_BEATS_BAR,
+  }),
+  [VisualizerStyles.PULSE]: createStyleDefinition({
+    animationKind: VisualizerAnimationKinds.PULSE,
+    rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
+    elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
+    pivotY: 0.5,
+    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_PULSE,
+    barStyleClass: StyleClasses.TOP_BAR_VISUALIZER_PULSE_BAR,
+  }),
+  [VisualizerStyles.CLASSIC]: createStyleDefinition({
+    animationKind: VisualizerAnimationKinds.BEATS,
+    rendererKind: VisualizerRendererKinds.SEGMENTED_BARS,
+    elementCount: TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
+    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC,
+    columnStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC_COLUMN,
+    segmentStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC_BLOCK,
+  }),
+  [VisualizerStyles.SPECTRUM]: createStyleDefinition({
+    animationKind: VisualizerAnimationKinds.SPECTRUM,
+    rendererKind: VisualizerRendererKinds.SPECTRUM,
+    elementCount: 0,
+    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_SPECTRUM,
+  }),
+});

@@ -12,14 +12,16 @@
 import Gio from "gi://Gio";
 
 import {
-  DBUS_IFACE_NAME,
-  DBUS_OBJECT_PATH,
+  DBUS_DAEMON_IFACE_NAME,
+  DBUS_DAEMON_OBJECT_PATH,
   DBUS_PROPERTIES_IFACE_NAME,
-  MPRIS_IFACE_NAME,
+} from "../../shared/constants/dbus.js";
+import {
+  MPRIS_ROOT_IFACE_NAME,
   MPRIS_OBJECT_PATH,
   MPRIS_PLAYER_IFACE_NAME,
-} from "../../shared/constants/dbus.js";
-import { createLogger } from "../../shared/utils/log.js";
+} from "../../shared/constants/mpris.js";
+import { ResourceUris } from "../../shared/constants/resources.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(
@@ -29,11 +31,6 @@ Gio._promisify(
 );
 Gio._promisify(Gio.DBusProxy, "new", "new_finish");
 
-const logger = createLogger("MprisProxyFactory");
-const MPRIS_INTROSPECTION_XML_URI =
-  "resource:///org/gnome/shell/extensions/mediashell/dbus/mprisNode.xml";
-const DBUS_WATCH_INTROSPECTION_XML_URI =
-  "resource:///org/gnome/shell/extensions/mediashell/dbus/watchNode.xml";
 async function readXmlResource(uri, cancellable) {
   const [bytes] =
     await Gio.File.new_for_uri(uri).load_contents_async(cancellable);
@@ -42,8 +39,8 @@ async function readXmlResource(uri, cancellable) {
 
 async function loadMprisIntrospectionData(cancellable) {
   const [mprisIntrospectionXml, dbusWatchIntrospectionXml] = await Promise.all([
-    readXmlResource(MPRIS_INTROSPECTION_XML_URI, cancellable),
-    readXmlResource(DBUS_WATCH_INTROSPECTION_XML_URI, cancellable),
+    readXmlResource(ResourceUris.MPRIS_INTROSPECTION, cancellable),
+    readXmlResource(ResourceUris.DBUS_WATCH_INTROSPECTION, cancellable),
   ]);
   const mprisNodeInfo = Gio.DBusNodeInfo.new_for_xml(mprisIntrospectionXml);
   const dbusWatchNodeInfo = Gio.DBusNodeInfo.new_for_xml(
@@ -52,25 +49,26 @@ async function loadMprisIntrospectionData(cancellable) {
   const introspectionData = {
     mprisNodeInfo,
     dbusWatchNodeInfo,
-    rootInterfaceInfo: mprisNodeInfo.lookup_interface(MPRIS_IFACE_NAME),
+    rootInterfaceInfo: mprisNodeInfo.lookup_interface(MPRIS_ROOT_IFACE_NAME),
     playerInterfaceInfo: mprisNodeInfo.lookup_interface(
       MPRIS_PLAYER_IFACE_NAME,
     ),
     propertiesInterfaceInfo: mprisNodeInfo.lookup_interface(
       DBUS_PROPERTIES_IFACE_NAME,
     ),
-    busInterfaceInfo: dbusWatchNodeInfo.lookup_interface(DBUS_IFACE_NAME),
+    busDaemonInterfaceInfo: dbusWatchNodeInfo.lookup_interface(
+      DBUS_DAEMON_IFACE_NAME,
+    ),
   };
 
   if (
     !introspectionData.rootInterfaceInfo ||
     !introspectionData.playerInterfaceInfo ||
     !introspectionData.propertiesInterfaceInfo ||
-    !introspectionData.busInterfaceInfo
+    !introspectionData.busDaemonInterfaceInfo
   )
     throw new Error("The bundled D-Bus introspection data is incomplete");
 
-  logger.debug("Loaded bundled MPRIS introspection data");
   return introspectionData;
 }
 
@@ -79,13 +77,13 @@ async function loadMprisIntrospectionData(cancellable) {
  */
 export default class MprisProxyFactory {
   constructor() {
-    this.isDestroyed = false;
     this.initializationGeneration = 0;
     this.initializationCancellable = null;
     this.introspectionDataPromise = null;
   }
 
   async init() {
+    if (this.initializationGeneration === null) return false;
     const initializationGeneration = ++this.initializationGeneration;
     this.initializationCancellable?.cancel();
     const initializationCancellable = new Gio.Cancellable();
@@ -97,10 +95,7 @@ export default class MprisProxyFactory {
 
     try {
       const introspectionData = await introspectionDataPromise;
-      if (
-        this.isDestroyed ||
-        initializationGeneration !== this.initializationGeneration
-      )
+      if (initializationGeneration !== this.initializationGeneration)
         return false;
 
       // Introspection XML is loaded once per enable cycle rather than per proxy.
@@ -112,8 +107,7 @@ export default class MprisProxyFactory {
     } catch (error) {
       if (
         isCancellationError(error) &&
-        (this.isDestroyed ||
-          initializationGeneration !== this.initializationGeneration)
+        initializationGeneration !== this.initializationGeneration
       )
         return false;
       throw error;
@@ -125,11 +119,11 @@ export default class MprisProxyFactory {
     }
   }
 
-  createBusProxy(cancellable = null) {
+  createBusDaemonProxy(cancellable = null) {
     return this.createProxy(
-      this.busInterfaceInfo,
-      DBUS_IFACE_NAME,
-      DBUS_OBJECT_PATH,
+      this.busDaemonInterfaceInfo,
+      DBUS_DAEMON_IFACE_NAME,
+      DBUS_DAEMON_OBJECT_PATH,
       Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES,
       cancellable,
     );
@@ -180,16 +174,18 @@ export default class MprisProxyFactory {
   }
 
   destroy() {
-    this.isDestroyed = true;
-    this.initializationGeneration++;
-    this.initializationCancellable?.cancel();
+    if (this.initializationGeneration === null) return;
+
+    const initializationCancellable = this.initializationCancellable;
+    this.initializationGeneration = null;
     this.initializationCancellable = null;
+    initializationCancellable?.cancel();
     this.introspectionDataPromise = null;
     this.mprisNodeInfo = null;
     this.dbusWatchNodeInfo = null;
     this.rootInterfaceInfo = null;
     this.playerInterfaceInfo = null;
     this.propertiesInterfaceInfo = null;
-    this.busInterfaceInfo = null;
+    this.busDaemonInterfaceInfo = null;
   }
 }

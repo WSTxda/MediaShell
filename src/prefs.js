@@ -14,15 +14,10 @@
 import Adw from "gi://Adw";
 import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import {
-  MINIMUM_LIBADWAITA_VERSION,
-  isVersionAtLeast,
-} from "./shared/constants/platform.js";
-import { createLogger } from "./shared/utils/log.js";
+import { MINIMUM_LIBADWAITA_VERSION } from "./shared/constants/platform.js";
+import { isVersionAtLeast } from "./shared/utils/version.js";
 import PreferencesController from "./prefs/PreferencesController.js";
-import { initializePreferencesTranslations } from "./prefs/PreferencesTranslations.js";
-
-const logger = createLogger("MediaShellPreferences");
+import { initializePreferencesTranslations } from "./prefs/translations.js";
 
 function assertSupportedLibadwaita() {
   const major = Adw.get_major_version();
@@ -49,9 +44,11 @@ export default class MediaShellPreferences extends ExtensionPreferences {
       this,
       preferencesWindow,
     );
-    await preferencesController.init().catch((error) => {
-      logger.error("Failed to open preferences", error);
+    try {
+      await preferencesController.init();
+    } catch (error) {
       preferencesController.destroy();
-    });
+      throw error;
+    }
   }
 }

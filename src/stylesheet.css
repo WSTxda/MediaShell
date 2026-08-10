@@ -2,9 +2,9 @@
  * MediaShell Shell stylesheet.
  *
  * Sections mirror the runtime UI tree: shared utilities, top bar, popup root,
- * app selector, album art, track information, progress bar, and playback controls.
+ * media app selector, album art, track information, progress bar, and playback controls.
  * Keep horizontal alignment rules centralized in component roots; JS computes
- * fixed widths from matching constants in src/shell/constants/.
+ * dimensions from canonical shared and Shell constants.
  */
 
 /* Icons ----------------------------------------------------------------
@@ -12,11 +12,11 @@
  * attached by JS because St only reads -st-icon-style when building icons.
  */
 .colored-icon {
-    -st-icon-style: requested;
+  -st-icon-style: requested;
 }
 
 .symbolic-icon {
-    -st-icon-style: symbolic;
+  -st-icon-style: symbolic;
 }
 
 /* Utilities ------------------------------------------------------------
@@ -24,11 +24,11 @@
  * their own margins/padding. Keep these generic and side-effect free.
  */
 .no-margin {
-    margin: 0;
+  margin: 0;
 }
 
 .no-padding {
-    padding: 0;
+  padding: 0;
 }
 
 /* Top bar ------------------------------------------------------------
@@ -36,61 +36,95 @@
  * separate interactive actors so their clicks never trigger the button gestures.
  */
 .panel-button {
-    padding-left: 6px;
-    padding-right: 6px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
-
 .mediashell-top-bar-box {
-    spacing: 0;
+  spacing: 0;
 }
 
 .mediashell-top-bar-action-box > * {
-    padding-left: 6px;
-    padding-right: 6px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 /* St.ScrollView reapplies its fade from theme properties whenever its style
  * changes. Keeping the offset in CSS makes the effect survive popup, focus,
  * hover, playback, and remapping state changes. */
-.mediashell-scrolling-label {
-    -st-hfade-offset: 12px;
+.mediashell-scrolling-label,
+.mediashell-top-bar-track-information {
+  -st-hfade-offset: 12px;
+}
+
+.mediashell-top-bar-media-app-icon {
+  margin: 0;
 }
 
 .mediashell-top-bar-visualizer {
-    spacing: 2px;
+  spacing: 0;
 }
 
-.mediashell-top-bar-visualizer-bar {
-    border-radius: 1px;
+.mediashell-top-bar-visualizer-beats,
+.mediashell-top-bar-visualizer-pulse {
+  spacing: 2px;
+}
+
+.mediashell-top-bar-visualizer-beats-bar {
+  border-radius: 1px;
+}
+
+.mediashell-top-bar-visualizer-pulse-bar {
+  border-radius: 3px;
+}
+
+.mediashell-top-bar-visualizer-classic {
+  spacing: 2px;
+}
+
+.mediashell-top-bar-visualizer-classic-column {
+  spacing: 1px;
+}
+
+.mediashell-top-bar-visualizer-classic-block {
+  border-radius: 1px;
 }
 
 .mediashell-top-bar-playback-controls {
-    padding-left: 0;
-    padding-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .mediashell-top-bar-control-button {
-    padding-left: 6px;
-    padding-right: 6px;
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
+  padding-left: 6px;
+  padding-right: 6px;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .mediashell-top-bar-control-button:hover,
 .mediashell-top-bar-control-button:active,
 .mediashell-top-bar-control-button:checked,
-.mediashell-top-bar-control-button:focus,
 .mediashell-top-bar-control-button:insensitive {
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.mediashell-top-bar-control-button:focus {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px -st-accent-color;
 }
 
 .mediashell-top-bar-control-icon {
-    padding-left: 0;
-    padding-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.mediashell-top-bar-control-label {
+  font-feature-settings: "tnum";
 }
 
 /* Popup structure ------------------------------------------------------
@@ -103,61 +137,61 @@
  * - bottom padding: 18px, a small optical balance for round controls.
  */
 .mediashell-popup-container {
-    padding: 0;
+  padding: 0;
 }
 
 .mediashell-popup-box {
-    border-width: 0;
-    padding: 16px 16px 18px;
-    spacing: 12px;
+  border-width: 0;
+  padding: 16px 16px 18px;
+  spacing: 12px;
 }
 
 .mediashell-popup-box > * {
-    margin-top: 0;
-    margin-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
-/* Popup — App selector trigger --------------------------------------
+/* Popup — Media app selector button --------------------------------------
  * The pill keeps its stock Quick Settings shape. It is centered and does not
  * participate in the full-width parent-padding grid.
  */
-.mediashell-popup-apps {
-    spacing: 6px;
+.mediashell-popup-media-app-selector {
+  spacing: 6px;
 }
 
-.mediashell-popup-app-selector {
-    border-radius: 999px;
-    padding: 4px 8px;
-    spacing: 6px;
-    min-height: 24px;
-    max-height: 28px;
+.mediashell-popup-media-app-selector-button {
+  border-radius: 999px;
+  padding: 4px 8px;
+  spacing: 6px;
+  min-height: 24px;
+  max-height: 28px;
 }
 
-.mediashell-popup-app-selector-icon {
-    icon-size: 20px;
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    min-height: 20px;
-    padding: 0;
+.mediashell-popup-media-app-selector-button-icon {
+  icon-size: 20px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 0;
 }
 
-.mediashell-popup-app-selector-icon.symbolic-icon {
-    icon-size: 18px;
+.mediashell-popup-media-app-selector-button-icon.symbolic-icon {
+  icon-size: 18px;
 }
 
-.mediashell-popup-app-expand-icon {
-    icon-size: 14px;
-    opacity: 160;
-    transition-duration: 140ms;
+.mediashell-popup-media-app-selector-button-expand-icon {
+  icon-size: 14px;
+  opacity: 160;
+  transition-duration: 140ms;
 }
 
-.mediashell-popup-app-label {
-    font-weight: bold;
-    font-size: 100%;
+.mediashell-popup-media-app-selector-button-label {
+  font-weight: bold;
+  font-size: 100%;
 }
 
-/* Popup — App selector list -----------------------------------------
+/* Popup — Media app selector list -----------------------------------------
  * Full-width component: the card starts and ends at the parent padding, exactly
  * like the slider and labels. The card owns only internal organization padding.
  *
@@ -165,88 +199,88 @@
  * black/white: it gets slightly lighter on dark themes and slightly darker on
  * light themes while preserving custom user colors behind it.
  */
-.mediashell-popup-app-selector-revealer {
-    padding: 0;
-    min-width: 0;
+.mediashell-popup-media-app-selector-revealer {
+  padding: 0;
+  min-width: 0;
 }
 
-.mediashell-popup-app-selector-card {
-    background-color: rgba(128, 128, 128, 0.12);
-    border-radius: 20px;
-    border-width: 0;
-    box-shadow: none;
-    margin: 0;
-    padding: 12px;
-    min-width: 0;
+.mediashell-popup-media-app-selector-card {
+  background-color: rgba(128, 128, 128, 0.12);
+  border-radius: 20px;
+  border-width: 0;
+  box-shadow: none;
+  margin: 0;
+  padding: 12px;
+  min-width: 0;
 }
 
-.mediashell-popup-app-selector-list {
-    spacing: 4px;
+.mediashell-popup-media-app-selector-list {
+  spacing: 4px;
 }
 
-.mediashell-popup-app-selector-row-item {
-    spacing: 6px;
+.mediashell-popup-media-app-selector-row-item {
+  spacing: 6px;
 }
 
-.mediashell-popup-app-selector-row {
-    border-radius: 10px;
-    padding: 4px 8px;
-    min-height: 32px;
+.mediashell-popup-media-app-selector-row {
+  border-radius: 10px;
+  padding: 4px 8px;
+  min-height: 32px;
 }
 
-.mediashell-popup-app-selector-row-box {
-    spacing: 8px;
+.mediashell-popup-media-app-selector-row-box {
+  spacing: 8px;
 }
 
-.mediashell-popup-app-selector-app-icon {
-    icon-size: 20px;
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    min-height: 20px;
-    padding: 0;
+.mediashell-popup-media-app-selector-row-media-app-icon {
+  icon-size: 20px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 0;
 }
 
-.mediashell-popup-app-selector-app-icon.symbolic-icon {
-    icon-size: 18px;
+.mediashell-popup-media-app-selector-row-media-app-icon.symbolic-icon {
+  icon-size: 18px;
 }
 
-.mediashell-popup-app-selector-label {
-    font-size: 100%;
+.mediashell-popup-media-app-selector-row-label {
+  font-size: 100%;
 }
 
-.mediashell-popup-app-selector-check-icon {
-    icon-size: 16px;
+.mediashell-popup-media-app-selector-row-check-icon {
+  icon-size: 16px;
 }
 
-.mediashell-popup-app-selector-pin-button {
-    border-radius: 999px;
-    min-width: 30px;
-    min-height: 30px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
+.mediashell-popup-media-app-selector-row-pin-button {
+  border-radius: 999px;
+  min-width: 30px;
+  min-height: 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
 }
 
-.mediashell-popup-app-selector-pin-button:checked {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
+.mediashell-popup-media-app-selector-row-pin-button:checked {
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
 }
 
-.mediashell-popup-app-selector-pin-button:checked:hover {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
-    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+.mediashell-popup-media-app-selector-row-pin-button:checked:hover {
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
 }
 
-.mediashell-popup-app-selector-pin-button:checked:active {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
-    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+.mediashell-popup-media-app-selector-row-pin-button:checked:active {
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
-.mediashell-popup-app-selector-pin-icon {
-    icon-size: 14px;
+.mediashell-popup-media-app-selector-row-pin-icon {
+  icon-size: 14px;
 }
 
 /* Popup — Album art --------------------------------------------------
@@ -254,18 +288,18 @@
  * width. It responds to popup-width independently from the fixed controls row.
  */
 .mediashell-popup-album-art-frame {
-    background-color: rgba(128, 128, 128, 0.38);
+  background-color: rgba(128, 128, 128, 0.38);
 }
 
 .mediashell-popup-album-art {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 /* The native .button class supplies the theme-aware fallback surface. */
 .mediashell-popup-album-art-fallback {
-    padding: 0;
+  padding: 0;
 }
 
 /* Popup — Track information -----------------------------------------
@@ -273,20 +307,20 @@
  * should not define horizontal padding here. Use spacing/font rules only.
  */
 .mediashell-popup-track-information {
-    spacing: 4px;
+  spacing: 4px;
 }
 
 .mediashell-popup-track-information-title {
-    font-weight: bold;
-    font-size: 140%;
+  font-weight: bold;
+  font-size: 140%;
 }
 
 .mediashell-popup-track-information-artist {
-    font-size: 100%;
+  font-size: 100%;
 }
 
 .mediashell-popup-track-information-album {
-    font-size: 90%;
+  font-size: 90%;
 }
 
 /* Popup — Progress bar -----------------------------------------------
@@ -294,16 +328,16 @@
  * The elapsed time aligns to the left edge; duration aligns to the right edge.
  */
 .mediashell-popup-progress-bar {
-    spacing: 8px;
+  spacing: 8px;
 }
 
 .mediashell-popup-progress-bar-time {
-    padding-left: 0;
-    padding-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .mediashell-popup-progress-bar-time-label {
-    font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
 }
 
 /* Popup — Playback controls -----------------------------------------
@@ -311,71 +345,95 @@
  * between previous/play/next; the row stays centered like secondary controls.
  */
 .mediashell-popup-playback-controls {
-    spacing: 12px;
+  spacing: 12px;
 }
 
 .mediashell-popup-primary-controls {
-    spacing: 12px;
+  /* Five full-size transport controls fit the 350 px popup without compacting. */
+  spacing: 10px;
 }
 
 .mediashell-popup-secondary-controls {
-    spacing: 12px;
+  spacing: 12px;
 }
 
 .mediashell-popup-control-button {
-    border-radius: 100px;
-    min-height: 48px;
-    min-width: 48px;
-    padding: 0;
+  border-radius: 100px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0;
 }
 
 .mediashell-popup-control-button-circular {
-    width: 48px;
-    height: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.mediashell-popup-control-button-adjacent {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
 }
 
 .mediashell-popup-control-button-primary {
-    min-width: 96px;
-    width: 96px;
-    height: 48px;
-    transition-duration: 100ms;
-    box-shadow: none;
+  min-width: 96px;
+  width: 96px;
+  height: 48px;
+  transition-duration: 100ms;
+  box-shadow: none;
 }
 
-/* Primary transport button uses the Shell accent color for stock styling. */
+/* Primary playback button uses the Shell accent color for stock styling. */
 .mediashell-popup-control-button-primary,
 .mediashell-popup-control-button-primary:checked {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
 }
 
 .mediashell-popup-control-button-primary:hover {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
-    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
 }
 
 .mediashell-popup-control-button-primary:active {
-    background-color: -st-accent-color;
-    color: -st-accent-fg-color;
-    box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
 .mediashell-popup-control-button-state {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    min-height: 38px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+}
+
+.mediashell-popup-control-button-text {
+  min-width: 52px;
+  height: 38px;
+  min-height: 38px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.mediashell-popup-control-label {
+  font-feature-settings: "tnum";
 }
 
 .mediashell-popup-control-icon {
-    icon-size: 14px;
+  icon-size: 14px;
 }
 
 .mediashell-popup-control-button-primary .mediashell-popup-control-icon {
-    icon-size: 16px;
+  icon-size: 16px;
+}
+
+.mediashell-popup-control-button-primary:focus {
+  box-shadow: inset 0 0 0 2px -st-accent-fg-color;
 }
 
 .mediashell-popup-control-button-state .mediashell-popup-control-icon {
-    icon-size: 16px;
+  icon-size: 16px;
 }
