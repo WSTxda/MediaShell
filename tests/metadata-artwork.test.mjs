@@ -17,7 +17,6 @@ import {
 import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
 import {
   calculateAlbumArtCornerRadius,
-  calculateAlbumArtDisplaySize,
   createAlbumArtRequest,
   selectAlbumArtCacheEvictions,
 } from "../src/shared/utils/albumArt.js";
@@ -120,14 +119,15 @@ test("metadata normalization produces one stable and display-safe domain shape",
   ]);
 });
 
-test("album-art requests snapshot ownership and reject stale-equivalent ambiguity", () => {
-  assert.equal(calculateAlbumArtDisplaySize(32, 65), 21);
-  assert.equal(calculateAlbumArtDisplaySize(64, 65), 42);
-  assert.equal(calculateAlbumArtDisplaySize(18, 100), 18);
-  assert.equal(calculateAlbumArtDisplaySize(0, 65), 1);
+test("album-art corner radius scales consistently across artwork sizes", () => {
   assert.equal(calculateAlbumArtCornerRadius(20, 0), 0);
-  assert.equal(calculateAlbumArtCornerRadius(20, 40), 4);
+  assert.equal(calculateAlbumArtCornerRadius(20, 20), 2);
   assert.equal(calculateAlbumArtCornerRadius(20, 100), 10);
+  assert.equal(calculateAlbumArtCornerRadius(250, 20), 25);
+  assert.equal(calculateAlbumArtCornerRadius(250, 100), 125);
+});
+
+test("album-art requests snapshot ownership and reject stale-equivalent ambiguity", () => {
   const first = createAlbumArtRequest({
     busName: "org.mpris.MediaPlayer2.first",
     metadata: {

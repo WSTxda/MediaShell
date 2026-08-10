@@ -37,78 +37,78 @@ msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:42
 #: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:266 assets/ui/prefs.ui:594 assets/ui/prefs.ui:957
+#: assets/ui/prefs.ui:266 assets/ui/prefs.ui:580 assets/ui/prefs.ui:943
 msgid "Shuffle"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:46
 #: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:611 assets/ui/prefs.ui:958
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:597 assets/ui/prefs.ui:944
 msgid "Seek backward"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:50
 #: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:628 assets/ui/prefs.ui:959
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:614 assets/ui/prefs.ui:945
 msgid "Previous track"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:54
 #: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:645 assets/ui/prefs.ui:960
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:631 assets/ui/prefs.ui:946
 msgid "Play / pause"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:58
 #: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:662 assets/ui/prefs.ui:961
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:648 assets/ui/prefs.ui:947
 msgid "Next track"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:62
 #: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:679 assets/ui/prefs.ui:962
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:665 assets/ui/prefs.ui:948
 msgid "Seek forward"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:65
 #: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:696 assets/ui/prefs.ui:963
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:682 assets/ui/prefs.ui:949
 msgid "Repeat"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:66
-#: assets/ui/prefs.ui:713 assets/ui/prefs.ui:964
+#: assets/ui/prefs.ui:699 assets/ui/prefs.ui:950
 msgid "Volume up"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:67
-#: assets/ui/prefs.ui:730 assets/ui/prefs.ui:965
+#: assets/ui/prefs.ui:716 assets/ui/prefs.ui:951
 msgid "Volume down"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:68 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:747 assets/ui/prefs.ui:966
+#: assets/ui/prefs.ui:733 assets/ui/prefs.ui:952
 msgid "Popup"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:70
-#: assets/ui/prefs.ui:764 assets/ui/prefs.ui:967
+#: assets/ui/prefs.ui:750 assets/ui/prefs.ui:953
 msgid "Preferences"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:74
-#: assets/ui/prefs.ui:781 assets/ui/prefs.ui:968
+#: assets/ui/prefs.ui:767 assets/ui/prefs.ui:954
 msgid "Open app"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:77
-#: assets/ui/prefs.ui:798 assets/ui/prefs.ui:969
+#: assets/ui/prefs.ui:784 assets/ui/prefs.ui:955
 msgid "Quit app"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:78
-#: assets/ui/prefs.ui:815 assets/ui/prefs.ui:970
+#: assets/ui/prefs.ui:801 assets/ui/prefs.ui:956
 msgid "Switch app"
 msgstr ""
 
@@ -121,7 +121,7 @@ msgid "Audio"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:86
-#: assets/ui/prefs.ui:222 assets/ui/prefs.ui:520
+#: assets/ui/prefs.ui:222 assets/ui/prefs.ui:506
 msgid "Apps"
 msgstr ""
 
@@ -146,7 +146,7 @@ msgid "Shortcut already used by %s"
 msgstr ""
 
 #: src/prefs/controllers/InteractionsPageController.js:293
-#: assets/ui/prefs.ui:585
+#: assets/ui/prefs.ui:571
 msgid "Keyboard shortcuts"
 msgstr ""
 
@@ -201,7 +201,7 @@ msgstr ""
 msgid "Cached content will be downloaded again when needed."
 msgstr ""
 
-#: src/prefs/controllers/OthersPageController.js:125 assets/ui/prefs.ui:925
+#: src/prefs/controllers/OthersPageController.js:125 assets/ui/prefs.ui:911
 msgid "Clear cache"
 msgstr ""
 
@@ -310,7 +310,7 @@ msgstr ""
 msgid "Playlist"
 msgstr ""
 
-#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:956
+#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:942
 msgid "None"
 msgstr ""
 
@@ -372,79 +372,79 @@ msgstr ""
 msgid "Metadata"
 msgstr ""
 
-#: assets/ui/prefs.ui:121 assets/ui/prefs.ui:483
+#: assets/ui/prefs.ui:121 assets/ui/prefs.ui:405
 #: assets/ui/top-bar-element-order.ui:27
 msgid "Album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:122 assets/ui/prefs.ui:484
+#: assets/ui/prefs.ui:122 assets/ui/prefs.ui:406
 msgid "Show album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:126 assets/ui/prefs.ui:502
+#: assets/ui/prefs.ui:126 assets/ui/prefs.ui:410
 msgid "Corner radius"
 msgstr ""
 
-#: assets/ui/prefs.ui:127
+#: assets/ui/prefs.ui:127 assets/ui/prefs.ui:411
 msgid "0 disables rounded corners"
 msgstr ""
 
-#: assets/ui/prefs.ui:143 assets/ui/prefs.ui:405
+#: assets/ui/prefs.ui:143 assets/ui/prefs.ui:427
 #: assets/ui/top-bar-element-order.ui:38
 msgid "Track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:144 assets/ui/prefs.ui:406
+#: assets/ui/prefs.ui:144 assets/ui/prefs.ui:428
 msgid "Show track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:148 assets/ui/prefs.ui:410
+#: assets/ui/prefs.ui:148 assets/ui/prefs.ui:432
 msgid "Scroll track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:411
+#: assets/ui/prefs.ui:149 assets/ui/prefs.ui:433
 msgid "Scroll overflowing track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:153 assets/ui/prefs.ui:415
+#: assets/ui/prefs.ui:153 assets/ui/prefs.ui:437
 msgid "Scrolling performance"
 msgstr ""
 
-#: assets/ui/prefs.ui:160 assets/ui/prefs.ui:422
+#: assets/ui/prefs.ui:160 assets/ui/prefs.ui:444
 msgid ""
 "Continuous text scrolling may increase CPU and GPU usage, and animation may "
 "be less smooth on very low-end hardware."
 msgstr ""
 
-#: assets/ui/prefs.ui:183 assets/ui/prefs.ui:445
+#: assets/ui/prefs.ui:183 assets/ui/prefs.ui:467
 msgid "Scroll speed"
 msgstr ""
 
-#: assets/ui/prefs.ui:184 assets/ui/prefs.ui:446
+#: assets/ui/prefs.ui:184 assets/ui/prefs.ui:468
 msgid "Higher values scroll faster"
 msgstr ""
 
-#: assets/ui/prefs.ui:197 assets/ui/prefs.ui:459
+#: assets/ui/prefs.ui:197 assets/ui/prefs.ui:481
 msgid "Scroll pause"
 msgstr ""
 
-#: assets/ui/prefs.ui:198 assets/ui/prefs.ui:460
+#: assets/ui/prefs.ui:198 assets/ui/prefs.ui:482
 msgid "Seconds before scrolling starts again"
 msgstr ""
 
-#: assets/ui/prefs.ui:213 assets/ui/prefs.ui:475
+#: assets/ui/prefs.ui:213 assets/ui/prefs.ui:497
 msgid "Track information content"
 msgstr ""
 
-#: assets/ui/prefs.ui:214 assets/ui/prefs.ui:476
+#: assets/ui/prefs.ui:214 assets/ui/prefs.ui:498
 msgid "Choose and reorder track information"
 msgstr ""
 
-#: assets/ui/prefs.ui:225 assets/ui/prefs.ui:529
+#: assets/ui/prefs.ui:225 assets/ui/prefs.ui:515
 msgid "Colored app icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:226 assets/ui/prefs.ui:530
+#: assets/ui/prefs.ui:226 assets/ui/prefs.ui:516
 msgid "Use the media app's full-color icon"
 msgstr ""
 
@@ -511,175 +511,163 @@ msgstr ""
 msgid "Higher values animate faster"
 msgstr ""
 
-#: assets/ui/prefs.ui:488
-msgid "Size"
-msgstr ""
-
-#: assets/ui/prefs.ui:489
-msgid "Percentage of the panel height"
-msgstr ""
-
-#: assets/ui/prefs.ui:503
-msgid "Percentage of maximum radius; 100 makes a circle"
-msgstr ""
-
-#: assets/ui/prefs.ui:524 assets/ui/top-bar-element-order.ui:16
+#: assets/ui/prefs.ui:510 assets/ui/top-bar-element-order.ui:16
 msgid "App icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:525
+#: assets/ui/prefs.ui:511
 msgid "Show the app icon"
 msgstr ""
 
-#: assets/ui/prefs.ui:539
+#: assets/ui/prefs.ui:525
 msgid "Panel"
 msgstr ""
 
-#: assets/ui/prefs.ui:543
+#: assets/ui/prefs.ui:529
 msgid "Extension placement"
 msgstr ""
 
-#: assets/ui/prefs.ui:544
+#: assets/ui/prefs.ui:530
 msgid "Choose where the extension appears"
 msgstr ""
 
-#: assets/ui/prefs.ui:547
+#: assets/ui/prefs.ui:533
 msgid "Position"
 msgstr ""
 
-#: assets/ui/prefs.ui:548
+#: assets/ui/prefs.ui:534
 msgid "Section where the extension appears in the top bar"
 msgstr ""
 
-#: assets/ui/prefs.ui:552
+#: assets/ui/prefs.ui:538
 msgid "Left"
 msgstr ""
 
-#: assets/ui/prefs.ui:553
+#: assets/ui/prefs.ui:539
 msgid "Center"
 msgstr ""
 
-#: assets/ui/prefs.ui:554
+#: assets/ui/prefs.ui:540
 msgid "Right"
 msgstr ""
 
-#: assets/ui/prefs.ui:562
+#: assets/ui/prefs.ui:548
 msgid "Index"
 msgstr ""
 
-#: assets/ui/prefs.ui:563
+#: assets/ui/prefs.ui:549
 msgid "Order among items in the same top bar section"
 msgstr ""
 
-#: assets/ui/prefs.ui:581
+#: assets/ui/prefs.ui:567
 msgid "Interactions"
 msgstr ""
 
-#: assets/ui/prefs.ui:586
+#: assets/ui/prefs.ui:572
 msgid "Assign global keyboard shortcuts to media actions"
 msgstr ""
 
-#: assets/ui/prefs.ui:589
+#: assets/ui/prefs.ui:575
 msgid "Shortcut assignments"
 msgstr ""
 
-#: assets/ui/prefs.ui:590
+#: assets/ui/prefs.ui:576
 msgid "Configure each keyboard action"
 msgstr ""
 
-#: assets/ui/prefs.ui:602 assets/ui/prefs.ui:619 assets/ui/prefs.ui:636
-#: assets/ui/prefs.ui:653 assets/ui/prefs.ui:670 assets/ui/prefs.ui:687
-#: assets/ui/prefs.ui:704 assets/ui/prefs.ui:721 assets/ui/prefs.ui:738
-#: assets/ui/prefs.ui:755 assets/ui/prefs.ui:772 assets/ui/prefs.ui:789
-#: assets/ui/prefs.ui:806 assets/ui/prefs.ui:823
+#: assets/ui/prefs.ui:588 assets/ui/prefs.ui:605 assets/ui/prefs.ui:622
+#: assets/ui/prefs.ui:639 assets/ui/prefs.ui:656 assets/ui/prefs.ui:673
+#: assets/ui/prefs.ui:690 assets/ui/prefs.ui:707 assets/ui/prefs.ui:724
+#: assets/ui/prefs.ui:741 assets/ui/prefs.ui:758 assets/ui/prefs.ui:775
+#: assets/ui/prefs.ui:792 assets/ui/prefs.ui:809
 msgid "Set"
 msgstr ""
 
-#: assets/ui/prefs.ui:833
+#: assets/ui/prefs.ui:819
 msgid "Shortcut overview"
 msgstr ""
 
-#: assets/ui/prefs.ui:834
+#: assets/ui/prefs.ui:820
 msgid "View all assigned shortcuts"
 msgstr ""
 
-#: assets/ui/prefs.ui:839
+#: assets/ui/prefs.ui:825
 msgid "View"
 msgstr ""
 
-#: assets/ui/prefs.ui:847
+#: assets/ui/prefs.ui:833
 msgid "Reset keyboard shortcuts"
 msgstr ""
 
-#: assets/ui/prefs.ui:858
+#: assets/ui/prefs.ui:844
 msgid "Mouse actions"
 msgstr ""
 
-#: assets/ui/prefs.ui:859
+#: assets/ui/prefs.ui:845
 msgid "Assign actions to clicks and scrolling on the top bar indicator"
 msgstr ""
 
-#: assets/ui/prefs.ui:862
+#: assets/ui/prefs.ui:848
 msgid "Left click / tap"
 msgstr ""
 
-#: assets/ui/prefs.ui:868
+#: assets/ui/prefs.ui:854
 msgid "Middle click"
 msgstr ""
 
-#: assets/ui/prefs.ui:874
+#: assets/ui/prefs.ui:860
 msgid "Right click"
 msgstr ""
 
-#: assets/ui/prefs.ui:880
+#: assets/ui/prefs.ui:866
 msgid "Double click / tap"
 msgstr ""
 
-#: assets/ui/prefs.ui:886
+#: assets/ui/prefs.ui:872
 msgid "Scroll up"
 msgstr ""
 
-#: assets/ui/prefs.ui:892
+#: assets/ui/prefs.ui:878
 msgid "Scroll down"
 msgstr ""
 
-#: assets/ui/prefs.ui:900
+#: assets/ui/prefs.ui:886
 msgid "Others"
 msgstr ""
 
-#: assets/ui/prefs.ui:904
+#: assets/ui/prefs.ui:890
 msgid "System"
 msgstr ""
 
-#: assets/ui/prefs.ui:905
+#: assets/ui/prefs.ui:891
 msgid "Control how MediaShell integrates with GNOME"
 msgstr ""
 
-#: assets/ui/prefs.ui:908
+#: assets/ui/prefs.ui:894
 msgid "Hide GNOME media controls"
 msgstr ""
 
-#: assets/ui/prefs.ui:909
+#: assets/ui/prefs.ui:895
 msgid "Remove GNOME's default media controls from the notification list"
 msgstr ""
 
-#: assets/ui/prefs.ui:916
+#: assets/ui/prefs.ui:902
 msgid "Cache"
 msgstr ""
 
-#: assets/ui/prefs.ui:917
+#: assets/ui/prefs.ui:903
 msgid "Store content on disk to load it faster"
 msgstr ""
 
-#: assets/ui/prefs.ui:920
+#: assets/ui/prefs.ui:906
 msgid "Store album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:935
+#: assets/ui/prefs.ui:921
 msgid "Clear"
 msgstr ""
 
-#: assets/ui/prefs.ui:950
+#: assets/ui/prefs.ui:936
 msgid "Extension settings"
 msgstr ""
 

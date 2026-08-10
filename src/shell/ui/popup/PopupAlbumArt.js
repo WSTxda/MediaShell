@@ -13,10 +13,12 @@ import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import St from "gi://St";
 
-import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
 import { IconNames } from "../../../shared/constants/icons.js";
-import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
+import {
+  calculateAlbumArtCornerRadius,
+  createAlbumArtRequest,
+} from "../../../shared/utils/albumArt.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import {
   POPUP_ALBUM_ART_OUTLINE_WIDTH,
@@ -85,12 +87,10 @@ export default class PopupAlbumArt {
   async render() {
     const metadata = this.mediaApp.metadata;
     const width = this.getAlbumArtWidth();
-    const configuredRadius = Number.isFinite(
+    const radius = calculateAlbumArtCornerRadius(
+      width,
       this.extensionController.popupAlbumArtCornerRadius,
-    )
-      ? this.extensionController.popupAlbumArtCornerRadius
-      : POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
-    const radius = Math.min(configuredRadius, Math.round(width / 2));
+    );
     const request = createAlbumArtRequest({
       busName: this.mediaApp.busName,
       metadata,

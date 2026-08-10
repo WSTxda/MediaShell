@@ -4,8 +4,9 @@
  *
  * Displays the active media app's icon in the GNOME top bar.
  *
- * Album art is intentionally rendered by TopBarAlbumArt as an independent,
- * reorderable metadata element.
+ * TopBarContent owns this component and supplies the resolved Shell app or themed
+ * fallback icon. The component keeps icon actor creation and updates separate
+ * from track text, visualizer, and playback control layout.
  */
 
 import { IconNames } from "../../../shared/constants/icons.js";
@@ -15,7 +16,9 @@ import { placeActorAtIndex } from "../../utils/actors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
-/** Displays the active media app's icon in the GNOME top bar. */
+/**
+ * Displays the active media app's icon in the GNOME top bar.
+ */
 export default class TopBarMediaAppIcon {
   constructor(topBarContent) {
     this.topBarContent = topBarContent;
@@ -39,6 +42,10 @@ export default class TopBarMediaAppIcon {
     const useColoredIcon = this.extensionController.topBarMediaAppIconUseColor;
     const iconKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
 
+    // St can retain the previously resolved symbolic/regular texture when
+    // only the CSS icon style changes. Replacing this tiny actor on a mode
+    // toggle makes the setting visible immediately without rebuilding the
+    // complete top bar indicator.
     if (!this.actor || this.usesColoredIcon !== useColoredIcon)
       this.replaceIconActor(index, useColoredIcon);
 
@@ -53,6 +60,8 @@ export default class TopBarMediaAppIcon {
         this.desktopAppResolver.getDesktopAppIcon(desktopApp),
         IconNames.MEDIA,
       );
+      // Do not memoize a transient miss: Shell may associate a browser
+      // window with its desktop app shortly after MPRIS appears.
       this.iconKey =
         desktopApp &&
         this.desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
@@ -60,7 +69,7 @@ export default class TopBarMediaAppIcon {
           : null;
     }
 
-    placeActorAtIndex(this.actor, parentBox, index);
+    this.attach(index, parentBox);
   }
 
   replaceIconActor(index, useColoredIcon) {
@@ -94,6 +103,10 @@ export default class TopBarMediaAppIcon {
     previous?.destroy();
   }
 
+  attach(index, parentBox) {
+    placeActorAtIndex(this.actor, parentBox, index);
+  }
+
   remove() {
     if (!this.actor) return;
     this.actor.get_parent()?.remove_child(this.actor);
@@ -105,7 +118,6 @@ export default class TopBarMediaAppIcon {
 
   destroy() {
     this.remove();
-    this.desktopAppResolver = null;
     this.topBarContent = null;
   }
 }

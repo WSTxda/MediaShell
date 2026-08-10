@@ -48,7 +48,7 @@
       <default>true</default>
     </key>
     <key name="popup-album-art-corner-radius" type="u">
-      <range min="0" max="50" />
+      <range min="0" max="100" />
       <default>20</default>
     </key>
     <key name="popup-track-information-show" type="b">
@@ -136,13 +136,9 @@
     <key name="top-bar-album-art-show" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-album-art-size-percent" type="u">
-      <range min="60" max="100" />
-      <default>65</default>
-    </key>
-    <key name="top-bar-album-art-corner-radius-percent" type="u">
+    <key name="top-bar-album-art-corner-radius" type="u">
       <range min="0" max="100" />
-      <default>40</default>
+      <default>20</default>
     </key>
     <key name="top-bar-visualizer-show" type="b">
       <default>false</default>

@@ -166,13 +166,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "enable-expansion",
   ],
   [
-    SettingsKeys.TOP_BAR_ALBUM_ART_SIZE_PERCENT,
-    "sp-top-bar-album-art-size-percent",
-    "value",
-  ],
-  [
-    SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT,
-    "sp-top-bar-album-art-corner-radius-percent",
+    SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS,
+    "sp-top-bar-album-art-corner-radius",
     "value",
   ],
 ]);

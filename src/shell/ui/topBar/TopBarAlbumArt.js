@@ -10,7 +10,6 @@ import Gio from "gi://Gio";
 import { IconNames } from "../../../shared/constants/icons.js";
 import {
   calculateAlbumArtCornerRadius,
-  calculateAlbumArtDisplaySize,
   createAlbumArtRequest,
 } from "../../../shared/utils/albumArt.js";
 import { createLogger } from "../../../shared/utils/log.js";
@@ -28,6 +27,7 @@ import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 
 const RENDER_SCALE = 2;
 const DEFAULT_PANEL_HEIGHT = 32;
+const PANEL_HEIGHT_RATIO = 0.65;
 const logger = createLogger("TopBarAlbumArt");
 
 /** Displays configurable album art in the GNOME top bar. */
@@ -58,7 +58,7 @@ export default class TopBarAlbumArt {
     const size = this.getAlbumArtSize();
     const radius = calculateAlbumArtCornerRadius(
       size,
-      this.extensionController.topBarAlbumArtCornerRadiusPercent,
+      this.extensionController.topBarAlbumArtCornerRadius,
     );
     const request = createAlbumArtRequest({
       busName: this.mediaApp.busName,
@@ -101,10 +101,7 @@ export default class TopBarAlbumArt {
         // A Shell theme can be replaced while the indicator is being mapped.
       }
     }
-    return calculateAlbumArtDisplaySize(
-      availableHeight,
-      this.extensionController.topBarAlbumArtSizePercent,
-    );
+    return Math.max(1, Math.round(availableHeight * PANEL_HEIGHT_RATIO));
   }
 
   ensureActor(size, radius) {

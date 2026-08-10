@@ -29,35 +29,19 @@ function normalizePositiveInteger(value, fallback = 1) {
 }
 
 /**
- * Converts a panel-relative artwork preference to an actor size.
- *
- * @param {number} availableHeight - The themed content height available to the actor.
- * @param {number} percentage - Requested percentage of the available height.
- * @returns {number} A positive integer size in the actor's coordinate space.
- */
-export function calculateAlbumArtDisplaySize(availableHeight, percentage) {
-  const safeHeight = normalizePositiveInteger(availableHeight);
-  const safePercentage = Math.min(
-    100,
-    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
-  );
-  return Math.max(1, Math.round((safeHeight * safePercentage) / 100));
-}
-
-/**
- * Converts a relative corner preference to a radius for a square artwork actor.
+ * Converts the shared 0–100 corner-radius scale to pixels for square artwork.
  *
  * @param {number} size - Artwork actor size.
- * @param {number} percentage - Percentage of the maximum circular radius.
+ * @param {number} value - Normalized corner radius; 0 is square and 100 is circular.
  * @returns {number} A non-negative integer radius.
  */
-export function calculateAlbumArtCornerRadius(size, percentage) {
+export function calculateAlbumArtCornerRadius(size, value) {
   const safeSize = normalizePositiveInteger(size);
-  const safePercentage = Math.min(
+  const safeValue = Math.min(
     100,
-    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
+    Math.max(0, Number.isFinite(value) ? value : 0),
   );
-  return Math.round((safeSize * safePercentage) / 200);
+  return Math.round((safeSize * safeValue) / 200);
 }
 
 /**
