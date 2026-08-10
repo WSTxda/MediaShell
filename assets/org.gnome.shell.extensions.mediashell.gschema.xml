@@ -137,12 +137,12 @@
       <default>false</default>
     </key>
     <key name="top-bar-album-art-size-percent" type="u">
-      <range min="25" max="90" />
+      <range min="60" max="100" />
       <default>65</default>
     </key>
-    <key name="top-bar-album-art-corner-radius" type="u">
-      <range min="0" max="16" />
-      <default>4</default>
+    <key name="top-bar-album-art-corner-radius-percent" type="u">
+      <range min="0" max="100" />
+      <default>40</default>
     </key>
     <key name="top-bar-visualizer-show" type="b">
       <default>false</default>

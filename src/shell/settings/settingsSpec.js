@@ -20,7 +20,7 @@ import {
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
-  TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+  TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   TOP_BAR_ALBUM_ART_SIZE_PERCENT_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
 } from "../../shared/constants/settings.js";
@@ -239,11 +239,11 @@ export const SETTINGS_SPEC = Object.freeze({
     ),
     impact: WidgetFlags.TOP_BAR_ALBUM_ART,
   },
-  [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]: {
-    property: "topBarAlbumArtCornerRadius",
+  [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT]: {
+    property: "topBarAlbumArtCornerRadiusPercent",
     read: "get_uint",
     transform: createNumericConstraint(
-      TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+      TOP_BAR_ALBUM_ART_CORNER_RADIUS_PERCENT_CONSTRAINTS,
     ),
     impact: WidgetFlags.TOP_BAR_ALBUM_ART,
   },

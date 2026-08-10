@@ -45,6 +45,22 @@ export function calculateAlbumArtDisplaySize(availableHeight, percentage) {
 }
 
 /**
+ * Converts a relative corner preference to a radius for a square artwork actor.
+ *
+ * @param {number} size - Artwork actor size.
+ * @param {number} percentage - Percentage of the maximum circular radius.
+ * @returns {number} A non-negative integer radius.
+ */
+export function calculateAlbumArtCornerRadius(size, percentage) {
+  const safeSize = normalizePositiveInteger(size);
+  const safePercentage = Math.min(
+    100,
+    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
+  );
+  return Math.round((safeSize * safePercentage) / 200);
+}
+
+/**
  * Builds one immutable snapshot for an album-art render request.
  *
  * @param {object} input - Current app, metadata, geometry, and cache state.

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 18:07+0530\n"
+"POT-Creation-Date: 2026-08-10 18:25+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -385,7 +385,7 @@ msgstr ""
 msgid "Corner radius"
 msgstr ""
 
-#: assets/ui/prefs.ui:127 assets/ui/prefs.ui:503
+#: assets/ui/prefs.ui:127
 msgid "0 disables rounded corners"
 msgstr ""
 
@@ -517,6 +517,10 @@ msgstr ""
 
 #: assets/ui/prefs.ui:489
 msgid "Percentage of the panel height"
+msgstr ""
+
+#: assets/ui/prefs.ui:503
+msgid "Percentage of maximum radius; 100 makes a circle"
 msgstr ""
 
 #: assets/ui/prefs.ui:524 assets/ui/top-bar-element-order.ui:16

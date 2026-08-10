@@ -9,6 +9,7 @@ import Gio from "gi://Gio";
 
 import { IconNames } from "../../../shared/constants/icons.js";
 import {
+  calculateAlbumArtCornerRadius,
   calculateAlbumArtDisplaySize,
   createAlbumArtRequest,
 } from "../../../shared/utils/albumArt.js";
@@ -55,9 +56,9 @@ export default class TopBarAlbumArt {
 
   render(index, parentBox) {
     const size = this.getAlbumArtSize();
-    const radius = Math.min(
-      this.extensionController.topBarAlbumArtCornerRadius,
-      Math.round(size / 2),
+    const radius = calculateAlbumArtCornerRadius(
+      size,
+      this.extensionController.topBarAlbumArtCornerRadiusPercent,
     );
     const request = createAlbumArtRequest({
       busName: this.mediaApp.busName,
