@@ -2,11 +2,9 @@
  * @file PopupAlbumArt.js
  * @module shell.ui.popup.PopupAlbumArt
  *
- * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
- *
- * PopupContent delegates album art to this component so async file/network loads
- * are isolated from the rest of the popup. The component cancels stale loads by
- * generation, delegates stateless pixbuf transforms, and falls back to a themed icon.
+ * Owns popup album-art actors, playback-state animation, request generations,
+ * cancellation, and visible fallback state. Shared source, decode, pixbuf, and
+ * presentation helpers keep artwork behavior aligned with the top bar.
  */
 
 import Clutter from "gi://Clutter";
@@ -21,7 +19,6 @@ import {
 } from "../../../shared/utils/albumArt.js";
 import { createLogger } from "../../../shared/utils/log.js";
 import {
-  POPUP_ALBUM_ART_OUTLINE_WIDTH,
   POPUP_ALBUM_ART_PAUSED_SCALE,
   POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
 } from "../../constants/popup.js";
@@ -31,46 +28,51 @@ import {
   closeAlbumArtSource,
   decodeAlbumArtSource,
 } from "../../utils/albumArtDecode.js";
+import { prepareAlbumArtPixbuf } from "../../utils/albumArtPixbuf.js";
 import {
-  cropPixbufToSquare,
-  roundPixbufCorners,
-} from "../../utils/albumArtPixbuf.js";
+  getAlbumArtFallbackIconSize,
+  setAlbumArtFallbackPresentation,
+  setAlbumArtImagePresentation,
+  syncAlbumArtGeometry,
+} from "../../utils/albumArtPresentation.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { resolveAlbumArtSource } from "../../utils/albumArtSource.js";
 
 const logger = createLogger("PopupAlbumArt");
 
-/**
- * Owns popup album-art loading, playback-state animation, safe fallbacks, decoded-image transform coordination, and actor lifecycle.
- */
+/** Owns album-art rendering and lifecycle for the popup surface. */
 export default class PopupAlbumArt {
   constructor(popupContent) {
     this.popupContent = popupContent;
+    this.albumArtFrame = null;
+    this.albumArtImage = null;
     this.albumArtLoadGeneration = 0;
     this.albumArtLoadCancellable = null;
-    this.loadedAlbumArtKey = null;
-    this.loadingAlbumArtKey = null;
+    this.loadedAlbumArtSourceKey = null;
+    this.loadingAlbumArtSourceKey = null;
+    this.loadedAlbumArtPixbuf = null;
+    this.loadedAlbumArtFallbackIcon = null;
     this.playbackScaleTarget = null;
     this.albumArtLoader = AlbumArtLoader.getInstance();
-    this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
-    ]);
   }
 
   get extensionController() {
     return this.popupContent.extensionController;
   }
+
   get mediaApp() {
     return this.popupContent.mediaApp;
   }
+
   get popupItem() {
     return this.popupContent.popupItem;
   }
+
   get mediaAppSelectorActor() {
     return this.popupContent.mediaAppSelectorController.actor;
   }
+
   get actor() {
     return this.albumArtFrame;
   }
@@ -79,43 +81,51 @@ export default class PopupAlbumArt {
     return this.popupContent.getAlbumArtWidth();
   }
 
-  cancelAlbumArtLoad() {
-    if (!this.albumArtLoadCancellable) return;
-    this.albumArtLoadGeneration++;
-    this.albumArtLoadCancellable.cancel();
-    this.albumArtLoadCancellable = null;
-    this.loadingAlbumArtKey = null;
+  getCurrentGeometry() {
+    const width = this.getAlbumArtWidth();
+    return {
+      width,
+      radius: calculateAlbumArtCornerRadius(
+        width,
+        this.extensionController.popupAlbumArtCornerRadius,
+      ),
+    };
   }
 
-  async render() {
-    const metadata = this.mediaApp.metadata;
-    const width = this.getAlbumArtWidth();
-    const radius = calculateAlbumArtCornerRadius(
-      width,
-      this.extensionController.popupAlbumArtCornerRadius,
-    );
-    const request = createAlbumArtRequest({
+  createCurrentRequest() {
+    const { width, radius } = this.getCurrentGeometry();
+    return createAlbumArtRequest({
       busName: this.mediaApp.busName,
-      metadata,
+      metadata: this.mediaApp.metadata,
       width,
       radius,
       cacheEnabled: this.extensionController.albumArtCacheEnabled,
     });
+  }
 
+  async render() {
+    const request = this.createCurrentRequest();
     this.ensureAlbumArtActor(request.width, request.radius);
     this.attach();
     this.syncPlaybackState(this.mediaApp.playbackStatus, false);
-    if (
-      this.loadedAlbumArtKey === request.key ||
-      this.loadingAlbumArtKey === request.key
-    )
+
+    if (this.loadedAlbumArtSourceKey === request.sourceKey) {
+      this.syncLoadedPresentation(request.width, request.radius);
       return;
+    }
+    if (this.loadingAlbumArtSourceKey === request.sourceKey) {
+      this.syncAlbumArtGeometry(request.width, request.radius);
+      return;
+    }
 
     this.cancelAlbumArtLoad();
+    this.clearLoadedAlbumArt();
+    this.setAlbumArtFallback(request.width, request.radius, null);
+
     const loadGeneration = ++this.albumArtLoadGeneration;
     const loadCancellable = new Gio.Cancellable();
     this.albumArtLoadCancellable = loadCancellable;
-    this.loadingAlbumArtKey = request.key;
+    this.loadingAlbumArtSourceKey = request.sourceKey;
 
     try {
       const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
@@ -139,10 +149,7 @@ export default class PopupAlbumArt {
       if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
         return;
 
-      if (pixbuf) this.setAlbumArtPixbuf(request.width, request.radius, pixbuf);
-      else {
-        this.setAlbumArtFallback(request.width, request.radius, fallbackIcon);
-      }
+      this.setLoadedAlbumArt(request.sourceKey, pixbuf, fallbackIcon);
     } catch (error) {
       if (
         !isCancellationError(error) &&
@@ -153,36 +160,44 @@ export default class PopupAlbumArt {
           "Album-art processing failed; using the fallback icon",
           error,
         );
-        this.setAlbumArtFallback(request.width, request.radius, null);
+        this.setLoadedAlbumArt(request.sourceKey, null, null);
       }
     } finally {
       if (
         this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
       ) {
-        // Remember fallback results too, otherwise every metadata update
-        // would retry the same unavailable URL and hurt popup latency.
-        this.loadedAlbumArtKey = request.key;
-        this.loadingAlbumArtKey = null;
+        this.loadingAlbumArtSourceKey = null;
         this.albumArtLoadCancellable = null;
       }
     }
   }
 
-  setAlbumArtPixbuf(width, radius, pixbuf) {
-    const imageSize = this.getImageSize(width);
-    const imageRadius = this.getImageRadius(radius);
-    const orientedPixbuf = pixbuf.apply_embedded_orientation?.() ?? pixbuf;
-    const squarePixbuf = cropPixbufToSquare(orientedPixbuf, imageSize);
-    const renderPixbuf =
-      imageRadius > 0
-        ? roundPixbufCorners(squarePixbuf, imageRadius)
-        : squarePixbuf;
+  setLoadedAlbumArt(sourceKey, pixbuf, fallbackIcon) {
+    this.loadedAlbumArtSourceKey = sourceKey;
+    this.loadedAlbumArtPixbuf = pixbuf;
+    this.loadedAlbumArtFallbackIcon = fallbackIcon;
+    const { width, radius } = this.getCurrentGeometry();
+    this.syncLoadedPresentation(width, radius);
+  }
 
-    this.albumArtImage.content = null;
-    this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.remove_style_class_name(
-      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
-    );
+  clearLoadedAlbumArt() {
+    this.loadedAlbumArtSourceKey = null;
+    this.loadedAlbumArtPixbuf = null;
+    this.loadedAlbumArtFallbackIcon = null;
+  }
+
+  syncLoadedPresentation(width, radius) {
+    if (this.loadedAlbumArtPixbuf)
+      this.setAlbumArtPixbuf(width, radius, this.loadedAlbumArtPixbuf);
+    else
+      this.setAlbumArtFallback(width, radius, this.loadedAlbumArtFallbackIcon);
+  }
+
+  setAlbumArtPixbuf(width, radius, pixbuf) {
+    const { imageSize, imageRadius } = this.syncAlbumArtGeometry(width, radius);
+    const renderPixbuf = prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius);
+
+    setAlbumArtImagePresentation(this.albumArtImage);
     setGIcon(this.albumArtImage, renderPixbuf, IconNames.MEDIA);
     this.albumArtImage.set_icon_size(imageSize);
   }
@@ -195,7 +210,7 @@ export default class PopupAlbumArt {
 
     this.albumArtImage = createIcon(
       {
-        styleClass: StyleClasses.POPUP_ALBUM_ART,
+        styleClass: StyleClasses.ALBUM_ART_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -204,7 +219,7 @@ export default class PopupAlbumArt {
       IconNames.MEDIA,
     );
     this.albumArtFrame = new St.Bin({
-      styleClass: StyleClasses.POPUP_ALBUM_ART_FRAME,
+      styleClass: StyleClasses.ALBUM_ART_FRAME,
       xExpand: false,
       yExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
@@ -244,44 +259,20 @@ export default class PopupAlbumArt {
     this.albumArtFrame?.remove_transition("scale-y");
   }
 
-  getImageSize(width) {
-    return Math.max(1, Math.round(width - POPUP_ALBUM_ART_OUTLINE_WIDTH * 2));
-  }
-
-  getImageRadius(radius) {
-    return Math.max(0, radius - POPUP_ALBUM_ART_OUTLINE_WIDTH);
-  }
-
   syncAlbumArtGeometry(width, radius) {
-    const imageSize = this.getImageSize(width);
-    const imageRadius = this.getImageRadius(radius);
-
-    this.albumArtFrame.style = `border-radius: ${radius}px; padding: ${POPUP_ALBUM_ART_OUTLINE_WIDTH}px;`;
-    this.albumArtFrame.width = width;
-    this.albumArtFrame.height = width;
-    this.albumArtImage.style = `border-radius: ${imageRadius}px;`;
-    this.albumArtImage.width = imageSize;
-    this.albumArtImage.height = imageSize;
+    return syncAlbumArtGeometry(
+      this.albumArtFrame,
+      this.albumArtImage,
+      width,
+      radius,
+    );
   }
 
   setAlbumArtFallback(width, radius, icon) {
-    const imageSize = this.getImageSize(width);
-    this.syncAlbumArtGeometry(width, radius);
-    this.albumArtImage.content = null;
-    // Reuse the Shell's native button surface so the empty album-art fallback follows
-    // the active light/dark theme instead of relying on a fixed gray.
-    this.albumArtImage.add_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.add_style_class_name(
-      StyleClasses.POPUP_ALBUM_ART_FALLBACK,
-    );
-    setGIcon(
-      this.albumArtImage,
-      icon ?? this.fallbackAlbumArtIcon,
-      IconNames.MEDIA,
-    );
-    this.albumArtImage.set_icon_size(
-      Math.max(56, Math.round(imageSize * 0.48)),
-    );
+    const { imageSize } = this.syncAlbumArtGeometry(width, radius);
+    setAlbumArtFallbackPresentation(this.albumArtImage);
+    setGIcon(this.albumArtImage, icon, IconNames.MEDIA);
+    this.albumArtImage.set_icon_size(getAlbumArtFallbackIconSize(imageSize));
   }
 
   attach() {
@@ -294,9 +285,27 @@ export default class PopupAlbumArt {
     else this.popupItem.add_child(this.albumArtFrame);
   }
 
+  cancelAlbumArtLoad() {
+    if (!this.albumArtLoadCancellable) return;
+    this.albumArtLoadGeneration++;
+    this.albumArtLoadCancellable.cancel();
+    this.albumArtLoadCancellable = null;
+    this.loadingAlbumArtSourceKey = null;
+  }
+
+  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request) {
+    return (
+      this.albumArtFrame &&
+      loadGeneration === this.albumArtLoadGeneration &&
+      !loadCancellable.is_cancelled() &&
+      this.loadingAlbumArtSourceKey === request.sourceKey &&
+      this.mediaApp?.busName === request.busName
+    );
+  }
+
   remove() {
     this.cancelAlbumArtLoad();
-    this.loadedAlbumArtKey = null;
+    this.clearLoadedAlbumArt();
     this.playbackScaleTarget = null;
     if (!this.albumArtFrame) return;
 
@@ -307,19 +316,9 @@ export default class PopupAlbumArt {
     this.albumArtImage = null;
   }
 
-  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request) {
-    return (
-      loadGeneration === this.albumArtLoadGeneration &&
-      !loadCancellable.is_cancelled() &&
-      this.loadingAlbumArtKey === request.key &&
-      this.mediaApp?.busName === request.busName
-    );
-  }
-
   destroy() {
     this.remove();
     this.albumArtLoader = null;
-    this.fallbackAlbumArtIcon = null;
     this.popupContent = null;
   }
 }

@@ -61,10 +61,6 @@
   margin: 0;
 }
 
-.mediashell-top-bar-album-art {
-  margin: 0;
-}
-
 .mediashell-top-bar-visualizer {
   spacing: 0;
 }
@@ -287,22 +283,23 @@
   icon-size: 14px;
 }
 
-/* Popup — Album art --------------------------------------------------
- * Full-width component: the actor code sizes album art to the parent content
- * width. It responds to popup-width independently from the fixed controls row.
+/* Album art ---------------------------------------------------------
+ * Popup and top-bar renderers share the same frame, image, and fallback
+ * presentation. Surface-specific sizing and placement remain actor-owned.
  */
-.mediashell-popup-album-art-frame {
+.mediashell-album-art-frame {
   background-color: rgba(128, 128, 128, 0.38);
+  margin: 0;
 }
 
-.mediashell-popup-album-art {
+.mediashell-album-art-image {
   margin-top: 0;
   margin-bottom: 0;
   padding: 0;
 }
 
 /* The native .button class supplies the theme-aware fallback surface. */
-.mediashell-popup-album-art-fallback {
+.mediashell-album-art-fallback {
   padding: 0;
 }
 

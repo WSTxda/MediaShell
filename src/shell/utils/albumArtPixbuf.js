@@ -11,6 +11,8 @@
 import GdkPixbuf from "gi://GdkPixbuf";
 import GLib from "gi://GLib";
 
+import { ALBUM_ART_RENDER_SCALE } from "../constants/albumArt.js";
+
 /**
  * Scales and center-crops a pixbuf to a square, matching CSS cover behavior.
  *
@@ -18,7 +20,7 @@ import GLib from "gi://GLib";
  * @param {number} size - Target square size in pixels.
  * @returns {GdkPixbuf.Pixbuf} Square pixbuf or the original on transform failure.
  */
-export function cropPixbufToSquare(pixbuf, size) {
+function cropPixbufToSquare(pixbuf, size) {
   const targetSize = Math.max(1, Math.round(size));
   const sourceWidth = pixbuf.get_width();
   const sourceHeight = pixbuf.get_height();
@@ -77,7 +79,7 @@ function roundCornerRow(
  * @param {number} radius - Corner radius in pixels.
  * @returns {GdkPixbuf.Pixbuf} Pixbuf with rounded alpha corners.
  */
-export function roundPixbufCorners(pixbuf, radius) {
+function roundPixbufCorners(pixbuf, radius) {
   let source = pixbuf;
   if (!source.get_has_alpha()) source = source.add_alpha(false, 0, 0, 0);
 
@@ -132,4 +134,28 @@ export function roundPixbufCorners(pixbuf, radius) {
     height,
     rowstride,
   );
+}
+
+/**
+ * Prepares one decoded pixbuf for the shared album-art frame geometry.
+ *
+ * @param {GdkPixbuf.Pixbuf} pixbuf - Decoded source pixbuf.
+ * @param {number} imageSize - Inner image actor size.
+ * @param {number} imageRadius - Inner image corner radius.
+ * @returns {GdkPixbuf.Pixbuf} Square, oriented, optionally rounded render pixbuf.
+ */
+export function prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius) {
+  const renderSize = Math.max(
+    1,
+    Math.round(imageSize * ALBUM_ART_RENDER_SCALE),
+  );
+  const renderRadius = Math.max(
+    0,
+    Math.round(imageRadius * ALBUM_ART_RENDER_SCALE),
+  );
+  const orientedPixbuf = pixbuf.apply_embedded_orientation?.() ?? pixbuf;
+  const squarePixbuf = cropPixbufToSquare(orientedPixbuf, renderSize);
+  return renderRadius > 0
+    ? roundPixbufCorners(squarePixbuf, renderRadius)
+    : squarePixbuf;
 }

@@ -12,9 +12,6 @@
 /** Horizontal padding contributed by the popup container when computing inner content width. */
 export const POPUP_CONTAINER_PADDING = 16;
 
-/** Border width applied to the album-art frame outline. */
-export const POPUP_ALBUM_ART_OUTLINE_WIDTH = 1;
-
 /** Album-art scale while playback is paused or stopped. */
 export const POPUP_ALBUM_ART_PAUSED_SCALE = 0.85;
 

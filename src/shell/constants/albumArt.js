@@ -2,11 +2,17 @@
  * @file albumArt.js
  * @module shell.constants.albumArt
  *
- * Defines Shell-owned album-art cache, payload, and request limits.
+ * Defines Shell-owned album-art presentation and bounded I/O constants.
  *
- * AlbumArtLoader applies these values to local files, remote responses, and its
- * persistent cache so untrusted media metadata cannot cause unbounded I/O.
+ * Renderers share presentation values while AlbumArtLoader applies cache,
+ * payload, and request limits to untrusted media metadata.
  */
+
+/** Width of the theme-aware frame separating artwork from surrounding UI. */
+export const ALBUM_ART_OUTLINE_WIDTH = 1;
+
+/** Decode/render scale retained before St.Icon maps the image to actor size. */
+export const ALBUM_ART_RENDER_SCALE = 2;
 
 /** Maximum total size of persistent album-art cache files; currently 128 MiB. */
 export const ALBUM_ART_CACHE_MAX_BYTES = 128 * 1024 * 1024;

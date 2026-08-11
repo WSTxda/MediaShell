@@ -22,9 +22,9 @@ export const StyleClasses = Object.freeze({
 
   SCROLLING_LABEL: "mediashell-scrolling-label",
 
-  POPUP_ALBUM_ART: "mediashell-popup-album-art",
-  POPUP_ALBUM_ART_FALLBACK: "mediashell-popup-album-art-fallback",
-  POPUP_ALBUM_ART_FRAME: "mediashell-popup-album-art-frame",
+  ALBUM_ART_FRAME: "mediashell-album-art-frame",
+  ALBUM_ART_IMAGE: "mediashell-album-art-image",
+  ALBUM_ART_FALLBACK: "mediashell-album-art-fallback",
   POPUP_MEDIA_APP_SELECTOR: "mediashell-popup-media-app-selector",
   POPUP_MEDIA_APP_SELECTOR_BUTTON: "mediashell-popup-media-app-selector-button",
   POPUP_MEDIA_APP_SELECTOR_BUTTON_EXPAND_ICON:
@@ -74,7 +74,6 @@ export const StyleClasses = Object.freeze({
   POPUP_TRACK_INFORMATION_TITLE: "mediashell-popup-track-information-title",
 
   TOP_BAR_ACTION_BOX: "mediashell-top-bar-action-box",
-  TOP_BAR_ALBUM_ART: "mediashell-top-bar-album-art",
   TOP_BAR_MEDIA_APP_ICON: "mediashell-top-bar-media-app-icon",
   TOP_BAR_BOX: "mediashell-top-bar-box",
   TOP_BAR_CONTROL_BUTTON: "mediashell-top-bar-control-button",

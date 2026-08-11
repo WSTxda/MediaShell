@@ -127,7 +127,7 @@ test("album-art corner radius scales consistently across artwork sizes", () => {
   assert.equal(calculateAlbumArtCornerRadius(250, 100), 125);
 });
 
-test("album-art requests snapshot ownership and reject stale-equivalent ambiguity", () => {
+test("album-art requests separate source identity from presentation geometry", () => {
   const first = createAlbumArtRequest({
     busName: "org.mpris.MediaPlayer2.first",
     metadata: {
@@ -148,6 +148,23 @@ test("album-art requests snapshot ownership and reject stale-equivalent ambiguit
     radius: 125,
     cacheEnabled: true,
   });
+  const differentGeometry = createAlbumArtRequest({
+    ...first,
+    width: 64,
+    radius: 0,
+    metadata: {
+      [MprisMetadataKeys.ART_URL]: first.albumArtUri,
+      [MprisMetadataKeys.URL]: first.trackUri,
+    },
+  });
+  const cacheDisabled = createAlbumArtRequest({
+    ...first,
+    cacheEnabled: false,
+    metadata: {
+      [MprisMetadataKeys.ART_URL]: first.albumArtUri,
+      [MprisMetadataKeys.URL]: first.trackUri,
+    },
+  });
   const nextTrack = createAlbumArtRequest({
     ...first,
     metadata: {
@@ -164,9 +181,11 @@ test("album-art requests snapshot ownership and reject stale-equivalent ambiguit
     },
   });
 
-  assert.equal(first.key, equivalent.key);
-  assert.notEqual(first.key, nextTrack.key);
-  assert.notEqual(first.key, otherApp.key);
+  assert.equal(first.sourceKey, equivalent.sourceKey);
+  assert.equal(first.sourceKey, differentGeometry.sourceKey);
+  assert.notEqual(first.sourceKey, cacheDisabled.sourceKey);
+  assert.notEqual(first.sourceKey, nextTrack.sourceKey);
+  assert.notEqual(first.sourceKey, otherApp.sourceKey);
   assert.equal(first.radius, 125);
   assert.equal(Object.isFrozen(first), true);
 });

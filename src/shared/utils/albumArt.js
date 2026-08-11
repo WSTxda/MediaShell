@@ -48,8 +48,9 @@ export function calculateAlbumArtCornerRadius(size, value) {
  * Builds one immutable snapshot for an album-art render request.
  *
  * @param {object} input - Current app, metadata, geometry, and cache state.
- * @returns {{key: string, busName: string, albumArtUri: string, trackUri: string, width: number, radius: number, cacheEnabled: boolean}}
- *   Immutable request descriptor.
+ * @returns {{sourceKey: string, busName: string, albumArtUri: string, trackUri: string, width: number, radius: number, cacheEnabled: boolean}}
+ *   Immutable request descriptor. `sourceKey` excludes presentation geometry so
+ *   radius and size changes can reuse the already loaded source.
  */
 export function createAlbumArtRequest({
   busName,
@@ -71,17 +72,12 @@ export function createAlbumArtRequest({
   const albumArtUri = normalizeText(safeMetadata[MprisMetadataKeys.ART_URL]);
   const trackUri = normalizeText(safeMetadata[MprisMetadataKeys.URL]);
   const isCacheEnabled = Boolean(cacheEnabled);
-  const key = [
-    safeBusName,
-    albumArtUri,
-    trackUri,
-    safeWidth,
-    safeRadius,
-    isCacheEnabled,
-  ].join("\u0000");
+  const sourceKey = [safeBusName, albumArtUri, trackUri, isCacheEnabled].join(
+    "\u0000",
+  );
 
   return Object.freeze({
-    key,
+    sourceKey,
     busName: safeBusName,
     albumArtUri,
     trackUri,

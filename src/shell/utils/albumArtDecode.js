@@ -10,9 +10,9 @@ import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
 
 import { createLogger } from "../../shared/utils/log.js";
+import { ALBUM_ART_RENDER_SCALE } from "../constants/albumArt.js";
 import { isCancellationError } from "./errors.js";
 
-const DECODE_SCALE = 2;
 const logger = createLogger("AlbumArtDecode");
 
 if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
@@ -44,7 +44,7 @@ async function decodeAlbumArtStream(stream, size, loadCancellable) {
   }
 
   try {
-    const decodeSize = Math.max(1, Math.round(size * DECODE_SCALE));
+    const decodeSize = Math.max(1, Math.round(size * ALBUM_ART_RENDER_SCALE));
     return await GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(
       stream,
       decodeSize,
