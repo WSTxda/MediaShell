@@ -594,11 +594,11 @@ export default class DesktopAppResolver {
     }
   }
 
-  isShellAppStopped(desktopApp) {
-    if (!desktopApp || typeof desktopApp.get_state !== "function") return false;
+  isShellAppStopped(shellApp) {
+    if (!shellApp || typeof shellApp.get_state !== "function") return false;
 
     try {
-      return desktopApp.get_state() === Shell.AppState.STOPPED;
+      return shellApp.get_state() === Shell.AppState.STOPPED;
     } catch (error) {
       logger.debugOnce(
         "lifecycle-app-state",

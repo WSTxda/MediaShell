@@ -524,7 +524,7 @@ export default class AlbumArtLoader {
     request.cacheWritePromise = cacheWritePromise;
   }
 
-  #getRemoteAlbumArtRequest(albumArtUri, uri, cacheFile) {
+  #ensureRemoteAlbumArtRequest(albumArtUri, uri, cacheFile) {
     const existingRequest = this.#remoteAlbumArtRequests.get(albumArtUri);
     if (existingRequest && !existingRequest.cancellable.is_cancelled()) {
       this.#ensureRemoteAlbumArtCacheWrite(existingRequest, cacheFile);
@@ -677,7 +677,7 @@ export default class AlbumArtLoader {
       };
     }
 
-    const remoteRequest = this.#getRemoteAlbumArtRequest(
+    const remoteRequest = this.#ensureRemoteAlbumArtRequest(
       albumArtUri,
       uri,
       cacheFile,

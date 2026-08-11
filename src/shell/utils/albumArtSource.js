@@ -13,7 +13,7 @@ import GLib from "gi://GLib";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "./errors.js";
 
-const logger = createLogger("AlbumArtSource");
+const logger = createLogger("albumArtSource");
 
 Gio._promisify(Gio.File.prototype, "query_info_async", "query_info_finish");
 

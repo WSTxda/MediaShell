@@ -13,7 +13,7 @@ import { createLogger } from "../../shared/utils/log.js";
 import { ALBUM_ART_RENDER_SCALE } from "../constants/albumArt.js";
 import { isCancellationError } from "./errors.js";
 
-const logger = createLogger("AlbumArtDecode");
+const logger = createLogger("albumArtDecode");
 
 if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
   Gio._promisify(
