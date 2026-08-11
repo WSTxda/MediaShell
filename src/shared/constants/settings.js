@@ -109,6 +109,13 @@ export const SettingsKeys = Object.freeze({
   BLOCKED_APPS: "blocked-apps",
 });
 
+/** Normalized album-art corner radius shared by popup and top-bar surfaces. */
+export const ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+  MIN: 0,
+  MAX: 100,
+  DEFAULT: 20,
+});
+
 // --- Top bar settings ---
 
 /**
@@ -169,13 +176,6 @@ export const POPUP_WIDTH_CONSTRAINTS = Object.freeze({
   MIN: 250,
   MAX: 500,
   DEFAULT: 250,
-});
-
-/** Normalized album-art corner radius shared by popup and top-bar surfaces. */
-export const ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
-  MIN: 0,
-  MAX: 100,
-  DEFAULT: 20,
 });
 
 /** Default ordered content for popup track information. */

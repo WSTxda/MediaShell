@@ -44,6 +44,7 @@ export default class PopupAlbumArt {
     this.loadedAlbumArtKey = null;
     this.loadingAlbumArtKey = null;
     this.loadedAlbumArtPixbuf = null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = null;
     this.playbackScaleTarget = null;
     this.albumArtLoader = AlbumArtLoader.getInstance();
@@ -91,7 +92,7 @@ export default class PopupAlbumArt {
     };
   }
 
-  async render() {
+  render() {
     const geometry = this.getAlbumArtGeometry();
     const request = createAlbumArtRequest({
       busName: this.mediaApp.busName,
@@ -166,6 +167,7 @@ export default class PopupAlbumArt {
   commitAlbumArtResult(request, pixbuf, fallbackIcon) {
     this.loadedAlbumArtKey = request.key;
     this.loadedAlbumArtPixbuf = pixbuf ?? null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = pixbuf ? null : (fallbackIcon ?? null);
     const geometry = this.getAlbumArtGeometry();
     this.syncLoadedAlbumArt(geometry.width, geometry.radius);
@@ -184,7 +186,19 @@ export default class PopupAlbumArt {
       width,
       radius,
     );
-    const renderPixbuf = prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius);
+    if (
+      this.preparedAlbumArt?.key !== this.loadedAlbumArtKey ||
+      this.preparedAlbumArt.imageSize !== imageSize ||
+      this.preparedAlbumArt.imageRadius !== imageRadius
+    ) {
+      this.preparedAlbumArt = {
+        key: this.loadedAlbumArtKey,
+        imageSize,
+        imageRadius,
+        pixbuf: prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius),
+      };
+    }
+    const renderPixbuf = this.preparedAlbumArt.pixbuf;
 
     this.albumArtImage.content = null;
     this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
@@ -309,6 +323,7 @@ export default class PopupAlbumArt {
     this.cancelAlbumArtLoad();
     this.loadedAlbumArtKey = null;
     this.loadedAlbumArtPixbuf = null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = null;
     this.playbackScaleTarget = null;
     if (!this.albumArtFrame) return;

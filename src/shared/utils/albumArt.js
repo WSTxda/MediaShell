@@ -2,7 +2,7 @@
  * @file albumArt.js
  * @module shared.utils.albumArt
  *
- * Pure album-art request identity and persistent-cache capacity policy.
+ * Pure album-art request identity, corner-radius policy, and cache capacity policy.
  *
  * Album-art renderers use immutable request snapshots to reject stale async results.
  * AlbumArtLoader uses the eviction helper after background cache writes. Keeping

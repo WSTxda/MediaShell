@@ -42,6 +42,7 @@ export default class TopBarAlbumArt {
     this.loadedAlbumArtKey = null;
     this.loadingAlbumArtKey = null;
     this.loadedAlbumArtPixbuf = null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = null;
     this.albumArtLoadGeneration = 0;
     this.albumArtLoadCancellable = null;
@@ -219,6 +220,7 @@ export default class TopBarAlbumArt {
   commitAlbumArtResult(request, pixbuf, fallbackIcon) {
     this.loadedAlbumArtKey = request.key;
     this.loadedAlbumArtPixbuf = pixbuf ?? null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = pixbuf ? null : (fallbackIcon ?? null);
     this.syncCurrentGeometry();
   }
@@ -236,7 +238,19 @@ export default class TopBarAlbumArt {
       width,
       radius,
     );
-    const renderPixbuf = prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius);
+    if (
+      this.preparedAlbumArt?.key !== this.loadedAlbumArtKey ||
+      this.preparedAlbumArt.imageSize !== imageSize ||
+      this.preparedAlbumArt.imageRadius !== imageRadius
+    ) {
+      this.preparedAlbumArt = {
+        key: this.loadedAlbumArtKey,
+        imageSize,
+        imageRadius,
+        pixbuf: prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius),
+      };
+    }
+    const renderPixbuf = this.preparedAlbumArt.pixbuf;
 
     this.albumArtImage.content = null;
     this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
@@ -288,6 +302,7 @@ export default class TopBarAlbumArt {
     this.disconnectPanelHeightSignal();
     this.loadedAlbumArtKey = null;
     this.loadedAlbumArtPixbuf = null;
+    this.preparedAlbumArt = null;
     this.loadedFallbackIcon = null;
     if (!this.albumArtFrame) return;
 
