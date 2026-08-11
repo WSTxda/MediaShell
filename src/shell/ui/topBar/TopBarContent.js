@@ -33,8 +33,7 @@ export default class TopBarContent {
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
     this.mediaAppIcon = new TopBarMediaAppIcon(this);
-    // Album art is created lazily so the disabled default owns no artwork resources.
-    this.albumArt = null;
+    this.albumArt = new TopBarAlbumArt(this);
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
@@ -93,9 +92,10 @@ export default class TopBarContent {
         (widgetFlags & WidgetFlags.TOP_BAR_ALBUM_ART ||
           widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar album art", () =>
-          this.updateAlbumArt(targetIndex, targetBox),
-        );
+        this.runWidgetUpdate("top bar album art", () => {
+          if (isVisible) this.albumArt.render(targetIndex, targetBox);
+          else this.albumArt.remove();
+        });
       }
 
       if (
@@ -205,17 +205,6 @@ export default class TopBarContent {
         PlaybackControlSurfaces.TOP_BAR,
       );
     return false;
-  }
-
-  updateAlbumArt(index, targetBox) {
-    if (!this.extensionController.topBarAlbumArtShow) {
-      this.albumArt?.destroy();
-      this.albumArt = null;
-      return;
-    }
-
-    this.albumArt ??= new TopBarAlbumArt(this);
-    this.albumArt.render(index, targetBox);
   }
 
   updateVisualizer(index, targetBox) {

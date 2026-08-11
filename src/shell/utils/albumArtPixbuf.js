@@ -20,7 +20,7 @@ import { ALBUM_ART_RENDER_SCALE } from "../constants/albumArt.js";
  * @param {number} size - Target square size in pixels.
  * @returns {GdkPixbuf.Pixbuf} Square pixbuf or the original on transform failure.
  */
-function cropPixbufToSquare(pixbuf, size) {
+export function cropPixbufToSquare(pixbuf, size) {
   const targetSize = Math.max(1, Math.round(size));
   const sourceWidth = pixbuf.get_width();
   const sourceHeight = pixbuf.get_height();
@@ -79,7 +79,7 @@ function roundCornerRow(
  * @param {number} radius - Corner radius in pixels.
  * @returns {GdkPixbuf.Pixbuf} Pixbuf with rounded alpha corners.
  */
-function roundPixbufCorners(pixbuf, radius) {
+export function roundPixbufCorners(pixbuf, radius) {
   let source = pixbuf;
   if (!source.get_has_alpha()) source = source.add_alpha(false, 0, 0, 0);
 
@@ -137,25 +137,21 @@ function roundPixbufCorners(pixbuf, radius) {
 }
 
 /**
- * Prepares one decoded pixbuf for the shared album-art frame geometry.
+ * Orients, center-crops, and rounds artwork for a square Shell icon.
  *
- * @param {GdkPixbuf.Pixbuf} pixbuf - Decoded source pixbuf.
- * @param {number} imageSize - Inner image actor size.
- * @param {number} imageRadius - Inner image corner radius.
- * @returns {GdkPixbuf.Pixbuf} Square, oriented, optionally rounded render pixbuf.
+ * @param {GdkPixbuf.Pixbuf} pixbuf - Decoded artwork source.
+ * @param {number} size - Display size of the image actor.
+ * @param {number} radius - Display corner radius.
+ * @returns {GdkPixbuf.Pixbuf} Prepared square pixbuf at render scale.
  */
-export function prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius) {
-  const renderSize = Math.max(
-    1,
-    Math.round(imageSize * ALBUM_ART_RENDER_SCALE),
-  );
-  const renderRadius = Math.max(
-    0,
-    Math.round(imageRadius * ALBUM_ART_RENDER_SCALE),
-  );
+export function prepareAlbumArtPixbuf(pixbuf, size, radius) {
+  const imageSize = Math.max(1, Math.round(size));
+  const imageRadius = Math.max(0, Math.round(radius));
+  const renderSize = imageSize * ALBUM_ART_RENDER_SCALE;
   const orientedPixbuf = pixbuf.apply_embedded_orientation?.() ?? pixbuf;
   const squarePixbuf = cropPixbufToSquare(orientedPixbuf, renderSize);
-  return renderRadius > 0
-    ? roundPixbufCorners(squarePixbuf, renderRadius)
+
+  return imageRadius > 0
+    ? roundPixbufCorners(squarePixbuf, imageRadius * ALBUM_ART_RENDER_SCALE)
     : squarePixbuf;
 }

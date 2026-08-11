@@ -101,7 +101,7 @@ Normalize untrusted metadata before display. Keep desktop, browser, and PWA iden
 
 ### Artwork and asynchronous work
 
-Preserve ownership, cancellation, generation checks, active-endpoint checks, stream closure, cache recovery, and resource limits. Late results from an old endpoint or lifecycle generation must not mutate current state.
+Preserve ownership, cancellation, generation checks, active-endpoint checks, stream closure, cache recovery, and resource limits. Keep artwork source identity separate from presentation geometry and cache policy; shared source/loading helpers must not own surface actors. Late results from an old endpoint or lifecycle generation must not mutate current state.
 
 ### Translations
 
@@ -149,7 +149,7 @@ Runtime and lifecycle changes commonly require:
 - multiple endpoints, selection, pinning, owner replacement, and grace periods;
 - supported and unsupported MPRIS capabilities;
 - affected top bar, popup, Preferences, artwork, and input paths;
-- local, remote, cached, cancelled, and failed artwork requests;
+- local, remote, cached, concurrent, cancelled, and failed artwork requests;
 - the GNOME media-controls patch when changed.
 
 For settings feedback, run `dconf watch /org/gnome/shell/extensions/mediashell/` and verify that opening Preferences is silent while a user change produces only the expected writes.

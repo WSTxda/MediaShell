@@ -29,28 +29,27 @@ function normalizePositiveInteger(value, fallback = 1) {
 }
 
 /**
- * Converts the shared 0–100 corner-radius scale to pixels for square artwork.
+ * Converts a relative corner preference to a radius for a square artwork actor.
  *
  * @param {number} size - Artwork actor size.
- * @param {number} value - Normalized corner radius; 0 is square and 100 is circular.
+ * @param {number} percentage - Normalized 0–100 share of the maximum circular radius.
  * @returns {number} A non-negative integer radius.
  */
-export function calculateAlbumArtCornerRadius(size, value) {
+export function calculateAlbumArtCornerRadius(size, percentage) {
   const safeSize = normalizePositiveInteger(size);
-  const safeValue = Math.min(
+  const safePercentage = Math.min(
     100,
-    Math.max(0, Number.isFinite(value) ? value : 0),
+    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
   );
-  return Math.round((safeSize * safeValue) / 200);
+  return Math.round((safeSize * safePercentage) / 200);
 }
 
 /**
- * Builds one immutable snapshot for an album-art render request.
+ * Builds one immutable snapshot for an album-art source request.
  *
- * @param {object} input - Current app, metadata, geometry, and cache state.
- * @returns {{sourceKey: string, busName: string, albumArtUri: string, trackUri: string, width: number, radius: number, cacheEnabled: boolean}}
- *   Immutable request descriptor. `sourceKey` excludes presentation geometry so
- *   radius and size changes can reuse the already loaded source.
+ * @param {object} input - Current app, metadata, presentation geometry, and cache state.
+ * @returns {{key: string, busName: string, albumArtUri: string, trackUri: string, width: number, radius: number, cacheEnabled: boolean}}
+ *   Immutable request descriptor.
  */
 export function createAlbumArtRequest({
   busName,
@@ -72,12 +71,13 @@ export function createAlbumArtRequest({
   const albumArtUri = normalizeText(safeMetadata[MprisMetadataKeys.ART_URL]);
   const trackUri = normalizeText(safeMetadata[MprisMetadataKeys.URL]);
   const isCacheEnabled = Boolean(cacheEnabled);
-  const sourceKey = [safeBusName, albumArtUri, trackUri, isCacheEnabled].join(
-    "\u0000",
-  );
+  // Source identity is intentionally independent from presentation geometry and
+  // persistent-cache policy. Radius, panel geometry, or cache changes can then
+  // reuse an already decoded image instead of restarting source I/O.
+  const key = [safeBusName, albumArtUri, trackUri].join("\u0000");
 
   return Object.freeze({
-    sourceKey,
+    key,
     busName: safeBusName,
     albumArtUri,
     trackUri,

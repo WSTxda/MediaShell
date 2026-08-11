@@ -321,7 +321,6 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.ALBUM_ART_CACHE_ENABLED]: {
     property: "albumArtCacheEnabled",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.TOP_BAR_ALBUM_ART,
   },
   [SettingsKeys.BLOCKED_APPS]: {
     property: "blockedAppIds",

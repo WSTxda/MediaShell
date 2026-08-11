@@ -50,8 +50,7 @@ export default class PopupContent {
     this.popupItem.remove_style_class_name(StyleClasses.POPUP_MENU_ITEM);
 
     this.mediaAppSelectorController = new PopupMediaAppSelectorController(this);
-    // Album art is created lazily only when the open popup needs it.
-    this.albumArt = null;
+    this.albumArt = new PopupAlbumArt(this);
     this.trackInformation = new PopupTrackInformation(this);
     this.progressBar = new PopupProgressBar(this);
     this.playbackControls = new PopupPlaybackControls(this);
@@ -79,7 +78,7 @@ export default class PopupContent {
           this.syncProgressBarPlaybackState();
         } else {
           this.mediaAppSelectorController.close();
-          this.albumArt?.cancelAlbumArtLoad();
+          this.albumArt.cancelAlbumArtLoad();
           this.progressBar.pause();
         }
       },
@@ -109,19 +108,10 @@ export default class PopupContent {
   }
 
   updateWidgets(widgetFlags, forceRender = false) {
-    let popupFlags = widgetFlags & WidgetFlags.POPUP;
+    const popupFlags = widgetFlags & WidgetFlags.POPUP;
     if (popupFlags === 0) return;
 
     this.applyPopupSize();
-    if (
-      popupFlags & WidgetFlags.POPUP_ALBUM_ART &&
-      !this.extensionController.popupAlbumArtShow
-    ) {
-      this.releaseAlbumArt();
-      popupFlags &= ~WidgetFlags.POPUP_ALBUM_ART;
-      if (popupFlags === 0) return;
-    }
-
     if (!forceRender && !this.menu.isOpen) {
       this.pendingWidgetFlags |= popupFlags;
       return;
@@ -133,8 +123,14 @@ export default class PopupContent {
       );
     }
 
-    if (popupFlags & WidgetFlags.POPUP_ALBUM_ART)
-      this.runWidgetUpdate("album art", () => this.updateAlbumArt());
+    if (popupFlags & WidgetFlags.POPUP_ALBUM_ART) {
+      this.runWidgetUpdate("album art", () => {
+        if (this.extensionController.popupAlbumArtShow)
+          return this.albumArt.render();
+        this.albumArt.remove();
+        return null;
+      });
+    }
 
     if (popupFlags & WidgetFlags.POPUP_TRACK_INFORMATION) {
       this.runWidgetUpdate("track information", () => {
@@ -167,21 +163,6 @@ export default class PopupContent {
         return null;
       });
     }
-  }
-
-  updateAlbumArt() {
-    if (!this.extensionController.popupAlbumArtShow) {
-      this.releaseAlbumArt();
-      return null;
-    }
-
-    this.albumArt ??= new PopupAlbumArt(this);
-    return this.albumArt.render();
-  }
-
-  releaseAlbumArt() {
-    this.albumArt?.destroy();
-    this.albumArt = null;
   }
 
   runWidgetUpdate(componentName, update) {
@@ -227,7 +208,7 @@ export default class PopupContent {
   syncAlbumArtPlaybackState() {
     if (!this.menu.isOpen || !this.extensionController.popupAlbumArtShow)
       return;
-    this.albumArt?.syncPlaybackState(this.mediaApp.playbackStatus);
+    this.albumArt.syncPlaybackState(this.mediaApp.playbackStatus);
   }
 
   buildFixedWidthStyle(width) {

@@ -4,14 +4,14 @@
  *
  * Defines Shell-owned album-art presentation and bounded I/O constants.
  *
- * Renderers share presentation values while AlbumArtLoader applies cache,
- * payload, and request limits to untrusted media metadata.
+ * Renderers share the presentation values; AlbumArtLoader applies the I/O bounds
+ * so untrusted media metadata cannot cause unbounded work.
  */
 
-/** Width of the theme-aware frame separating artwork from surrounding UI. */
+/** Outline width shared by album-art frames on every Shell surface. */
 export const ALBUM_ART_OUTLINE_WIDTH = 1;
 
-/** Decode/render scale retained before St.Icon maps the image to actor size. */
+/** Internal render scale used for decoded and transformed artwork. */
 export const ALBUM_ART_RENDER_SCALE = 2;
 
 /** Maximum total size of persistent album-art cache files; currently 128 MiB. */

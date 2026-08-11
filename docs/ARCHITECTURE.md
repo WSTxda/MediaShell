@@ -30,7 +30,7 @@ tests/                         Behavior and cross-file integrity tests
 - `PlaybackPositionTracker` projects playback position from confirmed endpoint state, track identity, rate, and monotonic time.
 - `DesktopAppResolver` maps MPRIS identity to installed applications and browser/PWA desktop entries.
 - `MediaShellIndicator` owns the panel indicator and popup. `TopBarContent` owns the top bar surface, while components under `ui/topBar/` and `ui/popup/` own their respective actors and teardown.
-- `AlbumArtLoader` owns local, cache, and network I/O. `PopupAlbumArt` owns decode requests, cancellation generations, actors, and visible fallback state.
+- `AlbumArtLoader` owns local/cache/network I/O and shared remote requests. `PopupAlbumArt` and `TopBarAlbumArt` own their surface actors, request generations, cancellation, and fallback presentation.
 - `PreferencesController` owns GtkBuilder, bindings, page controllers, custom widgets, and Preferences teardown. `PopupLayoutController` provides user-driven width feedback when seek controls require the popup minimum.
 
 The component that creates a signal, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
@@ -69,13 +69,13 @@ Treat MPRIS metadata as untrusted input. `MprisMediaApp` normalizes values befor
 
 Artwork responsibilities are intentionally split:
 
-- `AlbumArtLoader` handles local, cache, and network I/O, stream limits, cache recovery, and persistent storage.
-- `PopupAlbumArt` handles request generations, cancellation, actors, and visible fallback state.
-- `shell/utils/albumArtPixbuf.js` contains stateless GdkPixbuf transformations.
+- `AlbumArtLoader` handles bounded local/cache/network I/O, shared in-flight requests, cache recovery, and persistent storage.
+- `shell/utils/albumArtSource.js`, `albumArtDecode.js`, `albumArtPixbuf.js`, and `albumArtPresentation.js` share source, decode, and stateless presentation policy.
+- `PopupAlbumArt` and `TopBarAlbumArt` independently own actors, request generations, cancellation, layout, and teardown.
 
 Late asynchronous results must be rejected when their generation, lifecycle, or active endpoint is no longer current.
 
-Compressed artwork input is limited to 16 MiB per image. The optional persistent cache is limited to 128 MiB and evicts the least recently used entries first; cache hits refresh recency asynchronously without delaying popup rendering.
+Compressed artwork input is limited to 16 MiB per image. The optional persistent cache is limited to 128 MiB and evicts the least recently used entries first; cache hits refresh recency asynchronously without delaying artwork rendering.
 
 ## Stable contracts
 

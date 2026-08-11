@@ -61,6 +61,11 @@
   margin: 0;
 }
 
+.mediashell-top-bar-album-art {
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
 .mediashell-top-bar-visualizer {
   spacing: 0;
 }
@@ -283,18 +288,15 @@
   icon-size: 14px;
 }
 
-/* Album art ---------------------------------------------------------
- * Popup and top-bar renderers share the same frame, image, and fallback
- * presentation. Surface-specific sizing and placement remain actor-owned.
+/* Album art ----------------------------------------------------------
+ * Shared visual treatment; each surface owns its layout and geometry.
  */
 .mediashell-album-art-frame {
   background-color: rgba(128, 128, 128, 0.38);
-  margin: 0;
 }
 
 .mediashell-album-art-image {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0;
   padding: 0;
 }
 
