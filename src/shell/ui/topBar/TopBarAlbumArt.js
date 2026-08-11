@@ -11,7 +11,7 @@ import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 import { IconNames } from "../../../shared/constants/icons.js";
-import { ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
+import { TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
 import {
   calculateAlbumArtCornerRadius,
   createAlbumArtRequest,
@@ -101,7 +101,7 @@ export default class TopBarAlbumArt {
       this.extensionController.topBarAlbumArtCornerRadius,
     )
       ? this.extensionController.topBarAlbumArtCornerRadius
-      : ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+      : TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
 
     return {
       width,

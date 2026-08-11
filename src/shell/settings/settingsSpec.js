@@ -10,12 +10,13 @@
  */
 
 import {
-  ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+  POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
   POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
   TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
   TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
+  TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX_CONSTRAINTS,
@@ -111,7 +112,9 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]: {
     property: "popupAlbumArtCornerRadius",
     read: "get_uint",
-    transform: createNumericConstraint(ALBUM_ART_CORNER_RADIUS_CONSTRAINTS),
+    transform: createNumericConstraint(
+      POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.POPUP_ALBUM_ART,
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SHOW]: {
@@ -230,7 +233,9 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]: {
     property: "topBarAlbumArtCornerRadius",
     read: "get_uint",
-    transform: createNumericConstraint(ALBUM_ART_CORNER_RADIUS_CONSTRAINTS),
+    transform: createNumericConstraint(
+      TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+    ),
     impact: WidgetFlags.TOP_BAR_ALBUM_ART,
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {

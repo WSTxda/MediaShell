@@ -10,7 +10,7 @@ import Gio from "gi://Gio";
 import St from "gi://St";
 
 import { IconNames } from "../../../shared/constants/icons.js";
-import { ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
+import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import {
   calculateAlbumArtCornerRadius,
@@ -84,7 +84,7 @@ export default class PopupAlbumArt {
       this.extensionController.popupAlbumArtCornerRadius,
     )
       ? this.extensionController.popupAlbumArtCornerRadius
-      : ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+      : POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
 
     return {
       width,

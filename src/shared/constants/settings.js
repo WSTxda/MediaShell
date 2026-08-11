@@ -109,14 +109,14 @@ export const SettingsKeys = Object.freeze({
   BLOCKED_APPS: "blocked-apps",
 });
 
-/** Normalized album-art corner radius shared by popup and top-bar surfaces. */
-export const ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+// --- Top bar settings ---
+
+/** Constraints for the top-bar album-art corner radius. */
+export const TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
-  DEFAULT: 20,
+  DEFAULT: 40,
 });
-
-// --- Top bar settings ---
 
 /**
  * Default order for top bar elements when the order setting is unset or repaired.
@@ -171,6 +171,13 @@ export const TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS = Object.freeze(
 
 // --- Popup settings ---
 
+/** Constraints for the popup album-art corner radius. */
+export const POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+  MIN: 0,
+  MAX: 100,
+  DEFAULT: 20,
+});
+
 /** Constraints for popup content width, in pixels. */
 export const POPUP_WIDTH_CONSTRAINTS = Object.freeze({
   MIN: 250,
@@ -204,7 +211,7 @@ export const PANEL_INDEX_CONSTRAINTS = Object.freeze({
 export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
   [SettingsKeys.POPUP_WIDTH]: POPUP_WIDTH_CONSTRAINTS,
   [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]:
-    ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+    POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]:
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
@@ -216,7 +223,7 @@ export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]:
-    ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+    TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
   [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });
