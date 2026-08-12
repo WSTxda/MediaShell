@@ -34,6 +34,7 @@
     <value nick="PULSE"    value="1" />
     <value nick="CLASSIC"  value="2" />
     <value nick="SPECTRUM" value="3" />
+    <value nick="VINYL"    value="4" />
   </enum>
 
   <schema id="org.gnome.shell.extensions.mediashell"

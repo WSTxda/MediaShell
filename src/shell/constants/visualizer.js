@@ -6,7 +6,7 @@
  *
  * Pure animation tuning remains in shared constants. This module owns only
  * pixel dimensions and the mapping from a persisted style to its Shell renderer,
- * CSS classes, pivot, and shared animation identity.
+ * CSS classes, pivot, and optional shared animation identity.
  */
 
 import {
@@ -19,8 +19,11 @@ import {
 } from "../../shared/enums/visualizer.js";
 import { StyleClasses } from "./styleClasses.js";
 
-/** Fixed visualizer actor height used in the compact top bar indicator. */
+/** Default visualizer actor height used in the compact top bar indicator. */
 export const VISUALIZER_HEIGHT = 16;
+
+/** Square size reserved for the slightly larger Vinyl renderer. */
+export const VISUALIZER_VINYL_SIZE = 18;
 
 /** Width of each continuous Beats or Pulse bar. */
 export const VISUALIZER_BAR_WIDTH = 2;
@@ -59,6 +62,12 @@ export const VISUALIZER_TIMELINE_DURATION_MS = 1000;
 /** Minimum time between visualizer redraws, targeting 30 frames per second. */
 export const VISUALIZER_FRAME_INTERVAL_MS = Math.round(1000 / 30);
 
+/** Vinyl rotation speed at the default animation speed, in degrees per second. */
+export const VISUALIZER_VINYL_BASE_ROTATION_DEGREES_PER_SECOND = 540;
+
+/** Time taken by a playing Vinyl renderer to coast to rest after pause. */
+export const VISUALIZER_VINYL_STOP_DURATION_SECONDS = 0.9;
+
 /** Level used when playback is idle but a bar renderer remains visible. */
 export const VISUALIZER_IDLE_LEVEL = 0.22;
 
@@ -67,6 +76,7 @@ export const VisualizerRendererKinds = Object.freeze({
   CONTINUOUS_BARS: "continuous-bars",
   SEGMENTED_BARS: "segmented-bars",
   SPECTRUM: "spectrum",
+  VINYL: "vinyl",
 });
 
 function createStyleDefinition(definition) {
@@ -109,5 +119,9 @@ export const TOP_BAR_VISUALIZER_STYLE_DEFINITIONS = Object.freeze({
     rendererKind: VisualizerRendererKinds.SPECTRUM,
     elementCount: 0,
     containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_SPECTRUM,
+  }),
+  [VisualizerStyles.VINYL]: createStyleDefinition({
+    rendererKind: VisualizerRendererKinds.VINYL,
+    elementCount: 0,
   }),
 });

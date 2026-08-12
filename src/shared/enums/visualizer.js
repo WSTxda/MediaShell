@@ -5,8 +5,9 @@
  * Defines stable visualizer style IDs and reusable animation identities.
  *
  * GSettings persists the numeric style IDs, while Shell presentation maps each
- * style to an animation and renderer. Animation identities remain independent
- * so multiple styles can intentionally share the same motion.
+ * style to a renderer and, where needed, a shared animation. Animation
+ * identities remain independent so multiple styles can intentionally share the
+ * same motion.
  */
 
 /** Stable style IDs stored by the top bar visualizer preference. */
@@ -15,6 +16,7 @@ export const VisualizerStyles = Object.freeze({
   PULSE: 1,
   CLASSIC: 2,
   SPECTRUM: 3,
+  VINYL: 4,
 });
 
 /** Pure animation identities consumed by visualizer generators and renderers. */

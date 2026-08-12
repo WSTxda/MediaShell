@@ -503,6 +503,10 @@ msgstr ""
 msgid "Spectrum"
 msgstr ""
 
+#: assets/ui/prefs.ui:376
+msgid "Vinyl"
+msgstr ""
+
 #: assets/ui/prefs.ui:383
 msgid "Animation speed"
 msgstr ""

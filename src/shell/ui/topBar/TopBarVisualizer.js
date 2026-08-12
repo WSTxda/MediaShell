@@ -5,8 +5,8 @@
  * Draws the optional top bar visualizer for the active playing media app.
  *
  * TopBarContent owns one component, timeline, and animation clock. Style
- * definitions select a shared animation and one of the local renderers without
- * creating parallel lifecycle or settings ownership.
+ * definitions select one local renderer and, where applicable, a shared
+ * animation without creating parallel lifecycle or settings ownership.
  */
 
 import Cairo from "cairo";
@@ -25,6 +25,7 @@ import {
 import {
   getVisualizerLevels,
   getVisualizerSpectrumOffsets,
+  getVisualizerSpeedMultiplier,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
 } from "../../../shared/utils/visualizer.js";
@@ -49,6 +50,9 @@ import {
   VISUALIZER_SPECTRUM_STROKE_WIDTH,
   VISUALIZER_SPECTRUM_WIDTH,
   VISUALIZER_TIMELINE_DURATION_MS,
+  VISUALIZER_VINYL_BASE_ROTATION_DEGREES_PER_SECOND,
+  VISUALIZER_VINYL_SIZE,
+  VISUALIZER_VINYL_STOP_DURATION_SECONDS,
   VisualizerRendererKinds,
 } from "../../constants/visualizer.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
@@ -118,6 +122,70 @@ function drawSpectrumLayer(context, offsets, width, height, color, opacity) {
   context.stroke();
 }
 
+function drawVinyl(context, width, height, color, angleDegrees) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.max(0, Math.min(width, height) / 2 - 0.75);
+  if (radius <= 0) return;
+
+  context.newPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  setDrawingColor(context, color);
+  context.fill();
+
+  const labelRadius = radius * 0.46;
+  const spindleRadius = labelRadius * 0.24;
+  const ringThickness = Math.max(1, radius - labelRadius);
+  const grooveRadius = labelRadius + ringThickness * 0.5;
+  const phase = (angleDegrees * Math.PI) / 180;
+  const shimmer = (Math.sin(phase) + 1) / 2;
+  const inverseShimmer = 1 - shimmer;
+  const firstStartAngle = -1.36;
+  const secondStartAngle = 2.46;
+  const firstSpan = 0.34 + shimmer * 0.78;
+  const secondSpan = 0.26 + inverseShimmer * 0.68;
+  const firstGrooveWidth = ringThickness * (0.38 + shimmer * 0.12);
+  const secondGrooveWidth = ringThickness * (0.34 + inverseShimmer * 0.11);
+
+  context.save();
+  context.setOperator(Cairo.Operator.CLEAR);
+
+  context.newPath();
+  context.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
+  context.fill();
+
+  context.setLineCap(Cairo.LineCap.BUTT);
+
+  context.setLineWidth(firstGrooveWidth);
+  context.newPath();
+  context.arc(
+    centerX,
+    centerY,
+    grooveRadius,
+    firstStartAngle,
+    firstStartAngle + firstSpan,
+  );
+  context.stroke();
+
+  context.setLineWidth(secondGrooveWidth);
+  context.newPath();
+  context.arcNegative(
+    centerX,
+    centerY,
+    grooveRadius,
+    secondStartAngle,
+    secondStartAngle - secondSpan,
+  );
+  context.stroke();
+
+  context.restore();
+
+  context.newPath();
+  context.arc(centerX, centerY, spindleRadius, 0, Math.PI * 2);
+  setDrawingColor(context, color);
+  context.fill();
+}
+
 /**
  * Draws the optional top bar visualizer for the active playing media app.
  */
@@ -128,6 +196,7 @@ export default class TopBarVisualizer {
     this.continuousBars = [];
     this.classicColumns = [];
     this.spectrumArea = null;
+    this.vinylArea = null;
     this.drawingColor = null;
     this.timeline = null;
     this.timelineFrameSignalId = null;
@@ -137,6 +206,8 @@ export default class TopBarVisualizer {
     this.playing = false;
     this.animationElapsedSeconds = 0;
     this.frameAccumulatorMilliseconds = 0;
+    this.vinylAngleDegrees = 0;
+    this.vinylRotationDegreesPerSecond = 0;
     this.animationLevels = new Array(TOP_BAR_VISUALIZER_BAND_COUNT).fill(
       VISUALIZER_IDLE_LEVEL,
     );
@@ -209,6 +280,17 @@ export default class TopBarVisualizer {
     this.spectrumArea.connect("repaint", (area) => this.repaintSpectrum(area));
     this.actor.add_child(this.spectrumArea);
 
+    this.vinylArea = new St.DrawingArea({
+      width: VISUALIZER_VINYL_SIZE,
+      height: VISUALIZER_VINYL_SIZE,
+      yAlign: Clutter.ActorAlign.CENTER,
+      reactive: false,
+      visible: false,
+    });
+    this.vinylArea.set_pivot_point(0.5, 0.5);
+    this.vinylArea.connect("repaint", (area) => this.repaintVinyl(area));
+    this.actor.add_child(this.vinylArea);
+
     this.timeline = Clutter.Timeline.new_for_actor(
       this.actor,
       VISUALIZER_TIMELINE_DURATION_MS,
@@ -260,6 +342,7 @@ export default class TopBarVisualizer {
     this.styleDefinition =
       TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[normalizedStyle];
     this.activateStyleRenderer();
+    this.syncAnimation();
     this.updateFrame();
   }
 
@@ -298,6 +381,7 @@ export default class TopBarVisualizer {
     const classicVisible =
       rendererKind === VisualizerRendererKinds.SEGMENTED_BARS;
     const spectrumVisible = rendererKind === VisualizerRendererKinds.SPECTRUM;
+    const vinylVisible = rendererKind === VisualizerRendererKinds.VINYL;
 
     this.actor.set_style_class_name(
       styleClassNames(StyleClasses.TOP_BAR_VISUALIZER, containerStyleClass),
@@ -311,9 +395,15 @@ export default class TopBarVisualizer {
     }
     for (const column of this.classicColumns) column.visible = classicVisible;
     this.spectrumArea.visible = spectrumVisible;
+    this.vinylArea.visible = vinylVisible;
+    this.actor.height = vinylVisible
+      ? VISUALIZER_VINYL_SIZE
+      : VISUALIZER_HEIGHT;
+    if (!vinylVisible) this.vinylRotationDegreesPerSecond = 0;
 
     this.syncVisualizerColor();
     if (spectrumVisible) this.spectrumArea.queue_repaint();
+    if (vinylVisible) this.vinylArea.queue_repaint();
   }
 
   syncVisualizerColor() {
@@ -333,11 +423,37 @@ export default class TopBarVisualizer {
       alpha,
     };
     this.spectrumArea?.queue_repaint();
+    this.vinylArea?.queue_repaint();
+  }
+
+  isVinylRendererActive() {
+    return this.styleDefinition.rendererKind === VisualizerRendererKinds.VINYL;
+  }
+
+  isVinylDecelerating() {
+    return (
+      this.isVinylRendererActive() &&
+      !this.playing &&
+      this.vinylRotationDegreesPerSecond > 0
+    );
+  }
+
+  getVinylTargetRotationSpeed() {
+    return (
+      VISUALIZER_VINYL_BASE_ROTATION_DEGREES_PER_SECOND *
+      getVisualizerSpeedMultiplier(this.animationSpeed)
+    );
   }
 
   syncAnimation() {
+    if (this.isVinylRendererActive() && this.actor && !this.actor.mapped)
+      this.vinylRotationDegreesPerSecond = 0;
+
     const shouldAnimate = Boolean(
-      this.actor && this.timeline && this.playing && this.actor.mapped,
+      this.actor &&
+      this.timeline &&
+      this.actor.mapped &&
+      (this.playing || this.isVinylDecelerating()),
     );
     if (shouldAnimate) {
       if (!this.timeline.is_playing()) this.timeline.start();
@@ -347,13 +463,25 @@ export default class TopBarVisualizer {
   }
 
   handleTimelineFrame(timeline) {
-    if (!this.actor || !this.playing || !this.actor.mapped) {
+    if (!this.actor || !this.actor.mapped) {
+      if (this.isVinylRendererActive()) this.vinylRotationDegreesPerSecond = 0;
+      this.stopAnimation();
+      return;
+    }
+    if (!this.playing && !this.isVinylDecelerating()) {
       this.stopAnimation();
       return;
     }
 
     const deltaMilliseconds = Math.max(0, timeline.get_delta());
-    this.animationElapsedSeconds += deltaMilliseconds / 1000;
+    if (this.playing) this.animationElapsedSeconds += deltaMilliseconds / 1000;
+
+    if (this.isVinylRendererActive()) {
+      this.updateVinylFrame(deltaMilliseconds / 1000);
+      if (!this.playing && !this.isVinylDecelerating()) this.stopAnimation();
+      return;
+    }
+
     this.frameAccumulatorMilliseconds += deltaMilliseconds;
     if (this.frameAccumulatorMilliseconds < VISUALIZER_FRAME_INTERVAL_MS)
       return;
@@ -369,6 +497,11 @@ export default class TopBarVisualizer {
 
   updateFrame() {
     if (!this.actor) return;
+
+    if (this.isVinylRendererActive()) {
+      this.updateVinylFrame(0);
+      return;
+    }
 
     if (
       this.styleDefinition.rendererKind === VisualizerRendererKinds.SPECTRUM
@@ -396,6 +529,36 @@ export default class TopBarVisualizer {
     } else {
       this.updateContinuousBars();
     }
+  }
+
+  updateVinylFrame(deltaSeconds) {
+    if (!this.vinylArea) return;
+
+    const previousSpeed = this.vinylRotationDegreesPerSecond;
+    let nextSpeed = previousSpeed;
+    let frameSpeed = previousSpeed;
+
+    if (this.playing) {
+      nextSpeed = this.getVinylTargetRotationSpeed();
+      frameSpeed = nextSpeed;
+    } else if (previousSpeed > 0 && deltaSeconds > 0) {
+      const deceleration =
+        this.getVinylTargetRotationSpeed() /
+        VISUALIZER_VINYL_STOP_DURATION_SECONDS;
+      nextSpeed = Math.max(0, previousSpeed - deceleration * deltaSeconds);
+      frameSpeed = (previousSpeed + nextSpeed) / 2;
+    }
+
+    if (deltaSeconds > 0 && frameSpeed > 0) {
+      this.vinylAngleDegrees =
+        (this.vinylAngleDegrees + frameSpeed * deltaSeconds) % 360;
+      this.vinylArea.queue_repaint();
+    }
+    this.vinylRotationDegreesPerSecond = nextSpeed;
+    this.vinylArea.set_rotation_angle(
+      Clutter.RotateAxis.Z_AXIS,
+      this.vinylAngleDegrees,
+    );
   }
 
   updateContinuousBars() {
@@ -481,6 +644,24 @@ export default class TopBarVisualizer {
     }
   }
 
+  repaintVinyl(area) {
+    const [width, height] = area.get_surface_size();
+    if (width <= 0 || height <= 0 || !this.drawingColor) return;
+
+    const context = area.get_context();
+    try {
+      drawVinyl(
+        context,
+        width,
+        height,
+        this.drawingColor,
+        this.vinylAngleDegrees,
+      );
+    } finally {
+      context.$dispose();
+    }
+  }
+
   attach(index, parentBox) {
     placeActorAtIndex(this.actor, parentBox, index);
   }
@@ -505,8 +686,11 @@ export default class TopBarVisualizer {
     this.continuousBars = [];
     this.classicColumns = [];
     this.spectrumArea = null;
+    this.vinylArea = null;
     this.drawingColor = null;
     this.playing = false;
+    this.vinylAngleDegrees = 0;
+    this.vinylRotationDegreesPerSecond = 0;
     this.resetAnimationClock();
     this.animationLevels?.fill(VISUALIZER_IDLE_LEVEL);
     this.spectrumOffsets?.fill(0);

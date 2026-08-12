@@ -373,6 +373,7 @@
                       <item translatable="yes">Pulse</item>
                       <item translatable="yes">Classic</item>
                       <item translatable="yes">Spectrum</item>
+                      <item translatable="yes">Vinyl</item>
                     </items>
                   </object>
                 </property>

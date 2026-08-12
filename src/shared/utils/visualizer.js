@@ -32,12 +32,17 @@ function gaussian(value, center, width) {
   return Math.exp(-0.5 * distance * distance);
 }
 
+/** Returns the normalized multiplier shared by every visualizer style. */
+export function getVisualizerSpeedMultiplier(speed) {
+  return (
+    normalizeVisualizerSpeed(speed) /
+    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT
+  );
+}
+
 function getAnimationTime(elapsedSeconds, speed) {
   const time = Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0;
-  const speedMultiplier =
-    normalizeVisualizerSpeed(speed) /
-    TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT;
-  return time * speedMultiplier;
+  return time * getVisualizerSpeedMultiplier(speed);
 }
 
 function fillLevelAnimation(animationTime, definition, levels) {
