@@ -22,10 +22,12 @@ import {
   ALBUM_ART_CACHE_MAX_BYTES,
   ALBUM_ART_MAX_BYTES,
   ALBUM_ART_READ_CHUNK_BYTES,
+  ALBUM_ART_REMOTE_REQUEST_MAX_CONCURRENCY,
   ALBUM_ART_REQUEST_TIMEOUT_SECONDS,
 } from "../constants/albumArt.js";
 import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { selectAlbumArtCacheEvictions } from "../../shared/utils/albumArt.js";
+import BoundedAsyncQueue from "../../shared/utils/boundedAsyncQueue.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { isCancellationError } from "../utils/errors.js";
 
@@ -138,6 +140,9 @@ export default class AlbumArtLoader {
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
   #cacheWriteCancellable = new Gio.Cancellable();
+  #remoteAlbumArtQueue = new BoundedAsyncQueue(
+    ALBUM_ART_REMOTE_REQUEST_MAX_CONCURRENCY,
+  );
   #remoteAlbumArtRequests = new Map();
   #session = null;
 
@@ -513,17 +518,27 @@ export default class AlbumArtLoader {
     }
 
     const request = {
+      albumArtUri,
       cancellable: new Gio.Cancellable(),
       cacheTargets: new Map(),
+      consumerCount: 0,
+      queueHandle: null,
       promise: null,
     };
     if (cacheKey && cacheFile) request.cacheTargets.set(cacheKey, cacheFile);
-    request.promise = this.#readRemoteAlbumArtBytes(
-      new Soup.Message({ method: "GET", uri }),
-      request.cancellable,
-    )
+    request.queueHandle = this.#remoteAlbumArtQueue.enqueue(
+      () =>
+        this.#readRemoteAlbumArtBytes(
+          new Soup.Message({ method: "GET", uri }),
+          request.cancellable,
+        ),
+      () => request.cancellable.cancel(),
+    );
+    request.promise = request.queueHandle.promise
       .then((responseBytes) => {
-        if (responseBytes)
+        // A response that outlived every renderer is stale. Do not turn rapid
+        // skips into cache writes and directory-prune work in GNOME Shell.
+        if (responseBytes && request.consumerCount > 0)
           for (const targetFile of request.cacheTargets.values())
             this.#writeAlbumArtCacheBytes(targetFile, responseBytes);
         return responseBytes;
@@ -540,14 +555,22 @@ export default class AlbumArtLoader {
     return new Promise((resolve, reject) => {
       let settled = false;
       let cancellationSignalId = null;
-      // A consumer may become stale while a metadata burst is still settling.
-      // Its cancellation only stops this wait: the shared, bounded download
-      // remains available to any later top-bar or popup consumer.
+      request.consumerCount++;
+
+      const releaseRequest = () => {
+        request.consumerCount = Math.max(0, request.consumerCount - 1);
+        if (request.consumerCount > 0) return;
+
+        if (this.#remoteAlbumArtRequests.get(request.albumArtUri) === request)
+          this.#remoteAlbumArtRequests.delete(request.albumArtUri);
+        request.queueHandle.cancel();
+      };
       const settle = (callback, value) => {
         if (settled) return;
         settled = true;
         if (cancellationSignalId !== null)
           loadCancellable.disconnect(cancellationSignalId);
+        releaseRequest();
         callback(value);
       };
 
@@ -664,7 +687,7 @@ export default class AlbumArtLoader {
 
     this.#cacheWriteCancellable = null;
     for (const request of this.#remoteAlbumArtRequests.values())
-      request.cancellable.cancel();
+      request.queueHandle.cancel();
     this.#remoteAlbumArtRequests.clear();
     this.#session?.abort();
     this.#session = null;

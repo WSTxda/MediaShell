@@ -13,8 +13,11 @@ import { MprisMetadataKeys } from "../src/shared/constants/mpris.js";
 import {
   ALBUM_ART_CACHE_MAX_BYTES,
   ALBUM_ART_MAX_BYTES,
+  ALBUM_ART_REMOTE_REQUEST_MAX_CONCURRENCY,
+  TOP_BAR_ALBUM_ART_UPDATE_DEBOUNCE_MS,
 } from "../src/shell/constants/albumArt.js";
 import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
+import BoundedAsyncQueue from "../src/shared/utils/boundedAsyncQueue.js";
 import {
   calculateAlbumArtCornerRadius,
   calculateAlbumArtDisplaySize,
@@ -254,7 +257,52 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       () => {
         assert.equal(ALBUM_ART_MAX_BYTES, 16 * 1024 * 1024);
         assert.equal(ALBUM_ART_CACHE_MAX_BYTES, 128 * 1024 * 1024);
+        assert.equal(ALBUM_ART_REMOTE_REQUEST_MAX_CONCURRENCY, 1);
+        assert.equal(TOP_BAR_ALBUM_ART_UPDATE_DEBOUNCE_MS, 500);
       },
     ],
   ]);
+});
+
+test("rapid artwork bursts stay bounded and discard queued stale work", async () => {
+  const queue = new BoundedAsyncQueue(2);
+  const operations = new Map();
+  const started = [];
+  const cancelled = [];
+  const handles = ["first", "second", "stale", "latest"].map((name) =>
+    queue.enqueue(
+      () => {
+        started.push(name);
+        return new Promise((resolve) => operations.set(name, resolve));
+      },
+      () => {
+        cancelled.push(name);
+        operations.get(name)?.(null);
+      },
+    ),
+  );
+
+  await Promise.resolve();
+  assert.deepEqual(started, ["first", "second"]);
+  assert.equal(queue.activeCount, 2);
+  assert.equal(queue.pendingCount, 2);
+
+  handles[2].cancel();
+  assert.equal(await handles[2].promise, null);
+  assert.deepEqual(started, ["first", "second"]);
+  assert.equal(queue.pendingCount, 1);
+
+  operations.get("first")("first-result");
+  assert.equal(await handles[0].promise, "first-result");
+  await Promise.resolve();
+  assert.deepEqual(started, ["first", "second", "latest"]);
+  assert.equal(queue.activeCount, 2);
+
+  handles[1].cancel();
+  assert.deepEqual(cancelled, ["second"]);
+  assert.equal(await handles[1].promise, null);
+  operations.get("latest")("latest-result");
+  assert.equal(await handles[3].promise, "latest-result");
+  assert.equal(queue.activeCount, 0);
+  assert.equal(queue.pendingCount, 0);
 });

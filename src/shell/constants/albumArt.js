@@ -19,3 +19,9 @@ export const ALBUM_ART_READ_CHUNK_BYTES = 64 * 1024;
 
 /** HTTP timeout for remote album-art requests, in seconds. */
 export const ALBUM_ART_REQUEST_TIMEOUT_SECONDS = 15;
+
+/** Maximum remote artwork responses read concurrently inside GNOME Shell. */
+export const ALBUM_ART_REMOTE_REQUEST_MAX_CONCURRENCY = 1;
+
+/** Settling time before a metadata burst starts a top-bar artwork request. */
+export const TOP_BAR_ALBUM_ART_UPDATE_DEBOUNCE_MS = 500;

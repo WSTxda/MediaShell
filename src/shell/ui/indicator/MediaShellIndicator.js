@@ -19,6 +19,7 @@ import {
   MprisRootProperties,
 } from "../../../shared/constants/mpris.js";
 import { GTypeNames } from "../../../shared/constants/gtypes.js";
+import { TOP_BAR_ALBUM_ART_UPDATE_DEBOUNCE_MS } from "../../constants/albumArt.js";
 import { MediaAppStateProperties } from "../../constants/mediaApp.js";
 import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
@@ -45,6 +46,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.mediaAppPropertyListenerIds = new Map();
     this.desktopAppResolutionRetrySourceId = null;
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
+    this.albumArtUpdateSourceId = null;
     this.widgetUpdateSourceId = null;
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
@@ -73,6 +75,7 @@ class MediaShellIndicator extends PanelMenu.Button {
       return;
     this.removeMediaAppPropertyListeners();
     this.cancelPendingWidgetUpdate();
+    this.cancelPendingAlbumArtUpdate();
     this.cancelDesktopAppResolutionRetry();
     this.mediaApp = mediaApp;
     this.addMediaAppPropertyListeners();
@@ -90,8 +93,9 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   connectPanelGeometrySignals() {
-    const requestAlbumArtUpdate = () =>
+    const requestAlbumArtUpdate = () => {
       this.requestWidgetUpdate(WidgetFlags.TOP_BAR_ALBUM_ART);
+    };
     this.panelGeometrySignalIds.push(
       this.connect("notify::height", requestAlbumArtUpdate),
       this.connect("style-changed", requestAlbumArtUpdate),
@@ -279,18 +283,40 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   requestMetadataWidgetUpdate() {
-    let widgetFlags =
-      WidgetFlags.TOP_BAR_ALBUM_ART | WidgetFlags.TOP_BAR_TRACK_INFORMATION;
+    let widgetFlags = WidgetFlags.TOP_BAR_TRACK_INFORMATION;
     if (this.menu?.isOpen) {
       widgetFlags |=
         WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION;
       if (this.extensionController.popupProgressBarShow)
         widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
     }
-    // requestWidgetUpdate() already coalesces the MPRIS burst at the next idle
-    // turn. A second 100 ms timer only delayed visible metadata and retained
-    // this indicator longer without reducing same-turn work.
+    // Text remains responsive at the next idle turn. Artwork gets a separate,
+    // short debounce so transit tracks in a rapid skip burst never start I/O.
     this.requestWidgetUpdate(widgetFlags);
+    this.scheduleTopBarAlbumArtUpdate();
+  }
+
+  scheduleTopBarAlbumArtUpdate() {
+    this.cancelPendingAlbumArtUpdate();
+    if (!this.extensionController?.topBarAlbumArtShow) return;
+
+    const observedMediaApp = this.mediaApp;
+    this.albumArtUpdateSourceId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      TOP_BAR_ALBUM_ART_UPDATE_DEBOUNCE_MS,
+      () => {
+        this.albumArtUpdateSourceId = null;
+        if (this.extensionController && this.mediaApp === observedMediaApp)
+          this.requestWidgetUpdate(WidgetFlags.TOP_BAR_ALBUM_ART);
+        return GLib.SOURCE_REMOVE;
+      },
+    );
+  }
+
+  cancelPendingAlbumArtUpdate() {
+    if (this.albumArtUpdateSourceId === null) return;
+    GLib.Source.remove(this.albumArtUpdateSourceId);
+    this.albumArtUpdateSourceId = null;
   }
 
   scheduleDesktopAppResolutionRetry() {
@@ -382,6 +408,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.removeMediaAppPropertyListeners();
     this.disconnectPanelGeometrySignals();
     this.cancelPendingWidgetUpdate();
+    this.cancelPendingAlbumArtUpdate();
     this.cancelDesktopAppResolutionRetry();
 
     const pointerHandler = this.pointerHandler;

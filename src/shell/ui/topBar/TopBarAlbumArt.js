@@ -37,6 +37,7 @@ export default class TopBarAlbumArt {
     this.actor = null;
     this.loadedAlbumArtKey = null;
     this.loadingAlbumArtKey = null;
+    this.desiredAlbumArtRequest = null;
     this.albumArtLoadGeneration = 0;
     this.albumArtLoadCancellable = null;
     this.albumArtLoader = AlbumArtLoader.getInstance();
@@ -67,18 +68,14 @@ export default class TopBarAlbumArt {
       radius,
       cacheEnabled: this.extensionController.albumArtCacheEnabled,
     });
-
     this.ensureActor(request.width, request.radius);
     placeActorAtIndex(this.actor, parentBox, index);
-    if (
-      this.loadedAlbumArtKey === request.key ||
-      this.loadingAlbumArtKey === request.key
-    )
-      return;
+    this.desiredAlbumArtRequest = request;
 
-    this.cancelAlbumArtLoad();
-    this.setFallback(request.width, request.radius);
-    this.loadAlbumArt(request);
+    if (this.loadedAlbumArtKey === request.key) return;
+    if (!this.albumArtLoadCancellable)
+      this.setFallback(request.width, request.radius);
+    this.loadDesiredAlbumArt();
   }
 
   getAlbumArtSize() {
@@ -134,7 +131,7 @@ export default class TopBarAlbumArt {
         ...request,
         loadCancellable,
       });
-      if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
+      if (!this.isDesiredLoad(loadGeneration, loadCancellable, request)) {
         try {
           albumArtSource?.stream?.close(null);
         } catch {
@@ -149,14 +146,15 @@ export default class TopBarAlbumArt {
         size: request.width,
         loadCancellable,
       });
-      if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
+      if (!this.isDesiredLoad(loadGeneration, loadCancellable, request)) return;
 
       if (pixbuf) this.setPixbuf(request, pixbuf);
       else this.setFallback(request.width, request.radius, fallbackIcon);
+      this.loadedAlbumArtKey = request.key;
     } catch (error) {
       if (
         !isCancellationError(error) &&
-        this.isCurrentLoad(loadGeneration, loadCancellable, request)
+        this.isDesiredLoad(loadGeneration, loadCancellable, request)
       ) {
         logger.warnOnce(
           `processing:${request.busName}`,
@@ -164,16 +162,32 @@ export default class TopBarAlbumArt {
           error,
         );
         this.setFallback(request.width, request.radius);
+        this.loadedAlbumArtKey = request.key;
       }
     } finally {
-      if (this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
-        // Cache unavailable results too, avoiding repeated requests on unrelated
-        // MPRIS metadata changes.
-        this.loadedAlbumArtKey = request.key;
+      if (this.albumArtLoadCancellable === loadCancellable) {
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
+        this.loadDesiredAlbumArt();
       }
     }
+  }
+
+  loadDesiredAlbumArt() {
+    const request = this.desiredAlbumArtRequest;
+    if (
+      !this.actor ||
+      !request ||
+      this.albumArtLoadCancellable ||
+      this.loadedAlbumArtKey === request.key
+    )
+      return;
+
+    // Do not cancel Soup/GdkPixbuf work for every transit track in a rapid
+    // skip burst. Finish at most one stale job, then process only the latest
+    // immutable request. This keeps native cancellation churn out of Mutter's
+    // compositor process while strictly serializing top-bar artwork work.
+    void this.loadAlbumArt(request);
   }
 
   setPixbuf(request, pixbuf) {
@@ -194,17 +208,19 @@ export default class TopBarAlbumArt {
     this.actor.set_icon_size(size);
   }
 
-  isCurrentLoad(loadGeneration, loadCancellable, request) {
+  isDesiredLoad(loadGeneration, loadCancellable, request) {
     return (
       this.actor &&
       loadGeneration === this.albumArtLoadGeneration &&
       !loadCancellable.is_cancelled() &&
       this.loadingAlbumArtKey === request.key &&
+      this.desiredAlbumArtRequest?.key === request.key &&
       this.mediaApp?.busName === request.busName
     );
   }
 
   cancelAlbumArtLoad() {
+    this.desiredAlbumArtRequest = null;
     if (!this.albumArtLoadCancellable) return;
     this.albumArtLoadGeneration++;
     this.albumArtLoadCancellable.cancel();
@@ -215,6 +231,7 @@ export default class TopBarAlbumArt {
   remove() {
     this.cancelAlbumArtLoad();
     this.loadedAlbumArtKey = null;
+    this.desiredAlbumArtRequest = null;
     this.actor?.get_parent()?.remove_child(this.actor);
     this.actor?.destroy();
     this.actor = null;
