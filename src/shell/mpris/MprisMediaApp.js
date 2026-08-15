@@ -844,9 +844,7 @@ export default class MprisMediaApp {
   }
 
   async playPause() {
-    const guardResult = this.#guardPlayerOperation(
-      this.canPlay || this.canPause,
-    );
+    const guardResult = this.#guardPlayerOperation(this.canPause);
     if (guardResult) return guardResult;
     return this.#callPlayer(MprisPlayerMethods.PLAY_PAUSE);
   }
@@ -884,12 +882,13 @@ export default class MprisMediaApp {
     if (!trackId || !Number.isFinite(positionMicroseconds))
       return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
 
+    const position = Math.trunc(positionMicroseconds);
+    if (position < 0)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
+
     return this.#callPlayer(
       MprisPlayerMethods.SET_POSITION,
-      new GLib.Variant("(ox)", [
-        String(trackId),
-        Math.max(0, Math.trunc(positionMicroseconds)),
-      ]),
+      new GLib.Variant("(ox)", [String(trackId), position]),
     );
   }
 

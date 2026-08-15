@@ -26,7 +26,6 @@ import {
   SHORTCUT_DIALOG_WIDTH,
   TOAST_TIMEOUT_SECONDS,
 } from "../constants/layout.js";
-import { SHORTCUT_SECTION_ORDER } from "../constants/input.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
@@ -35,6 +34,13 @@ import {
   isValidAccelerator,
   isValidBinding,
 } from "../utils/shortcutValidation.js";
+
+const SHORTCUT_SECTION_ORDER = Object.freeze([
+  "playback",
+  "audio",
+  "interface",
+  "apps",
+]);
 
 function createActionCopy() {
   return Object.freeze({

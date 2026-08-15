@@ -15,13 +15,11 @@ import { isCancellationError } from "./errors.js";
 
 const logger = createLogger("albumArtDecode");
 
-if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async === "function") {
-  Gio._promisify(
-    GdkPixbuf.Pixbuf,
-    "new_from_stream_at_scale_async",
-    "new_from_stream_finish",
-  );
-}
+Gio._promisify(
+  GdkPixbuf.Pixbuf,
+  "new_from_stream_at_scale_async",
+  "new_from_stream_finish",
+);
 
 function closeInputStream(stream) {
   try {
@@ -33,11 +31,6 @@ function closeInputStream(stream) {
 
 async function decodeAlbumArtStream(stream, size, loadCancellable) {
   if (!stream) return null;
-  if (typeof GdkPixbuf?.Pixbuf?.new_from_stream_at_scale_async !== "function") {
-    closeInputStream(stream);
-    return null;
-  }
-
   try {
     const decodeSize = Math.max(1, Math.round(size * ALBUM_ART_RENDER_SCALE));
     return await GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(

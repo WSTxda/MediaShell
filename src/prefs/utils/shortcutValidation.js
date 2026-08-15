@@ -12,7 +12,20 @@
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 
-import { FORBIDDEN_SHORTCUT_KEYVALS } from "../constants/input.js";
+const FORBIDDEN_SHORTCUT_KEYVALS = Object.freeze([
+  Gdk.KEY_Home,
+  Gdk.KEY_Left,
+  Gdk.KEY_Up,
+  Gdk.KEY_Right,
+  Gdk.KEY_Down,
+  Gdk.KEY_Page_Up,
+  Gdk.KEY_Page_Down,
+  Gdk.KEY_End,
+  Gdk.KEY_Tab,
+  Gdk.KEY_KP_Enter,
+  Gdk.KEY_Return,
+  Gdk.KEY_Mode_switch,
+]);
 
 /**
  * Returns whether a keyval/mask pair can be represented as a GTK accelerator.

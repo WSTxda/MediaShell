@@ -45,7 +45,6 @@ export default class ExtensionController {
   constructor(extensionInstance) {
     this.extensionInstance = extensionInstance;
     this.extensionPath = extensionInstance.path;
-    this.enabled = false;
     // Lifecycle generation guard:
     // `lifecycleGeneration` is incremented on every enable() and destroy() call.
     // Async callbacks capture the generation at dispatch time and compare on
@@ -60,9 +59,6 @@ export default class ExtensionController {
   }
 
   async enable() {
-    if (this.enabled) return;
-
-    this.enabled = true;
     const lifecycleGeneration = ++this.lifecycleGeneration;
 
     try {
@@ -106,12 +102,10 @@ export default class ExtensionController {
   }
 
   isCurrentLifecycleGeneration(lifecycleGeneration) {
-    return this.enabled && lifecycleGeneration === this.lifecycleGeneration;
+    return lifecycleGeneration === this.lifecycleGeneration;
   }
 
   handleSettingChange(_settingKey, settingValue, settingSpec) {
-    if (!this.enabled) return;
-
     if (settingSpec.impact)
       this.indicator?.requestWidgetUpdate(settingSpec.impact);
 
@@ -143,8 +137,6 @@ export default class ExtensionController {
   }
 
   handleActiveMediaAppChanged(mediaApp) {
-    if (!this.enabled) return;
-
     if (!mediaApp) {
       this.destroyIndicator();
       return;
@@ -249,12 +241,12 @@ export default class ExtensionController {
   }
 
   destroy() {
-    if (!this.enabled && !this.extensionResourceRegistry) return;
+    if (!this.extensionResourceRegistry) return;
 
-    this.enabled = false;
     this.lifecycleGeneration++;
 
     this.destroyOwnedComponent("globalShortcutsService");
+    this.destroyOwnedComponent("settingsStore");
     this.destroyIndicator();
     this.destroyOwnedComponent("mediaAppRegistry");
     this.destroyOwnedComponent("mprisProxyFactory");
@@ -262,7 +254,6 @@ export default class ExtensionController {
     DesktopAppResolver.getInstance().clearCaches();
     clearIconCache();
     this.destroyOwnedComponent("gnomeShellMediaControlsPatch");
-    this.destroyOwnedComponent("settingsStore");
     this.settings = null;
     this.destroyOwnedComponent("extensionResourceRegistry");
     this.extensionInstance = null;

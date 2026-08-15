@@ -286,8 +286,6 @@ function findShellAppFromSearch(
   normalizedCandidates,
   runningAppsById,
 ) {
-  if (typeof Shell.AppSystem.search !== "function") return null;
-
   for (const lookupHint of lookupHints) {
     let resultGroups;
     try {
