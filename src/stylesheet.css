@@ -344,8 +344,8 @@
 }
 
 /* Popup — Volume control -------------------------------------------
- * Compact MPRIS volume row: mute icon, expanding slider, and numeric percentage
- * share the component's horizontally inset width.
+ * Compact MPRIS volume row: mute button and expanding slider share the popup
+ * content width.
  */
 .mediashell-popup-volume-control {
   spacing: 8px;
@@ -358,11 +358,6 @@
   min-height: 28px;
   padding: 0;
   border-radius: 100px;
-}
-
-.mediashell-popup-volume-percentage {
-  min-width: 3.25em;
-  font-feature-settings: "tnum";
 }
 
 /* Popup — Playback controls -----------------------------------------

@@ -76,7 +76,6 @@ export const StyleClasses = Object.freeze({
   POPUP_TRACK_INFORMATION_TITLE: "mediashell-popup-track-information-title",
   POPUP_VOLUME_CONTROL: "mediashell-popup-volume-control",
   POPUP_VOLUME_ICON_BUTTON: "mediashell-popup-volume-icon-button",
-  POPUP_VOLUME_PERCENTAGE: "mediashell-popup-volume-percentage",
 
   TOP_BAR_ACTION_BOX: "mediashell-top-bar-action-box",
   TOP_BAR_ALBUM_ART: "mediashell-top-bar-album-art",

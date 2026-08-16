@@ -47,7 +47,6 @@ export default class PopupVolumeControl {
     this.iconButton = null;
     this.icon = null;
     this.slider = null;
-    this.percentageLabel = null;
     this.sliderChangedId = null;
     this.isDragging = false;
     this.mediaAppBusName = null;
@@ -129,17 +128,8 @@ export default class PopupVolumeControl {
       this,
     );
 
-    this.percentageLabel = new St.Label({
-      styleClass: StyleClasses.POPUP_VOLUME_PERCENTAGE,
-      text: "0%",
-      xExpand: false,
-      xAlign: Clutter.ActorAlign.END,
-      yAlign: Clutter.ActorAlign.CENTER,
-    });
-
     this.actor.add_child(this.iconButton);
     this.actor.add_child(this.slider);
-    this.actor.add_child(this.percentageLabel);
   }
 
   syncVolume(volume) {
@@ -157,8 +147,6 @@ export default class PopupVolumeControl {
   syncVolumePresentation(volume) {
     this.icon.iconName = resolveVolumeIconName(volume);
     this.iconButton.set_accessible_name(volume > 0 ? _("Mute") : _("Unmute"));
-    const percentage = Math.round(Math.max(0, volume) * 100);
-    this.percentageLabel.text = `${percentage}%`;
   }
 
   syncControlState() {
@@ -218,7 +206,6 @@ export default class PopupVolumeControl {
     this.iconButton = null;
     this.icon = null;
     this.slider = null;
-    this.percentageLabel = null;
     this.sliderChangedId = null;
     this.isDragging = false;
     this.mediaAppBusName = null;
