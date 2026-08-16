@@ -15,6 +15,8 @@ import {
   validateSettingContractTables,
 } from "../scripts/dev/contracts.mjs";
 import {
+  parseJavaScriptModule,
+  validateEntryPointModule,
   validateExternalImport,
   validatePrivateShellImport,
   validateRelativeImport,
@@ -22,6 +24,7 @@ import {
 import { validateExtensionMetadata } from "../scripts/dev/metadata.mjs";
 import {
   validateArchiveShape,
+  validatePackageContents,
   validatePackageInventory,
   validatePackagedJavaScript,
 } from "../scripts/dev/package.mjs";
@@ -37,10 +40,14 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
           { name: "extension.js", is_symlink: false },
           { name: "extension.js", is_symlink: false },
           { name: "linked.js", is_symlink: true },
+          { name: "device.js", is_special: true },
+          { name: "shell//module.js", is_dir: false, is_symlink: false },
+          { name: "C:/module.js", is_dir: false, is_symlink: false },
         ]);
         assert.ok(errors.some((error) => error.includes("unsafe")));
         assert.ok(errors.some((error) => error.includes("duplicate")));
         assert.ok(errors.some((error) => error.includes("symbolic link")));
+        assert.ok(errors.some((error) => error.includes("special filesystem")));
       },
     ],
     [
@@ -64,6 +71,32 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
             "extension.js": "export default class {",
           }).length,
           1,
+        );
+        assert.ok(
+          validatePackagedJavaScript({
+            "extension.js":
+              'import "./missing.js"; export default class Extension {}',
+          }).some((error) => error.includes("import target is missing")),
+        );
+        assert.ok(
+          validatePackagedJavaScript({
+            "extension.js":
+              'import { missing } from "./module.js"; export default class Extension {}',
+            "module.js": "export const present = true;",
+          }).some((error) => error.includes("does not export missing")),
+        );
+        assert.deepEqual(
+          validatePackageContents(
+            [
+              {
+                name: "extension.js",
+                is_dir: false,
+                sha256: "packaged-hash",
+              },
+            ],
+            new Map([["extension.js", "expected-hash"]]),
+          ),
+          ["extension.js: packaged bytes differ from the current build input"],
         );
       },
     ],
@@ -146,6 +179,45 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
             "resource:///org/gnome/shell/ui/mpris.js",
           ),
           /must stay isolated/,
+        );
+      },
+    ],
+    [
+      "entrypoint inheritance",
+      () => {
+        const contract = {
+          file: "src/extension.js",
+          baseModule: "resource:///org/gnome/shell/extensions/extension.js",
+          baseExport: "Extension",
+          requiredMethods: ["enable", "disable"],
+        };
+        const validRecord = parseJavaScriptModule(
+          contract.file,
+          `
+            import { Extension as BaseExtension } from "${contract.baseModule}";
+            class MediaShellExtension extends BaseExtension {
+              enable() {}
+              disable() {}
+            }
+            export { MediaShellExtension as default };
+          `,
+        );
+        assert.deepEqual(validateEntryPointModule(validRecord, contract), []);
+
+        const invalidRecord = parseJavaScriptModule(
+          contract.file,
+          `
+            import { Extension } from "${contract.baseModule}";
+            export default class MediaShellExtension {
+              enable() {}
+              disable() {}
+            }
+          `,
+        );
+        assert.ok(
+          validateEntryPointModule(invalidRecord, contract).some((error) =>
+            error.includes("must extend"),
+          ),
         );
       },
     ],

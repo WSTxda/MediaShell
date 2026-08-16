@@ -2,8 +2,8 @@
  * @file javascript.mjs
  * @module scripts.dev.javascript
  *
- * Validates JavaScript syntax, static imports, process boundaries, and stable
- * GNOME runtime API constraints.
+ * Validates JavaScript syntax, static imports, process boundaries, GNOME entry
+ * point inheritance, and stable runtime API constraints.
  *
  * These checks intentionally avoid guessing lifecycle, ownership, naming, or
  * module usefulness from source shape. Behavior and teardown belong in tests
@@ -30,7 +30,8 @@ function lineOf(node) {
   return node.loc?.start.line ?? 1;
 }
 
-function parseModule(file, source) {
+/** Parses one ECMAScript module with the canonical project parser options. */
+export function parseJavaScriptModule(file, source) {
   const ast = parse(source, {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -53,7 +54,7 @@ async function loadRecords() {
     for (const file of files) {
       const source = await read(file);
       try {
-        records.set(file, parseModule(file, source));
+        records.set(file, parseJavaScriptModule(file, source));
       } catch (error) {
         const location = error.loc
           ? `${file}:${error.loc.line}:${error.loc.column + 1}`
@@ -94,7 +95,8 @@ function declarationNames(declaration) {
   return names;
 }
 
-function moduleSpecifiers(record) {
+/** Collects static, re-exported, and literal dynamic module specifiers. */
+export function collectModuleSpecifiers(record) {
   const specifiers = [];
   for (const node of record.ast.body) {
     if (
@@ -153,6 +155,22 @@ function exportedNames(record) {
       names.add(specifier.exported.name ?? specifier.exported.value);
   }
   return names;
+}
+
+/** Returns imported bindings that are absent from a parsed target module. */
+export function findMissingImportedNames(importNode, targetRecord) {
+  if (importNode.type !== "ImportDeclaration") return [];
+  const availableExports = exportedNames(targetRecord);
+  const missing = [];
+  for (const imported of importNode.specifiers) {
+    if (imported.type === "ImportNamespaceSpecifier") continue;
+    const importedName =
+      imported.type === "ImportDefaultSpecifier"
+        ? "default"
+        : (imported.imported.name ?? imported.imported.value);
+    if (!availableExports.has(importedName)) missing.push(importedName);
+  }
+  return missing;
 }
 
 function sourceLayer(file) {
@@ -233,7 +251,13 @@ export async function checkImportsAndBoundaries() {
 
   for (const record of sourceRecords.values()) {
     const layer = sourceLayer(record.file);
-    for (const item of moduleSpecifiers(record)) {
+    if (!layer) {
+      errors.push(
+        `${record.file}: runtime JavaScript must belong to the shell, preferences, or shared source layer`,
+      );
+    }
+
+    for (const item of collectModuleSpecifiers(record)) {
       const specifier = item.value;
       if (!specifier.startsWith(".")) {
         for (const error of validateExternalImport(layer, specifier))
@@ -257,25 +281,25 @@ export async function checkImportsAndBoundaries() {
 
       const target = relative(ROOT, absoluteTarget).replaceAll("\\", "/");
       const targetLayer = sourceLayer(target);
+      if (!sourceRecords.has(target)) {
+        errors.push(
+          `${record.file}:${item.line}: runtime relative import leaves the packaged source tree: ${target}`,
+        );
+        continue;
+      }
       for (const error of validateRelativeImport(layer, targetLayer, specifier))
         errors.push(`${record.file}:${item.line}: ${error}: ${target}`);
 
-      if (sourceRecords.has(target))
-        dependencyGraph.get(record.file).push(target);
+      dependencyGraph.get(record.file).push(target);
 
-      if (item.kind === "import" && sourceRecords.has(target)) {
-        const availableExports = exportedNames(sourceRecords.get(target));
-        for (const imported of item.node.specifiers) {
-          if (imported.type === "ImportNamespaceSpecifier") continue;
-          const importedName =
-            imported.type === "ImportDefaultSpecifier"
-              ? "default"
-              : (imported.imported.name ?? imported.imported.value);
-          if (!availableExports.has(importedName))
-            errors.push(
-              `${record.file}:${item.line}: ${target} does not export ${importedName}`,
-            );
-        }
+      if (item.kind === "import") {
+        for (const importedName of findMissingImportedNames(
+          item.node,
+          sourceRecords.get(target),
+        ))
+          errors.push(
+            `${record.file}:${item.line}: ${target} does not export ${importedName}`,
+          );
       }
     }
   }
@@ -374,37 +398,139 @@ export async function checkRuntimeApiUsage() {
   console.log("Stable GNOME runtime API constraints passed.");
 }
 
+function importedBindingName(record, moduleName, exportedName) {
+  for (const node of record.ast.body) {
+    if (node.type !== "ImportDeclaration" || node.source.value !== moduleName)
+      continue;
+    for (const specifier of node.specifiers) {
+      if (
+        specifier.type === "ImportSpecifier" &&
+        (specifier.imported.name ?? specifier.imported.value) === exportedName
+      )
+        return specifier.local.name;
+    }
+  }
+  return null;
+}
+
+function resolveTopLevelClass(record, name) {
+  for (const node of record.ast.body) {
+    if (node.type === "ClassDeclaration" && node.id?.name === name) return node;
+    if (node.type !== "VariableDeclaration") continue;
+    for (const declaration of node.declarations) {
+      if (
+        declaration.id.type === "Identifier" &&
+        declaration.id.name === name &&
+        declaration.init?.type === "ClassExpression"
+      )
+        return declaration.init;
+    }
+  }
+  return null;
+}
+
+function resolveDefaultExportClass(record) {
+  let exportedName = null;
+  for (const node of record.ast.body) {
+    if (node.type === "ExportDefaultDeclaration") {
+      if (
+        ["ClassDeclaration", "ClassExpression"].includes(node.declaration.type)
+      )
+        return node.declaration;
+      if (node.declaration.type === "Identifier")
+        exportedName = node.declaration.name;
+    }
+    if (node.type !== "ExportNamedDeclaration") continue;
+    for (const specifier of node.specifiers) {
+      if (
+        (specifier.exported.name ?? specifier.exported.value) === "default" &&
+        specifier.local.type === "Identifier"
+      )
+        exportedName = specifier.local.name;
+    }
+  }
+  return exportedName ? resolveTopLevelClass(record, exportedName) : null;
+}
+
+function classMethodNames(classNode) {
+  return new Set(
+    classNode.body.body
+      .filter(
+        (item) =>
+          item.type === "MethodDefinition" &&
+          item.kind === "method" &&
+          !item.static &&
+          ((!item.computed && item.key.type === "Identifier") ||
+            (item.computed &&
+              item.key.type === "Literal" &&
+              typeof item.key.value === "string")),
+      )
+      .map((item) => item.key.name ?? item.key.value),
+  );
+}
+
+/** Validates one GNOME entry point through resolved AST bindings and inheritance. */
+export function validateEntryPointModule(record, contract) {
+  if (!record) return [`${contract.file}: entry-point module is missing`];
+
+  const errors = [];
+  const baseBinding = importedBindingName(
+    record,
+    contract.baseModule,
+    contract.baseExport,
+  );
+  if (!baseBinding)
+    errors.push(
+      `${contract.file}: must import ${contract.baseExport} from ${contract.baseModule}`,
+    );
+
+  const entryPointClass = resolveDefaultExportClass(record);
+  if (!entryPointClass) {
+    errors.push(
+      `${contract.file}: default export must resolve to a local class`,
+    );
+    return errors;
+  }
+
+  if (
+    !baseBinding ||
+    entryPointClass.superClass?.type !== "Identifier" ||
+    entryPointClass.superClass.name !== baseBinding
+  )
+    errors.push(
+      `${contract.file}: default class must extend the imported ${contract.baseExport}`,
+    );
+
+  const methods = classMethodNames(entryPointClass);
+  for (const method of contract.requiredMethods) {
+    if (!methods.has(method))
+      errors.push(`${contract.file}: missing ${method}()`);
+  }
+  return errors;
+}
+
 export async function checkEntryPointContracts() {
   const records = await loadRecords();
   const errors = [];
 
-  for (const [file, requiredMethods] of [
-    ["src/extension.js", ["enable", "disable"]],
-    ["src/prefs.js", ["fillPreferencesWindow"]],
-  ]) {
-    const record = records.get(file);
-    let methods = null;
-    for (const node of record?.ast.body ?? []) {
-      if (
-        node.type === "ExportDefaultDeclaration" &&
-        node.declaration.type === "ClassDeclaration"
-      ) {
-        methods = new Set(
-          node.declaration.body.body
-            .filter(
-              (item) =>
-                item.type === "MethodDefinition" &&
-                !item.computed &&
-                item.key.type === "Identifier",
-            )
-            .map((item) => item.key.name),
-        );
-      }
-    }
-    for (const method of requiredMethods) {
-      if (!methods?.has(method)) errors.push(`${file}: missing ${method}()`);
-    }
-  }
+  for (const contract of [
+    {
+      file: "src/extension.js",
+      baseModule: "resource:///org/gnome/shell/extensions/extension.js",
+      baseExport: "Extension",
+      requiredMethods: ["enable", "disable"],
+    },
+    {
+      file: "src/prefs.js",
+      baseModule:
+        "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js",
+      baseExport: "ExtensionPreferences",
+      requiredMethods: ["fillPreferencesWindow"],
+    },
+  ])
+    errors.push(
+      ...validateEntryPointModule(records.get(contract.file), contract),
+    );
 
   fail("Entry-point contract validation", errors);
   console.log("Extension and preferences entry points passed.");

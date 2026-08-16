@@ -10,7 +10,7 @@
  */
 
 import { PREFERENCE_WIDGET_BINDINGS } from "../../src/prefs/bindings/preferenceBindings.js";
-import { PREFERENCE_PAGE_IDS } from "../../src/prefs/constants/ui.js";
+import { PREFERENCE_PAGE_IDS } from "../../src/prefs/constants/preferencesUi.js";
 import { GTypeNames } from "../../src/shared/constants/gtypes.js";
 import {
   DBUS_DAEMON_IFACE_NAME,
