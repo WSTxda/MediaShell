@@ -2,12 +2,13 @@
  * @file PopupVolumeControl.js
  * @module shell.ui.popup.PopupVolumeControl
  *
- * Owns the popup MPRIS volume slider and mute button.
+ * Owns the popup MPRIS volume slider and endpoint buttons.
  *
  * The component mirrors GNOME Shell's volume-row interaction: MPRIS property
  * updates resynchronize the slider and icon when no local drag owns the control,
- * while user changes are written through MprisMediaApp. The last non-zero volume
- * is retained only so the icon button can restore it after muting.
+ * while user changes are written through MprisMediaApp. The left endpoint toggles
+ * mute and restores the last non-zero volume; the right endpoint raises volume by
+ * a fixed popup-local step.
  */
 
 import Clutter from "gi://Clutter";
@@ -24,29 +25,23 @@ import { StyleClasses } from "../../constants/styleClasses.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
 const UNMUTE_DEFAULT_VOLUME = 0.25;
-const VOLUME_ICON_NAMES = Object.freeze([
-  "audio-volume-muted-symbolic",
-  "audio-volume-low-symbolic",
-  "audio-volume-medium-symbolic",
-  "audio-volume-high-symbolic",
-]);
-
-function resolveVolumeIconName(volume) {
-  if (volume <= 0) return VOLUME_ICON_NAMES[0];
-
-  const normalizedVolume = Math.min(volume, 1);
-  const maximumIconIndex = VOLUME_ICON_NAMES.length - 1;
-  return VOLUME_ICON_NAMES[Math.ceil(normalizedVolume * maximumIconIndex)];
-}
+const VOLUME_UP_STEP = 0.1;
+const VOLUME_ICON_NAMES = Object.freeze({
+  MUTED: "audio-volume-muted-symbolic",
+  LOW: "audio-volume-low-symbolic",
+  HIGH: "audio-volume-high-symbolic",
+});
 
 /** Owns the popup volume row. */
 export default class PopupVolumeControl {
   constructor(popupContent) {
     this.popupContent = popupContent;
     this.actor = null;
-    this.iconButton = null;
-    this.icon = null;
+    this.muteButton = null;
+    this.muteIcon = null;
     this.slider = null;
+    this.volumeUpButton = null;
+    this.volumeUpIcon = null;
     this.sliderChangedId = null;
     this.isDragging = false;
     this.mediaAppBusName = null;
@@ -90,13 +85,13 @@ export default class PopupVolumeControl {
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.icon = new St.Icon({
-      iconName: VOLUME_ICON_NAMES[0],
+    this.muteIcon = new St.Icon({
+      iconName: VOLUME_ICON_NAMES.MUTED,
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.icon.set_icon_size(16);
-    this.iconButton = new St.Button({
-      child: this.icon,
+    this.muteIcon.set_icon_size(16);
+    this.muteButton = new St.Button({
+      child: this.muteIcon,
       styleClass: styleClassNames(
         StyleClasses.ICON_BUTTON,
         StyleClasses.FLAT,
@@ -105,7 +100,7 @@ export default class PopupVolumeControl {
       xExpand: false,
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.iconButton.connectObject("clicked", () => this.toggleMute(), this);
+    this.muteButton.connectObject("clicked", () => this.toggleMute(), this);
 
     this.slider = new Slider.Slider(0);
     this.slider.accessible_name = _("Volume");
@@ -128,8 +123,31 @@ export default class PopupVolumeControl {
       this,
     );
 
-    this.actor.add_child(this.iconButton);
+    this.volumeUpIcon = new St.Icon({
+      iconName: VOLUME_ICON_NAMES.HIGH,
+      yAlign: Clutter.ActorAlign.CENTER,
+    });
+    this.volumeUpIcon.set_icon_size(16);
+    this.volumeUpButton = new St.Button({
+      child: this.volumeUpIcon,
+      styleClass: styleClassNames(
+        StyleClasses.ICON_BUTTON,
+        StyleClasses.FLAT,
+        StyleClasses.POPUP_VOLUME_ICON_BUTTON,
+      ),
+      xExpand: false,
+      yAlign: Clutter.ActorAlign.CENTER,
+    });
+    this.volumeUpButton.set_accessible_name(_("Volume up"));
+    this.volumeUpButton.connectObject(
+      "clicked",
+      () => this.increaseVolume(),
+      this,
+    );
+
+    this.actor.add_child(this.muteButton);
     this.actor.add_child(this.slider);
+    this.actor.add_child(this.volumeUpButton);
   }
 
   syncVolume(volume) {
@@ -145,15 +163,20 @@ export default class PopupVolumeControl {
   }
 
   syncVolumePresentation(volume) {
-    this.icon.iconName = resolveVolumeIconName(volume);
-    this.iconButton.set_accessible_name(volume > 0 ? _("Mute") : _("Unmute"));
+    const isMuted = volume <= 0;
+    this.muteIcon.iconName = isMuted
+      ? VOLUME_ICON_NAMES.MUTED
+      : VOLUME_ICON_NAMES.LOW;
+    this.muteButton.set_accessible_name(isMuted ? _("Unmute") : _("Mute"));
   }
 
   syncControlState() {
     const isReactive = this.mediaApp.canControl;
     this.slider.reactive = isReactive;
-    this.iconButton.reactive = isReactive;
-    this.iconButton.canFocus = isReactive;
+    this.muteButton.reactive = isReactive;
+    this.muteButton.canFocus = isReactive;
+    this.volumeUpButton.reactive = isReactive;
+    this.volumeUpButton.canFocus = isReactive;
     this.actor.opacity = isReactive ? ACTIVE_OPACITY : INACTIVE_OPACITY;
   }
 
@@ -170,6 +193,19 @@ export default class PopupVolumeControl {
     void this.mediaApp.setVolume(
       this.lastNonZeroVolume ?? UNMUTE_DEFAULT_VOLUME,
     );
+  }
+
+  increaseVolume() {
+    if (!this.mediaApp.canControl) return;
+
+    const currentVolume = Number.isFinite(this.mediaApp.volume)
+      ? Math.max(0, this.mediaApp.volume)
+      : 0;
+    if (currentVolume >= 1) return;
+
+    const targetVolume = Math.min(currentVolume + VOLUME_UP_STEP, 1);
+    this.lastNonZeroVolume = targetVolume;
+    void this.mediaApp.setVolume(targetVolume);
   }
 
   attach() {
@@ -196,16 +232,19 @@ export default class PopupVolumeControl {
   remove() {
     if (!this.actor) return;
 
-    this.iconButton.disconnectObject(this);
+    this.muteButton.disconnectObject(this);
     this.slider.disconnectObject(this);
+    this.volumeUpButton.disconnectObject(this);
     if (this.sliderChangedId !== null)
       this.slider.disconnect(this.sliderChangedId);
     this.actor.get_parent()?.remove_child(this.actor);
     this.actor.destroy();
     this.actor = null;
-    this.iconButton = null;
-    this.icon = null;
+    this.muteButton = null;
+    this.muteIcon = null;
     this.slider = null;
+    this.volumeUpButton = null;
+    this.volumeUpIcon = null;
     this.sliderChangedId = null;
     this.isDragging = false;
     this.mediaAppBusName = null;

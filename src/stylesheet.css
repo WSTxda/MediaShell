@@ -344,8 +344,7 @@
 }
 
 /* Popup — Volume control -------------------------------------------
- * Compact MPRIS volume row: mute button and expanding slider share the popup
- * content width.
+ * Compact MPRIS volume row with endpoint buttons flanking the expanding slider.
  */
 .mediashell-popup-volume-control {
   spacing: 8px;
