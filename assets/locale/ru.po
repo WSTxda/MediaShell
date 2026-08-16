@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 22:53-0300\n"
+"POT-Creation-Date: 2026-08-15 20:43-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -314,7 +314,7 @@ msgstr "Список воспроизведения"
 msgid "None"
 msgstr "Нет"
 
-#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:109
+#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:101
 msgid "Playback speed"
 msgstr "Скорость воспроизведения"
 
@@ -363,10 +363,6 @@ msgstr "Индикатор хода воспроизведения"
 #: assets/ui/prefs.ui:104
 msgid "Show the current playback position"
 msgstr "Показывать текущую позицию воспроизведения"
-
-#: assets/ui/prefs.ui:110
-msgid "Show the playback speed switch"
-msgstr "Показывать переключатель скорости воспроизведения"
 
 #: assets/ui/prefs.ui:117 assets/ui/prefs.ui:402
 msgid "Metadata"
@@ -717,3 +713,19 @@ msgstr "Добавить поле"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Добавить текст"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:111 assets/ui/prefs.ui:119
+msgid "Volume"
+msgstr "Громкость"
+
+#: assets/ui/prefs.ui:120
+msgid "Display the volume control"
+msgstr "Отображать регулятор громкости"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Mute"
+msgstr "Выключить звук"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Unmute"
+msgstr "Включить звук"

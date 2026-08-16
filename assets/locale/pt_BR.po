@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 22:53-0300\n"
+"POT-Creation-Date: 2026-08-15 20:43-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -312,7 +312,7 @@ msgstr "Lista de reprodução"
 msgid "None"
 msgstr "Nenhum"
 
-#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:109
+#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:101
 msgid "Playback speed"
 msgstr "Velocidade de reprodução"
 
@@ -361,10 +361,6 @@ msgstr "Barra de progresso"
 #: assets/ui/prefs.ui:104
 msgid "Show the current playback position"
 msgstr "Exibir a posição atual da reprodução"
-
-#: assets/ui/prefs.ui:110
-msgid "Show the playback speed switch"
-msgstr "Exibir o alternador de velocidade de reprodução"
 
 #: assets/ui/prefs.ui:117 assets/ui/prefs.ui:402
 msgid "Metadata"
@@ -710,3 +706,19 @@ msgstr "Adicionar campo"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "Adicionar texto"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:111 assets/ui/prefs.ui:119
+msgid "Volume"
+msgstr "Volume"
+
+#: assets/ui/prefs.ui:120
+msgid "Display the volume control"
+msgstr "Exibir o controle de volume"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Mute"
+msgstr "Silenciar"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Unmute"
+msgstr "Reativar som"

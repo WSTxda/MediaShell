@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 22:53-0300\n"
+"POT-Creation-Date: 2026-08-15 20:43-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
@@ -313,7 +313,7 @@ msgstr "רשימת השמעה"
 msgid "None"
 msgstr "ללא"
 
-#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:109
+#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:101
 msgid "Playback speed"
 msgstr "מהירות השמעה"
 
@@ -362,10 +362,6 @@ msgstr "סרגל התקדמות"
 #: assets/ui/prefs.ui:104
 msgid "Show the current playback position"
 msgstr "הצגת מיקום הנגינה הנוכחי"
-
-#: assets/ui/prefs.ui:110
-msgid "Show the playback speed switch"
-msgstr "הצגת מתג מהירות ההשמעה"
 
 #: assets/ui/prefs.ui:117 assets/ui/prefs.ui:402
 msgid "Metadata"
@@ -709,3 +705,19 @@ msgstr "הוספת שדה"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add text"
 msgstr "הוספת טקסט"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:111 assets/ui/prefs.ui:119
+msgid "Volume"
+msgstr "עוצמת שמע"
+
+#: assets/ui/prefs.ui:120
+msgid "Display the volume control"
+msgstr "הצגת בקרת עוצמת השמע"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Mute"
+msgstr "השתקה"
+
+#: src/shell/ui/popup/PopupVolumeControl.js:150
+msgid "Unmute"
+msgstr "ביטול השתקה"
