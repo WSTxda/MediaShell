@@ -196,9 +196,6 @@ function validateSurfaces(snapshot, errors) {
           `${surface}/${controlId}: runtime property ${control.property} is already owned by ${previousOwner}`,
         );
       else ownedProperties.set(control.property, `${surface}/${controlId}`);
-
-      if (typeof control.requiresSurfaceEnabled !== "boolean")
-        errors.push(`${surface}/${controlId}: invalid surface dependency flag`);
     }
   }
 

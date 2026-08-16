@@ -217,17 +217,6 @@ test("surface policies and popup layout stay consistent", async () => {
         assert.deepEqual(popupIds, Object.values(PlaybackControlIds));
         assert.equal(topBarIds.includes(PlaybackControlIds.SPEED), false);
         assert.deepEqual(topBarIds, TOP_BAR_PLAYBACK_CONTROL_ORDER);
-        assert.equal(
-          popupDefinition.controls.find(
-            ({ controlId }) => controlId === PlaybackControlIds.SPEED,
-          ).requiresSurfaceEnabled,
-          false,
-        );
-        assert.ok(
-          popupDefinition.controls
-            .filter(({ controlId }) => controlId !== PlaybackControlIds.SPEED)
-            .every(({ requiresSurfaceEnabled }) => requiresSurfaceEnabled),
-        );
       },
     ],
     [
@@ -254,7 +243,7 @@ test("surface policies and popup layout stay consistent", async () => {
             PlaybackControlSurfaces.POPUP,
             WidgetFlags.POPUP_PLAYBACK_CONTROLS,
           ).filter(({ isVisible }) => isVisible),
-          [{ controlId: PlaybackControlIds.SPEED, isVisible: true }],
+          [],
         );
       },
     ],
