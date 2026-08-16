@@ -13,7 +13,7 @@
 export const POPUP_CONTAINER_PADDING = 16;
 
 /** Horizontal inset applied to the compact popup volume row. */
-export const POPUP_VOLUME_CONTROL_HORIZONTAL_INSET = 12;
+export const POPUP_VOLUME_CONTROL_HORIZONTAL_INSET = 4;
 
 /** Album-art scale while playback is paused or stopped. */
 export const POPUP_ALBUM_ART_PAUSED_SCALE = 0.85;
