@@ -1,8 +1,10 @@
 # Development
 
+Contribution workflow and required translation updates are defined in [Contributing](../CONTRIBUTING.md). This document provides implementation and debugging guidance when a change needs additional technical context.
+
 ## Toolchain
 
-Use the Node.js and pnpm versions declared in `package.json`. GNOME development requires GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource/schema tools. Release verification also requires `shexli`.
+Use the Node.js and pnpm versions declared by the project. GNOME development also requires GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and GLib resource/schema tools. Release verification requires `shexli`.
 
 ```bash
 pnpm install
@@ -21,138 +23,101 @@ pnpm run shell:debug
 | `pnpm build`             | Validate, compile resources, package, and inspect the generated archive. |
 | `pnpm verify`            | Build and run `shexli` against the final package.                        |
 
-`check:runtime` has four release-oriented gates:
-
-1. parse JavaScript and validate imports, exports, cycles, process boundaries, entry points, and stable removed APIs;
-2. run behavior and contract tests;
-3. compare metadata, GSettings, GtkBuilder, playback tables, and D-Bus XML;
-4. validate resources, translation catalogs, and development-script syntax.
-
-The validators deliberately do not infer ownership, teardown, naming quality, dead code, or architectural intent from source shape. Those concerns require code review, behavior tests, and live GNOME testing. AST checks are kept only where syntax nodes provide an exact answer, such as static imports or use of a removed API.
+Runtime validation is intentionally limited to checks with deterministic answers. Architecture, lifecycle ownership, UI behavior, and private GNOME Shell integration still require review and live testing.
 
 ## Working on a change
 
-Start with the component that owns the behavior; see [Architecture](ARCHITECTURE.md). Extend an existing service, renderer, controller, executor, or lifecycle owner when its responsibility already matches the change.
+Start from the component that owns the behavior; see [Architecture](ARCHITECTURE.md). Extend an existing service, renderer, controller, executor, or lifecycle owner when its responsibility already matches the change. Do not introduce a parallel path simply because it is locally convenient.
 
-Keep these boundaries intact:
+Keep process boundaries intact:
 
 - `src/shared/` contains toolkit-independent contracts and helpers;
-- `src/shell/` contains the GNOME Shell runtime and St/Clutter UI;
-- `src/prefs/` contains the GTK4/Libadwaita Preferences runtime;
-- Shell and Preferences communicate through shared contracts and GSettings.
+- `src/shell/` contains GNOME Shell/St/Clutter runtime code;
+- `src/prefs/` contains GTK4/Libadwaita Preferences code;
+- Shell and Preferences communicate through shared contracts, resources, and GSettings rather than direct imports.
 
-The creator of a signal, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
+The creator of a signal connection, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup. When replacing an owner, invalidate or cancel work that can complete after replacement.
+
+### Modules, names, and constants
 
 Use PascalCase filenames when the primary export is an owning class with the same name. Use camelCase for functional modules, policies, enums, declarative tables, and pure helpers.
 
-Constant modules contain only pure values and frozen declarative data. Do not move live `GObject` instances, toolkit objects, or one-use trivial literals into shared constants. Reusable normalization, comparison, and decision logic belongs in utilities.
+Constant modules contain pure values and frozen declarative data. Keep live `GObject`/toolkit instances, mutable runtime state, and trivial one-use implementation values with their owner. Move behavior into utilities only when the behavior itself is reusable.
 
-Use lifecycle verbs according to behavior:
+Use lifecycle verbs consistently:
 
 - `create*` always creates;
 - `ensure*` creates only when absent;
 - `build*` composes and returns a value;
 - `resolve*` derives a decision;
 - `sync*` updates existing state;
-- `reconcile*` creates, updates, or removes toward a target state;
+- `reconcile*` moves existing state toward a target, including create/remove when needed;
 - `schedule*` owns deferred work;
 - `attach*` places an existing actor;
 - `remove*` leaves an owner reusable;
 - `destroy*` performs final teardown.
 
-Share implementation only after confirming identical inputs, outputs, side effects, ownership, lifecycle, teardown, and expected evolution. Do not rename or merge modules only to make parallel code look identical.
-
 ### Naming vocabulary
 
 - Use `MediaApp` for the runtime entity discovered, selected, displayed, and controlled by MediaShell.
-- Use `Player` only for documented technical contracts such as `org.mpris.MediaPlayer2.Player`, its proxy, properties, methods, and signals.
+- Use `Player` for the documented `org.mpris.MediaPlayer2.Player` interface/proxy context rather than as a generic name for a MediaShell runtime entity.
 - Use `desktopApp` or `shellApp` for `Gio.AppInfo`, `Shell.App`, and desktop-entry resolution when plain `app` would be ambiguous.
 - Preserve compact interface labels such as `Open app`, `Quit app`, `Switch app`, `Apps`, and `App icon`.
-- `Blocked apps` refers to the installed desktop applications listed by Preferences and must not be renamed to Blocked media apps.
+- `Blocked apps` refers to installed desktop applications listed by Preferences and should not be renamed to `Blocked media apps`.
+
+Share implementation only after confirming identical inputs, outputs, side effects, ownership, lifecycle, teardown, and expected evolution. Do not merge or rename modules merely to make parallel code look symmetrical.
 
 ## Compatibility
 
-Preserve shipped settings, enum values, D-Bus names, resource paths, GtkBuilder IDs, CSS classes, `GTypeName` strings, playback-control IDs, and other persisted or external contracts unless a compatibility change is intentional and documented.
+Preserve shipped settings, enum values, D-Bus names, resource paths, GtkBuilder IDs, CSS classes, `GTypeName` strings, playback-control IDs, and other persisted or externally referenced contracts unless a compatibility change is deliberate.
+
+When a contract changes, update every representation that depends on it and document migration requirements where users or external tooling are affected.
 
 ## Common change paths
 
-### Settings
+### Settings and Preferences
 
-A setting change may involve:
+A settings change can span the schema, shared key/spec definitions, Shell behavior, Preferences bindings/controllers, visible strings, translations, and contract tests. Keep those representations aligned.
 
-- the GSettings schema;
-- JavaScript key/spec definitions;
-- Shell behavior;
-- a Preferences binding or controller;
-- visible strings and translations;
-- tests and documentation.
-
-Keep these representations aligned and preserve persisted values unless migration is part of the change.
-
-Do not write settings while enabling the extension or constructing Preferences. Native bindings and synchronization callbacks must not turn initial widget state into a write. Persist changes only after an explicit user interaction.
-
-`PopupLayoutController` is a deliberate user-feedback path: after the user enables a popup seek control, it raises `popup-width` to the same minimum used by runtime layout. It performs no write during Preferences initialization and coalesces same-turn changes so bulk resets are evaluated from their final state.
+Do not write settings as a side effect of enabling the extension or constructing Preferences. Initial synchronization must remain read-only unless an explicit migration requires otherwise.
 
 ### MPRIS and D-Bus
 
-Route playback actions through the existing control definitions, state decisions, executor, and `MprisMediaApp`. UI state must follow capabilities and properties confirmed by the endpoint.
+Route endpoint actions through the existing control definitions/state decisions and `MprisMediaApp`. Keep MPRIS method/property semantics and endpoint capabilities authoritative rather than inferring availability from UI state.
 
-Normalize untrusted metadata before display. Keep desktop, browser, and PWA identity resolution generic and evidence-based rather than adding media-app-specific behavior.
+Normalize endpoint metadata before use. Keep desktop/browser/PWA identity resolution generic and evidence-based; application-specific exceptions require a protocol or platform reason, not just a convenient special case.
 
-### Artwork and asynchronous work
+### Asynchronous work and artwork
 
-Preserve ownership, cancellation, generation checks, active-endpoint checks, stream closure, cache recovery, and resource limits. Keep artwork source identity separate from presentation geometry and cache policy; shared source/loading helpers must not own surface actors. Late results from an old endpoint or lifecycle generation must not mutate current state.
+Preserve ownership, cancellation, generation checks, active-endpoint checks, stream closure, and bounded resource behavior when changing asynchronous code. A result produced for an old owner must not mutate the current owner.
 
-### Translations
-
-The translation template is:
-
-```text
-assets/locale/mediashell@wstxda.github.com.pot
-```
-
-After changing user-visible text, run:
-
-```bash
-pnpm run translations
-pnpm check
-```
-
-Preserve reviewed translations, placeholders, plural forms, translator comments, and valid catalog headers. Runtime checks allow missing, empty, fuzzy, or obsolete locale entries because gettext can fall back to the source language; the native gate remains responsible for compiling every catalog with `msgfmt`.
+Keep source/loading concerns separate from surface presentation. Shared loading code must not own popup or top-bar actors.
 
 ### Comments and logs
 
-Document intent where it is not obvious, especially around lifecycle, asynchronous invalidation, signal ownership, MPRIS/D-Bus edge cases, compatibility, and private Shell APIs.
+Comments should explain non-obvious intent, ownership, protocol constraints, compatibility decisions, or lifecycle hazards. Avoid comments that merely restate the code or describe temporary UI details that are clearer from the implementation.
 
-The shared logger is retained for failures that matter during diagnosis and bounded once-only diagnostics for repeated endpoint or fallback failures. Do not log successful rendering, normal cleanup, expected capability absence, or routine state changes. Direct `console.*` calls stay inside the logger implementation.
+Use the shared logger for failures that matter during diagnosis and bounded diagnostics for repeated failure paths. Do not log successful rendering, routine cleanup, expected capability absence, or normal state changes. Direct `console.*` calls stay inside the logger implementation.
 
 ## Test design
 
-Prefer tests that exercise:
+Prefer tests for:
 
 - pure decisions and normalization;
 - persisted or external contracts;
-- cross-file references required for build or runtime integrity;
+- cross-file references required for build/runtime integrity;
 - cancellation, owner replacement, and stale-result rejection;
-- package safety and exact runtime inventory.
+- package safety and reproducible corruption cases.
 
-Do not add tests that merely count methods, lock incidental source layout, duplicate a constant without exercising behavior, or infer lifecycle correctness from method names. A small corruption fixture is useful only when it represents a defect the validator can identify exactly.
+Do not add tests that count methods, lock incidental source layout, duplicate constants without exercising behavior, or infer lifecycle correctness from names/source patterns. Adjust existing tests when a real contract changes; add coverage only when an important behavior is otherwise unprotected.
 
-Automated checks complement review; they do not replace live validation of actors, signals, private Shell APIs, GSettings feedback, or real MPRIS implementations.
+Automated checks complement review. They do not replace live validation of actor behavior, signal/lifecycle cleanup, GSettings feedback, private Shell APIs, or real MPRIS endpoints.
 
 ## Live testing
 
-Runtime and lifecycle changes commonly require:
+Choose live scenarios from the changed ownership and contracts rather than running an unrelated checklist. Runtime/lifecycle changes should cover enable/disable/reload and owner replacement. MPRIS changes should cover representative endpoint capabilities and more than one implementation when relevant. UI changes should be exercised on the affected surface, and private Shell API changes must be tested on every supported GNOME release.
 
-- enable, disable, reload, and repeated popup opening;
-- native and browser-backed MPRIS sessions;
-- multiple endpoints, selection, pinning, owner replacement, and grace periods;
-- supported and unsupported MPRIS capabilities;
-- affected top bar, popup, Preferences, artwork, and input paths;
-- local, remote, cached, concurrent, cancelled, and failed artwork requests;
-- the GNOME media-controls patch when changed.
-
-For settings feedback, run `dconf watch /org/gnome/shell/extensions/mediashell/` and verify that opening Preferences is silent while a user change produces only the expected writes.
+For settings work, verify that opening Preferences does not create unintended writes and that explicit user changes produce only the expected settings updates. `dconf watch /org/gnome/shell/extensions/mediashell/` is useful for this.
 
 Use Shell logs when needed:
 
@@ -160,7 +125,7 @@ Use Shell logs when needed:
 journalctl --user -f -o cat /usr/bin/gnome-shell
 ```
 
-Record the GNOME release, media app, MPRIS bus name, relevant settings, reproduction steps, and the smallest useful log excerpt.
+Record enough environment and reproduction information to make a failure repeatable: GNOME release, media app/MPRIS endpoint when relevant, affected settings, reproduction steps, and the smallest useful log excerpt.
 
 ## Release
 
@@ -172,7 +137,7 @@ pnpm build
 pnpm verify
 ```
 
-The generated package is under `dist/builds/`. Install it, run the relevant live tests, and publish only the validated `.shell-extension.zip`.
+The generated package is under `dist/builds/`. Install and exercise the affected runtime paths before publishing the validated `.shell-extension.zip`.
 
 ## References
 
