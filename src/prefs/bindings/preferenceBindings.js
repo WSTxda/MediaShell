@@ -69,6 +69,11 @@ const POPUP_BINDINGS = Object.freeze([
     "active",
   ],
   POPUP_PLAYBACK_CONTROL_BINDINGS.controls[PlaybackControlIds.SPEED],
+  [
+    SettingsKeys.POPUP_VOLUME_CONTROL_SHOW,
+    "sr-popup-volume-control-show",
+    "active",
+  ],
   [SettingsKeys.POPUP_ALBUM_ART_SHOW, "er-popup-album-art", "enable-expansion"],
   [
     SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS,

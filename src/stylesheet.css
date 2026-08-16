@@ -343,6 +343,28 @@
   font-feature-settings: "tnum";
 }
 
+/* Popup — Volume control -------------------------------------------
+ * Compact MPRIS volume row: mute icon, expanding slider, and numeric percentage
+ * share the component's horizontally inset width.
+ */
+.mediashell-popup-volume-control {
+  spacing: 8px;
+}
+
+.mediashell-popup-volume-icon-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 100px;
+}
+
+.mediashell-popup-volume-percentage {
+  min-width: 3.25em;
+  font-feature-settings: "tnum";
+}
+
 /* Popup — Playback controls -----------------------------------------
  * Fixed stock controls row. Popup width changes should not stretch the gaps
  * between previous/play/next; the row stays centered like secondary controls.

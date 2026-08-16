@@ -99,7 +99,8 @@ export const SETTINGS_SPEC = Object.freeze({
     impact:
       WidgetFlags.POPUP_ALBUM_ART |
       WidgetFlags.POPUP_TRACK_INFORMATION |
-      WidgetFlags.POPUP_PROGRESS_BAR,
+      WidgetFlags.POPUP_PROGRESS_BAR |
+      WidgetFlags.POPUP_VOLUME_CONTROL,
   },
   [SettingsKeys.POPUP_ALBUM_ART_SHOW]: {
     property: "popupAlbumArtShow",
@@ -136,6 +137,11 @@ export const SETTINGS_SPEC = Object.freeze({
     property: "popupProgressBarShow",
     read: "get_boolean",
     impact: WidgetFlags.POPUP_PROGRESS_BAR,
+  },
+  [SettingsKeys.POPUP_VOLUME_CONTROL_SHOW]: {
+    property: "popupVolumeControlShow",
+    read: "get_boolean",
+    impact: WidgetFlags.POPUP_VOLUME_CONTROL,
   },
   ...POPUP_PLAYBACK_CONTROL_SETTINGS_SPEC,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED]: {

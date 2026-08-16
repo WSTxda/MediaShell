@@ -5,9 +5,9 @@
  * Orchestrates every widget inside the MediaShell popup.
  *
  * PopupContent owns album art, track information, playback controls, the progress
- * bar, and media app selector components for the active media app. It applies
- * WidgetFlags
- * immediately while open and accumulates affected regions while closed.
+ * bar, volume control, and media app selector components for the active media app.
+ * It applies WidgetFlags immediately while open and accumulates affected regions
+ * while closed.
  * MediaShellIndicator owns idle coalescing for bursts of MPRIS changes.
  */
 
@@ -28,6 +28,7 @@ import PopupPlaybackControls from "./PopupPlaybackControls.js";
 import PopupMediaAppSelectorController from "./PopupMediaAppSelectorController.js";
 import PopupTrackInformation from "./PopupTrackInformation.js";
 import PopupProgressBar from "./PopupProgressBar.js";
+import PopupVolumeControl from "./PopupVolumeControl.js";
 
 const logger = createLogger("PopupContent");
 
@@ -54,6 +55,7 @@ export default class PopupContent {
     this.trackInformation = new PopupTrackInformation(this);
     this.progressBar = new PopupProgressBar(this);
     this.playbackControls = new PopupPlaybackControls(this);
+    this.volumeControl = new PopupVolumeControl(this);
 
     this.menu.addMenuItem(this.popupItem);
     this.popupItemCapturedEventId = this.popupItem.connect(
@@ -73,6 +75,8 @@ export default class PopupContent {
             WidgetFlags.POPUP_PLAYBACK_CONTROLS;
           if (this.extensionController.popupProgressBarShow)
             widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
+          if (this.extensionController.popupVolumeControlShow)
+            widgetFlags |= WidgetFlags.POPUP_VOLUME_CONTROL;
           this.pendingWidgetFlags = 0;
           this.updateWidgets(widgetFlags, true);
           this.syncProgressBarPlaybackState();
@@ -163,6 +167,18 @@ export default class PopupContent {
         return null;
       });
     }
+
+    if (popupFlags & WidgetFlags.POPUP_VOLUME_CONTROL) {
+      this.runWidgetUpdate("volume control", () => {
+        if (this.extensionController.popupVolumeControlShow)
+          return this.volumeControl.render();
+        this.volumeControl.remove();
+        return null;
+      });
+    }
+
+    if (this.extensionController.popupVolumeControlShow)
+      this.volumeControl.reconcilePosition();
   }
 
   runWidgetUpdate(componentName, update) {
@@ -268,12 +284,14 @@ export default class PopupContent {
     const progressBar = this.progressBar;
     const trackInformation = this.trackInformation;
     const playbackControls = this.playbackControls;
+    const volumeControl = this.volumeControl;
     const albumArt = this.albumArt;
     const mediaAppSelectorController = this.mediaAppSelectorController;
     const popupItem = this.popupItem;
     this.progressBar = null;
     this.trackInformation = null;
     this.playbackControls = null;
+    this.volumeControl = null;
     this.albumArt = null;
     this.mediaAppSelectorController = null;
     this.popupItem = null;
@@ -281,6 +299,7 @@ export default class PopupContent {
     progressBar?.destroy();
     trackInformation?.destroy();
     playbackControls?.destroy();
+    volumeControl?.destroy();
     albumArt?.destroy();
     mediaAppSelectorController?.destroy();
     popupItem?.destroy();

@@ -12,6 +12,9 @@
 /** Horizontal padding contributed by the popup container when computing inner content width. */
 export const POPUP_CONTAINER_PADDING = 16;
 
+/** Horizontal inset applied to the compact popup volume row. */
+export const POPUP_VOLUME_CONTROL_HORIZONTAL_INSET = 12;
+
 /** Album-art scale while playback is paused or stopped. */
 export const POPUP_ALBUM_ART_PAUSED_SCALE = 0.85;
 

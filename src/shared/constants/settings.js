@@ -36,6 +36,7 @@ export const SettingsKeys = Object.freeze({
     "popup-playback-controls-seek-forward-show",
   POPUP_PLAYBACK_CONTROLS_REPEAT_SHOW: "popup-playback-controls-repeat-show",
   POPUP_PLAYBACK_CONTROLS_SPEED_SHOW: "popup-playback-controls-speed-show",
+  POPUP_VOLUME_CONTROL_SHOW: "popup-volume-control-show",
   POPUP_TRACK_INFORMATION_SCROLL_ENABLED:
     "popup-track-information-scroll-enabled",
   POPUP_TRACK_INFORMATION_SCROLL_SPEED: "popup-track-information-scroll-speed",

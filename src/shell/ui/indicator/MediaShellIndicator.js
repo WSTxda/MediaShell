@@ -221,7 +221,8 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS |
-          WidgetFlags.POPUP_PLAYBACK_CONTROLS,
+          WidgetFlags.POPUP_PLAYBACK_CONTROLS |
+          WidgetFlags.POPUP_VOLUME_CONTROL,
       );
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
@@ -234,6 +235,9 @@ class MediaShellIndicator extends PanelMenu.Button {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_REPEAT,
       );
+    });
+    this.addMediaAppPropertyListener(MprisPlayerProperties.VOLUME, () => {
+      this.requestWidgetUpdate(WidgetFlags.POPUP_VOLUME_CONTROL);
     });
     this.addMediaAppPropertyListener(MediaAppStateProperties.IS_PINNED, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);

@@ -88,6 +88,9 @@
     <key name="popup-playback-controls-speed-show" type="b">
       <default>false</default>
     </key>
+    <key name="popup-volume-control-show" type="b">
+      <default>false</default>
+    </key>
     <key name="popup-track-information-scroll-enabled" type="b">
       <default>false</default>
     </key>

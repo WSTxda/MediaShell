@@ -36,6 +36,7 @@ export const WidgetFlags = Object.freeze({
   TOP_BAR_LAYOUT: 1 << 22,
   POPUP_PLAYBACK_SPEED: 1 << 23,
   TOP_BAR_ALBUM_ART: 1 << 24,
+  POPUP_VOLUME_CONTROL: 1 << 25,
   TOP_BAR_PLAYBACK_CONTROLS:
     (1 << 2) |
     (1 << 3) |
@@ -78,6 +79,7 @@ export const WidgetFlags = Object.freeze({
     (1 << 16) |
     (1 << 20) |
     (1 << 21) |
-    (1 << 23),
-  ALL: ~(-1 << 25),
+    (1 << 23) |
+    (1 << 25),
+  ALL: ~(-1 << 26),
 });
