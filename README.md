@@ -61,16 +61,23 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 ## Features
 
-#### Fits into GNOME
+#### GNOME integration
 
 - The top bar and popup use GNOME Shell widgets and follow the desktop's visual language.
 - Preferences are built with GTK4 and Libadwaita.
+- Optionally hide GNOME's built-in media controls while MediaShell is enabled.
 
-#### Playback controls
+#### Independent top bar and popup
 
-- Configure the popup and top bar independently.
-- Available controls include previous, play/pause, next, seek, shuffle, repeat, and popup playback speed.
-- Controls react to the capabilities reported by the active media app.
+- Configure the contents of the popup and top bar independently.
+- Choose the panel position and reorder the app icon, album art, track information, visualizer, and playback controls.
+- Build track information from MPRIS fields and custom text, with independent scrolling behavior for each surface.
+
+#### Playback and seeking
+
+- Use previous, play/pause, next, seek, shuffle, and repeat controls in the popup or top bar.
+- The popup can add a seekable progress bar, playback-speed control, and volume control.
+- Controls follow the app's playback state and reported MPRIS capabilities.
 
 #### Media app selector
 
@@ -81,31 +88,29 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 #### Album art
 
-- Supports local and remote album art with configurable presentation.
+- Display local or remote album art in the popup and top bar with configurable presentation.
 - An optional persistent cache improves repeated loads and can be inspected or cleared from Preferences.
+
+#### Visualizer
+
+- Add an optional decorative top bar visualizer with Beats, Pulse, Classic, Spectrum, and Vinyl styles.
+- Adjust the animation speed; motion follows the active media app's playback state.
 
 #### Mouse and keyboard
 
-- Configure left, middle, and right click actions, scroll actions, and touch behavior on the top bar indicator.
-- Use global shortcuts for playback, volume, media app switching, opening the popup, and Preferences.
-
-#### Layout
-
-- Choose the panel position and the order of top bar elements.
-- Configure track information, playback controls, the app icon, and the optional visualizer.
-- Enabling popup seek controls raises the configured popup width to the minimum needed to keep the controls full-sized.
-- Optionally hide GNOME's built-in media controls while MediaShell is enabled.
+- Map left, middle, right, and double clicks plus scroll directions to actions; touch activation follows the primary action.
+- Use global shortcuts for playback, seeking, volume, media app actions, opening the popup, and Preferences.
 
 ## Requirements
 
 - **GNOME Shell** 47–50
-- An **MPRIS-compatible** media app or browser media session
+- A media app or browser session that exposes an **MPRIS** service
 
 > [!IMPORTANT]
-> Available controls depend on the capabilities reported by each MPRIS implementation. Seeking, speed, shuffle, repeat, volume, album art, and media-app actions may not be supported by every media app or track.
+> MediaShell follows the capabilities reported by the active MPRIS app. Seeking, shuffle, repeat, playback speed, volume, and app actions are available only when supported. Track metadata and album art depend on what the app provides for the current media.
 
 > [!NOTE]
-> Browsers decide how websites are exposed through MPRIS. A browser session may change identity or disappear when tabs, pages, or playback ownership change.
+> Browser MPRIS sessions are controlled by the browser and active website. They may appear, change identity, or disappear as tabs, pages, and playback ownership change.
 
 ## Download
 
@@ -126,23 +131,22 @@ gnome-extensions enable mediashell@wstxda.github.com
 
 ## Development
 
-Use the Node.js and pnpm versions declared in `package.json`. GNOME development also requires GJS, GNU gettext, GLib tools, GNOME Shell, and `gnome-extensions`; release verification uses `shexli`.
+Use the versions declared by the project and verify the local GNOME toolchain:
 
 ```bash
 pnpm install
 pnpm run env:doctor
 pnpm check
 pnpm build
-pnpm verify
 ```
 
-The generated extension package is written to `dist/builds/`.
+Use `pnpm verify` for a release candidate. The generated extension package is written to `dist/builds/`.
 
 ### Documentation
 
 - [Contributing](CONTRIBUTING.md)
-- [Architecture](docs/ARCHITECTURE.md)
 - [Development](docs/DEVELOPMENT.md)
+- [Architecture](docs/ARCHITECTURE.md)
 
 ### Donate
 
