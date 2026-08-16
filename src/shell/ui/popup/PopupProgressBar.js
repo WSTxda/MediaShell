@@ -12,7 +12,7 @@
 import { MprisMetadataKeys } from "../../../shared/constants/mpris.js";
 import { PlaybackStatus } from "../../../shared/enums/playback.js";
 import { createLogger } from "../../../shared/utils/log.js";
-import PopupProgressBarSlider from "./PopupProgressBarSlider.js";
+import PopupProgressBarView from "./PopupProgressBarView.js";
 
 const logger = createLogger("PopupProgressBar");
 
@@ -22,6 +22,7 @@ const logger = createLogger("PopupProgressBar");
 export default class PopupProgressBar {
   constructor(popupContent) {
     this.popupContent = popupContent;
+    this.view = null;
     this.positionRenderGeneration = 0;
   }
 
@@ -38,7 +39,7 @@ export default class PopupProgressBar {
     return this.popupContent.playbackControls.actor;
   }
   get actor() {
-    return this.progressBarSlider;
+    return this.view;
   }
 
   getPopupContentWidth() {
@@ -46,11 +47,11 @@ export default class PopupProgressBar {
   }
 
   setPlaybackRate(playbackRate) {
-    this.progressBarSlider?.setPlaybackRate(playbackRate);
+    this.view?.setPlaybackRate(playbackRate);
   }
 
   setPlaybackPosition(positionMicroseconds) {
-    this.progressBarSlider?.setPlaybackPosition(positionMicroseconds);
+    this.view?.setPlaybackPosition(positionMicroseconds);
   }
 
   async render() {
@@ -61,9 +62,9 @@ export default class PopupProgressBar {
     const playbackRate = mediaApp.rate;
     const width = this.getPopupContentWidth();
 
-    if (this.progressBarSlider == null) {
-      this.progressBarSlider = new PopupProgressBarSlider();
-      this.progressBarSlider.connect(
+    if (this.view == null) {
+      this.view = new PopupProgressBarView();
+      this.view.connect(
         "seek-requested",
         (_, positionMicroseconds) => {
           const activeMediaApp = this.mediaApp;
@@ -75,7 +76,7 @@ export default class PopupProgressBar {
       );
     }
 
-    this.progressBarSlider.setLayoutWidth(width);
+    this.view.setLayoutWidth(width);
     this.renderPlaybackPosition(
       mediaApp.estimatedPositionMicroseconds,
       trackDurationMicroseconds,
@@ -123,53 +124,54 @@ export default class PopupProgressBar {
     const hasValidPosition =
       Number.isFinite(positionMicroseconds) && positionMicroseconds >= 0;
     if (!hasValidLength || !hasValidPosition) {
-      this.progressBarSlider.setProgressDisabled(true);
+      this.view.setProgressAvailable(false);
       return;
     }
 
-    this.progressBarSlider.setProgressDisabled(false);
-    this.progressBarSlider.updateProgressBar(
+    this.view.setProgressAvailable(true);
+    this.view.setSeekEnabled(this.mediaApp.canControl && this.mediaApp.canSeek);
+    this.view.updateProgress(
       Math.min(positionMicroseconds, trackDurationMicroseconds),
       trackDurationMicroseconds,
       playbackRate,
     );
     if (playbackStatus === PlaybackStatus.PLAYING)
-      this.progressBarSlider.resumePlaybackTransition();
-    else this.progressBarSlider.pausePlaybackTransition();
+      this.view.resumePlaybackTransition();
+    else this.view.pausePlaybackTransition();
   }
 
   attach() {
-    if (this.progressBarSlider.get_parent() != null) return;
+    if (this.view.get_parent() != null) return;
 
     if (this.trackInformationActor?.get_parent() === this.popupItem) {
       this.popupItem.insert_child_above(
-        this.progressBarSlider,
+        this.view,
         this.trackInformationActor,
       );
     } else if (this.playbackControlsActor?.get_parent() === this.popupItem) {
       this.popupItem.insert_child_below(
-        this.progressBarSlider,
+        this.view,
         this.playbackControlsActor,
       );
     } else {
-      this.popupItem.add_child(this.progressBarSlider);
+      this.popupItem.add_child(this.view);
     }
   }
 
   pause() {
-    this.progressBarSlider?.pausePlaybackTransition();
+    this.view?.pausePlaybackTransition();
   }
 
   resume() {
-    this.progressBarSlider?.resumePlaybackTransition();
+    this.view?.resumePlaybackTransition();
   }
 
   remove() {
     this.positionRenderGeneration++;
-    if (!this.progressBarSlider) return;
-    this.progressBarSlider.get_parent()?.remove_child(this.progressBarSlider);
-    this.progressBarSlider.destroy();
-    this.progressBarSlider = null;
+    if (!this.view) return;
+    this.view.get_parent()?.remove_child(this.view);
+    this.view.destroy();
+    this.view = null;
   }
 
   destroy() {

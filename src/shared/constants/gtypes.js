@@ -12,7 +12,8 @@
 export const GTypeNames = Object.freeze({
   BLOCKED_APP_CHOOSER_DIALOG: "MediaShellBlockedAppChooserDialog",
   BLOCKED_APPS_GROUP: "MediaShellBlockedAppsGroup",
-  POPUP_PROGRESS_BAR_SLIDER: "MediaShellPopupProgressBarSlider",
+  // Keep the registered name stable while the JavaScript owner name evolves.
+  POPUP_PROGRESS_BAR_VIEW: "MediaShellPopupProgressBarSlider",
   SCROLLING_LABEL: "MediaShellScrollingLabel",
   MEDIA_SHELL_INDICATOR: "MediaShellIndicator",
   TOP_BAR_ELEMENT_ORDER_GROUP: "MediaShellTopBarElementOrderGroup",

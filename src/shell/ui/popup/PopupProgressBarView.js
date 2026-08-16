@@ -1,12 +1,12 @@
 /**
- * @file PopupProgressBarSlider.js
- * @module shell.ui.popup.PopupProgressBarSlider
+ * @file PopupProgressBarView.js
+ * @module shell.ui.popup.PopupProgressBarView
  *
- * Provides the popup seek slider and animated progress value.
+ * Renders the popup progress view, including seek interaction and time labels.
  *
- * PopupProgressBar owns this slider and passes active media-app state into it.
- * The slider owns drag state, resume-after-drag behavior, and the Clutter
- * interval used to animate progress while playback continues.
+ * PopupProgressBar owns this view and passes active media-app state into it.
+ * The view owns slider interaction, elapsed/duration labels, drag state, and the
+ * Clutter interval used to animate progress while playback continues.
  */
 
 import Clutter from "gi://Clutter";
@@ -24,9 +24,9 @@ import {
 import { StyleClasses } from "../../constants/styleClasses.js";
 
 /**
- * Provides the popup seek slider and animated progress bar value.
+ * Renders the popup progress view and owns its local interaction state.
  */
-class PopupProgressBarSlider extends St.BoxLayout {
+class PopupProgressBarView extends St.BoxLayout {
   constructor() {
     super({
       orientation: Clutter.Orientation.VERTICAL,
@@ -34,7 +34,8 @@ class PopupProgressBarSlider extends St.BoxLayout {
     });
     this.playbackRate = 1;
     this.shouldResumeAfterDrag = false;
-    this.isDisabled = true;
+    this.isProgressAvailable = false;
+    this.isSeekEnabled = false;
     this.lastRenderedElapsedSecond = -1;
 
     this.slider = new Slider.Slider(0);
@@ -60,8 +61,8 @@ class PopupProgressBarSlider extends St.BoxLayout {
     // remaining track length in milliseconds so the value moves from current
     // position to 1.0 at natural playback speed.
     //
-    // Dragging disables the transition (isDisabled = true) and restores it on
-    // button-release. Pause/resume mirror the playback state received from
+    // Dragging temporarily pauses the playback transition and restores it on
+    // release. Pause/resume mirror the playback state received from
     // PopupProgressBar without resetting position.
     // Keep explicit GObject.Value wrappers so Clutter.Interval receives typed values.
     const initialValue = new GObject.Value();
@@ -94,7 +95,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
     this.slider.connectObject(
       "drag-begin",
       () => {
-        if (this.playbackTransition.is_playing() && !this.isDisabled) {
+        if (this.playbackTransition.is_playing() && this.isProgressAvailable) {
           this.playbackTransition.pause();
           this.shouldResumeAfterDrag = true;
         }
@@ -102,6 +103,11 @@ class PopupProgressBarSlider extends St.BoxLayout {
       },
       "drag-end",
       () => {
+        if (!this.isSeekEnabled) {
+          this.shouldResumeAfterDrag = false;
+          return Clutter.EVENT_PROPAGATE;
+        }
+
         const requestedPositionMilliseconds =
           this.slider.value *
           this.playbackTransition.duration *
@@ -131,7 +137,7 @@ class PopupProgressBarSlider extends St.BoxLayout {
     this.add_child(this.timeLabelsBox);
     this.playbackTransition.pause();
     this.slider.add_transition("progress", this.playbackTransition);
-    this.setProgressDisabled(true);
+    this.setProgressAvailable(false);
   }
 
   setLayoutWidth(width) {
@@ -140,19 +146,25 @@ class PopupProgressBarSlider extends St.BoxLayout {
     this.timeLabelsBox.width = width;
   }
 
-  updateProgressBar(positionMicroseconds, durationMicroseconds, playbackRate) {
+  updateProgress(positionMicroseconds, durationMicroseconds, playbackRate) {
     this.playbackRate = this.normalizePlaybackRate(playbackRate);
     this.setTrackDuration(durationMicroseconds);
     this.setPlaybackPosition(positionMicroseconds);
   }
 
   setPlaybackRate(playbackRate) {
+    const normalizedPlaybackRate = this.normalizePlaybackRate(playbackRate);
+    if (!this.isProgressAvailable) {
+      this.playbackRate = normalizedPlaybackRate;
+      return;
+    }
+
     const previousPlaybackRate = this.playbackRate;
     const positionMicroseconds =
       this.playbackTransition.get_elapsed_time() * previousPlaybackRate * 1000;
     const durationMicroseconds =
       this.playbackTransition.duration * previousPlaybackRate * 1000;
-    this.playbackRate = this.normalizePlaybackRate(playbackRate);
+    this.playbackRate = normalizedPlaybackRate;
     this.setTrackDuration(durationMicroseconds);
     this.setPlaybackPosition(positionMicroseconds);
   }
@@ -162,6 +174,8 @@ class PopupProgressBarSlider extends St.BoxLayout {
   }
 
   setPlaybackPosition(positionMicroseconds) {
+    if (!this.isProgressAvailable) return;
+
     const positionMilliseconds =
       Math.max(0, Number(positionMicroseconds) || 0) / 1000;
     const timelineDurationMilliseconds = Math.max(
@@ -205,12 +219,12 @@ class PopupProgressBarSlider extends St.BoxLayout {
   }
 
   pausePlaybackTransition() {
-    if (!this.isDisabled) this.playbackTransition.pause();
+    if (this.isProgressAvailable) this.playbackTransition.pause();
   }
 
   resumePlaybackTransition() {
     if (
-      !this.isDisabled &&
+      this.isProgressAvailable &&
       this.get_stage() !== null &&
       !this.playbackTransition.is_playing()
     ) {
@@ -219,19 +233,26 @@ class PopupProgressBarSlider extends St.BoxLayout {
     }
   }
 
-  setProgressDisabled(isDisabled) {
-    this.isDisabled = isDisabled;
-    this.slider.reactive = !isDisabled;
-    this.opacity = isDisabled ? INACTIVE_OPACITY : ACTIVE_OPACITY;
-    if (isDisabled) {
-      this.trackDurationLabel.text = "00:00";
-      this.lastRenderedElapsedSecond = -1;
-      this.elapsedLabel.text = "00:00";
-      this.playbackTransition.set_duration(1);
-      this.playbackTransition.stop();
-      this.slider.value = 0;
-      this.shouldResumeAfterDrag = false;
-    }
+  setProgressAvailable(isAvailable) {
+    this.isProgressAvailable = isAvailable;
+    this.opacity = isAvailable ? ACTIVE_OPACITY : INACTIVE_OPACITY;
+    if (isAvailable) return;
+
+    this.setSeekEnabled(false);
+    this.trackDurationLabel.text = "00:00";
+    this.lastRenderedElapsedSecond = -1;
+    this.elapsedLabel.text = "00:00";
+    this.playbackTransition.set_duration(1);
+    this.playbackTransition.stop();
+    this.slider.value = 0;
+    this.shouldResumeAfterDrag = false;
+  }
+
+  setSeekEnabled(isEnabled) {
+    this.isSeekEnabled = isEnabled;
+    this.slider.reactive = isEnabled;
+    this.slider.opacity = isEnabled ? ACTIVE_OPACITY : INACTIVE_OPACITY;
+    if (!isEnabled) this.shouldResumeAfterDrag = false;
   }
 
   destroy() {
@@ -252,12 +273,12 @@ class PopupProgressBarSlider extends St.BoxLayout {
 
 export default GObject.registerClass(
   {
-    GTypeName: GTypeNames.POPUP_PROGRESS_BAR_SLIDER,
+    GTypeName: GTypeNames.POPUP_PROGRESS_BAR_VIEW,
     Signals: {
       "seek-requested": {
         param_types: [GObject.TYPE_INT64],
       },
     },
   },
-  PopupProgressBarSlider,
+  PopupProgressBarView,
 );

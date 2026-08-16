@@ -222,6 +222,7 @@ class MediaShellIndicator extends PanelMenu.Button {
       this.requestWidgetUpdate(
         WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS |
           WidgetFlags.POPUP_PLAYBACK_CONTROLS |
+          WidgetFlags.POPUP_PROGRESS_BAR |
           WidgetFlags.POPUP_VOLUME_CONTROL,
       );
     });
