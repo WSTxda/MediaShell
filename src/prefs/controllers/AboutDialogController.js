@@ -1,6 +1,6 @@
 /**
  * @file AboutDialogController.js
- * @module prefs.about.AboutDialogController
+ * @module prefs.controllers.AboutDialogController
  *
  * Owns the About dialog button and Libadwaita about-window content.
  *

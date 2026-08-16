@@ -115,7 +115,7 @@ export default class PopupContent {
     const popupFlags = widgetFlags & WidgetFlags.POPUP;
     if (popupFlags === 0) return;
 
-    this.applyPopupSize();
+    this.syncPopupSize();
     if (!forceRender && !this.menu.isOpen) {
       this.pendingWidgetFlags |= popupFlags;
       return;
@@ -259,7 +259,7 @@ export default class PopupContent {
     return this.getPopupContentWidth();
   }
 
-  applyPopupSize() {
+  syncPopupSize() {
     if (!this.popupItem) return;
 
     const width = this.getPopupOuterWidth();

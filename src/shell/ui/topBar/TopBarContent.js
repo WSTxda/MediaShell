@@ -115,7 +115,7 @@ export default class TopBarContent {
           widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
       ) {
         this.runWidgetUpdate("top bar visualizer", () =>
-          this.updateVisualizer(targetIndex, targetBox),
+          this.reconcileVisualizer(targetIndex, targetBox),
         );
       }
 
@@ -207,7 +207,7 @@ export default class TopBarContent {
     return false;
   }
 
-  updateVisualizer(index, targetBox) {
+  reconcileVisualizer(index, targetBox) {
     if (!this.extensionController.topBarVisualizerShow) {
       this.visualizer?.destroy();
       this.visualizer = null;

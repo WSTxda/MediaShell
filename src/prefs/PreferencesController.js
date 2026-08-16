@@ -13,15 +13,15 @@
 import Gtk from "gi://Gtk";
 
 import { ResourcePaths } from "../shared/constants/resources.js";
-import AboutDialogController from "./about/AboutDialogController.js";
 import PreferenceBinder from "./bindings/PreferenceBinder.js";
+import { PREFERENCE_PAGE_IDS } from "./constants/preferencesUi.js";
+import AboutDialogController from "./controllers/AboutDialogController.js";
 import InteractionsPageController from "./controllers/InteractionsPageController.js";
 import OthersPageController from "./controllers/OthersPageController.js";
 import PopupLayoutController from "./controllers/PopupLayoutController.js";
 import PreferenceSensitivityController from "./controllers/PreferenceSensitivityController.js";
 import TopBarLayoutController from "./controllers/TopBarLayoutController.js";
 import TrackInformationContentController from "./controllers/TrackInformationContentController.js";
-import { PREFERENCE_PAGE_IDS } from "./constants/ui.js";
 import { registerPreferencesResources } from "./resources/preferencesResourceLoader.js";
 
 /**

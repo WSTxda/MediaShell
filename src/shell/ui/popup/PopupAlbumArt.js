@@ -101,7 +101,7 @@ export default class PopupAlbumArt {
       cacheEnabled: this.extensionController.albumArtCacheEnabled,
     });
 
-    this.ensureAlbumArtActor();
+    this.ensureActor();
     this.syncAlbumArtGeometry(geometry.width, geometry.radius);
     this.attach();
     this.syncPlaybackState(this.mediaApp.playbackStatus, false);
@@ -138,14 +138,13 @@ export default class PopupAlbumArt {
         size: request.width,
         loadCancellable,
       });
-      if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
-        return;
+      if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
 
       this.commitAlbumArtResult(request, pixbuf, fallbackIcon);
     } catch (error) {
       if (
         !isCancellationError(error) &&
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
+        this.isCurrentLoad(loadGeneration, loadCancellable, request)
       ) {
         logger.warnOnce(
           `processing:${request.busName}`,
@@ -155,9 +154,7 @@ export default class PopupAlbumArt {
         this.commitAlbumArtResult(request, null, null);
       }
     } finally {
-      if (
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
-      ) {
+      if (this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
         this.loadingAlbumArtKey = null;
         this.albumArtLoadCancellable = null;
       }
@@ -208,7 +205,7 @@ export default class PopupAlbumArt {
     this.albumArtFrame.opacity = 255;
   }
 
-  ensureAlbumArtActor() {
+  ensureActor() {
     if (this.albumArtFrame) return;
 
     this.albumArtImage = createIcon(
@@ -301,7 +298,7 @@ export default class PopupAlbumArt {
     else this.popupItem.add_child(this.albumArtFrame);
   }
 
-  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request) {
+  isCurrentLoad(loadGeneration, loadCancellable, request) {
     return (
       this.albumArtFrame &&
       loadGeneration === this.albumArtLoadGeneration &&

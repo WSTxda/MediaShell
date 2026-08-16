@@ -16,7 +16,7 @@ import GLib from "gi://GLib";
 import { SettingsKeys } from "../../shared/constants/settings.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { gettext as _, ngettext } from "../translations.js";
-import { TOAST_TIMEOUT_SECONDS } from "../constants/layout.js";
+import { TOAST_TIMEOUT_SECONDS } from "../constants/preferencesUi.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import AlbumArtCacheService from "../services/AlbumArtCacheService.js";
 import {

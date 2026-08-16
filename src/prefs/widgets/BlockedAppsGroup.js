@@ -5,8 +5,8 @@
  * Custom preferences group that displays and edits the blocked-app list.
  *
  * The widget owns the visible rows for blocked desktop IDs and opens
- * BlockedAppChooserDialog when the user adds a new entry. It writes the final
- * string list to GSettings through the settings object passed by its controller.
+ * BlockedAppChooserDialog when the user adds a new entry. It exposes the final
+ * string list through its property; OthersPageController owns the GSettings write.
  */
 
 import Adw from "gi://Adw";
@@ -19,6 +19,7 @@ import { ResourceUris } from "../../shared/constants/resources.js";
 import { createLogger } from "../../shared/utils/log.js";
 import { normalizeUniqueStrings } from "../../shared/utils/format.js";
 import {
+  createFallbackAppIcon,
   getAppIcon,
   getAppId,
   getAppName,
@@ -39,6 +40,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     super(params);
     this.listBox = this._lb_blocked_apps;
     this.addButton = this._btn_add;
+    this.fallbackAppIcon = createFallbackAppIcon();
     this.chooseBlockedAppPromise = null;
     this.activeChooser = null;
     this.addButton.connect("clicked", () => this.chooseAndAddBlockedApp());
@@ -126,7 +128,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
       });
       row.add_prefix(
         new Gtk.Image({
-          gicon: getAppIcon(app),
+          gicon: getAppIcon(app, this.fallbackAppIcon),
           icon_size: Gtk.IconSize.LARGE,
           use_fallback: true,
         }),
@@ -155,6 +157,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
     activeChooser?.force_close();
     this.chooseBlockedAppPromise = null;
     this.blockedAppIds = [];
+    this.fallbackAppIcon = null;
     this.addButton = null;
     this.listBox = null;
   }

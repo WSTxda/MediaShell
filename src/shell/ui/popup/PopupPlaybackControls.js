@@ -63,7 +63,7 @@ export default class PopupPlaybackControls {
       widgetFlags,
     );
     for (const { controlId, isVisible } of updates)
-      this.renderOptionalControl(isVisible, controlId);
+      this.reconcilePlaybackControl(controlId, isVisible);
 
     if (this.controlButtons.size === 0) {
       this.remove();
@@ -95,18 +95,61 @@ export default class PopupPlaybackControls {
     this.actor.add_child(this.secondaryControlsBox);
   }
 
-  renderOptionalControl(isVisible, controlId) {
+  reconcilePlaybackControl(controlId, isVisible) {
     if (!isVisible) {
       this.removePlaybackControl(controlId);
       return;
     }
 
-    this.updatePlaybackControl(
-      resolvePlaybackControlState(this.mediaApp, controlId),
-    );
+    const controlState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const buttonState = this.ensurePlaybackControl(controlState.control);
+    this.syncPlaybackControl(buttonState, controlState);
   }
 
-  updatePlaybackControl(controlState) {
+  ensurePlaybackControl(controlDefinition) {
+    let buttonState = this.controlButtons.get(controlDefinition.id);
+    if (buttonState) return buttonState;
+
+    const isLabelControl =
+      controlDefinition.contentKind === PlaybackControlContentKinds.LABEL;
+    const button = new St.Button({
+      name: controlDefinition.actorName,
+      styleClass: styleClassNames(
+        StyleClasses.BUTTON,
+        StyleClasses.POPUP_CONTROL_BUTTON,
+        controlDefinition.isPrimary
+          ? StyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
+          : controlDefinition.isAdjacent
+            ? StyleClasses.POPUP_CONTROL_BUTTON_ADJACENT
+            : isLabelControl
+              ? StyleClasses.POPUP_CONTROL_BUTTON_TEXT
+              : StyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
+        controlDefinition.isStateControl
+          ? StyleClasses.POPUP_CONTROL_BUTTON_STATE
+          : null,
+      ),
+      xAlign: Clutter.ActorAlign.CENTER,
+      yAlign: Clutter.ActorAlign.CENTER,
+      toggleMode: controlDefinition.isStateControl,
+    });
+    const content = createPlaybackControlContent(controlDefinition, {
+      iconStyleClass: styleClassNames(
+        StyleClasses.POPUP_MENU_ICON,
+        StyleClasses.POPUP_CONTROL_ICON,
+      ),
+      labelStyleClass: StyleClasses.POPUP_CONTROL_LABEL,
+    });
+    buttonState = { button, content, signalId: 0, action: null };
+    buttonState.signalId = button.connect("clicked", () => {
+      if (!buttonState.button.reactive) return;
+      void executePlaybackControlAction(this.mediaApp, buttonState.action);
+    });
+    button.set_child(content.actor);
+    this.controlButtons.set(controlDefinition.id, buttonState);
+    return buttonState;
+  }
+
+  syncPlaybackControl(buttonState, controlState) {
     const {
       control: controlDefinition,
       iconName,
@@ -118,46 +161,6 @@ export default class PopupPlaybackControls {
       controlDefinition.group === PlaybackControlGroups.SECONDARY
         ? this.secondaryControlsBox
         : this.primaryControlsBox;
-
-    let buttonState = this.controlButtons.get(controlDefinition.id);
-    if (!buttonState) {
-      const isLabelControl =
-        controlDefinition.contentKind === PlaybackControlContentKinds.LABEL;
-      const button = new St.Button({
-        name: controlDefinition.actorName,
-        styleClass: styleClassNames(
-          StyleClasses.BUTTON,
-          StyleClasses.POPUP_CONTROL_BUTTON,
-          controlDefinition.isPrimary
-            ? StyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
-            : controlDefinition.isAdjacent
-              ? StyleClasses.POPUP_CONTROL_BUTTON_ADJACENT
-              : isLabelControl
-                ? StyleClasses.POPUP_CONTROL_BUTTON_TEXT
-                : StyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
-          controlDefinition.isStateControl
-            ? StyleClasses.POPUP_CONTROL_BUTTON_STATE
-            : null,
-        ),
-        xAlign: Clutter.ActorAlign.CENTER,
-        yAlign: Clutter.ActorAlign.CENTER,
-        toggleMode: controlDefinition.isStateControl,
-      });
-      const content = createPlaybackControlContent(controlDefinition, {
-        iconStyleClass: styleClassNames(
-          StyleClasses.POPUP_MENU_ICON,
-          StyleClasses.POPUP_CONTROL_ICON,
-        ),
-        labelStyleClass: StyleClasses.POPUP_CONTROL_LABEL,
-      });
-      buttonState = { button, content, signalId: 0, action: null };
-      buttonState.signalId = button.connect("clicked", () => {
-        if (!buttonState.button.reactive) return;
-        void executePlaybackControlAction(this.mediaApp, buttonState.action);
-      });
-      button.set_child(content.actor);
-      this.controlButtons.set(controlDefinition.id, buttonState);
-    }
 
     buttonState.action = action;
     updatePlaybackControlContent(buttonState.content, { iconName, labelText });

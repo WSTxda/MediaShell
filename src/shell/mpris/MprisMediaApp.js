@@ -190,7 +190,7 @@ export default class MprisMediaApp {
     });
 
     this.positionTracker.updatePlaybackState(this.playbackStatus, this.rate);
-    this.validateMediaApp();
+    this.reconcileValidity();
     this.pollForInitialMetadata();
     return true;
   }
@@ -317,7 +317,7 @@ export default class MprisMediaApp {
       (hasChanged(MprisRootProperties.IDENTITY) ||
         hasChanged(MprisRootProperties.DESKTOP_ENTRY))
     )
-      this.validateMediaApp();
+      this.reconcileValidity();
 
     if (interfaceName !== MPRIS_PLAYER_IFACE_NAME) return;
 
@@ -327,7 +327,7 @@ export default class MprisMediaApp {
     )
       this.positionTracker.updatePlaybackState(this.playbackStatus, this.rate);
     if (hasChanged(MprisPlayerProperties.PLAYBACK_STATUS))
-      this.validateMediaApp();
+      this.reconcileValidity();
   }
 
   pollForInitialMetadata() {
@@ -443,13 +443,13 @@ export default class MprisMediaApp {
     // empty browser payload. The endpoint validity logic below decides
     // whether the empty state is temporary or the session has really ended.
     if (!hasTrackMetadata && this.hasPresentedTrackMetadata) {
-      this.validateMediaApp();
+      this.reconcileValidity();
       return false;
     }
 
     const revision = createMprisMetadataRevision(metadata);
     if (revision === this.metadataRevision) {
-      this.validateMediaApp();
+      this.reconcileValidity();
       return false;
     }
 
@@ -458,11 +458,11 @@ export default class MprisMediaApp {
       resolvePlaybackPositionTrackContext(metadata),
     );
     this.emitPropertyChanged(MprisPlayerProperties.METADATA, metadata);
-    this.validateMediaApp();
+    this.reconcileValidity();
     return true;
   }
 
-  validateMediaApp() {
+  reconcileValidity() {
     const hasIdentity = Boolean(this.identity || this.desktopEntry);
     const hasTrackMetadata = this.hasCurrentTrackMetadata;
     const validity = resolveMediaAppValidity({
@@ -594,7 +594,7 @@ export default class MprisMediaApp {
       );
       this.positionTracker?.updatePlaybackState(this.playbackStatus, this.rate);
       this.emitHydratedState();
-      this.validateMediaApp();
+      this.reconcileValidity();
       this.pollForInitialMetadata();
     }
     return true;

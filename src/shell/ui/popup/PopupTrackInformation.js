@@ -76,7 +76,7 @@ export default class PopupTrackInformation {
     }
     this.renderKey = renderKey;
     this.ensureContainer(width);
-    this.destroyLabels();
+    this.clearLabels();
 
     for (const item of items) {
       const label = this.createLabel(
@@ -141,7 +141,7 @@ export default class PopupTrackInformation {
     return StyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 
-  destroyLabels() {
+  clearLabels() {
     for (const label of this.trackInformationLabels) {
       label.get_parent()?.remove_child(label);
       label.destroy();
@@ -173,7 +173,7 @@ export default class PopupTrackInformation {
   }
 
   remove() {
-    this.destroyLabels();
+    this.clearLabels();
     this.trackInformationBox
       ?.get_parent()
       ?.remove_child(this.trackInformationBox);

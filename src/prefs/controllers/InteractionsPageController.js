@@ -25,7 +25,7 @@ import {
   LARGE_DIALOG_WIDTH,
   SHORTCUT_DIALOG_WIDTH,
   TOAST_TIMEOUT_SECONDS,
-} from "../constants/layout.js";
+} from "../constants/preferencesUi.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,

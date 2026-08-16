@@ -54,7 +54,7 @@ export default class TopBarPlaybackControls {
       widgetFlags,
     );
     for (const { controlId, isVisible } of updates)
-      this.renderOptionalControl(isVisible, controlId);
+      this.reconcilePlaybackControl(controlId, isVisible);
 
     if (this.controlButtons.size === 0) {
       this.remove();
@@ -74,18 +74,50 @@ export default class TopBarPlaybackControls {
     });
   }
 
-  renderOptionalControl(isVisible, controlId) {
+  reconcilePlaybackControl(controlId, isVisible) {
     if (!isVisible) {
       this.removePlaybackControl(controlId);
       return;
     }
 
-    this.updatePlaybackControl(
-      resolvePlaybackControlState(this.mediaApp, controlId),
-    );
+    const controlState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const buttonState = this.ensurePlaybackControl(controlState.control);
+    this.syncPlaybackControl(buttonState, controlState);
   }
 
-  updatePlaybackControl(controlState) {
+  ensurePlaybackControl(controlDefinition) {
+    let buttonState = this.controlButtons.get(controlDefinition.id);
+    if (buttonState) return buttonState;
+
+    const button = new St.Button({
+      name: controlDefinition.actorName,
+      styleClass: StyleClasses.TOP_BAR_CONTROL_BUTTON,
+      xAlign: Clutter.ActorAlign.CENTER,
+      yAlign: Clutter.ActorAlign.CENTER,
+      toggleMode: controlDefinition.isStateControl,
+    });
+    const content = createPlaybackControlContent(controlDefinition, {
+      iconStyleClass: styleClassNames(
+        StyleClasses.SYSTEM_STATUS_ICON,
+        StyleClasses.NO_MARGIN,
+        StyleClasses.TOP_BAR_CONTROL_ICON,
+      ),
+      labelStyleClass: styleClassNames(
+        StyleClasses.NO_MARGIN,
+        StyleClasses.TOP_BAR_CONTROL_LABEL,
+      ),
+    });
+    buttonState = { button, content, signalId: 0, action: null };
+    buttonState.signalId = button.connect("clicked", () => {
+      if (!buttonState.button.reactive) return;
+      void executePlaybackControlAction(this.mediaApp, buttonState.action);
+    });
+    button.set_child(content.actor);
+    this.controlButtons.set(controlDefinition.id, buttonState);
+    return buttonState;
+  }
+
+  syncPlaybackControl(buttonState, controlState) {
     const {
       control: controlDefinition,
       iconName,
@@ -94,35 +126,6 @@ export default class TopBarPlaybackControls {
       action,
       isActive,
     } = controlState;
-
-    let buttonState = this.controlButtons.get(controlDefinition.id);
-    if (!buttonState) {
-      const button = new St.Button({
-        name: controlDefinition.actorName,
-        styleClass: StyleClasses.TOP_BAR_CONTROL_BUTTON,
-        xAlign: Clutter.ActorAlign.CENTER,
-        yAlign: Clutter.ActorAlign.CENTER,
-        toggleMode: controlDefinition.isStateControl,
-      });
-      const content = createPlaybackControlContent(controlDefinition, {
-        iconStyleClass: styleClassNames(
-          StyleClasses.SYSTEM_STATUS_ICON,
-          StyleClasses.NO_MARGIN,
-          StyleClasses.TOP_BAR_CONTROL_ICON,
-        ),
-        labelStyleClass: styleClassNames(
-          StyleClasses.NO_MARGIN,
-          StyleClasses.TOP_BAR_CONTROL_LABEL,
-        ),
-      });
-      buttonState = { button, content, signalId: 0, action: null };
-      buttonState.signalId = button.connect("clicked", () => {
-        if (!buttonState.button.reactive) return;
-        void executePlaybackControlAction(this.mediaApp, buttonState.action);
-      });
-      button.set_child(content.actor);
-      this.controlButtons.set(controlDefinition.id, buttonState);
-    }
 
     buttonState.action = action;
     updatePlaybackControlContent(buttonState.content, { iconName, labelText });

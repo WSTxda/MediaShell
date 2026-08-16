@@ -6,7 +6,8 @@
  *
  * The catalog normalizes desktop IDs, names, and search aliases so the chooser
  * can match applications despite punctuation, accents, or desktop-file suffixes.
- * It is preferences-only and returns stable app metadata for BlockedAppsGroup.
+ * It is preferences-only, keeps no toolkit object at module scope, and returns
+ * newly created fallback icons to the widget that owns their lifetime.
  */
 
 import Gio from "gi://Gio";
@@ -16,14 +17,10 @@ import { buildBrowserIdentityAliases } from "../../shared/utils/browserIdentity.
 import { createLogger } from "../../shared/utils/log.js";
 
 const logger = createLogger("installedAppCatalog");
-let fallbackAppIcon = null;
 
-function getFallbackAppIcon() {
-  fallbackAppIcon ??= Gio.ThemedIcon.new_from_names([
-    IconNames.APP,
-    IconNames.MISSING,
-  ]);
-  return fallbackAppIcon;
+/** Creates the themed fallback owned by one catalog consumer. */
+export function createFallbackAppIcon() {
+  return Gio.ThemedIcon.new_from_names([IconNames.APP, IconNames.MISSING]);
 }
 
 function readAppString(app, getterName) {
@@ -63,13 +60,14 @@ export function getAppName(app, fallback = "") {
  * when AppInfo exposes no icon.
  *
  * @param {Gio.AppInfo|null|undefined} app - Application info object.
- * @returns {Gio.Icon} App icon or a themed fallback.
+ * @param {Gio.Icon} fallbackIcon - Consumer-owned themed fallback.
+ * @returns {Gio.Icon} App icon or the supplied fallback.
  */
-export function getAppIcon(app) {
+export function getAppIcon(app, fallbackIcon) {
   // Keep the original Gio.Icon object. Rebuilding a Gio.ThemedIcon from
   // its names can discard implementation details used by GTK to resolve
   // desktop-file icons and caused every chooser row to hit the fallback.
-  return app?.get_icon() ?? getFallbackAppIcon();
+  return app?.get_icon() ?? fallbackIcon;
 }
 
 /**

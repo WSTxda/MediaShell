@@ -6,7 +6,7 @@
  *
  * The dialog owns the temporary selection state, search filtering, and AppInfo
  * monitor refresh source used while the chooser is open. It returns one selected
- * desktop app to BlockedAppsGroup without writing settings itself.
+ * desktop app ID to BlockedAppsGroup without writing settings itself.
  */
 
 import Adw from "gi://Adw";
@@ -26,9 +26,10 @@ import {
   LARGE_DIALOG_HEIGHT,
   LARGE_DIALOG_WIDTH,
   SEARCH_DELAY_MS,
-} from "../constants/layout.js";
+} from "../constants/preferencesUi.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import {
+  createFallbackAppIcon,
   getAppIcon,
   getAppId,
   getAppName,
@@ -50,6 +51,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
     });
 
     this.blockedAppIds = new Set(blockedAppIds);
+    this.fallbackAppIcon = createFallbackAppIcon();
     this.selectionResolver = null;
     this.selectionPromise = null;
     this.appInfoMonitor = Gio.AppInfoMonitor.get();
@@ -182,7 +184,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       });
       row.add_prefix(
         new Gtk.Image({
-          gicon: getAppIcon(app),
+          gicon: getAppIcon(app, this.fallbackAppIcon),
           pixel_size: 32,
           use_fallback: true,
         }),
@@ -276,6 +278,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       this.appInfoMonitorSignalId = null;
     }
     this.appInfoMonitor = null;
+    this.fallbackAppIcon = null;
     this.searchTokens = [];
     this.appIdByRow = new WeakMap();
     this.searchIndexByRow = new WeakMap();
