@@ -189,8 +189,7 @@ export default class PopupVolumeControl {
 
     if (this.playbackControlsActor?.get_parent() === this.popupItem)
       this.popupItem.insert_child_above(this.actor, this.playbackControlsActor);
-    else
-      this.popupItem.add_child(this.actor);
+    else this.popupItem.add_child(this.actor);
   }
 
   reconcilePosition() {

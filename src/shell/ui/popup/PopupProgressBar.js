@@ -64,16 +64,13 @@ export default class PopupProgressBar {
 
     if (this.view == null) {
       this.view = new PopupProgressBarView();
-      this.view.connect(
-        "seek-requested",
-        (_, positionMicroseconds) => {
-          const activeMediaApp = this.mediaApp;
-          activeMediaApp.setPosition(
-            activeMediaApp.metadata[MprisMetadataKeys.TRACK_ID],
-            positionMicroseconds,
-          );
-        },
-      );
+      this.view.connect("seek-requested", (_, positionMicroseconds) => {
+        const activeMediaApp = this.mediaApp;
+        activeMediaApp.setPosition(
+          activeMediaApp.metadata[MprisMetadataKeys.TRACK_ID],
+          positionMicroseconds,
+        );
+      });
     }
 
     this.view.setLayoutWidth(width);
@@ -144,15 +141,9 @@ export default class PopupProgressBar {
     if (this.view.get_parent() != null) return;
 
     if (this.trackInformationActor?.get_parent() === this.popupItem) {
-      this.popupItem.insert_child_above(
-        this.view,
-        this.trackInformationActor,
-      );
+      this.popupItem.insert_child_above(this.view, this.trackInformationActor);
     } else if (this.playbackControlsActor?.get_parent() === this.popupItem) {
-      this.popupItem.insert_child_below(
-        this.view,
-        this.playbackControlsActor,
-      );
+      this.popupItem.insert_child_below(this.view, this.playbackControlsActor);
     } else {
       this.popupItem.add_child(this.view);
     }
