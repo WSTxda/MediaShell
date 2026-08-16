@@ -60,15 +60,12 @@ const TOP_BAR_PLAYBACK_CONTROL_BINDINGS = createPlaybackControlBindingSet(
 const POPUP_BINDINGS = Object.freeze([
   [SettingsKeys.POPUP_WIDTH, "sp-popup-width", "value"],
   POPUP_PLAYBACK_CONTROL_BINDINGS.show,
-  ...Object.entries(POPUP_PLAYBACK_CONTROL_BINDINGS.controls)
-    .filter(([controlId]) => controlId !== PlaybackControlIds.SPEED)
-    .map(([, binding]) => binding),
+  ...Object.values(POPUP_PLAYBACK_CONTROL_BINDINGS.controls),
   [
     SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
     "sr-popup-progress-bar-show",
     "active",
   ],
-  POPUP_PLAYBACK_CONTROL_BINDINGS.controls[PlaybackControlIds.SPEED],
   [
     SettingsKeys.POPUP_VOLUME_CONTROL_SHOW,
     "sr-popup-volume-control-show",

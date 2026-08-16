@@ -21,19 +21,12 @@ export const PlaybackControlSurfaces = Object.freeze({
   TOP_BAR: "top-bar",
 });
 
-function createControlSetting(
-  controlId,
-  settingKey,
-  property,
-  impact,
-  { requiresSurfaceEnabled = true } = {},
-) {
+function createControlSetting(controlId, settingKey, property, impact) {
   return Object.freeze({
     controlId,
     settingKey,
     property,
     impact,
-    requiresSurfaceEnabled,
   });
 }
 
@@ -106,7 +99,6 @@ export const PlaybackControlSurfaceDefinitions = Object.freeze({
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_SPEED_SHOW,
         "popupPlaybackControlsSpeedShow",
         WidgetFlags.POPUP_PLAYBACK_SPEED,
-        { requiresSurfaceEnabled: false },
       ),
     ],
   ),

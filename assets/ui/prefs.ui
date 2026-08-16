@@ -96,18 +96,22 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="AdwSwitchRow" id="sr-popup-playback-controls-speed-show">
+                <property name="title" translatable="yes">Playback speed</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">power-profile-performance-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>
           <object class="AdwSwitchRow" id="sr-popup-progress-bar-show">
             <property name="title" translatable="yes">Progress bar</property>
             <property name="subtitle" translatable="yes">Show the current playback position</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwSwitchRow" id="sr-popup-playback-controls-speed-show">
-            <property name="title" translatable="yes">Playback speed</property>
-            <property name="subtitle" translatable="yes">Show the playback speed switch</property>
           </object>
         </child>
         <child>

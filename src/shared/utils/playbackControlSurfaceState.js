@@ -25,9 +25,8 @@ function getPlaybackControlSurfaceDefinition(surface) {
 }
 
 function isPlaybackControlVisible(settingsTarget, show, control) {
-  if (!settingsTarget?.[control.property]) return false;
-  return (
-    !control.requiresSurfaceEnabled || Boolean(settingsTarget?.[show.property])
+  return Boolean(
+    settingsTarget?.[show.property] && settingsTarget?.[control.property],
   );
 }
 
