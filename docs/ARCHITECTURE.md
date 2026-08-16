@@ -61,7 +61,9 @@ Popup and top bar have separate actor trees. They share pure decisions and execu
 
 Shell updates are coalesced. Popup regions invalidated while the popup is closed are synchronized when it opens. Preserve this behavior when changing update propagation.
 
-Relative seek controls use `Seek(x)`. Position changes from the progress control use `SetPosition(ox)`. Playback-speed UI reflects the rate confirmed by the MPRIS endpoint.
+Relative seek controls use `Seek(x)`. Position changes from the progress control use `SetPosition(ox)` with the active track identifier. Progress presentation and seek capability are separate concerns: valid position/duration state remains visible and continues to project while playback advances, while slider interaction is enabled only when the endpoint confirms both `CanControl` and `CanSeek`. Negative absolute seek targets are rejected before a D-Bus call.
+
+Playback-speed UI reflects the rate confirmed by the MPRIS endpoint and follows the same popup playback-controls surface contract as the other playback controls. Popup volume reads and writes the MPRIS `Volume` property through `MprisMediaApp`; endpoint property changes resynchronize the popup slider, icon, and percentage. The volume presentation remains visible when control is unavailable, while interaction is disabled when `CanControl` is false.
 
 ## Metadata and artwork
 
