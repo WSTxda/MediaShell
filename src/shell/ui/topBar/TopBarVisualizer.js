@@ -138,14 +138,11 @@ function drawVinyl(context, width, height, color, angleDegrees) {
   const ringThickness = Math.max(1, radius - labelRadius);
   const grooveRadius = labelRadius + ringThickness * 0.5;
   const phase = (angleDegrees * Math.PI) / 180;
-  const shimmer = (Math.sin(phase) + 1) / 2;
-  const inverseShimmer = 1 - shimmer;
+  const grooveExpansion = (Math.sin(phase) + 1) / 2;
   const firstStartAngle = -1.36;
-  const secondStartAngle = 2.46;
-  const firstSpan = 0.34 + shimmer * 0.78;
-  const secondSpan = 0.26 + inverseShimmer * 0.68;
-  const firstGrooveWidth = ringThickness * (0.38 + shimmer * 0.12);
-  const secondGrooveWidth = ringThickness * (0.34 + inverseShimmer * 0.11);
+  const secondStartAngle = firstStartAngle + Math.PI;
+  const grooveSpan = 0.34 + grooveExpansion * 0.78;
+  const grooveWidth = ringThickness * (0.38 + grooveExpansion * 0.12);
 
   context.save();
   context.setOperator(Cairo.Operator.CLEAR);
@@ -156,25 +153,24 @@ function drawVinyl(context, width, height, color, angleDegrees) {
 
   context.setLineCap(Cairo.LineCap.BUTT);
 
-  context.setLineWidth(firstGrooveWidth);
+  context.setLineWidth(grooveWidth);
   context.newPath();
   context.arc(
     centerX,
     centerY,
     grooveRadius,
     firstStartAngle,
-    firstStartAngle + firstSpan,
+    firstStartAngle + grooveSpan,
   );
   context.stroke();
 
-  context.setLineWidth(secondGrooveWidth);
   context.newPath();
-  context.arcNegative(
+  context.arc(
     centerX,
     centerY,
     grooveRadius,
     secondStartAngle,
-    secondStartAngle - secondSpan,
+    secondStartAngle + grooveSpan,
   );
   context.stroke();
 
