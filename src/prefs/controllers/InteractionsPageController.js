@@ -26,6 +26,7 @@ import {
   SHORTCUT_DIALOG_WIDTH,
   TOAST_TIMEOUT_SECONDS,
 } from "../constants/preferencesUi.js";
+import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
@@ -147,13 +148,36 @@ export default class InteractionsPageController {
 
     this.dismissActiveShortcutEditor();
 
+    const currentAccelerator =
+      this.settings.get_strv(definition.shortcutKey)[0] ?? "";
     const dialog = new Adw.Dialog({
       title: this.actionCopy[definition.id].title,
       content_width: SHORTCUT_DIALOG_WIDTH,
       content_height: 240,
     });
     const toolbarView = new Adw.ToolbarView();
-    toolbarView.add_top_bar(new Adw.HeaderBar());
+    const headerBar = new Adw.HeaderBar({
+      show_start_title_buttons: false,
+      show_end_title_buttons: false,
+    });
+    const cancelButton = new Gtk.Button({ label: _("Cancel") });
+    const clearButton = new Gtk.Button({
+      icon_name: "edit-clear-symbolic",
+      tooltip_text: _("Clear"),
+      sensitive: Boolean(currentAccelerator),
+    });
+    const confirmButton = new Gtk.Button({
+      label: _("Set"),
+      sensitive: false,
+    });
+    confirmButton.add_css_class(PreferencesStyleClasses.SUGGESTED_ACTION);
+
+    const endActions = new Gtk.Box({ spacing: 6 });
+    endActions.append(clearButton);
+    endActions.append(confirmButton);
+    headerBar.pack_start(cancelButton);
+    headerBar.pack_end(endActions);
+    toolbarView.add_top_bar(headerBar);
 
     const captureBox = new Gtk.Box({
       orientation: Gtk.Orientation.VERTICAL,
@@ -164,23 +188,35 @@ export default class InteractionsPageController {
       margin_bottom: 24,
       focusable: true,
     });
-    captureBox.append(
-      new Gtk.Label({
-        label: _(
-          "Press Escape to cancel.\nPress Enter to save.\nPress Backspace to clear the shortcut.",
-        ),
-        wrap: true,
-      }),
-    );
+    const promptLabel = new Gtk.Label({
+      label: _("Press a shortcut"),
+      halign: Gtk.Align.CENTER,
+    });
+    promptLabel.add_css_class("title-3");
+    captureBox.append(promptLabel);
 
     const shortcutLabel = new Gtk.ShortcutLabel({
-      accelerator: this.settings.get_strv(definition.shortcutKey)[0] ?? "",
-      disabled_text: _("Press a shortcut"),
+      accelerator: "",
+      disabled_text: _("Not set"),
+      halign: Gtk.Align.CENTER,
+      valign: Gtk.Align.CENTER,
+    });
+    const shortcutIcon = new Gtk.Image({
+      icon_name: "preferences-desktop-keyboard-shortcuts-symbolic",
+      pixel_size: 64,
+      halign: Gtk.Align.CENTER,
+      valign: Gtk.Align.CENTER,
+    });
+    const inputStack = new Gtk.Stack({
       halign: Gtk.Align.CENTER,
       valign: Gtk.Align.CENTER,
       vexpand: true,
+      transition_type: Gtk.StackTransitionType.CROSSFADE,
     });
-    captureBox.append(shortcutLabel);
+    inputStack.add_named(shortcutIcon, "prompt");
+    inputStack.add_named(shortcutLabel, "shortcut");
+    inputStack.set_visible_child_name("prompt");
+    captureBox.append(inputStack);
     toolbarView.set_content(captureBox);
     dialog.set_child(toolbarView);
 
@@ -193,12 +229,21 @@ export default class InteractionsPageController {
       definition,
       dialog,
       shortcutLabel,
+      inputStack,
       captureBox,
       keyController,
+      cancelButton,
+      clearButton,
+      confirmButton,
+      currentAccelerator,
+      pendingAccelerator: null,
       keyPressedSignalId: 0,
       cleanedUp: false,
     };
     this.activeEditorSession = session;
+    cancelButton.connect("clicked", () => dialog.close());
+    clearButton.connect("clicked", () => this.clearShortcutSelection(session));
+    confirmButton.connect("clicked", () => this.saveShortcut(session));
     session.keyPressedSignalId = keyController.connect(
       "key-pressed",
       (_controller, keyval, keycode, state) =>
@@ -233,18 +278,13 @@ export default class InteractionsPageController {
     let mask = state & Gtk.accelerator_get_default_mod_mask();
     mask &= ~Gdk.ModifierType.LOCK_MASK;
 
-    if (!mask && keyval === Gdk.KEY_Escape) {
-      session.dialog.close();
-      return Gdk.EVENT_STOP;
-    }
-
-    if (!mask && keyval === Gdk.KEY_BackSpace) {
-      session.shortcutLabel.accelerator = "";
-      return Gdk.EVENT_STOP;
-    }
-
-    if (!mask && (keyval === Gdk.KEY_Return || keyval === Gdk.KEY_KP_Enter)) {
-      this.saveShortcut(session);
+    if (
+      !mask &&
+      (keyval === Gdk.KEY_Escape ||
+        keyval === Gdk.KEY_BackSpace ||
+        keyval === Gdk.KEY_Return ||
+        keyval === Gdk.KEY_KP_Enter)
+    ) {
       return Gdk.EVENT_STOP;
     }
 
@@ -252,20 +292,40 @@ export default class InteractionsPageController {
       isValidBinding(mask, keycode, keyval) &&
       isValidAccelerator(mask, keyval)
     ) {
-      session.shortcutLabel.accelerator = Gtk.accelerator_name_with_keycode(
-        null,
-        keyval,
-        keycode,
-        mask,
+      this.setShortcutSelection(
+        session,
+        Gtk.accelerator_name_with_keycode(null, keyval, keycode, mask),
       );
     }
     return Gdk.EVENT_STOP;
   }
 
-  saveShortcut(session) {
+  setShortcutSelection(session, accelerator) {
     if (this.activeEditorSession !== session) return;
 
-    const shortcut = session.shortcutLabel.accelerator;
+    session.pendingAccelerator = accelerator;
+    session.shortcutLabel.accelerator = accelerator;
+    session.inputStack.set_visible_child_name("shortcut");
+    session.clearButton.sensitive = true;
+    session.confirmButton.sensitive = true;
+  }
+
+  clearShortcutSelection(session) {
+    if (this.activeEditorSession !== session) return;
+
+    session.pendingAccelerator = "";
+    session.shortcutLabel.accelerator = "";
+    session.inputStack.set_visible_child_name("shortcut");
+    session.clearButton.sensitive = false;
+    session.confirmButton.sensitive = Boolean(session.currentAccelerator);
+    session.captureBox.grab_focus();
+  }
+
+  saveShortcut(session) {
+    if (this.activeEditorSession !== session) return;
+    if (session.pendingAccelerator === null) return;
+
+    const shortcut = session.pendingAccelerator;
     const conflictingDefinition = shortcut
       ? INPUT_ACTION_DEFINITIONS.find(
           ({ shortcutKey }) =>
