@@ -148,8 +148,6 @@ export default class InteractionsPageController {
 
     this.dismissActiveShortcutEditor();
 
-    const currentAccelerator =
-      this.settings.get_strv(definition.shortcutKey)[0] ?? "";
     const dialog = new Adw.Dialog({
       title: this.actionCopy[definition.id].title,
       content_width: SHORTCUT_DIALOG_WIDTH,
@@ -161,22 +159,14 @@ export default class InteractionsPageController {
       show_end_title_buttons: false,
     });
     const cancelButton = new Gtk.Button({ label: _("Cancel") });
-    const clearButton = new Gtk.Button({
-      icon_name: "edit-clear-symbolic",
-      tooltip_text: _("Clear"),
-      sensitive: Boolean(currentAccelerator),
-    });
     const confirmButton = new Gtk.Button({
       label: _("Set"),
       sensitive: false,
     });
     confirmButton.add_css_class(PreferencesStyleClasses.SUGGESTED_ACTION);
 
-    const endActions = new Gtk.Box({ spacing: 6 });
-    endActions.append(clearButton);
-    endActions.append(confirmButton);
     headerBar.pack_start(cancelButton);
-    headerBar.pack_end(endActions);
+    headerBar.pack_end(confirmButton);
     toolbarView.add_top_bar(headerBar);
 
     const captureBox = new Gtk.Box({
@@ -233,16 +223,13 @@ export default class InteractionsPageController {
       captureBox,
       keyController,
       cancelButton,
-      clearButton,
       confirmButton,
-      currentAccelerator,
       pendingAccelerator: null,
       keyPressedSignalId: 0,
       cleanedUp: false,
     };
     this.activeEditorSession = session;
     cancelButton.connect("clicked", () => dialog.close());
-    clearButton.connect("clicked", () => this.clearShortcutSelection(session));
     confirmButton.connect("clicked", () => this.saveShortcut(session));
     session.keyPressedSignalId = keyController.connect(
       "key-pressed",
@@ -306,19 +293,7 @@ export default class InteractionsPageController {
     session.pendingAccelerator = accelerator;
     session.shortcutLabel.accelerator = accelerator;
     session.inputStack.set_visible_child_name("shortcut");
-    session.clearButton.sensitive = true;
     session.confirmButton.sensitive = true;
-  }
-
-  clearShortcutSelection(session) {
-    if (this.activeEditorSession !== session) return;
-
-    session.pendingAccelerator = "";
-    session.shortcutLabel.accelerator = "";
-    session.inputStack.set_visible_child_name("shortcut");
-    session.clearButton.sensitive = false;
-    session.confirmButton.sensitive = Boolean(session.currentAccelerator);
-    session.captureBox.grab_focus();
   }
 
   saveShortcut(session) {
@@ -326,13 +301,11 @@ export default class InteractionsPageController {
     if (session.pendingAccelerator === null) return;
 
     const shortcut = session.pendingAccelerator;
-    const conflictingDefinition = shortcut
-      ? INPUT_ACTION_DEFINITIONS.find(
-          ({ shortcutKey }) =>
-            shortcutKey !== session.definition.shortcutKey &&
-            (this.settings.get_strv(shortcutKey)[0] ?? "") === shortcut,
-        )
-      : null;
+    const conflictingDefinition = INPUT_ACTION_DEFINITIONS.find(
+      ({ shortcutKey }) =>
+        shortcutKey !== session.definition.shortcutKey &&
+        (this.settings.get_strv(shortcutKey)[0] ?? "") === shortcut,
+    );
     if (conflictingDefinition) {
       this.preferencesWindow.add_toast(
         new Adw.Toast({
