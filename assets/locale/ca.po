@@ -125,16 +125,6 @@ msgstr "Aplicacions"
 msgid "Interface"
 msgstr "Interfície"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Premeu Esc per cancel·lar.\n"
-"Premeu Retorn per desar.\n"
-"Premeu Retrocés per esborrar la drecera."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Premeu una drecera"

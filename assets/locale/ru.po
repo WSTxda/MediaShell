@@ -126,16 +126,6 @@ msgstr "Приложения"
 msgid "Interface"
 msgstr "Интерфейс"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Нажмите Escape для отмены.\n"
-"Нажмите Enter для сохранения.\n"
-"Нажмите Backspace, чтобы очистить сочетание клавиш."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Нажмите сочетание клавиш"

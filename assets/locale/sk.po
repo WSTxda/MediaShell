@@ -125,16 +125,6 @@ msgstr "Aplikácie"
 msgid "Interface"
 msgstr "Rozhranie"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Stlačením Escape zrušíte.\n"
-"Stlačením Enter uložíte.\n"
-"Stlačením Backspace skratku vymažete."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Stlačte klávesovú skratku"

@@ -125,16 +125,6 @@ msgstr "Apps"
 msgid "Interface"
 msgstr "Oberfläche"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Drücken Sie Escape zum Abbrechen.\n"
-"Drücken Sie Enter zum Speichern.\n"
-"Drücken Sie die Rücktaste, um die Tastenkombination zu löschen."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Tastenkombination drücken"

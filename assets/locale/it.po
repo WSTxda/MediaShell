@@ -125,16 +125,6 @@ msgstr "Applicazioni"
 msgid "Interface"
 msgstr "Interfaccia"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Premere Esc per annullare.\n"
-"Premere Invio per salvare.\n"
-"Premere Backspace per cancellare la scorciatoia."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Premere una scorciatoia"

@@ -124,16 +124,6 @@ msgstr "יישומים"
 msgid "Interface"
 msgstr "ממשק"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"יש ללחוץ Escape לביטול.\n"
-"יש ללחוץ Enter לשמירה.\n"
-"יש ללחוץ Backspace לניקוי הקיצור."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "יש ללחוץ על קיצור מקשים"

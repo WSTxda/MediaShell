@@ -125,16 +125,6 @@ msgstr "Aplicaciones"
 msgid "Interface"
 msgstr "Interfaz"
 
-#: src/prefs/controllers/InteractionsPageController.js:170
-msgid ""
-"Press Escape to cancel.\n"
-"Press Enter to save.\n"
-"Press Backspace to clear the shortcut."
-msgstr ""
-"Pulse Escape para cancelar.\n"
-"Pulse Intro para guardar.\n"
-"Pulse Retroceso para borrar el atajo."
-
 #: src/prefs/controllers/InteractionsPageController.js:178
 msgid "Press a shortcut"
 msgstr "Pulse un atajo"
