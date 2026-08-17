@@ -248,6 +248,10 @@ export default class PopupContent {
         this.extensionController.popupPlaybackControlsSeekBackwardShow,
       showTransportControls &&
         this.extensionController.popupPlaybackControlsSeekForwardShow,
+      showTransportControls &&
+        this.extensionController.popupPlaybackControlsPreviousTrackShow,
+      showTransportControls &&
+        this.extensionController.popupPlaybackControlsNextTrackShow,
     );
   }
 

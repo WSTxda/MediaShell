@@ -2,7 +2,7 @@
  * @file PopupLayoutController.js
  * @module prefs.controllers.PopupLayoutController
  *
- * Keeps the stored popup width aligned with seek controls changed in Preferences.
+ * Keeps the stored popup width aligned with transport controls changed in Preferences.
  *
  * Runtime sizing remains defensive through resolvePopupWidth(). This controller
  * adds visible settings feedback only after a preference widget changes; opening
@@ -17,8 +17,11 @@ import {
 } from "../utils/signalConnections.js";
 
 const POPUP_LAYOUT_WIDGETS = Object.freeze({
+  width: "sp-popup-width",
   controls: "er-popup-playback-controls",
   seekBackward: "sr-popup-playback-controls-seek-backward-show",
+  previousTrack: "sr-popup-playback-controls-previous-track-show",
+  nextTrack: "sr-popup-playback-controls-next-track-show",
   seekForward: "sr-popup-playback-controls-seek-forward-show",
 });
 
@@ -28,10 +31,11 @@ function getRequiredObject(builder, id) {
   return object;
 }
 
-/** Keeps popup-width feedback aligned with visible seek controls. */
+/** Keeps popup-width feedback aligned with visible transport controls. */
 export default class PopupLayoutController {
   constructor(settings, builder) {
     this.settings = settings;
+    this.widthRow = builder.get_object(POPUP_LAYOUT_WIDGETS.width);
     this.controlsRow = getRequiredObject(
       builder,
       POPUP_LAYOUT_WIDGETS.controls,
@@ -40,6 +44,10 @@ export default class PopupLayoutController {
       builder,
       POPUP_LAYOUT_WIDGETS.seekBackward,
     );
+    this.previousTrackRow = builder.get_object(
+      POPUP_LAYOUT_WIDGETS.previousTrack,
+    );
+    this.nextTrackRow = builder.get_object(POPUP_LAYOUT_WIDGETS.nextTrack);
     this.seekForwardRow = getRequiredObject(
       builder,
       POPUP_LAYOUT_WIDGETS.seekForward,
@@ -50,10 +58,14 @@ export default class PopupLayoutController {
 
   init() {
     for (const [widget, signal] of [
+      [this.widthRow, "notify::value"],
       [this.controlsRow, "notify::enable-expansion"],
       [this.seekBackwardRow, "notify::active"],
+      [this.previousTrackRow, "notify::active"],
+      [this.nextTrackRow, "notify::active"],
       [this.seekForwardRow, "notify::active"],
     ]) {
+      if (!widget) continue;
       connectOwnedSignal(this.ownedSignalConnections, widget, signal, () =>
         this.scheduleWidthFeedback(),
       );
@@ -76,6 +88,8 @@ export default class PopupLayoutController {
       configuredWidth,
       this.seekBackwardRow.get_active(),
       this.seekForwardRow.get_active(),
+      this.previousTrackRow?.get_active() ?? true,
+      this.nextTrackRow?.get_active() ?? true,
     );
     if (effectiveWidth !== configuredWidth)
       this.settings.set_uint(SettingsKeys.POPUP_WIDTH, effectiveWidth);
@@ -84,8 +98,11 @@ export default class PopupLayoutController {
   destroy() {
     this.syncGeneration++;
     disconnectOwnedSignals(this.ownedSignalConnections);
+    this.widthRow = null;
     this.controlsRow = null;
     this.seekBackwardRow = null;
+    this.previousTrackRow = null;
+    this.nextTrackRow = null;
     this.seekForwardRow = null;
     this.settings = null;
   }
