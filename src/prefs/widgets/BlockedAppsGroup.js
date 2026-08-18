@@ -134,11 +134,17 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
         }),
       );
 
-      const removeButton = new Gtk.Button({ icon_name: "user-trash-symbolic" });
-      removeButton.marginTop = 10;
-      removeButton.marginBottom = 10;
-      removeButton.add_css_class(PreferencesStyleClasses.FLAT);
-      removeButton.add_css_class(PreferencesStyleClasses.CIRCULAR);
+      const removeLabel = _("Remove");
+      const removeButton = new Gtk.Button({
+        icon_name: "user-trash-symbolic",
+        tooltip_text: removeLabel,
+        has_frame: false,
+        valign: Gtk.Align.CENTER,
+      });
+      removeButton.update_property(
+        [Gtk.AccessibleProperty.LABEL],
+        [removeLabel],
+      );
       removeButton.connect("clicked", () => {
         this.blockedAppIds = this.blockedAppIds.filter((id) => id !== appId);
         this.notify("blocked-app-ids");

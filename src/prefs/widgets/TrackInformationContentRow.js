@@ -19,7 +19,6 @@ import { GTypeNames } from "../../shared/constants/gtypes.js";
 import { ResourceUris } from "../../shared/constants/resources.js";
 import { TrackInformationFields } from "../../shared/enums/trackInformation.js";
 import { moveArrayItem } from "../../shared/utils/collections.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 import { createDragTexture } from "../utils/dragAndDrop.js";
 
 function createTranslatedFields() {
@@ -120,14 +119,14 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
     row.contentIndex = index;
     row.add_prefix(new Gtk.Image({ icon_name: "list-drag-handle-symbolic" }));
 
+    const removeLabel = _("Remove");
     const removeButton = new Gtk.Button({
       icon_name: "user-trash-symbolic",
-      margin_top: 10,
-      margin_bottom: 10,
-      tooltip_text: _("Remove"),
+      tooltip_text: removeLabel,
+      has_frame: false,
+      valign: Gtk.Align.CENTER,
     });
-    removeButton.add_css_class(PreferencesStyleClasses.FLAT);
-    removeButton.add_css_class(PreferencesStyleClasses.CIRCULAR);
+    removeButton.update_property([Gtk.AccessibleProperty.LABEL], [removeLabel]);
     removeButton.connect("clicked", () => {
       this.contentItems.splice(row.contentIndex, 1);
       this.notify("content-items");
