@@ -130,9 +130,33 @@ export default class InteractionsPageController {
       const row = this.builder.get_object(shortcutRowId(definition.id));
       if (!row)
         throw new Error(`Shortcut preference row not found: ${definition.id}`);
+
+      const resetButton = new Gtk.Button({
+        icon_name: "edit-clear-symbolic",
+        tooltip_text: _("Reset"),
+        has_frame: false,
+        valign: Gtk.Align.CENTER,
+      });
+      row.add_suffix(resetButton);
+
+      const updateResetButtonVisibility = () => {
+        resetButton.visible = Boolean(
+          this.settings.get_strv(definition.shortcutKey)[0] ?? "",
+        );
+      };
+
       this.connectOwnedSignal(row, "activated", () =>
         this.presentShortcutEditor(definition),
       );
+      this.connectOwnedSignal(resetButton, "clicked", () =>
+        this.resetShortcut(definition),
+      );
+      this.connectOwnedSignal(
+        this.settings,
+        `changed::${definition.shortcutKey}`,
+        updateResetButtonVisibility,
+      );
+      updateResetButtonVisibility();
     }
 
     this.connectOwnedSignal(this.shortcutOverviewButton, "clicked", () =>
@@ -168,6 +192,7 @@ export default class InteractionsPageController {
     headerBar.pack_start(cancelButton);
     headerBar.pack_end(confirmButton);
     toolbarView.add_top_bar(headerBar);
+    dialog.default_widget = confirmButton;
 
     const captureBox = new Gtk.Box({
       orientation: Gtk.Orientation.VERTICAL,
@@ -220,9 +245,7 @@ export default class InteractionsPageController {
       dialog,
       shortcutLabel,
       inputStack,
-      captureBox,
       keyController,
-      cancelButton,
       confirmButton,
       pendingAccelerator: null,
       keyPressedSignalId: 0,
@@ -268,12 +291,13 @@ export default class InteractionsPageController {
     if (
       !mask &&
       (keyval === Gdk.KEY_Escape ||
-        keyval === Gdk.KEY_BackSpace ||
         keyval === Gdk.KEY_Return ||
         keyval === Gdk.KEY_KP_Enter)
     ) {
-      return Gdk.EVENT_STOP;
+      return Gdk.EVENT_PROPAGATE;
     }
+
+    if (!mask && keyval === Gdk.KEY_BackSpace) return Gdk.EVENT_STOP;
 
     if (
       isValidBinding(mask, keycode, keyval) &&
@@ -294,6 +318,10 @@ export default class InteractionsPageController {
     session.shortcutLabel.accelerator = accelerator;
     session.inputStack.set_visible_child_name("shortcut");
     session.confirmButton.sensitive = true;
+  }
+
+  resetShortcut(definition) {
+    this.settings.reset(definition.shortcutKey);
   }
 
   saveShortcut(session) {
