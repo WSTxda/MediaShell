@@ -1,7 +1,7 @@
 # MediaShell translations
 msgid ""
 msgstr ""
-"Project-Id-Version: MediaShell 2.1.0\n"
+"Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-16 01:44-0500\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
