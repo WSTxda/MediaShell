@@ -2,8 +2,8 @@
 # Provides environment diagnostics and supported GNOME Shell development sessions.
 set -euo pipefail
 
-SUPPORTED_SHELL_MIN=47
-SUPPORTED_SHELL_MAX=50
+SUPPORTED_SHELL_MIN=48
+SUPPORTED_SHELL_MAX=51
 
 parse_shell_major() {
   local version_output=$1
@@ -68,8 +68,8 @@ doctor_main() {
     printf 'MediaShell: unable to parse the Libadwaita version from: %s\n' "$adwaita_version" >&2
     exit 1
   fi
-  if (( adwaita_major < 1 || (adwaita_major == 1 && adwaita_minor < 6) )); then
-    printf 'MediaShell: Libadwaita 1.6 or later is required; found %s.\n' "$adwaita_version" >&2
+  if (( adwaita_major < 1 || (adwaita_major == 1 && adwaita_minor < 7) )); then
+    printf 'MediaShell: Libadwaita 1.7 or later is required; found %s.\n' "$adwaita_version" >&2
     exit 1
   fi
 

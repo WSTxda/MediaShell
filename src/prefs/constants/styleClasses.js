@@ -13,7 +13,7 @@ export const PreferencesStyleClasses = Object.freeze({
   CAPTION: "caption",
   CIRCULAR: "circular",
   DESTRUCTIVE_ACTION: "destructive-action",
-  DIM_LABEL: "dim-label",
+  DIMMED: "dimmed",
   FLAT: "flat",
   SUGGESTED_ACTION: "suggested-action",
 });

@@ -75,14 +75,14 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
       "platform",
       () => {
         assert.deepEqual(SUPPORTED_GNOME_SHELL_VERSIONS, [
-          "47",
           "48",
           "49",
           "50",
+          "51",
         ]);
-        assert.deepEqual(MINIMUM_LIBADWAITA_VERSION, { major: 1, minor: 6 });
-        assert.equal(isVersionAtLeast(1, 5), false);
-        assert.equal(isVersionAtLeast(1, 6), true);
+        assert.deepEqual(MINIMUM_LIBADWAITA_VERSION, { major: 1, minor: 7 });
+        assert.equal(isVersionAtLeast(1, 6), false);
+        assert.equal(isVersionAtLeast(1, 7), true);
         assert.equal(isVersionAtLeast(2, 0), true);
       },
     ],

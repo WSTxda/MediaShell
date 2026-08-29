@@ -102,12 +102,12 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
         icon_name: "action-unavailable-symbolic",
         pixel_size: 32,
       });
-      icon.add_css_class(PreferencesStyleClasses.DIM_LABEL);
+      icon.add_css_class(PreferencesStyleClasses.DIMMED);
       const label = new Gtk.Label({
         label: _("No apps are blocked"),
         halign: Gtk.Align.CENTER,
       });
-      label.add_css_class(PreferencesStyleClasses.DIM_LABEL);
+      label.add_css_class(PreferencesStyleClasses.DIMMED);
       label.add_css_class(PreferencesStyleClasses.CAPTION);
       emptyState.append(icon);
       emptyState.append(label);

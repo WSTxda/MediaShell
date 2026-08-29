@@ -73,9 +73,9 @@ export default class IndicatorPointerHandler {
           this.#executeInputAction(mouseAction);
       });
     } else {
-      // GNOME 47–48: use button-press-event / scroll-event signals.
-      // These signals are still propagated by Clutter's input subsystem in
-      // pre-49 releases and do not require gesture recognizers.
+      // Shell releases without Clutter.ClickGesture: fall back to
+      // button-press-event / scroll-event signals, still propagated by
+      // Clutter's input subsystem, so no gesture recognizer is required.
       this.#addPointerSignal(actor, "button-press-event", (_, event) => {
         const mouseButton = event.get_button();
 
