@@ -6,7 +6,7 @@
   "settings-schema": "org.gnome.shell.extensions.mediashell",
   "gettext-domain": "mediashell@wstxda.github.com",
   "version-name": "2.2.0",
-  "shell-version": ["47", "48", "49", "50"],
+  "shell-version": ["48", "49", "50", "51"],
   "donations": {
     "buymeacoffee": "wstxda"
   }

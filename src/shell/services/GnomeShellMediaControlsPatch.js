@@ -66,10 +66,9 @@ export default class GnomeShellMediaControlsPatch {
   }
 
   getGnomeShellMediaSourceClass() {
-    // Supported Shell releases expose MprisSource here. Keep the older
-    // MediaSection fallback isolated because this is private Shell API.
+    // Every supported Shell release (48+) exposes MprisSource here. The
+    // guard above fails open if this private class shape changes again.
     if (Mpris.MprisSource?.prototype?._addPlayer) return Mpris.MprisSource;
-    if (Mpris.MediaSection?.prototype?._addPlayer) return Mpris.MediaSection;
     return null;
   }
 
@@ -119,13 +118,9 @@ export default class GnomeShellMediaControlsPatch {
     // dateMenu is the calendar button. _messageList is its private
     // notification tray actor, stable since GNOME 40.
     const messageList = Main.panel.statusArea.dateMenu?._messageList;
-    // Supported Shell releases expose the media source under _messageView.
-    // The _mediaSection fallback keeps the patch fail-open across private API changes.
-    return (
-      messageList?._messageView?._mediaSource ??
-      messageList?._mediaSection ??
-      null
-    );
+    // Every supported Shell release (48+) exposes the media source under
+    // _messageView, the grouped-notifications view introduced in GNOME 48.
+    return messageList?._messageView?._mediaSource ?? null;
   }
 
   destroy() {

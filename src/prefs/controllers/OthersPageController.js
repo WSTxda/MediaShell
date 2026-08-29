@@ -84,7 +84,8 @@ export default class OthersPageController {
   }
 
   createResetSettingsRow() {
-    // Adw.ButtonRow requires Libadwaita 1.6, which is enforced by assertSupportedLibadwaita() in prefs.js
+    // Adw.ButtonRow requires Libadwaita 1.6 or later; MediaShell's 1.7 floor
+    // (enforced by assertSupportedLibadwaita() in prefs.js) already covers it.
     this.resetSettingsRow = new Adw.ButtonRow({
       title: _("Reset all settings"),
       start_icon_name: "edit-undo-symbolic",

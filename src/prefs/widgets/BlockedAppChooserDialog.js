@@ -110,7 +110,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
       margin_top: 24,
       margin_bottom: 24,
     });
-    emptyLabel.add_css_class(PreferencesStyleClasses.DIM_LABEL);
+    emptyLabel.add_css_class(PreferencesStyleClasses.DIMMED);
     this.listBox.set_placeholder(emptyLabel);
     this.listBox.set_filter_func((row) => this.matchesSearch(row));
 
