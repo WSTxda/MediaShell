@@ -21,6 +21,11 @@ import {
   SCROLL_CYCLE_GAP,
 } from "../constants/scrollingLabel.js";
 import { StyleClasses } from "../constants/styleClasses.js";
+import {
+  connectReducedMotionChanged,
+  disconnectReducedMotionChanged,
+  prefersReducedMotion,
+} from "../utils/reducedMotion.js";
 
 /**
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
@@ -44,6 +49,7 @@ class ScrollingLabel extends St.ScrollView {
   lifecycleMappedSignalId;
   adjustmentChangedSignalId;
   scrollCompletedSignalId;
+  reducedMotionSignalId;
 
   initializationSourceId;
   adjustmentInitializationSourceId;
@@ -83,6 +89,10 @@ class ScrollingLabel extends St.ScrollView {
     this.lifecycleMappedSignalId = this.connect(
       "notify::mapped",
       this.handleMappedLifecycleChange.bind(this),
+    );
+    // Reacts immediately to the user toggling the system's reduced-motion accessibility preference.
+    this.reducedMotionSignalId = connectReducedMotionChanged(() =>
+      this.handleReducedMotionChanged(),
     );
     this.scrollCompletedSignalId = null;
     this.initializationSourceId = null;
@@ -124,11 +134,17 @@ class ScrollingLabel extends St.ScrollView {
 
   handleMappedLifecycleChange() {
     if (!this.scrollTransition) return;
-    if (!this.canAnimateNow()) {
+    if (!this.canAnimateNow() || prefersReducedMotion()) {
       this.scrollTransition.pause();
       return;
     }
     if (this.cyclePauseSourceId === null) this.scrollTransition.start();
+  }
+
+  /** Re-evaluates layout and scrolling when the system preference changes. */
+  handleReducedMotionChanged() {
+    if (!this.label) return;
+    this.updateLayoutAndScrolling();
   }
 
   initializeScrollAnimation() {
@@ -214,6 +230,11 @@ class ScrollingLabel extends St.ScrollView {
   }
 
   createScrollAnimation(adjustment) {
+    if (prefersReducedMotion()) {
+      this.removeScrollTransition(adjustment);
+      return;
+    }
+
     if (this.animationMappedSignalId !== null) {
       this.disconnect(this.animationMappedSignalId);
       this.animationMappedSignalId = null;
@@ -305,6 +326,13 @@ class ScrollingLabel extends St.ScrollView {
     const availableWidth =
       this.labelWidth > 0 ? this.labelWidth : Math.max(0, this.width);
     const isLabelWider = measuredWidth > availableWidth && availableWidth > 0;
+
+    if (prefersReducedMotion()) {
+      this.removeScrollTransition();
+      this.label.clutterText.ellipsize = Pango.EllipsizeMode.END;
+      return;
+    }
+
     if (isLabelWider && this.isScrolling) this.initializeScrollAnimation();
     if (this.isFixedWidth && this.labelWidth > 0) {
       this.labelBox.width = this.labelWidth;
@@ -342,6 +370,8 @@ class ScrollingLabel extends St.ScrollView {
       this.disconnect(this.lifecycleMappedSignalId);
       this.lifecycleMappedSignalId = null;
     }
+    disconnectReducedMotionChanged(this.reducedMotionSignalId);
+    this.reducedMotionSignalId = null;
 
     this.clearInitializationSource();
     this.clearAdjustmentInitializationSource();
