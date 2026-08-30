@@ -54,6 +54,11 @@ import {
   VisualizerRendererKinds,
 } from "../../constants/visualizer.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
+import {
+  connectReducedMotionChanged,
+  disconnectReducedMotionChanged,
+  prefersReducedMotion,
+} from "../../utils/reducedMotion.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 import { drawSpectrumLayer, drawVinyl } from "./topBarVisualizerDrawing.js";
 
@@ -76,6 +81,7 @@ export default class TopBarVisualizer {
     this.drawingColor = null;
     this.timeline = null;
     this.timelineFrameSignalId = null;
+    this.reducedMotionSignalId = null;
     this.visualizerStyle = VisualizerStyles.BEATS;
     this.styleDefinition = BEATS_STYLE_DEFINITION;
     this.animationSpeed = normalizeVisualizerSpeed();
@@ -180,6 +186,11 @@ export default class TopBarVisualizer {
     this.actor.connect("notify::mapped", () => this.syncAnimation());
     this.actor.connect("style-changed", () => this.syncVisualizerColor());
     this.actor.connect("destroy", () => this.handleActorDestroyed());
+    // Reacts immediately to the user toggling the system's reduced-motion accessibility preference.
+    this.reducedMotionSignalId = connectReducedMotionChanged(() => {
+      this.syncAnimation();
+      this.updateFrame();
+    });
     this.activateStyleRenderer();
     this.syncVisualizerColor();
     this.updateFrame();
@@ -324,6 +335,11 @@ export default class TopBarVisualizer {
   syncAnimation() {
     if (this.isVinylRendererActive() && this.actor && !this.actor.mapped)
       this.vinylRotationDegreesPerSecond = 0;
+
+    if (prefersReducedMotion()) {
+      this.stopAnimation();
+      return;
+    }
 
     const shouldAnimate = Boolean(
       this.actor &&
@@ -556,6 +572,8 @@ export default class TopBarVisualizer {
       this.timeline.disconnect(this.timelineFrameSignalId);
       this.timelineFrameSignalId = null;
     }
+    disconnectReducedMotionChanged(this.reducedMotionSignalId);
+    this.reducedMotionSignalId = null;
     this.timeline?.set_actor(null);
     this.timeline = null;
     this.actor = null;
