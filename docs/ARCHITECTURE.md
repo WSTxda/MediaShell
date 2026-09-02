@@ -47,6 +47,8 @@ The component that creates a signal connection, GLib source, cancellable, asynch
 
 Long-lived asynchronous owners use cancellables, generation checks, active-owner checks, or equivalent tokens. A result created for an old endpoint, actor, window, or extension lifecycle cannot update its replacement.
 
+`ExtensionController` creates one `DesktopAppResolver` and one `AlbumArtLoader` per enabled lifecycle, injects those instances into registry and surface consumers, and destroys them after their consumers. The shared cache and request benefits therefore do not depend on module-global service state.
+
 ## MPRIS state and control flow
 
 D-Bus ownership of `org.mpris.MediaPlayer2.*` names is authoritative for endpoint lifetime. Desktop identity, browser/PWA identity, metadata, blocked applications, and user pinning affect filtering, presentation, or selection without replacing D-Bus ownership as the lifetime source.

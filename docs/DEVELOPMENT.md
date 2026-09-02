@@ -55,9 +55,11 @@ The map is a review artifact, not a runtime layer. Its purpose is to identify th
 
 ## Modules and ownership
 
-Use PascalCase filenames when the primary export is an owning class of the same name. Use camelCase for functional modules, policies, declarative tables, enums, and pure helpers. Keep a controller with the other controllers unless it owns a substantial subdomain; avoid one-file category directories.
+Follow the GJS naming convention: use lowerCamelCase for every JavaScript filename, including modules whose primary export is a class, and use PascalCase for class, GObject, and type names. Keep directories short, lowercase, and named for a cohesive process or subsystem. Keep a controller with the other controllers unless it owns a substantial subdomain; avoid one-file category directories.
 
 Group constants by a cohesive domain contract, not merely by surface or directory. Constant modules contain pure values and frozen declarative data. Do not place `GObject` instances, toolkit objects, caches, mutable runtime state, or one-use implementation values in them. Move behavior to a utility only when it is stateless and genuinely reused; move it to `shared` only when both processes can consume it without toolkit coupling.
+
+Construct extension-lifetime services in `ExtensionController`, inject the same instance into consumers that share its cache or in-flight work, and destroy consumers before the service. Do not hide lifecycle-owned service instances in module-global singletons.
 
 Use lifecycle verbs consistently:
 

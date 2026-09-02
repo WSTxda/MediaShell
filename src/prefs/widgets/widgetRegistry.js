@@ -11,9 +11,9 @@
 
 import GObject from "gi://GObject";
 
-import BlockedAppsGroup from "./BlockedAppsGroup.js";
-import TrackInformationContentRow from "./TrackInformationContentRow.js";
-import TopBarElementOrderGroup from "./TopBarElementOrderGroup.js";
+import BlockedAppsGroup from "./blockedAppsGroup.js";
+import TrackInformationContentRow from "./trackInformationContentRow.js";
+import TopBarElementOrderGroup from "./topBarElementOrderGroup.js";
 
 export function ensurePreferenceWidgetsRegistered() {
   GObject.type_ensure(BlockedAppsGroup.$gtype);

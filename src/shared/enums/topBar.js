@@ -2,19 +2,17 @@
  * @file topBar.js
  * @module shared.enums.topBar
  *
- * Enum values for top bar element identity.
+ * Stable identifiers for top bar elements.
  *
- * Preferences widgets and MediaShellIndicator rely on these stable IDs to
- * preserve
- * the user's chosen element order. Keep this file limited to values that
- * describe top bar elements; panel placement, track-information, and visualizer
- * enums live in their own domain files.
+ * Preferences writes and Shell consumes these string IDs through GSettings.
+ * Keep this file limited to top bar identity; panel placement,
+ * track-information, and visualizer enums live in their own domain files.
  */
 
-export const TopBarElements = Object.freeze({
-  MEDIA_APP_ICON: 0,
-  TRACK_INFORMATION: 1,
-  PLAYBACK_CONTROLS: 2,
-  VISUALIZER: 3,
-  ALBUM_ART: 4,
+export const TopBarElementIds = Object.freeze({
+  MEDIA_APP_ICON: "MEDIA_APP_ICON",
+  ALBUM_ART: "ALBUM_ART",
+  TRACK_INFORMATION: "TRACK_INFORMATION",
+  VISUALIZER: "VISUALIZER",
+  PLAYBACK_CONTROLS: "PLAYBACK_CONTROLS",
 });

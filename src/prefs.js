@@ -8,7 +8,7 @@
  * delegates window construction to PreferencesController. The file stays free of
  * Shell runtime imports because preferences run in a separate GTK process.
  *
- * @see src/prefs/PreferencesController.js
+ * @see src/prefs/preferencesController.js
  */
 
 import Adw from "gi://Adw";
@@ -16,7 +16,7 @@ import { ExtensionPreferences } from "resource:///org/gnome/Shell/Extensions/js/
 
 import { MINIMUM_LIBADWAITA_VERSION } from "./shared/constants/platform.js";
 import { isVersionAtLeast } from "./shared/utils/version.js";
-import PreferencesController from "./prefs/PreferencesController.js";
+import PreferencesController from "./prefs/preferencesController.js";
 import { initializePreferencesTranslations } from "./prefs/translations.js";
 
 function assertSupportedLibadwaita() {

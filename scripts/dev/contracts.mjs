@@ -37,9 +37,11 @@ import {
 import {
   NUMERIC_SETTING_CONSTRAINTS,
   ORDERED_SETTING_DEFAULTS,
+  TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../src/shared/constants/settings.js";
 import { InputActions } from "../../src/shared/enums/input.js";
 import { PanelPositions } from "../../src/shared/enums/panel.js";
+import { TopBarElementIds } from "../../src/shared/enums/topBar.js";
 import { VisualizerStyles } from "../../src/shared/enums/visualizer.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 import { collectBuilderObjectReferences } from "./javascript.mjs";
@@ -74,6 +76,26 @@ function compareEnum(errors, enumId, actual, expected) {
       `schema enum ${enumId} differs from its JavaScript enum: ` +
         `${JSON.stringify(actual)} !== ${JSON.stringify(expected)}`,
     );
+}
+
+function validateTopBarElementOrderContract() {
+  const errors = [];
+  const elementIds = Object.values(TopBarElementIds);
+  const uniqueElementIds = new Set(elementIds);
+  const defaultElementIds = new Set(TOP_BAR_ELEMENT_ORDER_DEFAULT);
+
+  if (uniqueElementIds.size !== elementIds.length)
+    errors.push("top bar element IDs must be unique");
+  if (
+    defaultElementIds.size !== TOP_BAR_ELEMENT_ORDER_DEFAULT.length ||
+    defaultElementIds.size !== uniqueElementIds.size ||
+    elementIds.some((elementId) => !defaultElementIds.has(elementId))
+  )
+    errors.push(
+      "top bar element order default must contain each canonical ID exactly once",
+    );
+
+  return errors;
 }
 
 /**
@@ -237,6 +259,7 @@ export async function checkSettingsContracts() {
   const schema = manifest.schema;
   const errors = [];
   errors.push(...validateDbusContracts(manifest.dbusInterfaces));
+  errors.push(...validateTopBarElementOrderContract());
   errors.push(
     ...validateSettingContractTables({
       schema,

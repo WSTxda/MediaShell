@@ -5,8 +5,9 @@
  * Declares runtime metadata for every MediaShell GSettings key.
  *
  * SettingsStore uses the spec to validate key types, expose transformed values,
- * and decide which runtime action a key change requires. The file contains spec
- * factory helpers only; domain behavior belongs in controllers and services.
+ * and decide which runtime action a key change requires. This module owns the
+ * action identifiers because they form part of that settings contract; domain
+ * behavior remains in controllers and services.
  */
 
 import {
@@ -29,9 +30,7 @@ import {
 } from "../../shared/constants/playbackControlSurfaces.js";
 import { normalizeInputAction } from "../../shared/utils/inputActions.js";
 import { InputActions } from "../../shared/enums/input.js";
-import { SettingsAction } from "../../shared/enums/settingsAction.js";
 import { PanelPositions } from "../../shared/enums/panel.js";
-import { VisualizerStyles } from "../../shared/enums/visualizer.js";
 import { WidgetFlags } from "../../shared/enums/widgetFlags.js";
 import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
 import {
@@ -40,9 +39,11 @@ import {
   normalizeUniqueStrings,
 } from "../../shared/utils/format.js";
 
-const DEFAULT_PANEL_POSITION_INDEX = Object.values(PanelPositions).indexOf(
-  PanelPositions.CENTER,
-);
+export const SettingsAction = Object.freeze({
+  REBUILD_INDICATOR: "rebuild-indicator",
+  UPDATE_BLOCKED_APPS: "update-blocked-apps",
+  UPDATE_GNOME_SHELL_MEDIA_CONTROLS: "update-gnome-shell-media-controls",
+});
 
 /**
  * Creates a transform that clamps numeric settings to their supported bounds.
@@ -252,7 +253,6 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.TOP_BAR_VISUALIZER_STYLE]: {
     property: "topBarVisualizerStyle",
     read: "get_enum",
-    fallback: VisualizerStyles.BEATS,
     impact: WidgetFlags.TOP_BAR_VISUALIZER,
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: {
@@ -274,7 +274,6 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.PANEL_POSITION]: {
     property: "panelPosition",
     read: "get_enum",
-    fallback: DEFAULT_PANEL_POSITION_INDEX,
     transform: (value) => enumValueByIndex(PanelPositions, value),
     action: SettingsAction.REBUILD_INDICATOR,
   },
@@ -289,37 +288,31 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT]: {
     property: "interactionsMouseActionLeft",
     read: "get_enum",
-    fallback: InputActions.TOGGLE_POPUP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE]: {
     property: "interactionsMouseActionMiddle",
     read: "get_enum",
-    fallback: InputActions.OPEN_PREFERENCES,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT]: {
     property: "interactionsMouseActionRight",
     read: "get_enum",
-    fallback: InputActions.RAISE_APP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE]: {
     property: "interactionsMouseActionDouble",
     read: "get_enum",
-    fallback: InputActions.NONE,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP]: {
     property: "interactionsMouseActionScrollUp",
     read: "get_enum",
-    fallback: InputActions.VOLUME_UP,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
   [SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN]: {
     property: "interactionsMouseActionScrollDown",
     read: "get_enum",
-    fallback: InputActions.VOLUME_DOWN,
     transform: (value) => normalizeInputAction(value, InputActions.NONE),
   },
 

@@ -228,7 +228,7 @@ export function validateRelativeImport(layer, targetLayer, specifier) {
 export function validatePrivateShellImport(file, specifier) {
   if (
     specifier !== "resource:///org/gnome/shell/ui/mpris.js" ||
-    file === "src/shell/services/GnomeShellMediaControlsPatch.js"
+    file === "src/shell/services/gnomeShellMediaControlsPatch.js"
   )
     return null;
   return `${file}: private Shell MPRIS API must stay isolated in GnomeShellMediaControlsPatch`;

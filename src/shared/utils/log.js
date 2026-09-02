@@ -5,13 +5,12 @@
  * Creates scoped loggers with once-only deduplication for noisy runtime paths.
  *
  * Each logger prefixes messages with a class or module scope and bounds its
- * per-level once cache using LOG_ONCE_CACHE_LIMIT. Shell and preferences modules
- * use this helper instead of direct console calls so logs stay consistent.
+ * per-level once cache. Shell and preferences modules use this helper instead
+ * of direct console calls so logs stay consistent.
  */
 
-import { LOG_ONCE_CACHE_LIMIT } from "../constants/log.js";
-
 const PREFIX = "[MediaShell]";
+const LOG_ONCE_CACHE_LIMIT = 256;
 
 function write(method, scope, args) {
   const label = scope ? `${PREFIX}[${scope}]` : PREFIX;
