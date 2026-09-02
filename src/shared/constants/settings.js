@@ -9,6 +9,9 @@
  * name, while shared ranges and defaults keep repair behavior aligned.
  */
 
+import { TopBarElementIds } from "../enums/topBar.js";
+import { TrackInformationFields } from "../enums/trackInformation.js";
+
 /**
  * Canonical GSettings keys used by Shell and Preferences code.
  *
@@ -126,18 +129,18 @@ export const TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
  * followed by track information, optional activity feedback, and compact controls.
  */
 export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([
-  "MEDIA_APP_ICON",
-  "ALBUM_ART",
-  "TRACK_INFORMATION",
-  "VISUALIZER",
-  "PLAYBACK_CONTROLS",
+  TopBarElementIds.MEDIA_APP_ICON,
+  TopBarElementIds.ALBUM_ART,
+  TopBarElementIds.TRACK_INFORMATION,
+  TopBarElementIds.VISUALIZER,
+  TopBarElementIds.PLAYBACK_CONTROLS,
 ]);
 
 /** Default ordered content for top bar track information. */
 export const TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
-  "TITLE",
+  TrackInformationFields.TITLE,
   "•",
-  "ARTIST",
+  TrackInformationFields.ARTIST,
 ]);
 
 /** Constraints for top bar track-information width, in pixels. */
@@ -188,9 +191,9 @@ export const POPUP_WIDTH_CONSTRAINTS = Object.freeze({
 
 /** Default ordered content for popup track information. */
 export const POPUP_TRACK_INFORMATION_CONTENT_DEFAULT = Object.freeze([
-  "TITLE",
-  "ARTIST",
-  "ALBUM",
+  TrackInformationFields.TITLE,
+  TrackInformationFields.ARTIST,
+  TrackInformationFields.ALBUM,
 ]);
 
 // --- Panel placement settings ---

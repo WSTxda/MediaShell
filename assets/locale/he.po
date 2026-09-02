@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 01:44-0500\n"
+"POT-Creation-Date: 2026-09-01 21:38-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
@@ -12,196 +12,208 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : ((n<0 || n>10) && "
 "n%10==0) ? 2 : 3;\n"
 
-#: src/prefs/controllers/AboutDialogController.js:52
+#: src/prefs/controllers/aboutDialogController.js:52
 msgid "About MediaShell"
 msgstr "על MediaShell"
 
-#: src/prefs/controllers/AboutDialogController.js:98
+#: src/prefs/controllers/aboutDialogController.js:98
 msgid ""
 "A GNOME extension that adds configurable MPRIS media controls to the top bar."
 msgstr "הרחבה ל־GNOME שמוסיפה לסרגל העליון פקדי מדיה MPRIS הניתנים להגדרה."
 
-#: src/prefs/controllers/AboutDialogController.js:106
+#: src/prefs/controllers/aboutDialogController.js:106
 msgid "Donate"
 msgstr "תרומה"
 
-#: src/prefs/controllers/AboutDialogController.js:107
+#: src/prefs/controllers/aboutDialogController.js:107
 msgid "Developed by"
 msgstr "פותח על ידי"
 
-#: src/prefs/controllers/InteractionsPageController.js:48
+#: src/prefs/controllers/interactionsPageController.js:49
 #: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
 #: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:954
 msgid "Shuffle"
 msgstr "ערבוב"
 
-#: src/prefs/controllers/InteractionsPageController.js:52
+#: src/prefs/controllers/interactionsPageController.js:53
 #: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
 #: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:955
 msgid "Seek backward"
 msgstr "הרצה אחורה"
 
-#: src/prefs/controllers/InteractionsPageController.js:56
+#: src/prefs/controllers/interactionsPageController.js:57
 #: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
 #: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:956
 msgid "Previous track"
 msgstr "הרצועה הקודמת"
 
-#: src/prefs/controllers/InteractionsPageController.js:60
+#: src/prefs/controllers/interactionsPageController.js:61
 #: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
 #: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:957
 msgid "Play / pause"
 msgstr "נגינה / השהיה"
 
-#: src/prefs/controllers/InteractionsPageController.js:64
+#: src/prefs/controllers/interactionsPageController.js:65
 #: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
 #: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:958
 msgid "Next track"
 msgstr "הרצועה הבאה"
 
-#: src/prefs/controllers/InteractionsPageController.js:68
+#: src/prefs/controllers/interactionsPageController.js:69
 #: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
 #: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:959
 msgid "Seek forward"
 msgstr "הרצה קדימה"
 
-#: src/prefs/controllers/InteractionsPageController.js:71
+#: src/prefs/controllers/interactionsPageController.js:72
 #: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
 #: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:960
 msgid "Repeat"
 msgstr "חזרה"
 
-#: src/prefs/controllers/InteractionsPageController.js:72
-#: src/shell/ui/popup/PopupVolumeControl.js:141 assets/ui/prefs.ui:710
+#: src/prefs/controllers/interactionsPageController.js:73
+#: src/shell/ui/popup/popupVolumeControl.js:141 assets/ui/prefs.ui:710
 #: assets/ui/prefs.ui:961
 msgid "Volume up"
 msgstr "הגברת עוצמת הקול"
 
-#: src/prefs/controllers/InteractionsPageController.js:73
+#: src/prefs/controllers/interactionsPageController.js:74
 #: assets/ui/prefs.ui:727 assets/ui/prefs.ui:962
 msgid "Volume down"
 msgstr "הנמכת עוצמת הקול"
 
-#: src/prefs/controllers/InteractionsPageController.js:74 assets/ui/prefs.ui:4
+#: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
 #: assets/ui/prefs.ui:744 assets/ui/prefs.ui:963
 msgid "Popup"
 msgstr "חלונית קופצת"
 
-#: src/prefs/controllers/InteractionsPageController.js:76
+#: src/prefs/controllers/interactionsPageController.js:77
 #: assets/ui/prefs.ui:761 assets/ui/prefs.ui:964
 msgid "Preferences"
 msgstr "העדפות"
 
-#: src/prefs/controllers/InteractionsPageController.js:80
+#: src/prefs/controllers/interactionsPageController.js:81
 #: assets/ui/prefs.ui:778 assets/ui/prefs.ui:965
 msgid "Open app"
 msgstr "פתיחת יישום"
 
-#: src/prefs/controllers/InteractionsPageController.js:83
+#: src/prefs/controllers/interactionsPageController.js:84
 #: assets/ui/prefs.ui:795 assets/ui/prefs.ui:966
 msgid "Quit app"
 msgstr "יציאה מהיישום"
 
-#: src/prefs/controllers/InteractionsPageController.js:84
+#: src/prefs/controllers/interactionsPageController.js:85
 #: assets/ui/prefs.ui:812 assets/ui/prefs.ui:967
 msgid "Switch app"
 msgstr "החלפת יישום"
 
-#: src/prefs/controllers/InteractionsPageController.js:90
+#: src/prefs/controllers/interactionsPageController.js:91
 msgid "Playback"
 msgstr "נגינה"
 
-#: src/prefs/controllers/InteractionsPageController.js:91
+#: src/prefs/controllers/interactionsPageController.js:92
 msgid "Audio"
 msgstr "שמע"
 
-#: src/prefs/controllers/InteractionsPageController.js:92
+#: src/prefs/controllers/interactionsPageController.js:93
 #: assets/ui/prefs.ui:232 assets/ui/prefs.ui:517
 msgid "Apps"
 msgstr "יישומים"
 
-#: src/prefs/controllers/InteractionsPageController.js:93
+#: src/prefs/controllers/interactionsPageController.js:94
 msgid "Interface"
 msgstr "ממשק"
 
-#: src/prefs/controllers/InteractionsPageController.js:178
+#: src/prefs/controllers/interactionsPageController.js:136
+#: src/prefs/controllers/interactionsPageController.js:416
+#: src/prefs/controllers/othersPageController.js:106
+msgid "Reset"
+msgstr "איפוס"
+
+#: src/prefs/controllers/interactionsPageController.js:185
+#: src/prefs/controllers/interactionsPageController.js:415
+#: src/prefs/controllers/othersPageController.js:135
+#: src/prefs/widgets/blockedAppChooserDialog.js:70
+msgid "Cancel"
+msgstr "ביטול"
+
+#: src/prefs/controllers/interactionsPageController.js:187
+#: assets/ui/prefs.ui:599 assets/ui/prefs.ui:616 assets/ui/prefs.ui:633
+#: assets/ui/prefs.ui:650 assets/ui/prefs.ui:667 assets/ui/prefs.ui:684
+#: assets/ui/prefs.ui:701 assets/ui/prefs.ui:718 assets/ui/prefs.ui:735
+#: assets/ui/prefs.ui:752 assets/ui/prefs.ui:769 assets/ui/prefs.ui:786
+#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:820
+msgid "Set"
+msgstr "הגדרה"
+
+#: src/prefs/controllers/interactionsPageController.js:207
 msgid "Press a shortcut"
 msgstr "יש ללחוץ על קיצור מקשים"
 
-#: src/prefs/controllers/InteractionsPageController.js:279
+#: src/prefs/controllers/interactionsPageController.js:215
+#: src/prefs/controllers/interactionsPageController.js:383
+msgid "Not set"
+msgstr "לא הוגדר"
+
+#: src/prefs/controllers/interactionsPageController.js:340
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "הקיצור כבר בשימוש על ידי %s"
 
-#: src/prefs/controllers/InteractionsPageController.js:299
+#: src/prefs/controllers/interactionsPageController.js:360
 #: assets/ui/prefs.ui:582
 msgid "Keyboard shortcuts"
 msgstr "קיצורי מקשים"
 
-#: src/prefs/controllers/InteractionsPageController.js:322
-msgid "Not set"
-msgstr "לא הוגדר"
-
-#: src/prefs/controllers/InteractionsPageController.js:350
+#: src/prefs/controllers/interactionsPageController.js:411
 msgid "Reset keyboard shortcuts?"
 msgstr "לאפס את קיצורי המקשים?"
 
-#: src/prefs/controllers/InteractionsPageController.js:351
+#: src/prefs/controllers/interactionsPageController.js:412
 msgid "Every keyboard shortcut will be disabled."
 msgstr "כל קיצורי המקשים יושבתו."
 
-#: src/prefs/controllers/InteractionsPageController.js:354
-#: src/prefs/controllers/OthersPageController.js:134
-#: src/prefs/widgets/BlockedAppChooserDialog.js:70
-msgid "Cancel"
-msgstr "ביטול"
-
-#: src/prefs/controllers/InteractionsPageController.js:355
-#: src/prefs/controllers/OthersPageController.js:105
-msgid "Reset"
-msgstr "איפוס"
-
-#: src/prefs/controllers/InteractionsPageController.js:374
+#: src/prefs/controllers/interactionsPageController.js:435
 msgid "Keyboard shortcuts reset"
 msgstr "קיצורי המקשים אופסו"
 
-#: src/prefs/controllers/OthersPageController.js:89
+#: src/prefs/controllers/othersPageController.js:90
 msgid "Reset all settings"
 msgstr "איפוס כל ההגדרות"
 
-#: src/prefs/controllers/OthersPageController.js:103
+#: src/prefs/controllers/othersPageController.js:104
 msgid "Reset all settings?"
 msgstr "לאפס את כל ההגדרות?"
 
-#: src/prefs/controllers/OthersPageController.js:104
+#: src/prefs/controllers/othersPageController.js:105
 msgid "Every MediaShell preference will return to its default value."
 msgstr "כל העדפות MediaShell יחזרו לערכי ברירת המחדל."
 
-#: src/prefs/controllers/OthersPageController.js:115
+#: src/prefs/controllers/othersPageController.js:116
 msgid "Settings reset"
 msgstr "ההגדרות אופסו"
 
-#: src/prefs/controllers/OthersPageController.js:123
+#: src/prefs/controllers/othersPageController.js:124
 msgid "Clear the cache?"
 msgstr "לנקות את המטמון?"
 
-#: src/prefs/controllers/OthersPageController.js:124
+#: src/prefs/controllers/othersPageController.js:125
 msgid "Cached content will be downloaded again when needed."
 msgstr "התוכן השמור במטמון יורד שוב בעת הצורך."
 
-#: src/prefs/controllers/OthersPageController.js:125 assets/ui/prefs.ui:922
+#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:922
 msgid "Clear cache"
 msgstr "ניקוי המטמון"
 
-#: src/prefs/controllers/OthersPageController.js:177
+#: src/prefs/controllers/othersPageController.js:178
 msgid "Cache cleared"
 msgstr "המטמון נוקה"
 
-#: src/prefs/controllers/OthersPageController.js:187
+#: src/prefs/controllers/othersPageController.js:188
 msgid "Could not clear the cache"
 msgstr "לא ניתן לנקות את המטמון"
 
-#: src/prefs/controllers/OthersPageController.js:197
+#: src/prefs/controllers/othersPageController.js:198
 #, javascript-format
 msgid "%d cached image — %s"
 msgid_plural "%d cached images — %s"
@@ -210,79 +222,80 @@ msgstr[1] "%d תמונות במטמון — %s"
 msgstr[2] "%d תמונות במטמון — %s"
 msgstr[3] "%d תמונות במטמון — %s"
 
-#: src/prefs/controllers/TrackInformationContentController.js:42
+#: src/prefs/controllers/trackInformationContentController.js:42
 msgid "by"
 msgstr "מאת"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:47
+#: src/prefs/widgets/blockedAppChooserDialog.js:47
 msgid "Select an app to block"
 msgstr "בחירת יישום לחסימה"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:73
-#: src/prefs/widgets/BlockedAppChooserDialog.js:89
+#: src/prefs/widgets/blockedAppChooserDialog.js:73
+#: src/prefs/widgets/blockedAppChooserDialog.js:89
 msgid "Search apps"
 msgstr "חיפוש יישומים"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:76
+#: src/prefs/widgets/blockedAppChooserDialog.js:76
 msgid "Select"
 msgstr "בחירה"
 
-#: src/prefs/widgets/BlockedAppChooserDialog.js:109
+#: src/prefs/widgets/blockedAppChooserDialog.js:109
 msgid "No apps found"
 msgstr "לא נמצאו יישומים"
 
-#: src/prefs/widgets/BlockedAppsGroup.js:107
+#: src/prefs/widgets/blockedAppsGroup.js:107
 msgid "No apps are blocked"
 msgstr "אין יישומים חסומים"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:27
+#: src/prefs/widgets/blockedAppsGroup.js:137
+#: src/prefs/widgets/trackInformationContentRow.js:124
+msgid "Remove"
+msgstr "הסרה"
+
+#: src/prefs/widgets/trackInformationContentRow.js:26
 msgid "Title"
 msgstr "כותרת"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:28
+#: src/prefs/widgets/trackInformationContentRow.js:27
 msgid "Artist"
 msgstr "אמן"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:29
+#: src/prefs/widgets/trackInformationContentRow.js:28
 msgid "Album"
 msgstr "אלבום"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:30
+#: src/prefs/widgets/trackInformationContentRow.js:29
 msgid "Album artist"
 msgstr "אמן האלבום"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:31
+#: src/prefs/widgets/trackInformationContentRow.js:30
 msgid "Genre"
 msgstr "ז׳אנר"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:32
+#: src/prefs/widgets/trackInformationContentRow.js:31
 msgid "Composer"
 msgstr "מלחין"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:33
+#: src/prefs/widgets/trackInformationContentRow.js:32
 msgid "Year"
 msgstr "שנה"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:34
+#: src/prefs/widgets/trackInformationContentRow.js:33
 msgid "Disc"
 msgstr "תקליטור"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:35
+#: src/prefs/widgets/trackInformationContentRow.js:34
 #: src/shared/utils/playbackControlAccessibility.js:58
 msgid "Track"
 msgstr "רצועה"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:83
+#: src/prefs/widgets/trackInformationContentRow.js:84
 msgid "No track information fields added"
 msgstr "לא נוספו שדות של פרטי הרצועה"
 
-#: src/prefs/widgets/TrackInformationContentRow.js:103
+#: src/prefs/widgets/trackInformationContentRow.js:104
 msgid "Custom text"
 msgstr "טקסט מותאם אישית"
-
-#: src/prefs/widgets/TrackInformationContentRow.js:127
-msgid "Remove"
-msgstr "הסרה"
 
 #: src/shared/utils/playbackControlAccessibility.js:47
 msgid "Play"
@@ -308,20 +321,20 @@ msgstr "ללא"
 msgid "Playback speed"
 msgstr "מהירות השמעה"
 
-#: src/shell/ui/popup/PopupMediaAppSelectorButton.js:87
-#: src/shell/ui/popup/PopupMediaAppSelectorList.js:234
+#: src/shell/ui/popup/popupMediaAppSelectorButton.js:86
+#: src/shell/ui/popup/popupMediaAppSelectorList.js:234
 msgid "Unknown app"
 msgstr "יישום לא ידוע"
 
-#: src/shell/ui/popup/PopupVolumeControl.js:106 assets/ui/prefs.ui:119
+#: src/shell/ui/popup/popupVolumeControl.js:106 assets/ui/prefs.ui:119
 msgid "Volume"
 msgstr "עוצמת שמע"
 
-#: src/shell/ui/popup/PopupVolumeControl.js:170
+#: src/shell/ui/popup/popupVolumeControl.js:170
 msgid "Unmute"
 msgstr "ביטול השתקה"
 
-#: src/shell/ui/popup/PopupVolumeControl.js:170
+#: src/shell/ui/popup/popupVolumeControl.js:170
 msgid "Mute"
 msgstr "השתקה"
 
@@ -584,14 +597,6 @@ msgstr "הקצאות קיצורי מקשים"
 #: assets/ui/prefs.ui:587
 msgid "Configure each keyboard action"
 msgstr "הגדרת כל פעולת מקלדת"
-
-#: assets/ui/prefs.ui:599 assets/ui/prefs.ui:616 assets/ui/prefs.ui:633
-#: assets/ui/prefs.ui:650 assets/ui/prefs.ui:667 assets/ui/prefs.ui:684
-#: assets/ui/prefs.ui:701 assets/ui/prefs.ui:718 assets/ui/prefs.ui:735
-#: assets/ui/prefs.ui:752 assets/ui/prefs.ui:769 assets/ui/prefs.ui:786
-#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:820
-msgid "Set"
-msgstr "הגדרה"
 
 #: assets/ui/prefs.ui:830
 msgid "Shortcut overview"

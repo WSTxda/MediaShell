@@ -167,15 +167,15 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
         ]);
         assert.deepEqual(validateExternalImport("shell", "gi://Graphene"), []);
         assert.deepEqual(
-          validateRelativeImport("prefs", "shell", "../shell/Example"),
+          validateRelativeImport("prefs", "shell", "../shell/example"),
           [
-            "relative module import needs an explicit extension: ../shell/Example",
+            "relative module import needs an explicit extension: ../shell/example",
             "prefs module crosses into shell",
           ],
         );
         assert.match(
           validatePrivateShellImport(
-            "src/shell/ui/Example.js",
+            "src/shell/ui/example.js",
             "resource:///org/gnome/shell/ui/mpris.js",
           ),
           /must stay isolated/,

@@ -49,7 +49,7 @@ import {
   TOP_BAR_PLAYBACK_CONTROL_ORDER,
 } from "../src/shell/constants/playbackControls.js";
 import { SETTINGS_SPEC } from "../src/shell/settings/settingsSpec.js";
-import PopupLayoutController from "../src/prefs/controllers/PopupLayoutController.js";
+import PopupLayoutController from "../src/prefs/controllers/popupLayoutController.js";
 import { reconcileActorOrder } from "../src/shell/utils/actors.js";
 import { runCases } from "./helpers.mjs";
 

@@ -168,9 +168,9 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       "byte-only eviction",
       () => {
         const entries = [
-          { name: "new", sizeBytes: 40, modifiedSeconds: 30 },
+          { name: "new", sizeBytes: 40, accessedSeconds: 30 },
           { name: "oldest", sizeBytes: 40, modifiedSeconds: 10 },
-          { name: "middle", sizeBytes: 40, modifiedSeconds: 20 },
+          { name: "middle", sizeBytes: 40, accessedSeconds: 20 },
         ];
         assert.deepEqual(selectAlbumArtCacheEvictions(entries, 120), []);
         assert.deepEqual(selectAlbumArtCacheEvictions(entries, 80), ["oldest"]);
@@ -189,14 +189,14 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
               {
                 name: "recent",
                 sizeBytes: 1,
-                modifiedSeconds: 10,
-                modifiedMicroseconds: 900,
+                accessedSeconds: 10,
+                accessedMicroseconds: 900,
               },
               {
                 name: "older",
                 sizeBytes: 1,
-                modifiedSeconds: 10,
-                modifiedMicroseconds: 100,
+                accessedSeconds: 10,
+                accessedMicroseconds: 100,
               },
             ],
             1,
@@ -206,7 +206,7 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       },
     ],
     [
-      "invalid recency falls back safely",
+      "invalid access recency falls back to modification time",
       () => {
         assert.deepEqual(
           selectAlbumArtCacheEvictions(
@@ -214,10 +214,11 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
               {
                 name: "invalid",
                 sizeBytes: 1,
-                modifiedSeconds: Number.POSITIVE_INFINITY,
-                modifiedMicroseconds: Number.NaN,
+                accessedSeconds: Number.POSITIVE_INFINITY,
+                accessedMicroseconds: Number.NaN,
+                modifiedSeconds: 1,
               },
-              { name: "valid", sizeBytes: 1, modifiedSeconds: 1 },
+              { name: "valid", sizeBytes: 1, accessedSeconds: 2 },
             ],
             1,
           ),
@@ -231,8 +232,8 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
         assert.deepEqual(
           selectAlbumArtCacheEvictions(
             [
-              { name: "b", sizeBytes: 1, modifiedSeconds: 1 },
-              { name: "a", sizeBytes: 1, modifiedSeconds: 1 },
+              { name: "b", sizeBytes: 1, accessedSeconds: 1 },
+              { name: "a", sizeBytes: 1, accessedSeconds: 1 },
             ],
             1,
           ),

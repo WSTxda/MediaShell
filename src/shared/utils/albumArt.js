@@ -28,6 +28,13 @@ function normalizePositiveInteger(value, fallback = 1) {
     : fallback;
 }
 
+function normalizeTimestampMicroseconds(seconds, microseconds) {
+  return (
+    normalizeNonNegativeNumber(seconds) * 1_000_000 +
+    Math.min(999_999, Math.trunc(normalizeNonNegativeNumber(microseconds)))
+  );
+}
+
 /**
  * Converts a relative corner preference to a radius for a square artwork actor.
  *
@@ -90,24 +97,33 @@ export function createAlbumArtRequest({
 /**
  * Selects least-recently-used cache entries until the byte limit is satisfied.
  *
- * @param {{name: string, sizeBytes: number, modifiedSeconds?: number, modifiedMicroseconds?: number}[]} entries
- *   Cache files with persisted last-use timestamps.
+ * @param {{name: string, sizeBytes: number, accessedSeconds?: number, accessedMicroseconds?: number, modifiedSeconds?: number, modifiedMicroseconds?: number}[]} entries
+ *   Cache files with access timestamps and modification-time fallbacks.
  * @param {number} maximumBytes - Maximum total cache size in bytes.
  * @returns {string[]} File names to evict, least recently used first.
  */
 export function selectAlbumArtCacheEvictions(entries, maximumBytes) {
   const byteLimit = Math.max(0, Math.trunc(Number(maximumBytes) || 0));
   const normalizedEntries = (Array.isArray(entries) ? entries : [])
-    .map((entry) => ({
-      name: normalizeText(entry?.name),
-      sizeBytes: Math.max(0, Math.trunc(Number(entry?.sizeBytes) || 0)),
-      lastUsedMicroseconds:
-        normalizeNonNegativeNumber(entry?.modifiedSeconds) * 1_000_000 +
-        Math.min(
-          999_999,
-          Math.trunc(normalizeNonNegativeNumber(entry?.modifiedMicroseconds)),
+    .map((entry) => {
+      const accessedMicroseconds = normalizeTimestampMicroseconds(
+        entry?.accessedSeconds,
+        entry?.accessedMicroseconds,
+      );
+      const modifiedMicroseconds = normalizeTimestampMicroseconds(
+        entry?.modifiedSeconds,
+        entry?.modifiedMicroseconds,
+      );
+
+      return {
+        name: normalizeText(entry?.name),
+        sizeBytes: Math.max(0, Math.trunc(Number(entry?.sizeBytes) || 0)),
+        lastUsedMicroseconds: Math.max(
+          accessedMicroseconds,
+          modifiedMicroseconds,
         ),
-    }))
+      };
+    })
     .filter((entry) => entry.name)
     .sort(
       (left, right) =>

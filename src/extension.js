@@ -9,13 +9,13 @@
  * or D-Bus state itself so enable() and disable() stay small, auditable, and
  * aligned with GNOME Shell extension lifecycle rules.
  *
- * @see src/shell/ExtensionController.js
+ * @see src/shell/extensionController.js
  */
 
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 
 import { createLogger } from "./shared/utils/log.js";
-import ExtensionController from "./shell/ExtensionController.js";
+import ExtensionController from "./shell/extensionController.js";
 
 const logger = createLogger("MediaShellExtension");
 
