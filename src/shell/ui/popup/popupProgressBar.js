@@ -66,8 +66,9 @@ export default class PopupProgressBar {
       this.view = new PopupProgressBarView();
       this.view.connect("seek-requested", (_, positionMicroseconds) => {
         const activeMediaApp = this.mediaApp;
+        if (!activeMediaApp.canSetPosition) return;
         activeMediaApp.setPosition(
-          activeMediaApp.metadata[MprisMetadataKeys.TRACK_ID],
+          activeMediaApp.trackId,
           positionMicroseconds,
         );
       });
@@ -126,7 +127,7 @@ export default class PopupProgressBar {
     }
 
     this.view.setProgressAvailable(true);
-    this.view.setSeekEnabled(this.mediaApp.canControl && this.mediaApp.canSeek);
+    this.view.setSeekEnabled(this.mediaApp.canSetPosition);
     this.view.updateProgress(
       Math.min(positionMicroseconds, trackDurationMicroseconds),
       trackDurationMicroseconds,
