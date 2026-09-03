@@ -42,7 +42,10 @@ import {
 export const SettingsAction = Object.freeze({
   REBUILD_INDICATOR: "rebuild-indicator",
   UPDATE_BLOCKED_APPS: "update-blocked-apps",
-  UPDATE_GNOME_SHELL_MEDIA_CONTROLS: "update-gnome-shell-media-controls",
+  UPDATE_GNOME_SHELL_HIDE_MEDIA_CONTROLS:
+    "update-gnome-shell-hide-media-controls",
+  UPDATE_GNOME_SHELL_ENHANCE_MEDIA_CONTROLS:
+    "update-gnome-shell-enhance-media-controls",
 });
 
 /**
@@ -320,7 +323,12 @@ export const SETTINGS_SPEC = Object.freeze({
   [SettingsKeys.GNOME_SHELL_HIDE_MEDIA_CONTROLS]: {
     property: "gnomeShellHideMediaControls",
     read: "get_boolean",
-    action: SettingsAction.UPDATE_GNOME_SHELL_MEDIA_CONTROLS,
+    action: SettingsAction.UPDATE_GNOME_SHELL_HIDE_MEDIA_CONTROLS,
+  },
+  [SettingsKeys.GNOME_SHELL_ENHANCE_MEDIA_CONTROLS]: {
+    property: "gnomeShellEnhanceMediaControls",
+    read: "get_boolean",
+    action: SettingsAction.UPDATE_GNOME_SHELL_ENHANCE_MEDIA_CONTROLS,
   },
   [SettingsKeys.ALBUM_ART_CACHE_ENABLED]: {
     property: "albumArtCacheEnabled",

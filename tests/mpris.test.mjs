@@ -21,6 +21,7 @@ import { MediaAppValidity } from "../src/shared/enums/mediaAppValidity.js";
 import { LoopStatus, PlaybackStatus } from "../src/shared/enums/playback.js";
 import {
   metadataContainsTrack,
+  normalizeMprisTrackId,
   normalizeLoopStatus,
   normalizePlaybackStatus,
   resolveMediaAppValidity,
@@ -211,6 +212,15 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
     [
       "track metadata",
       () => {
+        assert.equal(
+          normalizeMprisTrackId("/org/example/track/1"),
+          "/org/example/track/1",
+        );
+        assert.equal(normalizeMprisTrackId(MPRIS_NO_TRACK_PATH), null);
+        assert.equal(normalizeMprisTrackId("not/a/path"), null);
+        assert.equal(normalizeMprisTrackId(""), null);
+        assert.equal(normalizeMprisTrackId(null), null);
+
         assert.equal(
           metadataContainsTrack({
             [MprisMetadataKeys.TRACK_ID]: MPRIS_NO_TRACK_PATH,

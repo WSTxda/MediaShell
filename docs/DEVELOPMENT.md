@@ -105,7 +105,8 @@ Keep source access, shared requests, and cache policy in the loading service; ke
 
 ### Private Shell APIs
 
-Private GNOME Shell access stays isolated in its compatibility adapter, capability-checked, reversible, and scoped to the feature that needs it.
+Keep private notification-media access in `gnomeShellMediaControlsCompatibility.js`.
+`Hide GNOME media controls` and `Enhance GNOME media controls` are reversible consumers of existing MediaShell services and must fail open to native controls when a private contract is unavailable.
 
 ## Tests, comments, and diagnostics
 
@@ -123,7 +124,7 @@ Choose live scenarios from the changed ownership and contract:
 - MPRIS changes: representative endpoint capabilities and more than one implementation when relevant;
 - Preferences changes: opening the window must not write settings; explicit actions must write only their intended keys;
 - UI changes: exercise the affected surface, state transitions, and supported GNOME versions;
-- private API changes: test every supported GNOME release.
+- private API changes: test every supported GNOME release, including native restoration and lock/unlock where applicable.
 
 Useful diagnostics:
 

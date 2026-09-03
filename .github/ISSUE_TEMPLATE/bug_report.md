@@ -39,6 +39,7 @@ Describe the problem and the result you expected.
 - [ ] Keyboard shortcuts
 - [ ] Blocked apps
 - [ ] Hide GNOME media controls
+- [ ] Enhance GNOME media controls
 - [ ] Preferences
 - [ ] Other
 

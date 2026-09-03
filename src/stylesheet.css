@@ -300,9 +300,42 @@
   padding: 0;
 }
 
-/* The native .button class supplies the theme-aware fallback surface. */
+/* Popup and top-bar fallbacks use the native .button surface. */
 .mediashell-album-art-fallback {
   padding: 0;
+}
+
+/* GNOME media controls enhancement ----------------------------------- */
+.mediashell-enhanced-media-album-art {
+  margin-right: 8px;
+}
+
+.mediashell-enhanced-media-transport {
+  spacing: 2px;
+  margin-left: 6px;
+}
+
+.mediashell-enhanced-media-actions {
+  spacing: 2px;
+}
+
+.mediashell-enhanced-media-control {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.mediashell-enhanced-media-control-icon {
+  icon-size: 16px;
+}
+
+.mediashell-enhanced-media-progress {
+  min-width: 72px;
+  min-height: 24px;
+  -barlevel-height: 4px;
+  -slider-handle-radius: 7px;
 }
 
 /* Popup — Track information -----------------------------------------

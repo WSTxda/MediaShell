@@ -65,7 +65,7 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 - The top bar and popup use GNOME Shell widgets and follow the desktop's visual language.
 - Preferences are built with GTK4 and Libadwaita.
-- Optionally hide GNOME's built-in media controls while MediaShell is enabled.
+- Optionally **Hide GNOME media controls** or **Enhance GNOME media controls** with richer notifications and player grouping, plus lock-screen enhancement on Shell 49–51.
 
 #### Independent top bar and popup
 

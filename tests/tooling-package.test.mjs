@@ -178,7 +178,7 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
             "src/shell/ui/example.js",
             "resource:///org/gnome/shell/ui/mpris.js",
           ),
-          /must stay isolated/,
+          /must not be imported directly/,
         );
       },
     ],

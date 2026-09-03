@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 21:38-0300\n"
+"POT-Creation-Date: 2026-09-03 20:18-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -32,79 +32,79 @@ msgstr "Desarrollado por"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:954
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:960
 msgid "Shuffle"
 msgstr "Aleatorio"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:955
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:961
 msgid "Seek backward"
 msgstr "Retroceder"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:956
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:962
 msgid "Previous track"
 msgstr "Pista anterior"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:957
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:963
 msgid "Play / pause"
 msgstr "Reproducir / Pausar"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:958
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:964
 msgid "Next track"
 msgstr "Pista siguiente"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:959
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:965
 msgid "Seek forward"
 msgstr "Avanzar"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:960
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:966
 msgid "Repeat"
 msgstr "Repetición"
 
 #: src/prefs/controllers/interactionsPageController.js:73
 #: src/shell/ui/popup/popupVolumeControl.js:141 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:961
+#: assets/ui/prefs.ui:967
 msgid "Volume up"
 msgstr "Subir volumen"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:962
+#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:968
 msgid "Volume down"
 msgstr "Bajar volumen"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:963
+#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:969
 msgid "Popup"
 msgstr "Ventana emergente"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:964
+#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:970
 msgid "Preferences"
 msgstr "Preferencias"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:965
+#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:971
 msgid "Open app"
 msgstr "Abrir aplicación"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:966
+#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:972
 msgid "Quit app"
 msgstr "Cerrar aplicación"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:967
+#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:973
 msgid "Switch app"
 msgstr "Cambiar aplicación"
 
@@ -205,7 +205,7 @@ msgstr ""
 "Las imágenes almacenadas en caché se descargarán de nuevo cuando sea "
 "necesario."
 
-#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:922
+#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:928
 msgid "Clear cache"
 msgstr "Vaciar memoria caché"
 
@@ -315,13 +315,18 @@ msgstr "Detener"
 msgid "Playlist"
 msgstr "Lista de reproducción"
 
-#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:953
+#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:959
 msgid "None"
 msgstr "Ninguno"
 
 #: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:101
 msgid "Playback speed"
 msgstr "Velocidad de reproducción"
+
+#: src/shell/ui/notifications/enhancedMediaMessageGroup.js:195
+#: src/shell/ui/notifications/enhancedMediaMessageGroup.js:208
+msgid "Media"
+msgstr "Multimedia"
 
 #: src/shell/ui/popup/popupMediaAppSelectorButton.js:86
 #: src/shell/ui/popup/popupMediaAppSelectorList.js:234
@@ -664,32 +669,44 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controla cómo se integra MediaShell con GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Hide GNOME media controls"
-msgstr "Ocultar los controles multimedia de GNOME"
+msgid "Hide media controls"
+msgstr "Ocultar los controles multimedia"
 
 #: assets/ui/prefs.ui:906
-msgid "Remove GNOME's default media controls from the notification list"
+msgid "Remove the default GNOME media controls from the notification center"
 msgstr ""
-"Quitar los controles multimedia predeterminados de GNOME de la lista de "
+"Quitar los controles multimedia predeterminados de GNOME del centro de "
 "notificaciones"
 
-#: assets/ui/prefs.ui:913
+#: assets/ui/prefs.ui:911
+msgid "Enhance media controls"
+msgstr "Mejorar los controles multimedia"
+
+#: assets/ui/prefs.ui:912
+msgid ""
+"Enhance the default GNOME media controls in the notification center and on "
+"the lock screen"
+msgstr ""
+"Mejorar los controles multimedia predeterminados de GNOME en el centro de "
+"notificaciones y en la pantalla de bloqueo"
+
+#: assets/ui/prefs.ui:919
 msgid "Cache"
 msgstr "Memoria caché"
 
-#: assets/ui/prefs.ui:914
+#: assets/ui/prefs.ui:920
 msgid "Store content on disk to load it faster"
 msgstr "Guardar contenido en disco para que cargue más rápido"
 
-#: assets/ui/prefs.ui:917
+#: assets/ui/prefs.ui:923
 msgid "Store album art"
 msgstr "Guardar carátulas de álbum"
 
-#: assets/ui/prefs.ui:932
+#: assets/ui/prefs.ui:938
 msgid "Clear"
 msgstr "Vaciar"
 
-#: assets/ui/prefs.ui:947
+#: assets/ui/prefs.ui:953
 msgid "Extension settings"
 msgstr "Configuración de la extensión"
 

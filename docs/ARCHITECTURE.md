@@ -22,7 +22,9 @@ The installable extension contains runtime files and compiled artifacts only. Do
 
 ## Entrypoints and lifecycle roots
 
-`extension.js` owns no runtime service or UI. It creates one `ExtensionController` per enabled lifecycle and delegates teardown to that controller. `ExtensionController` constructs dependencies before consumers, rejects stale startup work through a lifecycle generation, and tears down owned resources in dependency-safe order.
+`extension.js` owns no runtime service or UI. It creates one `ExtensionController` per enabled lifecycle and delegates teardown to that controller.
+`ExtensionController` keeps resources and settings at extension lifetime, then reconciles either the full `user` runtime or a minimal `unlock-dialog` runtime.
+Profile startup is serialized and generation-guarded so session changes cannot let stale asynchronous work mutate a replacement.
 
 `prefs.js` validates the Preferences runtime, initializes translation dispatch, and delegates window construction to `PreferencesController`. The controller owns the window composition, settings bindings, page/dialog controllers, and window-scoped teardown.
 
@@ -32,22 +34,27 @@ The component that creates a signal connection, GLib source, cancellable, asynch
 
 ## Shell ownership
 
-| Owner                              | Architectural responsibility                                                                                                                  |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ExtensionController`              | Extension lifecycle, dependency construction, settings impact dispatch, global shortcuts, optional Shell patching, and top-level UI mounting. |
-| `SettingsStore`                    | Typed runtime settings reads and change subscriptions.                                                                                        |
-| `MprisProxyFactory`                | Construction of the D-Bus proxies used by MPRIS owners.                                                                                       |
-| `MediaAppRegistry`                 | Endpoint discovery, lifetime tracking, blocked-app filtering, and active-media-app selection.                                                 |
-| `MprisMediaApp`                    | One MPRIS endpoint: proxies, confirmed state, capabilities, operations, writes, and endpoint signals.                                         |
-| `PlaybackPositionTracker`          | Playback-position projection from confirmed endpoint state and monotonic time.                                                                |
-| `DesktopAppResolver`               | Mapping endpoint identity to installed desktop/browser/PWA identity; it does not own endpoint lifetime.                                       |
-| `MediaShellIndicator`              | Panel actor, popup-menu boundary, active-endpoint bindings, and coalesced surface updates.                                                    |
-| `TopBarContent` and `PopupContent` | Independent coordination and teardown of their surface components.                                                                            |
-| `AlbumArtLoader`                   | Shared local/remote artwork access, in-flight request reuse, and bounded cache ownership.                                                     |
+| Owner                              | Architectural responsibility                                                                                                                              |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ExtensionController`              | Extension lifecycle, dependency construction, settings impact dispatch, global shortcuts, optional private Shell integrations, and top-level UI mounting. |
+| `SettingsStore`                    | Typed runtime settings reads and change subscriptions.                                                                                                    |
+| `MprisProxyFactory`                | Construction of the D-Bus proxies used by MPRIS owners.                                                                                                   |
+| `MediaAppRegistry`                 | Endpoint discovery, lifetime tracking, blocked-app filtering, and active-media-app selection.                                                             |
+| `MprisMediaApp`                    | One MPRIS endpoint: proxies, confirmed state, capabilities, operations, writes, and endpoint signals.                                                     |
+| `PlaybackPositionTracker`          | Playback-position projection from confirmed endpoint state and monotonic time.                                                                            |
+| `DesktopAppResolver`               | Mapping endpoint identity to installed desktop/browser/PWA identity; it does not own endpoint lifetime.                                                   |
+| `MediaShellIndicator`              | Panel actor, popup-menu boundary, active-endpoint bindings, and coalesced surface updates.                                                                |
+| `TopBarContent` and `PopupContent` | Independent coordination and teardown of their surface components.                                                                                        |
+| `AlbumArtLoader`                   | Shared local/remote artwork access, in-flight request reuse, and bounded cache ownership.                                                                 |
+| `GnomeShellHideMediaControls`      | Reversible suppression of notification-list media presentation; it never owns GNOME Shell MPRIS state.                                                    |
+| `GnomeShellEnhanceMediaControls`   | Reversible enhancement of native media messages and optional notification-list grouping.                                                                  |
 
 Long-lived asynchronous owners use cancellables, generation checks, active-owner checks, or equivalent tokens. A result created for an old endpoint, actor, window, or extension lifecycle cannot update its replacement.
 
-`ExtensionController` creates one `DesktopAppResolver` and one `AlbumArtLoader` per enabled lifecycle, injects those instances into registry and surface consumers, and destroys them after their consumers. The shared cache and request benefits therefore do not depend on module-global service state.
+`ExtensionController` creates one `DesktopAppResolver` and one `AlbumArtLoader` per active media runtime, injects those instances into registry and surface consumers,
+and destroys them after their consumers.
+In `user` mode it also owns shortcuts, the indicator, Popup, and Top Bar; `Hide GNOME media controls` and `Enhance GNOME media controls` exist only while their settings require them.
+In `unlock-dialog`, the media runtime exists only when enhancement is enabled and the Shell exposes the supported lock-screen media surface (49–51); it never creates panel UI, shortcuts, Hide, or grouping.
 
 ## MPRIS state and control flow
 
@@ -123,4 +130,8 @@ Changes to the following require explicit compatibility or migration analysis:
 
 ## Private GNOME Shell API
 
-`GnomeShellMediaControlsPatch` is the isolated compatibility boundary for the optional integration with GNOME Shell internals. Private API access must remain capability-checked, reversible, and limited to that feature. It must not leak into general MPRIS or UI ownership.
+`GnomeShellHideMediaControls` and `GnomeShellEnhanceMediaControls` are optional, reversible adapters over private notification-media internals.
+Private lookups stay in `gnomeShellMediaControlsCompatibility.js`; the adapters may consume existing MediaShell MPRIS and artwork services but do not change their ownership.
+
+`Hide GNOME media controls` is limited to the user notification list.
+`Enhance GNOME media controls` owns notification-list bindings and grouping in `user` mode and native lock-screen bindings on Shell 49–51; incompatible private contexts fail open to native controls.
