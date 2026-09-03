@@ -35,6 +35,7 @@ import { DbusPropertiesMethods } from "../../shared/constants/dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
+  MprisMetadataKeys,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
@@ -63,6 +64,7 @@ import {
 import { createLogger } from "../../shared/utils/log.js";
 import {
   metadataContainsTrack,
+  normalizeMprisTrackId,
   normalizeLoopStatus,
   normalizePlaybackStatus,
   resolveMediaAppValidity,
@@ -676,6 +678,12 @@ export default class MprisMediaApp {
   get canControl() {
     return Boolean(this.state[MprisPlayerProperties.CAN_CONTROL]);
   }
+  get trackId() {
+    return normalizeMprisTrackId(this.metadata[MprisMetadataKeys.TRACK_ID]);
+  }
+  get canSetPosition() {
+    return this.canControl && this.canSeek && this.trackId !== null;
+  }
   get canSetLoopStatus() {
     return this.hasPlayerProperty(MprisPlayerProperties.LOOP_STATUS);
   }
@@ -885,9 +893,17 @@ export default class MprisMediaApp {
   }
 
   async setPosition(trackId, positionMicroseconds) {
-    const guardResult = this.#guardPlayerOperation(this.canSeek);
+    const currentTrackId = this.trackId;
+    const guardResult = this.#guardPlayerOperation(
+      this.canSeek && currentTrackId !== null,
+    );
     if (guardResult) return guardResult;
-    if (!trackId || !Number.isFinite(positionMicroseconds))
+
+    const normalizedTrackId = normalizeMprisTrackId(trackId);
+    if (
+      normalizedTrackId !== currentTrackId ||
+      !Number.isFinite(positionMicroseconds)
+    )
       return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
 
     const position = Math.trunc(positionMicroseconds);
@@ -896,7 +912,7 @@ export default class MprisMediaApp {
 
     return this.#callPlayer(
       MprisPlayerMethods.SET_POSITION,
-      new GLib.Variant("(ox)", [String(trackId), position]),
+      new GLib.Variant("(ox)", [normalizedTrackId, position]),
     );
   }
 

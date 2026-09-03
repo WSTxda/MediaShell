@@ -15,6 +15,25 @@ import { LoopStatus, PlaybackStatus } from "../enums/playback.js";
 
 const PLAYBACK_STATUSES = new Set(Object.values(PlaybackStatus));
 const LOOP_STATUSES = new Set(Object.values(LoopStatus));
+const DBUS_OBJECT_PATH_PATTERN = /^\/(?:[A-Za-z0-9_]+(?:\/[A-Za-z0-9_]+)*)?$/;
+
+/**
+ * Returns a concrete MPRIS track object path or null.
+ *
+ * `/org/mpris/MediaPlayer2/TrackList/NoTrack` is the protocol sentinel for the
+ * absence of a current track and is not valid for Player.SetPosition().
+ *
+ * @param {unknown} value - Raw `mpris:trackid` metadata value.
+ * @returns {string|null} Concrete track object path, or null.
+ */
+export function normalizeMprisTrackId(value) {
+  const trackId = typeof value === "string" ? value.trim() : "";
+  return trackId &&
+    trackId !== MPRIS_NO_TRACK_PATH &&
+    DBUS_OBJECT_PATH_PATTERN.test(trackId)
+    ? trackId
+    : null;
+}
 
 /**
  * Normalizes a raw MPRIS PlaybackStatus value.
@@ -55,7 +74,9 @@ export function metadataContainsTrack(metadata) {
   const trackId = metadata[MprisMetadataKeys.TRACK_ID];
   if (trackId === MPRIS_NO_TRACK_PATH) return false;
 
-  return Boolean(metadata[MprisMetadataKeys.TITLE] || trackId);
+  return Boolean(
+    metadata[MprisMetadataKeys.TITLE] || normalizeMprisTrackId(trackId),
+  );
 }
 
 /**
