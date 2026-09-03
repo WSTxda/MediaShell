@@ -224,14 +224,10 @@ export function validateRelativeImport(layer, targetLayer, specifier) {
   return errors;
 }
 
-/** Keeps the private GNOME Shell MPRIS import behind its compatibility adapter. */
+/** Rejects direct imports of GNOME Shell's private MPRIS implementation. */
 export function validatePrivateShellImport(file, specifier) {
-  if (
-    specifier !== "resource:///org/gnome/shell/ui/mpris.js" ||
-    file === "src/shell/services/gnomeShellMediaControlsPatch.js"
-  )
-    return null;
-  return `${file}: private Shell MPRIS API must stay isolated in GnomeShellMediaControlsPatch`;
+  if (specifier !== "resource:///org/gnome/shell/ui/mpris.js") return null;
+  return `${file}: private Shell MPRIS implementation must not be imported directly`;
 }
 
 export async function checkJavaScriptSyntax() {

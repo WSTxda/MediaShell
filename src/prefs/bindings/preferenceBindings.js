@@ -289,6 +289,11 @@ const OTHERS_BINDINGS = Object.freeze([
     "active",
   ],
   [
+    SettingsKeys.GNOME_SHELL_ENHANCE_MEDIA_CONTROLS,
+    "sr-gnome-shell-enhance-media-controls",
+    "active",
+  ],
+  [
     SettingsKeys.ALBUM_ART_CACHE_ENABLED,
     "sr-album-art-cache-enabled",
     "active",

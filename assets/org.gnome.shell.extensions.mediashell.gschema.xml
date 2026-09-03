@@ -265,6 +265,9 @@
     <key name="gnome-shell-hide-media-controls" type="b">
       <default>true</default>
     </key>
+    <key name="gnome-shell-enhance-media-controls" type="b">
+      <default>false</default>
+    </key>
     <key name="album-art-cache-enabled" type="b">
       <default>true</default>
     </key>

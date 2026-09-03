@@ -109,6 +109,7 @@ export const SettingsKeys = Object.freeze({
     "interactions-mouse-action-scroll-down",
 
   GNOME_SHELL_HIDE_MEDIA_CONTROLS: "gnome-shell-hide-media-controls",
+  GNOME_SHELL_ENHANCE_MEDIA_CONTROLS: "gnome-shell-enhance-media-controls",
   ALBUM_ART_CACHE_ENABLED: "album-art-cache-enabled",
   BLOCKED_APPS: "blocked-apps",
 });

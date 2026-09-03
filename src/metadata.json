@@ -7,6 +7,7 @@
   "gettext-domain": "mediashell@wstxda.github.com",
   "version-name": "2.2.0",
   "shell-version": ["48", "49", "50", "51"],
+  "session-modes": ["user", "unlock-dialog"],
   "donations": {
     "buymeacoffee": "wstxda"
   }

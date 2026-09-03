@@ -22,12 +22,14 @@ export default class SettingsStore {
     this.settingChangeSignalIds = [];
 
     for (const [key, spec] of Object.entries(SETTINGS_SPEC)) {
-      this.readSettingIntoTarget(key, spec);
       const signalId = this.settings.connect(`changed::${key}`, () => {
         const value = this.readSettingIntoTarget(key, spec);
-        this.onSettingChanged?.(key, value, spec);
+        this.onSettingChanged(key, value, spec);
       });
       this.settingChangeSignalIds.push(signalId);
+
+      // Prime the key after connecting so Gio.Settings tracks ::changed.
+      this.readSettingIntoTarget(key, spec);
     }
   }
 

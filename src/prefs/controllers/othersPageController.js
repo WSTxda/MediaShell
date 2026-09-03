@@ -5,9 +5,9 @@
  * Coordinates the preferences page for system integration and blocked apps.
  *
  * The controller owns rows that cannot be represented by a simple settings
- * binding, including the album-art cache action, the blocked-app list, and
- * the Hide GNOME media controls row. Page-specific maintenance and confirmation
- * flows stay out of the global PreferencesController.
+ * binding, including the album-art cache action and the blocked-app list. The
+ * GNOME media-control switches remain declarative bindings; page-specific
+ * maintenance and confirmation flows stay out of PreferencesController.
  */
 
 import Adw from "gi://Adw";

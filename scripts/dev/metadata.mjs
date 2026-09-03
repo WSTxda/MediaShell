@@ -15,6 +15,8 @@ import {
 } from "../../src/shared/constants/project.js";
 import { SUPPORTED_GNOME_SHELL_VERSIONS } from "../../src/shared/constants/platform.js";
 
+const EXTENSION_SESSION_MODES = Object.freeze(["user", "unlock-dialog"]);
+
 /**
  * Returns every mismatch in a parsed extension metadata object.
  *
@@ -29,6 +31,7 @@ export function validateExtensionMetadata(metadata, packageJson) {
     "name",
     "description",
     "shell-version",
+    "session-modes",
     "settings-schema",
     "gettext-domain",
     "version-name",
@@ -54,6 +57,13 @@ export function validateExtensionMetadata(metadata, packageJson) {
   )
     errors.push(
       "metadata shell-version differs from shared platform constants",
+    );
+  if (
+    JSON.stringify(metadata["session-modes"]) !==
+    JSON.stringify(EXTENSION_SESSION_MODES)
+  )
+    errors.push(
+      "metadata session-modes must enable only user and unlock-dialog",
     );
   return errors;
 }
