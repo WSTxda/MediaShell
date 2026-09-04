@@ -101,8 +101,8 @@ export default class TopBarVisualizer {
     ).fill(0);
   }
 
-  get extensionController() {
-    return this.topBarContent.extensionController;
+  get settings() {
+    return this.topBarContent.settings;
   }
 
   get mediaApp() {
@@ -111,8 +111,8 @@ export default class TopBarVisualizer {
 
   render(index, parentBox) {
     this.ensureActor();
-    this.setStyle(this.extensionController.topBarVisualizerStyle);
-    this.setSpeed(this.extensionController.topBarVisualizerSpeed);
+    this.setStyle(this.settings.visualizerStyle);
+    this.setSpeed(this.settings.visualizerSpeed);
     this.setPlaying(this.mediaApp.playbackStatus === PlaybackStatus.PLAYING);
     this.attach(index, parentBox);
   }

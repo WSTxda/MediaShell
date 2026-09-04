@@ -38,7 +38,7 @@ import {
   TopBarPlaybackControlRegions,
   TopBarRegions,
 } from "../../src/shell/ui/topbar/regions.js";
-import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
+import { RUNTIME_SETTING_CONTRACT } from "../../src/shell/settings/settings.js";
 
 const PREFERENCES_UI_SOURCE = "assets/ui/prefs.ui";
 const INPUT_ACTION_MODEL_ID = "model-input-actions";
@@ -100,13 +100,13 @@ export function createPlaybackContractSnapshot(manifest) {
         ([surface, definition]) => [surface, cloneSurface(surface, definition)],
       ),
     ),
-    settingsSpec: Object.fromEntries(
-      Object.entries(SETTINGS_SPEC).map(([key, spec]) => [
+    runtimeSettings: Object.fromEntries(
+      Object.entries(RUNTIME_SETTING_CONTRACT).map(([key, spec]) => [
         key,
         {
-          property: spec.property,
+          scope: spec.scope,
+          property: spec.localProperty,
           read: spec.read,
-          impact: spec.impact ?? null,
         },
       ]),
     ),
@@ -189,19 +189,18 @@ function validateSettingOwner(snapshot, errors, surface, item, label) {
       `${item.settingKey}: playback visibility setting must be boolean`,
     );
 
-  const spec = snapshot.settingsSpec[item.settingKey];
+  const spec = snapshot.runtimeSettings[item.settingKey];
   if (!spec) {
     errors.push(`${item.settingKey}: missing runtime settings owner`);
     return;
   }
-  const specImpact =
-    surface === "popup" ? spec.impact?.popup : spec.impact?.topBar;
+  const expectedScope = surface === "popup" ? "popup" : "topBar";
   if (
+    spec.scope !== expectedScope ||
     spec.property !== item.property ||
-    specImpact !== item.impact ||
     spec.read !== "get_boolean"
   )
-    errors.push(`${item.settingKey}: surface policy and SETTINGS_SPEC differ`);
+    errors.push(`${item.settingKey}: surface policy and runtime settings differ`);
 }
 
 function validateSurfaces(snapshot, errors) {
@@ -223,12 +222,13 @@ function validateSurfaces(snapshot, errors) {
         errors.push(`${surface}: unknown control policy ${controlId}`);
       validateSettingOwner(snapshot, errors, surface, control, controlId);
 
-      const previousOwner = ownedProperties.get(control.property);
+      const ownedProperty = `${surface}:${control.property}`;
+      const previousOwner = ownedProperties.get(ownedProperty);
       if (previousOwner)
         errors.push(
           `${surface}/${controlId}: runtime property ${control.property} is already owned by ${previousOwner}`,
         );
-      else ownedProperties.set(control.property, `${surface}/${controlId}`);
+      else ownedProperties.set(ownedProperty, `${surface}/${controlId}`);
     }
   }
 

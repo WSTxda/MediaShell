@@ -42,91 +42,91 @@ export const PlaybackControlSurfaceDefinitions = Object.freeze({
   [PlaybackControlSurfaces.POPUP]: createSurfaceDefinition(
     {
       settingKey: SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHOW,
-      property: "popupPlaybackControlsShow",
+      property: "playbackControlsShow",
     },
     [
       createControlSetting(
         PlaybackControlIds.SHUFFLE,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
-        "popupPlaybackControlsShuffleShow",
+        "playbackControlsShuffleShow",
       ),
       createControlSetting(
         PlaybackControlIds.SEEK_BACKWARD,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW,
-        "popupPlaybackControlsSeekBackwardShow",
+        "playbackControlsSeekBackwardShow",
       ),
       createControlSetting(
         PlaybackControlIds.PREVIOUS,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
-        "popupPlaybackControlsPreviousTrackShow",
+        "playbackControlsPreviousTrackShow",
       ),
       createControlSetting(
         PlaybackControlIds.PLAY_PAUSE,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
-        "popupPlaybackControlsPlayPauseShow",
+        "playbackControlsPlayPauseShow",
       ),
       createControlSetting(
         PlaybackControlIds.NEXT,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
-        "popupPlaybackControlsNextTrackShow",
+        "playbackControlsNextTrackShow",
       ),
       createControlSetting(
         PlaybackControlIds.SEEK_FORWARD,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW,
-        "popupPlaybackControlsSeekForwardShow",
+        "playbackControlsSeekForwardShow",
       ),
       createControlSetting(
         PlaybackControlIds.REPEAT,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_REPEAT_SHOW,
-        "popupPlaybackControlsRepeatShow",
+        "playbackControlsRepeatShow",
       ),
       createControlSetting(
         PlaybackControlIds.SPEED,
         SettingsKeys.POPUP_PLAYBACK_CONTROLS_SPEED_SHOW,
-        "popupPlaybackControlsSpeedShow",
+        "playbackControlsSpeedShow",
       ),
     ],
   ),
   [PlaybackControlSurfaces.TOP_BAR]: createSurfaceDefinition(
     {
       settingKey: SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
-      property: "topBarPlaybackControlsShow",
+      property: "playbackControlsShow",
     },
     [
       createControlSetting(
         PlaybackControlIds.SHUFFLE,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
-        "topBarPlaybackControlsShuffleShow",
+        "playbackControlsShuffleShow",
       ),
       createControlSetting(
         PlaybackControlIds.SEEK_BACKWARD,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW,
-        "topBarPlaybackControlsSeekBackwardShow",
+        "playbackControlsSeekBackwardShow",
       ),
       createControlSetting(
         PlaybackControlIds.PREVIOUS,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
-        "topBarPlaybackControlsPreviousTrackShow",
+        "playbackControlsPreviousTrackShow",
       ),
       createControlSetting(
         PlaybackControlIds.PLAY_PAUSE,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
-        "topBarPlaybackControlsPlayPauseShow",
+        "playbackControlsPlayPauseShow",
       ),
       createControlSetting(
         PlaybackControlIds.NEXT,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
-        "topBarPlaybackControlsNextTrackShow",
+        "playbackControlsNextTrackShow",
       ),
       createControlSetting(
         PlaybackControlIds.SEEK_FORWARD,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW,
-        "topBarPlaybackControlsSeekForwardShow",
+        "playbackControlsSeekForwardShow",
       ),
       createControlSetting(
         PlaybackControlIds.REPEAT,
         SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW,
-        "topBarPlaybackControlsRepeatShow",
+        "playbackControlsRepeatShow",
       ),
     ],
   ),

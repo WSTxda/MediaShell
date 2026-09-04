@@ -39,8 +39,8 @@ export default class TopBarPlaybackControls {
     this.playbackController = playbackController;
   }
 
-  get extensionController() {
-    return this.topBarContent.extensionController;
+  get settings() {
+    return this.topBarContent.settings;
   }
 
   get mediaApp() {
@@ -50,7 +50,7 @@ export default class TopBarPlaybackControls {
   render(dirtyRegions) {
     this.ensureActor();
     const updates = resolvePlaybackControlSurfaceUpdates(
-      this.extensionController,
+      this.settings,
       PlaybackControlSurfaces.TOP_BAR,
       TopBarPlaybackControlRegions,
       dirtyRegions,

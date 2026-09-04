@@ -901,15 +901,10 @@
         <property name="title" translatable="yes">System</property>
         <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-gnome-shell-hide-media-controls">
-            <property name="title" translatable="yes">Hide media controls</property>
-            <property name="subtitle" translatable="yes">Remove the default GNOME media controls from the notification center</property>
-          </object>
-        </child>
-        <child>
-          <object class="AdwSwitchRow" id="sr-gnome-shell-enhance-media-controls">
-            <property name="title" translatable="yes">Enhance media controls</property>
-            <property name="subtitle" translatable="yes">Enhance the default GNOME media controls in the notification center and on the lock screen</property>
+          <object class="AdwComboRow" id="cr-native-media-controls-mode">
+            <property name="title" translatable="yes">Native media controls</property>
+            <property name="subtitle" translatable="yes">Choose how MediaShell integrates with GNOME media controls</property>
+            <property name="model">model-native-media-controls-modes</property>
           </object>
         </child>
       </object>
@@ -953,6 +948,13 @@
         <property name="title" translatable="yes">Extension settings</property>
       </object>
     </child>
+  </object>
+  <object class="GtkStringList" id="model-native-media-controls-modes">
+    <items>
+      <item translatable="yes">Default</item>
+      <item translatable="yes">Hidden</item>
+      <item translatable="yes">Enhanced</item>
+    </items>
   </object>
   <object class="GtkStringList" id="model-input-actions">
     <items>

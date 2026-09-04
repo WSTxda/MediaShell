@@ -5,8 +5,9 @@
  * Registers and removes global media-action keybindings via GNOME Shell.
  *
  * The service owns every Main.wm.addKeybinding call for MediaShell actions and
- * removes all registered bindings on destroy. It reads shortcut keys from
- * SettingsStore but leaves action execution to ExtensionController.
+ * removes all registered bindings on destroy. GNOME Shell requires the native
+ * Gio.Settings object for addKeybinding(), while action execution remains owned
+ * by ExtensionController.
  */
 
 import Meta from "gi://Meta";

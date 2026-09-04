@@ -80,8 +80,8 @@ export default class PopupMediaAppSelectorList {
     this.desktopAppResolver = desktopAppResolver;
   }
 
-  get extensionController() {
-    return this.popupContent.extensionController;
+  get settings() {
+    return this.popupContent.settings;
   }
   get popupItem() {
     return this.popupContent.popupItem;
@@ -181,7 +181,7 @@ export default class PopupMediaAppSelectorList {
     if (resolvedDesktopAppKeys.some((desktopAppKey) => desktopAppKey === null))
       return null;
 
-    const coloredIcons = this.extensionController.popupMediaAppIconUseColor;
+    const coloredIcons = this.settings.mediaAppIconUseColor;
     const activeBusName = this.popupContent.mediaApp.busName;
     return JSON.stringify([
       coloredIcons,
@@ -209,7 +209,7 @@ export default class PopupMediaAppSelectorList {
       orientation: Clutter.Orientation.VERTICAL,
       styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_LIST,
     });
-    const coloredClass = this.extensionController.popupMediaAppIconUseColor
+    const coloredClass = this.settings.mediaAppIconUseColor
       ? StyleClasses.COLORED_ICON
       : StyleClasses.SYMBOLIC_ICON;
     const pinnedMediaApp =

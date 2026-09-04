@@ -24,15 +24,15 @@ export default class TopBarTrackInformation {
     this.actor = null;
     this.renderKey = null;
     this.width = normalizeWidth(
-      this.extensionController.topBarTrackInformationWidth,
+      this.settings.trackInformationWidth,
     );
     this.isFixedWidth = Boolean(
-      this.extensionController.topBarTrackInformationWidthLock,
+      this.settings.trackInformationWidthLock,
     );
   }
 
-  get extensionController() {
-    return this.topBarContent.extensionController;
+  get settings() {
+    return this.topBarContent.settings;
   }
 
   get mediaApp() {
@@ -42,15 +42,15 @@ export default class TopBarTrackInformation {
   render(index, parentBox) {
     const text = buildTrackInformationText(
       this.mediaApp.metadata,
-      this.extensionController.topBarTrackInformationContent,
+      this.settings.trackInformationContent,
     );
     const renderKey = [
       text,
       this.width,
       this.isFixedWidth,
-      this.extensionController.topBarTrackInformationScrollEnabled,
-      this.extensionController.topBarTrackInformationScrollSpeed,
-      this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
+      this.settings.trackInformationScrollEnabled,
+      this.settings.trackInformationScrollSpeed,
+      this.settings.trackInformationScrollPauseMilliseconds,
     ].join("\u0001");
 
     if (this.actor && renderKey === this.renderKey) {
@@ -62,10 +62,10 @@ export default class TopBarTrackInformation {
       text,
       width: this.width,
       isFixedWidth: this.isFixedWidth,
-      isScrolling: this.extensionController.topBarTrackInformationScrollEnabled,
-      scrollSpeed: this.extensionController.topBarTrackInformationScrollSpeed,
+      isScrolling: this.settings.trackInformationScrollEnabled,
+      scrollSpeed: this.settings.trackInformationScrollSpeed,
       scrollPauseMilliseconds:
-        this.extensionController.topBarTrackInformationScrollPauseMilliseconds,
+        this.settings.trackInformationScrollPauseMilliseconds,
     });
 
     label.add_style_class_name(StyleClasses.TOP_BAR_TRACK_INFORMATION);

@@ -37,8 +37,8 @@ export default class PopupMediaAppSelectorButton {
     this.desktopAppResolver = desktopAppResolver;
   }
 
-  get extensionController() {
-    return this.popupContent.extensionController;
+  get settings() {
+    return this.popupContent.settings;
   }
   get mediaApp() {
     return this.popupContent.mediaApp;
@@ -71,7 +71,7 @@ export default class PopupMediaAppSelectorButton {
 
     const identity = this.mediaApp.identity;
     const desktopEntry = this.mediaApp.desktopEntry;
-    const coloredClass = this.extensionController.popupMediaAppIconUseColor
+    const coloredClass = this.settings.mediaAppIconUseColor
       ? StyleClasses.COLORED_ICON
       : StyleClasses.SYMBOLIC_ICON;
     const renderKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;

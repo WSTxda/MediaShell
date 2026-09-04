@@ -141,7 +141,7 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
               },
             },
           },
-          settingsSpec: {
+          runtimeSettings: {
             "known-key": { read: "get_uint", property: "knownProperty" },
             missing: { read: "get_boolean", property: "missing" },
           },

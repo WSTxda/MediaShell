@@ -18,10 +18,18 @@ import { TrackInformationFields } from "../ui/trackInformation.js";
  * Property names are developer-facing identifiers; values are the stable names
  * persisted by the XML schema and must never be repurposed.
  */
+
+/** Exclusive GNOME Shell native-media integration modes. */
+export const NativeMediaControlsModes = Object.freeze({
+  DEFAULT: "default",
+  HIDDEN: "hidden",
+  ENHANCED: "enhanced",
+});
+
 export const SettingsKeys = Object.freeze({
   POPUP_WIDTH: "popup-width",
-  POPUP_ALBUM_ART_SHOW: "popup-album-art-show",
-  POPUP_ALBUM_ART_CORNER_RADIUS: "popup-album-art-corner-radius",
+  POPUP_ARTWORK_SHOW: "popup-artwork-show",
+  POPUP_ARTWORK_CORNER_RADIUS: "popup-artwork-corner-radius",
   POPUP_TRACK_INFORMATION_SHOW: "popup-track-information-show",
   POPUP_TRACK_INFORMATION_CONTENT: "popup-track-information-content",
   POPUP_PROGRESS_BAR_SHOW: "popup-progress-bar-show",
@@ -60,8 +68,8 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
   TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
   TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
-  TOP_BAR_ALBUM_ART_SHOW: "top-bar-album-art-show",
-  TOP_BAR_ALBUM_ART_CORNER_RADIUS: "top-bar-album-art-corner-radius",
+  TOP_BAR_ARTWORK_SHOW: "top-bar-artwork-show",
+  TOP_BAR_ARTWORK_CORNER_RADIUS: "top-bar-artwork-corner-radius",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
@@ -108,16 +116,15 @@ export const SettingsKeys = Object.freeze({
   INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN:
     "interactions-mouse-action-scroll-down",
 
-  GNOME_SHELL_HIDE_MEDIA_CONTROLS: "gnome-shell-hide-media-controls",
-  GNOME_SHELL_ENHANCE_MEDIA_CONTROLS: "gnome-shell-enhance-media-controls",
-  ALBUM_ART_CACHE_ENABLED: "album-art-cache-enabled",
+  NATIVE_MEDIA_CONTROLS_MODE: "native-media-controls-mode",
+  ARTWORK_CACHE_ENABLED: "artwork-cache-enabled",
   BLOCKED_APPS: "blocked-apps",
 });
 
 // --- Top bar settings ---
 
 /** Constraints for the top-bar album-art corner radius. */
-export const TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+export const TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
   DEFAULT: 40,
@@ -177,7 +184,7 @@ export const TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS = Object.freeze(
 // --- Popup settings ---
 
 /** Constraints for the popup album-art corner radius. */
-export const POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+export const POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
   DEFAULT: 20,
@@ -215,8 +222,8 @@ export const PANEL_INDEX_CONSTRAINTS = Object.freeze({
  */
 export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
   [SettingsKeys.POPUP_WIDTH]: POPUP_WIDTH_CONSTRAINTS,
-  [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]:
-    POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+  [SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS]:
+    POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]:
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
@@ -227,8 +234,8 @@ export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
-  [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]:
-    TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS]:
+    TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
   [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });

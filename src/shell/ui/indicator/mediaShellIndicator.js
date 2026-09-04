@@ -38,11 +38,12 @@ const logger = createLogger("MediaShellIndicator");
 
 /** Owns the panel indicator and the active-player listener lifecycle. */
 class MediaShellIndicator extends PanelMenu.Button {
-  constructor(mediaApp, extensionController, { mediaRuntime }) {
+  constructor(mediaApp, extensionController, { mediaRuntime, settings }) {
     super(0.5, "MediaShell", false);
     this.mediaApp = mediaApp;
     this.extensionController = extensionController;
     this.mediaRuntime = mediaRuntime;
+    this.settings = settings;
     this.mediaAppPropertyListenerIds = new Map();
     this.desktopAppResolutionRetrySourceId = null;
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
@@ -51,6 +52,8 @@ class MediaShellIndicator extends PanelMenu.Button {
       artworkService: mediaRuntime.artwork,
       desktopAppResolver: mediaRuntime.identity,
       playbackController: mediaRuntime.playback,
+      popupSettings: settings.popup,
+      topBarSettings: settings.topBar,
     };
     this.topBarContent = new TopBarContent(this, surfaceDependencies);
     this.popupContent = new PopupContent(this, surfaceDependencies);
@@ -192,7 +195,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.requestSurfaceUpdate(
       createMetadataSurfaceUpdate(
         Boolean(
-          this.menu?.isOpen && this.extensionController.popupProgressBarShow,
+          this.menu?.isOpen && this.settings.popup.progressBarShow,
         ),
       ),
     );
@@ -292,6 +295,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.topBarContent = null;
     this.mediaApp = null;
     this.mediaRuntime = null;
+    this.settings = null;
     this.extensionController = null;
 
     pointerHandler?.destroy();

@@ -48,8 +48,8 @@ export default class PopupPlaybackControls {
     this.playbackController = playbackController;
   }
 
-  get extensionController() {
-    return this.popupContent.extensionController;
+  get settings() {
+    return this.popupContent.settings;
   }
 
   get mediaApp() {
@@ -59,7 +59,7 @@ export default class PopupPlaybackControls {
   render(dirtyRegions) {
     this.ensureActor();
     const updates = resolvePlaybackControlSurfaceUpdates(
-      this.extensionController,
+      this.settings,
       PlaybackControlSurfaces.POPUP,
       PopupPlaybackControlRegions,
       dirtyRegions,
