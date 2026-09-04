@@ -2,10 +2,11 @@
  * @file extensionController.js
  * @module shell.extensionController
  *
- * Composes extension lifecycle around one MediaShell media runtime inside GNOME Shell.
+ * Composes extension lifecycle around one MediaShell media runtime inside
+ * GNOME Shell.
  *
  * Settings, resources, and MediaRuntime belong to the enabled extension lifecycle.
- * Session profiles only gate user-facing Shell services and private native-media
+ * Session profiles only gate user-facing Shell services and private native controls
  * adapters; locking the session must not rebuild the canonical media runtime.
  */
 
@@ -16,7 +17,7 @@ import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
 import InputActionDispatcher from "./input/actionDispatcher.js";
 import GlobalShortcuts from "./input/globalShortcuts.js";
-import NativeMediaControlsIntegration from "./integrations/nativeMediaControls.js";
+import NativeControlsIntegration from "./integrations/nativeControls.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
@@ -56,7 +57,7 @@ export default class ExtensionController {
     this.sessionModeSignalId = null;
     this.indicator = null;
     this.resourceRegistry = new ResourceRegistry(this.extensionPath);
-    this.nativeMediaControlsIntegration = new NativeMediaControlsIntegration();
+    this.nativeControlsIntegration = new NativeControlsIntegration();
     this.settingsSubscriptions = [];
   }
 
@@ -99,7 +100,7 @@ export default class ExtensionController {
   handleSessionModeChanged() {
     const nextProfile = resolveSessionProfile();
     if (nextProfile !== this.sessionProfile)
-      this.nativeMediaControlsIntegration?.reset();
+      this.nativeControlsIntegration?.reset();
     if (nextProfile !== SessionProfiles.USER)
       this.destroyUserSessionComponents();
 
@@ -159,7 +160,7 @@ export default class ExtensionController {
         return;
 
       this.ensureUserSessionComponents();
-      this.reconcileNativeMediaControls();
+      this.reconcileNativeControls();
       this.reconcileIndicator();
       return;
     }
@@ -168,19 +169,19 @@ export default class ExtensionController {
       this.destroyUserSessionComponents();
 
       const needsLockScreenRuntime =
-        this.settings.integration.enhanceNativeMediaControls &&
-        NativeMediaControlsIntegration.supportsLockScreen();
+        this.settings.nativeControls.enhance &&
+        NativeControlsIntegration.supportsLockScreenEnhance();
       if (needsLockScreenRuntime && !this.hasMediaRuntime())
         await this.startMediaRuntime(sessionReconcileGeneration);
 
       if (!this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration))
         return;
 
-      this.reconcileNativeMediaControls();
+      this.reconcileNativeControls();
       return;
     }
 
-    this.nativeMediaControlsIntegration?.reset();
+    this.nativeControlsIntegration?.reset();
     this.destroyUserSessionComponents();
     this.destroyMediaRuntime();
   }
@@ -202,14 +203,14 @@ export default class ExtensionController {
     // immediately in the user session while MPRIS discovery initializes.
     if (this.sessionProfile === SessionProfiles.USER) {
       this.ensureUserSessionComponents();
-      this.reconcileNativeMediaControls();
+      this.reconcileNativeControls();
     }
 
     await this.mediaRuntime.init();
     if (!this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration))
       return;
 
-    this.reconcileNativeMediaControls();
+    this.reconcileNativeControls();
   }
 
   hasMediaRuntime() {
@@ -217,14 +218,14 @@ export default class ExtensionController {
   }
 
   handleSessionProfileFailure(profile, error) {
-    this.nativeMediaControlsIntegration?.reset();
+    this.nativeControlsIntegration?.reset();
     this.destroyUserSessionComponents();
     this.destroyMediaRuntime();
 
     if (profile === SessionProfiles.UNLOCK_DIALOG) {
       logger.warnOnce(
         "unlock-dialog-runtime-failed",
-        "Failed to start the lock-screen media enhancement; preserving GNOME Shell native controls",
+        "Failed to start native controls Enhance on the lock screen; preserving GNOME Shell native controls",
         error,
       );
       return;
@@ -245,15 +246,15 @@ export default class ExtensionController {
         ["position", "index"],
         rebuildPanelPlacement,
       ),
-      this.settings.integration.subscribe(["hideNativeMediaControls"], () => {
+      this.settings.nativeControls.subscribe(["hide"], () => {
         if (this.sessionProfile === SessionProfiles.USER)
-          this.reconcileNativeMediaControls();
+          this.reconcileNativeControls();
       }),
-      this.settings.integration.subscribe(["enhanceNativeMediaControls"], () => {
+      this.settings.nativeControls.subscribe(["enhance"], () => {
         if (this.sessionProfile === SessionProfiles.UNLOCK_DIALOG)
           void this.scheduleSessionProfileReconcile();
         else if (this.sessionProfile === SessionProfiles.USER)
-          this.reconcileNativeMediaControls();
+          this.reconcileNativeControls();
       }),
     );
   }
@@ -268,14 +269,14 @@ export default class ExtensionController {
       this.indicator?.requestSurfaceUpdate({
         popup: PopupRegions.PLAYER_SELECTOR,
       });
-    this.reconcileNativeMediaControls();
+    this.reconcileNativeControls();
   }
 
-  reconcileNativeMediaControls() {
-    this.nativeMediaControlsIntegration?.reconcile({
+  reconcileNativeControls() {
+    this.nativeControlsIntegration?.reconcile({
       profile: this.sessionProfile,
-      hide: this.settings?.integration.hideNativeMediaControls ?? false,
-      enhance: this.settings?.integration.enhanceNativeMediaControls ?? false,
+      hide: this.settings?.nativeControls.hide ?? false,
+      enhance: this.settings?.nativeControls.enhance ?? false,
       mediaRuntime: this.mediaRuntime ?? null,
     });
   }
@@ -393,7 +394,7 @@ export default class ExtensionController {
   }
 
   destroyRuntimeComponents() {
-    this.nativeMediaControlsIntegration?.reset();
+    this.nativeControlsIntegration?.reset();
     this.destroyUserSessionComponents();
     this.destroyMediaRuntime();
   }
@@ -417,8 +418,8 @@ export default class ExtensionController {
     this.settings = null;
     this.sessionProfile = null;
 
-    this.nativeMediaControlsIntegration?.destroy();
-    this.nativeMediaControlsIntegration = null;
+    this.nativeControlsIntegration?.destroy();
+    this.nativeControlsIntegration = null;
 
     this.resourceRegistry?.destroy();
     this.resourceRegistry = null;

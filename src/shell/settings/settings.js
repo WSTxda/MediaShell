@@ -273,15 +273,9 @@ const INTERACTION_DEFINITIONS = Object.freeze({
   ),
 });
 
-const INTEGRATION_DEFINITIONS = Object.freeze({
-  hideNativeMediaControls: define(
-    SettingsKeys.NATIVE_MEDIA_CONTROLS_HIDDEN,
-    "get_boolean",
-  ),
-  enhanceNativeMediaControls: define(
-    SettingsKeys.NATIVE_MEDIA_CONTROLS_ENHANCED,
-    "get_boolean",
-  ),
+const NATIVE_CONTROLS_DEFINITIONS = Object.freeze({
+  hide: define(SettingsKeys.NATIVE_CONTROLS_HIDE, "get_boolean"),
+  enhance: define(SettingsKeys.NATIVE_CONTROLS_ENHANCE, "get_boolean"),
 });
 
 const MEDIA_DEFINITIONS = Object.freeze({
@@ -301,7 +295,7 @@ export const SettingScopes = Object.freeze({
   TOP_BAR: "topBar",
   PANEL: "panel",
   INTERACTIONS: "interactions",
-  INTEGRATION: "integration",
+  NATIVE_CONTROLS: "nativeControls",
   MEDIA: "media",
 });
 
@@ -310,7 +304,7 @@ const SETTING_SCOPE_DEFINITIONS = Object.freeze({
   [SettingScopes.TOP_BAR]: TOP_BAR_DEFINITIONS,
   [SettingScopes.PANEL]: PANEL_DEFINITIONS,
   [SettingScopes.INTERACTIONS]: INTERACTION_DEFINITIONS,
-  [SettingScopes.INTEGRATION]: INTEGRATION_DEFINITIONS,
+  [SettingScopes.NATIVE_CONTROLS]: NATIVE_CONTROLS_DEFINITIONS,
   [SettingScopes.MEDIA]: MEDIA_DEFINITIONS,
 });
 
@@ -416,7 +410,10 @@ export default class MediaShellSettings {
       this.topBar = new SettingsScope(gsettings, TOP_BAR_DEFINITIONS);
       this.panel = new SettingsScope(gsettings, PANEL_DEFINITIONS);
       this.interactions = new SettingsScope(gsettings, INTERACTION_DEFINITIONS);
-      this.integration = new SettingsScope(gsettings, INTEGRATION_DEFINITIONS);
+      this.nativeControls = new SettingsScope(
+        gsettings,
+        NATIVE_CONTROLS_DEFINITIONS,
+      );
       this.media = new SettingsScope(gsettings, MEDIA_DEFINITIONS);
     } catch (error) {
       this.destroy();
@@ -427,7 +424,7 @@ export default class MediaShellSettings {
   destroy() {
     for (const scope of [
       this.media,
-      this.integration,
+      this.nativeControls,
       this.interactions,
       this.panel,
       this.topBar,
@@ -439,7 +436,7 @@ export default class MediaShellSettings {
     this.topBar = null;
     this.panel = null;
     this.interactions = null;
-    this.integration = null;
+    this.nativeControls = null;
     this.media = null;
     this.keybindings = null;
   }

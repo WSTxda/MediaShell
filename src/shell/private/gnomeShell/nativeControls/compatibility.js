@@ -1,9 +1,9 @@
 /**
  * @file compatibility.js
- * @module shell.private.gnomeShell.mediaControls.compatibility
+ * @module shell.private.gnomeShell.nativeControls.compatibility
  *
- * Resolves and feature-detects the private GNOME Shell media contracts used
- * by Hide and Enhance. Direct reads of Shell-private media fields are confined
+ * Resolves and feature-detects the private GNOME Shell native control contracts
+ * used by Hide and Enhance. Direct reads of Shell-private native control fields are confined
  * to this module so version-specific structure cannot leak into MediaShell.
  */
 
@@ -19,13 +19,13 @@ const SET_EXPANDED_GROUP_METHOD = "_setExpandedGroup";
 const COLLAPSE_METHOD = "collapse";
 const UPDATE_EXPAND_BUTTON_METHOD = "_updateExpandButton";
 const LOCK_SCREEN_SHOWN_SIGNAL = "lock-screen-shown";
-const LOCK_SCREEN_MEDIA_MINIMUM_SHELL_MAJOR = 49;
+const LOCK_SCREEN_NATIVE_CONTROLS_MINIMUM_SHELL_MAJOR = 49;
 
-/** Returns whether this Shell generation provides unlock-dialog media players. */
-export function supportsLockScreenMediaContext() {
+/** Returns whether this Shell generation provides lock screen native controls. */
+export function supportsLockScreenContext() {
   return (
     Number.parseInt(Config.PACKAGE_VERSION, 10) >=
-    LOCK_SCREEN_MEDIA_MINIMUM_SHELL_MAJOR
+    LOCK_SCREEN_NATIVE_CONTROLS_MINIMUM_SHELL_MAJOR
   );
 }
 
@@ -103,11 +103,11 @@ function installPlayerOverrides(
 }
 
 /**
- * Resolves the notification-list MessageView media context used by Shell 48+.
+ * Resolves the notification center MessageView context used by Shell 48+.
  *
- * @returns {object|null} Compatible notification-list media context.
+ * @returns {object|null} Compatible notification center native controls context.
  */
-export function resolveNotificationListMediaContext() {
+export function resolveNotificationCenterContext() {
   const messageView =
     Main.panel.statusArea.dateMenu?._messageList?._messageView ?? null;
   const mediaSource = messageView?._mediaSource ?? null;
@@ -136,9 +136,9 @@ export function resolveNotificationListMediaContext() {
     owner: messageView,
     mediaSource,
     getPlayers: () => resolvePlayers(mediaSource),
-    getPlayersWithMessages: () => [...playerToMessage.keys()],
-    getPlayerMessages: () => [...playerToMessage.entries()],
-    hasMessage: (player) => playerToMessage.has(player),
+    getPlayersWithBanners: () => [...playerToMessage.keys()],
+    getPlayerBanners: () => [...playerToMessage.entries()],
+    hasBanner: (player) => playerToMessage.has(player),
     callOriginalAddPlayer: (player) =>
       addPlayerMethod.originalMethod.call(messageView, player),
     callOriginalRemovePlayer: (player) =>
@@ -150,8 +150,8 @@ export function resolveNotificationListMediaContext() {
         removePlayerMethod,
         handlers,
       ),
-    resolveGroupingOperations: () =>
-      resolveNotificationListGroupingContext(messageView),
+    resolveBannerGroupingOperations: () =>
+      resolveNotificationCenterGroupingContext(messageView),
   });
 }
 
@@ -162,10 +162,10 @@ export function resolveNotificationListMediaContext() {
  * instead of importing Shell's private messageList module. This keeps private
  * module layout out of MediaShell's load path and follows the active Shell.
  *
- * @param {object} messageView - Notification-list MessageView from the base context.
+ * @param {object} messageView - Notification-center MessageView from the base context.
  * @returns {object|null} Compatible grouping operations, when available.
  */
-function resolveNotificationListGroupingContext(messageView) {
+function resolveNotificationCenterGroupingContext(messageView) {
   const messages = messageView?.messages ?? null;
   const playerToMessage = messageView?._playerToMessage ?? null;
   const addMessageAtIndexMethod = messageView
@@ -195,14 +195,14 @@ function resolveNotificationListGroupingContext(messageView) {
   )
     return null;
 
-  const nativeMessage = [...playerToMessage.values()].find(
-    (message) => message && typeof message.constructor === "function",
+  const nativeBanner = [...playerToMessage.values()].find(
+    (banner) => banner && typeof banner.constructor === "function",
   );
-  const MediaMessageClass = nativeMessage?.constructor ?? null;
+  const MediaMessageClass = nativeBanner?.constructor ?? null;
   if (!MediaMessageClass) return null;
 
   return Object.freeze({
-    createMediaMessage: (player) => new MediaMessageClass(player),
+    createNotificationBanner: (player) => new MediaMessageClass(player),
     mountGroup: (group, index = 0) => {
       if (group.get_parent() || messages.includes(group)) return false;
 
@@ -228,7 +228,7 @@ function resolveNotificationListGroupingContext(messageView) {
         return collapseMethod.originalMethod.call(messageView);
       return setExpandedGroupMethod.originalMethod.call(messageView, null);
     },
-    emitMessageFocused: (actor) => messageView.emit("message-focused", actor),
+    emitBannerFocused: (actor) => messageView.emit("message-focused", actor),
     setGroupedPlayerMap: (group) => {
       playerToMessage.clear();
       playerToMessage.set(group, group);
@@ -240,13 +240,13 @@ function resolveNotificationListGroupingContext(messageView) {
 }
 
 /**
- * Resolves the native lock-screen media context available in Shell 49+.
+ * Resolves the native controls context available on the lock screen in Shell 49+.
  * Shell 48 has no equivalent player collection and is rejected before lookup.
  *
- * @returns {object|null} Compatible lock-screen media context, when available.
+ * @returns {object|null} Compatible lock screen native controls context, when available.
  */
-export function resolveLockScreenMediaContext() {
-  if (!supportsLockScreenMediaContext()) return null;
+export function resolveLockScreenContext() {
+  if (!supportsLockScreenContext()) return null;
 
   const notificationsBox =
     Main.screenShield?._dialog?._notificationsBox ?? null;
@@ -265,12 +265,12 @@ export function resolveLockScreenMediaContext() {
   return Object.freeze({
     owner: notificationsBox,
     mediaSource,
-    getPlayerMessages: () => [...playerToMessage.entries()],
+    getPlayerBanners: () => [...playerToMessage.entries()],
   });
 }
 
 /**
- * Watches for the native lock-screen media surface becoming available.
+ * Watches for the native controls surface on the lock screen becoming available.
  *
  * @param {Function} callback - Called after Shell reports the lock screen.
  * @returns {(() => void) | null} Disconnect callback, when supported.
@@ -288,46 +288,45 @@ export function connectLockScreenShown(callback) {
 }
 
 /**
- * Resolves the private MediaMessage structure required by the binding.
+ * Resolves the private MediaMessage structure backing a notification banner.
  *
- * @param {object} message - Native GNOME Shell MediaMessage-like actor.
- * @returns {object|null} Compatible MediaMessage context, when available.
+ * @param {object} banner - Native GNOME Shell MediaMessage-like notification
+ *   banner.
+ * @returns {object|null} Compatible notification banner context, when available.
  */
-export function resolveMediaMessageContext(message) {
-  const nativePlayer = message?._player ?? null;
+export function resolveNotificationBannerContext(banner) {
+  const nativePlayer = banner?._player ?? null;
   const busName = resolvePlayerBusName(nativePlayer);
-  const nativeIcon = message?._icon ?? null;
-  const nativeMediaControls = message?._mediaControls ?? null;
-  const actionBin = message?._actionBin ?? null;
-  const messageBox = nativeMediaControls
-    ? nativeMediaControls.get_parent()
+  const nativeIcon = banner?._icon ?? null;
+  const nativeControls = banner?._mediaControls ?? null;
+  const actionBin = banner?._actionBin ?? null;
+  const bannerBox = nativeControls ? nativeControls.get_parent() : null;
+  const nativeExpandButton = banner?._header?.expandButton ?? null;
+  const updateExpandButtonMethod = banner
+    ? resolveMethod(banner, UPDATE_EXPAND_BUTTON_METHOD)
     : null;
-  const nativeExpandButton = message?._header?.expandButton ?? null;
-  const updateExpandButtonMethod = message
-    ? resolveMethod(message, UPDATE_EXPAND_BUTTON_METHOD)
-    : null;
-  const titleLabel = message?.titleLabel ?? null;
+  const titleLabel = banner?.titleLabel ?? null;
   const themeSource =
     titleLabel && typeof titleLabel.get_theme_node === "function"
       ? titleLabel
-      : message;
+      : banner;
 
   if (
-    !message ||
+    !banner ||
     !nativePlayer ||
     !busName ||
     !nativeIcon ||
-    !nativeMediaControls ||
+    !nativeControls ||
     !actionBin ||
-    !messageBox ||
+    !bannerBox ||
     !nativeExpandButton ||
     !updateExpandButtonMethod ||
     !themeSource ||
-    nativeIcon.get_parent() !== messageBox ||
-    typeof message.setActionArea !== "function" ||
-    typeof message.expand !== "function" ||
-    typeof message.unexpand !== "function" ||
-    typeof messageBox.insert_child_below !== "function" ||
+    nativeIcon.get_parent() !== bannerBox ||
+    typeof banner.setActionArea !== "function" ||
+    typeof banner.expand !== "function" ||
+    typeof banner.unexpand !== "function" ||
+    typeof bannerBox.insert_child_below !== "function" ||
     typeof themeSource.get_theme_node !== "function"
   )
     return null;
@@ -336,8 +335,8 @@ export function resolveMediaMessageContext(message) {
   if (currentActionArea) return null;
 
   const requestPresentationUpdate = () => {
-    const wrapper = message.get_parent();
-    for (const actor of [messageBox, actionBin, message, wrapper]) {
+    const wrapper = banner.get_parent();
+    for (const actor of [bannerBox, actionBin, banner, wrapper]) {
       if (!actor) continue;
       actor.queue_relayout();
       actor.queue_redraw();
@@ -345,18 +344,18 @@ export function resolveMediaMessageContext(message) {
   };
 
   return Object.freeze({
-    message,
+    banner,
     busName,
     nativeIcon,
-    nativeMediaControls,
+    nativeControls,
     themeSource,
     getActionArea: () => actionBin.child ?? null,
-    setActionArea: (actor) => message.setActionArea(actor ?? null),
-    getExpanded: () => Boolean(message.expanded),
+    setActionArea: (actor) => banner.setActionArea(actor ?? null),
+    getExpanded: () => Boolean(banner.expanded),
     setExpanded: (expanded) => {
-      if (Boolean(message.expanded) === Boolean(expanded)) return;
-      if (expanded) message.expand(false);
-      else message.unexpand(false);
+      if (Boolean(banner.expanded) === Boolean(expanded)) return;
+      if (expanded) banner.expand(false);
+      else banner.unexpand(false);
       requestPresentationUpdate();
     },
     getExpandButtonOpacity: () => Number(nativeExpandButton.opacity),
@@ -365,15 +364,15 @@ export function resolveMediaMessageContext(message) {
       nativeExpandButton.queue_redraw();
     },
     refreshExpandButton: () => {
-      updateExpandButtonMethod.originalMethod.call(message);
+      updateExpandButtonMethod.originalMethod.call(banner);
       requestPresentationUpdate();
     },
     getForegroundColor: () =>
       themeSource.get_theme_node().get_foreground_color(),
     requestPresentationUpdate,
     insertBeforeNativeIcon: (actor) =>
-      messageBox.insert_child_below(actor, nativeIcon),
-    insertBeforeNativeMediaControls: (actor) =>
-      messageBox.insert_child_below(actor, nativeMediaControls),
+      bannerBox.insert_child_below(actor, nativeIcon),
+    insertBeforeNativeControls: (actor) =>
+      bannerBox.insert_child_below(actor, nativeControls),
   });
 }

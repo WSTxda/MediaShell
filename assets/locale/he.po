@@ -321,8 +321,8 @@ msgstr "ללא"
 msgid "Playback speed"
 msgstr "מהירות השמעה"
 
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:197
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:210
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
 msgid "Media"
 msgstr "מדיה"
 
@@ -664,36 +664,36 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "שליטה באופן השילוב של MediaShell עם GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native media controls"
-msgstr ""
+msgid "Native controls"
+msgstr "פקדים מובנים"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure GNOME's built-in media controls"
-msgstr ""
+msgid "Configure the default media controls in the notification center"
+msgstr "הגדרת פקדי המדיה המוגדרים כברירת מחדל במרכז ההתראות"
 
 #: assets/ui/prefs.ui:911
-msgid "Private GNOME Shell integration"
-msgstr ""
+msgid "Private API integration"
+msgstr "שילוב באמצעות API פרטי"
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later."
-msgstr ""
+msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
+msgstr "אפשרויות אלה משתמשות בממשקי API פרטיים כדי לפעול. היציבות עשויה להשתנות בהתאם לגרסת GNOME או להתאמות של ההפצה."
 
 #: assets/ui/prefs.ui:934
-msgid "Enhance media controls"
-msgstr "שיפור פקדי המדיה"
+msgid "Hide native control"
+msgstr "הסתרת הפקד המובנה"
 
 #: assets/ui/prefs.ui:935
-msgid "Use MediaShell styling for visible native controls and the lock screen on GNOME 49+"
-msgstr ""
+msgid "Hide the media controls banner from the notification center"
+msgstr "הסתרת כרזת פקדי המדיה ממרכז ההתראות"
 
 #: assets/ui/prefs.ui:940
-msgid "Hide media controls"
-msgstr "הסתרת פקדי המדיה"
+msgid "Enhanced native control"
+msgstr "פקד מובנה משופר"
 
 #: assets/ui/prefs.ui:941
-msgid "Hide native media controls from the notification center only"
-msgstr ""
+msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
+msgstr "החלת סגנון מודרני ומשופר על כרזת פקד המדיה במרכז ההתראות ובמסך הנעילה"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

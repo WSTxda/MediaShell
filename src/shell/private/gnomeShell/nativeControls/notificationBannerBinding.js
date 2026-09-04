@@ -1,10 +1,11 @@
 /**
- * @file messageBinding.js
- * @module shell.private.gnomeShell.mediaControls.messageBinding
+ * @file notificationBannerBinding.js
+ * @module shell.private.gnomeShell.nativeControls.notificationBannerBinding
  *
  * Owns the reversible presentation binding between one private GNOME Shell
- * MediaMessage and one canonical MprisPlayer. Protocol state and operations are
- * consumed from MediaShell; this class owns only native-message presentation.
+ * notification banner and one canonical MprisPlayer. Protocol state and
+ * operations are consumed from MediaShell; this class owns only native
+ * notification banner presentation.
  */
 
 import { MediaShellStyleClasses, styleClassNames } from "../../../ui/style.js";
@@ -41,20 +42,20 @@ import {
   updatePlaybackControlContent,
 } from "../../../ui/components/playback/content.js";
 
-const logger = createLogger("EnhancedMediaMessageBinding");
+const logger = createLogger("EnhanceNotificationBannerBinding");
 
-const NATIVE_MEDIA_CONTROL_STYLE_CLASS = "message-media-control";
-const EnhancedStyleClasses = Object.freeze({
-  ARTWORK: "mediashell-enhanced-media-artwork",
-  TRANSPORT: "mediashell-enhanced-media-transport",
-  ACTIONS: "mediashell-enhanced-media-actions",
-  CONTROL: "mediashell-enhanced-media-control",
-  CONTROL_ICON: "mediashell-enhanced-media-control-icon",
-  PROGRESS: "mediashell-enhanced-media-progress",
+const NATIVE_CONTROL_STYLE_CLASS = "message-media-control";
+const EnhanceStyleClasses = Object.freeze({
+  ARTWORK: "mediashell-enhance-media-artwork",
+  TRANSPORT: "mediashell-enhance-media-transport",
+  ACTIONS: "mediashell-enhance-media-actions",
+  CONTROL: "mediashell-enhance-media-control",
+  CONTROL_ICON: "mediashell-enhance-media-control-icon",
+  PROGRESS: "mediashell-enhance-media-progress",
 });
-const PROGRESS_TRANSITION_NAME = EnhancedStyleClasses.PROGRESS;
-const ENHANCED_ARTWORK_SIZE = 56;
-const ENHANCED_ARTWORK_RADIUS = 8;
+const PROGRESS_TRANSITION_NAME = EnhanceStyleClasses.PROGRESS;
+const ENHANCE_ARTWORK_SIZE = 56;
+const ENHANCE_ARTWORK_RADIUS = 8;
 const STATE_CONTROL_ACTIVE_BACKGROUND_ALPHA = 0.14;
 const ARTWORK_FALLBACK_BACKGROUND_ALPHA = 0.05;
 const ARTWORK_FALLBACK_OUTLINE_ALPHA = 0.2;
@@ -98,16 +99,16 @@ function colorToRgba(color, alphaScale = 1) {
 }
 
 /**
- * Owns one reversible enhancement applied to a GNOME Shell MediaMessage.
+ * Owns one reversible Enhance binding applied to a GNOME Shell notification banner.
  */
-export default class EnhancedMediaMessageBinding {
+export default class EnhanceNotificationBannerBinding {
   constructor(
-    messageContext,
+    bannerContext,
     player,
     { artworkService, playbackController, onDestroyed = null },
   ) {
-    this.context = messageContext;
-    this.message = messageContext.message;
+    this.context = bannerContext;
+    this.banner = bannerContext.banner;
     this.player = player;
     this.artworkService = artworkService;
     this.playbackController = playbackController;
@@ -116,7 +117,7 @@ export default class EnhancedMediaMessageBinding {
     this.updateSourceId = null;
     this.refreshExactPosition = false;
     this.playerPropertyListeners = [];
-    this.messageSignalIds = [];
+    this.bannerSignalIds = [];
     this.positionChangeDisconnect = null;
     this.nativeIconVisibilitySignalId = null;
 
@@ -150,13 +151,13 @@ export default class EnhancedMediaMessageBinding {
       IconNames.MISSING,
     ]);
 
-    this.nativeIconWasVisible = Boolean(messageContext.nativeIcon.visible);
-    this.nativeMediaControlsWereVisible = Boolean(
-      messageContext.nativeMediaControls.visible,
+    this.nativeIconWasVisible = Boolean(bannerContext.nativeIcon.visible);
+    this.nativeControlsWereVisible = Boolean(
+      bannerContext.nativeControls.visible,
     );
-    this.nativeActionArea = messageContext.getActionArea();
-    this.nativeExpanded = messageContext.getExpanded();
-    this.nativeExpandButtonOpacity = messageContext.getExpandButtonOpacity();
+    this.nativeActionArea = bannerContext.getActionArea();
+    this.nativeExpanded = bannerContext.getExpanded();
+    this.nativeExpandButtonOpacity = bannerContext.getExpandButtonOpacity();
   }
 
   get active() {
@@ -173,17 +174,17 @@ export default class EnhancedMediaMessageBinding {
 
     try {
       this.createActors();
-      this.connectMessageSignals();
+      this.connectBannerSignals();
       this.connectPlayerState();
       this.applyNativePresentation();
       this.syncPresentation();
-      if (this.message.mapped) this.syncArtwork();
-      if (this.message.expanded) this.requestExactPosition();
+      if (this.banner.mapped) this.syncArtwork();
+      if (this.banner.expanded) this.requestExactPosition();
       return true;
     } catch (error) {
       logger.warnOnce(
         `enable:${this.player?.busName ?? "unknown"}`,
-        "Failed to enhance a GNOME Shell media message",
+        "Failed to apply Enhance to a GNOME Shell notification banner",
         error,
       );
       this.destroy();
@@ -211,7 +212,7 @@ export default class EnhancedMediaMessageBinding {
     this.artworkFrame = new St.Bin({
       styleClass: styleClassNames(
         MediaShellStyleClasses.ARTWORK_FRAME,
-        EnhancedStyleClasses.ARTWORK,
+        EnhanceStyleClasses.ARTWORK,
       ),
       xExpand: false,
       yExpand: false,
@@ -231,7 +232,7 @@ export default class EnhancedMediaMessageBinding {
     this.nextButton = this.createControlButton(PlaybackControlIds.NEXT);
 
     this.transportBox = new St.BoxLayout({
-      styleClass: EnhancedStyleClasses.TRANSPORT,
+      styleClass: EnhanceStyleClasses.TRANSPORT,
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.transportBox.add_child(this.previousButton);
@@ -239,13 +240,13 @@ export default class EnhancedMediaMessageBinding {
     this.transportBox.add_child(this.nextButton);
 
     this.actionBox = new St.BoxLayout({
-      styleClass: EnhancedStyleClasses.ACTIONS,
+      styleClass: EnhanceStyleClasses.ACTIONS,
       xExpand: true,
       yAlign: Clutter.ActorAlign.CENTER,
     });
 
     this.slider = new Slider.Slider(0);
-    this.slider.add_style_class_name(EnhancedStyleClasses.PROGRESS);
+    this.slider.add_style_class_name(EnhanceStyleClasses.PROGRESS);
     this.slider.xExpand = true;
     this.actionBox.add_child(this.slider);
     for (const controlId of STATE_CONTROL_IDS)
@@ -268,30 +269,30 @@ export default class EnhancedMediaMessageBinding {
       "scroll-event",
       () => Clutter.EVENT_STOP,
     );
-    this.messageSignalIds.push(
+    this.bannerSignalIds.push(
       [this.slider, dragBeginId],
       [this.slider, dragEndId],
       [this.slider, scrollEventId],
     );
 
-    this.syncTransportLayout(Boolean(this.message.expanded));
+    this.syncTransportLayout(Boolean(this.banner.expanded));
   }
 
   createControlButton(controlId) {
     const initialState = resolvePlaybackControlState(this.player, controlId);
     const controlDefinition = initialState.control;
     const button = new St.Button({
-      name: `enhanced-${controlDefinition.actorName}`,
+      name: `enhance-${controlDefinition.actorName}`,
       styleClass: styleClassNames(
-        NATIVE_MEDIA_CONTROL_STYLE_CLASS,
-        EnhancedStyleClasses.CONTROL,
+        NATIVE_CONTROL_STYLE_CLASS,
+        EnhanceStyleClasses.CONTROL,
       ),
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
       toggleMode: controlDefinition.isStateControl,
     });
     const content = createPlaybackControlContent(controlDefinition, {
-      iconStyleClass: EnhancedStyleClasses.CONTROL_ICON,
+      iconStyleClass: EnhanceStyleClasses.CONTROL_ICON,
     });
     const buttonState = {
       button,
@@ -339,40 +340,40 @@ export default class EnhancedMediaMessageBinding {
     );
   }
 
-  connectMessageSignals() {
-    this.messageSignalIds.push(
+  connectBannerSignals() {
+    this.bannerSignalIds.push(
       [
-        this.message,
-        this.message.connect("notify::mapped", () =>
+        this.banner,
+        this.banner.connect("notify::mapped", () =>
           this.handleMappedChanged(),
         ),
       ],
       [
-        this.message,
-        this.message.connect("expanded", () => {
+        this.banner,
+        this.banner.connect("expanded", () => {
           this.syncTransportLayout(true);
           this.syncProgress(this.player.estimatedPositionMicroseconds);
           this.requestExactPosition();
         }),
       ],
       [
-        this.message,
-        this.message.connect("unexpanded", () => {
+        this.banner,
+        this.banner.connect("unexpanded", () => {
           // GNOME Shell emits `unexpanded` before assigning expanded=false.
-          // Use the target state explicitly rather than reading message.expanded.
+          // Use the target state explicitly rather than reading banner.expanded.
           this.syncTransportLayout(false);
           this.pauseProgressTransition();
         }),
       ],
       [
-        this.message,
-        this.message.connect("destroy", () =>
-          this.handleNativeMessageDestroyed(),
+        this.banner,
+        this.banner.connect("destroy", () =>
+          this.handleNativeBannerDestroyed(),
         ),
       ],
     );
 
-    this.messageSignalIds.push([
+    this.bannerSignalIds.push([
       this.context.themeSource,
       this.context.themeSource.connect("style-changed", () => {
         this.syncSeekTheme();
@@ -403,11 +404,11 @@ export default class EnhancedMediaMessageBinding {
 
   applyNativePresentation() {
     this.context.insertBeforeNativeIcon(this.artworkFrame);
-    this.context.insertBeforeNativeMediaControls(this.transportBox);
+    this.context.insertBeforeNativeControls(this.transportBox);
     this.context.setActionArea(this.actionBox);
 
     this.context.nativeIcon.visible = false;
-    this.context.nativeMediaControls.visible = false;
+    this.context.nativeControls.visible = false;
     this.context.setExpandButtonOpacity(ACTIVE_OPACITY);
     this.nativeIconVisibilitySignalId = this.context.nativeIcon.connect(
       "notify::visible",
@@ -429,8 +430,8 @@ export default class EnhancedMediaMessageBinding {
       this.syncPresentation();
       if (
         this.refreshExactPosition &&
-        this.message?.mapped &&
-        this.message.expanded
+        this.banner?.mapped &&
+        this.banner.expanded
       )
         this.requestExactPosition();
       this.refreshExactPosition = false;
@@ -445,7 +446,7 @@ export default class EnhancedMediaMessageBinding {
     this.syncProgress(this.player.estimatedPositionMicroseconds);
     this.syncSeekTheme();
     this.context.setExpandButtonOpacity(ACTIVE_OPACITY);
-    if (this.message.mapped) this.syncArtwork();
+    if (this.banner.mapped) this.syncArtwork();
     this.context.requestPresentationUpdate();
   }
 
@@ -599,8 +600,8 @@ export default class EnhancedMediaMessageBinding {
     if (
       this.progressAvailable &&
       !this.dragging &&
-      this.message?.mapped &&
-      this.message.expanded &&
+      this.banner?.mapped &&
+      this.banner.expanded &&
       this.player.playbackStatus === PlaybackStatus.PLAYING
     ) {
       this.ensureProgressTransitionAttached();
@@ -655,7 +656,7 @@ export default class EnhancedMediaMessageBinding {
     if (result.status !== MprisOperationStatuses.SUCCESS) {
       logger.debugOnce(
         `seek:${player.busName}:${result.reason}`,
-        "Enhanced media seek was not applied",
+        "Enhance notification banner seek was not applied",
         result.reason,
         result.errorName ?? "",
       );
@@ -666,8 +667,8 @@ export default class EnhancedMediaMessageBinding {
   requestExactPosition() {
     if (
       !this.active ||
-      !this.message.mapped ||
-      !this.message.expanded ||
+      !this.banner.mapped ||
+      !this.banner.expanded ||
       !this.progressAvailable
     )
       return;
@@ -688,7 +689,7 @@ export default class EnhancedMediaMessageBinding {
       .catch((error) =>
         logger.debugOnce(
           `exact-position:${player.busName}`,
-          "Could not read exact position for an enhanced media message",
+          "Could not read exact position for an Enhance notification banner",
           error,
         ),
       );
@@ -697,7 +698,7 @@ export default class EnhancedMediaMessageBinding {
   handleMappedChanged() {
     if (!this.active) return;
 
-    if (!this.message.mapped) {
+    if (!this.banner.mapped) {
       this.cancelArtworkLoad();
       this.pauseProgressTransition();
       return;
@@ -705,15 +706,15 @@ export default class EnhancedMediaMessageBinding {
 
     this.syncPresentation();
     this.syncSeekTheme();
-    if (this.message.expanded) this.requestExactPosition();
+    if (this.banner.expanded) this.requestExactPosition();
   }
 
   syncArtworkGeometry() {
     if (!this.artworkFrame || !this.artworkImage) return;
     const { frameSize, frameRadius, imageSize, imageRadius } =
       getArtworkPresentationGeometry(
-        ENHANCED_ARTWORK_SIZE,
-        ENHANCED_ARTWORK_RADIUS,
+        ENHANCE_ARTWORK_SIZE,
+        ENHANCE_ARTWORK_RADIUS,
       );
     const frameStyle = [
       `border-radius: ${frameRadius}px;`,
@@ -748,13 +749,13 @@ export default class EnhancedMediaMessageBinding {
   }
 
   syncArtwork() {
-    if (!this.message?.mapped || !this.artworkFrame) return;
+    if (!this.banner?.mapped || !this.artworkFrame) return;
 
     const request = createArtworkRequest({
       busName: this.player.busName,
       track: this.player.track,
-      width: ENHANCED_ARTWORK_SIZE,
-      radius: ENHANCED_ARTWORK_RADIUS,
+      width: ENHANCE_ARTWORK_SIZE,
+      radius: ENHANCE_ARTWORK_RADIUS,
     });
 
     if (this.loadedArtworkKey === request.key) {
@@ -793,7 +794,7 @@ export default class EnhancedMediaMessageBinding {
       ) {
         logger.warnOnce(
           `artwork:${request.busName}`,
-          "Enhanced media artwork could not be processed; using the fallback icon",
+          "Enhance notification banner artwork could not be processed; using the fallback icon",
           error,
         );
         this.loadedArtworkKey = request.key;
@@ -820,8 +821,8 @@ export default class EnhancedMediaMessageBinding {
 
   setArtworkPixbuf(pixbuf) {
     const { imageSize, imageRadius } = getArtworkPresentationGeometry(
-      ENHANCED_ARTWORK_SIZE,
-      ENHANCED_ARTWORK_RADIUS,
+      ENHANCE_ARTWORK_SIZE,
+      ENHANCE_ARTWORK_RADIUS,
     );
     if (
       this.preparedArtwork?.key !== this.loadedArtworkKey ||
@@ -847,8 +848,8 @@ export default class EnhancedMediaMessageBinding {
   setArtworkFallback(icon) {
     if (!this.artworkFrame || !this.artworkImage) return;
     const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
-      ENHANCED_ARTWORK_SIZE,
-      ENHANCED_ARTWORK_RADIUS,
+      ENHANCE_ARTWORK_SIZE,
+      ENHANCE_ARTWORK_RADIUS,
     );
     this.artworkFallbackActive = true;
     this.syncArtworkGeometry();
@@ -866,7 +867,7 @@ export default class EnhancedMediaMessageBinding {
   isCurrentArtworkLoad(loadGeneration, loadCancellable, request) {
     return (
       this.active &&
-      this.message.mapped &&
+      this.banner.mapped &&
       loadGeneration === this.artworkLoadGeneration &&
       !loadCancellable.is_cancelled() &&
       this.loadingArtworkKey === request.key &&
@@ -882,7 +883,7 @@ export default class EnhancedMediaMessageBinding {
     this.loadingArtworkKey = null;
   }
 
-  handleNativeMessageDestroyed() {
+  handleNativeBannerDestroyed() {
     if (!this.context) return;
     const onDestroyed = this.onDestroyed;
     this.destroy({ restoreNative: false });
@@ -896,8 +897,8 @@ export default class EnhancedMediaMessageBinding {
     this.nativeIconVisibilitySignalId = null;
   }
 
-  disconnectMessageSignals() {
-    for (const [object, signalId] of this.messageSignalIds.splice(0))
+  disconnectBannerSignals() {
+    for (const [object, signalId] of this.bannerSignalIds.splice(0))
       object.disconnect(signalId);
   }
 
@@ -922,15 +923,15 @@ export default class EnhancedMediaMessageBinding {
         this.context.setExpanded(this.nativeExpanded);
 
       this.context.nativeIcon.visible = this.nativeIconWasVisible;
-      this.context.nativeMediaControls.visible =
-        this.nativeMediaControlsWereVisible;
+      this.context.nativeControls.visible =
+        this.nativeControlsWereVisible;
       if (Number.isFinite(this.nativeExpandButtonOpacity))
         this.context.setExpandButtonOpacity(this.nativeExpandButtonOpacity);
       this.context.refreshExpandButton();
     } catch (error) {
       logger.debugOnce(
         `restore:${this.player?.busName ?? "unknown"}`,
-        "Native media-message presentation could not be fully restored",
+        "Native notification banner presentation could not be fully restored",
         error,
       );
     }
@@ -948,7 +949,7 @@ export default class EnhancedMediaMessageBinding {
     this.pauseProgressTransition();
     this.disconnectPlayerState();
     this.disconnectNativePresentationSignals();
-    this.disconnectMessageSignals();
+    this.disconnectBannerSignals();
 
     if (restoreNative) this.restoreNativePresentation();
 
@@ -970,7 +971,7 @@ export default class EnhancedMediaMessageBinding {
     }
 
     this.context = null;
-    this.message = null;
+    this.banner = null;
     this.player = null;
     this.artworkService = null;
     this.playbackController = null;

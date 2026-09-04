@@ -305,21 +305,21 @@
   padding: 0;
 }
 
-/* GNOME media controls enhancement ----------------------------------- */
-.mediashell-enhanced-media-artwork {
+/* GNOME native controls Enhance -------------------------------------- */
+.mediashell-enhance-media-artwork {
   margin-right: 8px;
 }
 
-.mediashell-enhanced-media-transport {
+.mediashell-enhance-media-transport {
   spacing: 2px;
   margin-left: 6px;
 }
 
-.mediashell-enhanced-media-actions {
+.mediashell-enhance-media-actions {
   spacing: 2px;
 }
 
-.mediashell-enhanced-media-control {
+.mediashell-enhance-media-control {
   width: 36px;
   height: 36px;
   min-width: 36px;
@@ -327,11 +327,11 @@
   padding: 0;
 }
 
-.mediashell-enhanced-media-control-icon {
+.mediashell-enhance-media-control-icon {
   icon-size: 16px;
 }
 
-.mediashell-enhanced-media-progress {
+.mediashell-enhance-media-progress {
   min-width: 72px;
   min-height: 24px;
   -barlevel-height: 4px;

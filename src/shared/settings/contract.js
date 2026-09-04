@@ -109,8 +109,8 @@ export const SettingsKeys = Object.freeze({
   INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN:
     "interactions-mouse-action-scroll-down",
 
-  NATIVE_MEDIA_CONTROLS_HIDDEN: "native-media-controls-hidden",
-  NATIVE_MEDIA_CONTROLS_ENHANCED: "native-media-controls-enhanced",
+  NATIVE_CONTROLS_HIDE: "native-controls-hide",
+  NATIVE_CONTROLS_ENHANCE: "native-controls-enhance",
   ARTWORK_CACHE_ENABLED: "artwork-cache-enabled",
   BLOCKED_APPS: "blocked-apps",
 });

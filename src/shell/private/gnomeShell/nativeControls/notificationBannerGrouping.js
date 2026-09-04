@@ -1,23 +1,24 @@
 /**
- * @file grouping.js
- * @module shell.private.gnomeShell.mediaControls.grouping
+ * @file notificationBannerGrouping.js
+ * @module shell.private.gnomeShell.nativeControls.notificationBannerGrouping
  *
- * Owns the reversible notification-list grouping transaction while Enhance
- * replaces native player messages. Native ownership is restored on teardown or
+ * Owns the reversible notification center banner grouping transaction while
+ * Enhance replaces native notification banners. Native ownership is restored on
+ * teardown or
  * whenever the private grouping contract becomes invalid.
  */
 
 import { createLogger } from "../../../../shared/logging/logger.js";
-import EnhancedMediaMessageGroup from "./messageGroup.js";
+import EnhanceNotificationBannerGroup from "./notificationBannerGroup.js";
 
-const logger = createLogger("MediaMessageGrouping");
+const logger = createLogger("NotificationBannerGrouping");
 
-export default class MediaMessageGrouping {
+export default class NotificationBannerGrouping {
   static create(context, callbacks = {}) {
     if (!context) return null;
-    const operations = context.resolveGroupingOperations();
+    const operations = context.resolveBannerGroupingOperations();
     return operations
-      ? new MediaMessageGrouping(context, operations, callbacks)
+      ? new NotificationBannerGrouping(context, operations, callbacks)
       : null;
   }
 
@@ -26,7 +27,7 @@ export default class MediaMessageGrouping {
     operations,
     {
       beforeTakeOwnership = null,
-      onMessageRemoving = null,
+      onBannerRemoving = null,
       onChanged = null,
       onInvalidated = null,
     } = {},
@@ -34,12 +35,12 @@ export default class MediaMessageGrouping {
     this.context = context;
     this.operations = operations;
     this.beforeTakeOwnership = beforeTakeOwnership;
-    this.onMessageRemoving = onMessageRemoving;
+    this.onBannerRemoving = onBannerRemoving;
     this.onChanged = onChanged;
     this.onInvalidated = onInvalidated;
 
     this.group = null;
-    this.playerMessages = new Map();
+    this.playerBanners = new Map();
     this.playerSignalIds = new Map();
     this.groupSignalIds = [];
     this.removePlayerOverrides = null;
@@ -47,8 +48,8 @@ export default class MediaMessageGrouping {
     this.ownsPresentation = false;
   }
 
-  getPlayerMessages() {
-    return [...this.playerMessages.entries()];
+  getPlayerBanners() {
+    return [...this.playerBanners.entries()];
   }
 
   reconcile() {
@@ -63,7 +64,7 @@ export default class MediaMessageGrouping {
   }
 
   takeOwnership(players) {
-    const nativeEntries = this.context.getPlayerMessages();
+    const nativeEntries = this.context.getPlayerBanners();
     const currentPlayers = new Set(players);
     const nativePlayers = new Set(nativeEntries.map(([player]) => player));
     const orderedPlayers = [
@@ -76,7 +77,7 @@ export default class MediaMessageGrouping {
     this.beforeTakeOwnership?.();
 
     for (const [player] of nativeEntries) {
-      if (this.context.hasMessage(player))
+      if (this.context.hasBanner(player))
         this.context.callOriginalRemovePlayer(player);
     }
 
@@ -108,7 +109,7 @@ export default class MediaMessageGrouping {
     } catch (error) {
       logger.warnOnce(
         "player-mutation-failed",
-        "GNOME Shell media grouping lost ownership of a player; restoring native media controls",
+        "GNOME Shell notification banner grouping lost ownership of a player; restoring native controls",
         error,
       );
       this.invalidate();
@@ -118,11 +119,11 @@ export default class MediaMessageGrouping {
   syncPlayers(players) {
     const playerSet = new Set(players);
 
-    for (const player of [...this.playerMessages.keys()]) {
+    for (const player of [...this.playerBanners.keys()]) {
       if (!playerSet.has(player)) this.removePlayer(player);
     }
     for (const player of players) {
-      if (!this.playerMessages.has(player)) this.addPlayer(player);
+      if (!this.playerBanners.has(player)) this.addPlayer(player);
     }
 
     this.syncPlayerMap();
@@ -130,16 +131,16 @@ export default class MediaMessageGrouping {
   }
 
   addPlayer(player) {
-    if (this.playerMessages.has(player)) return;
+    if (this.playerBanners.has(player)) return;
 
     this.ensureGroup();
-    const message = this.operations.createMediaMessage(player);
-    if (!this.group.addMessage(message)) {
-      message.destroy();
-      throw new Error("Could not add an owned media message to the group");
+    const banner = this.operations.createNotificationBanner(player);
+    if (!this.group.addBanner(banner)) {
+      banner.destroy();
+      throw new Error("Could not add an owned notification banner to the group");
     }
 
-    this.playerMessages.set(player, message);
+    this.playerBanners.set(player, banner);
     this.playerSignalIds.set(
       player,
       player.connect("changed", () => this.ensureBestPlayerOnTop()),
@@ -150,18 +151,18 @@ export default class MediaMessageGrouping {
   }
 
   removePlayer(player) {
-    const message = this.playerMessages.get(player);
-    if (!message) return;
+    const banner = this.playerBanners.get(player);
+    if (!banner) return;
 
     const signalId = this.playerSignalIds.get(player);
     if (signalId !== undefined) player.disconnect(signalId);
     this.playerSignalIds.delete(player);
-    this.playerMessages.delete(player);
+    this.playerBanners.delete(player);
 
-    this.onMessageRemoving?.(message);
-    this.group?.removeMessage(message);
+    this.onBannerRemoving?.(banner);
+    this.group?.removeBanner(banner);
 
-    if (this.playerMessages.size === 0) this.dropGroup();
+    if (this.playerBanners.size === 0) this.dropGroup();
     else this.ensureBestPlayerOnTop();
 
     this.syncPlayerMap();
@@ -170,13 +171,13 @@ export default class MediaMessageGrouping {
   ensureGroup() {
     if (this.group) return;
 
-    const group = new EnhancedMediaMessageGroup();
+    const group = new EnhanceNotificationBannerGroup();
     this.group = group;
     this.groupSignalIds = [
       group.connect("expand-toggle-requested", () => this.toggleGroup(group)),
       group.connect("notify::expanded", () => this.ensureBestPlayerOnTop()),
-      group.connect("message-focused", (_group, actor) =>
-        this.operations.emitMessageFocused(actor),
+      group.connect("banner-focused", (_group, actor) =>
+        this.operations.emitBannerFocused(actor),
       ),
     ];
 
@@ -184,7 +185,7 @@ export default class MediaMessageGrouping {
       this.disconnectGroupSignals(group);
       this.group = null;
       group.destroy();
-      throw new Error("Could not mount the enhanced media group");
+      throw new Error("Could not mount the Enhance notification banner group");
     }
 
     this.mounted = true;
@@ -193,18 +194,18 @@ export default class MediaMessageGrouping {
 
   ensureBestPlayerOnTop() {
     const group = this.group;
-    if (!group || group.expanded || group.messages.length < 2) return;
+    if (!group || group.expanded || group.banners.length < 2) return;
 
     const isPlaying = (player) => player.status === "Playing";
-    const firstMessage = group.messages[0];
+    const firstBanner = group.banners[0];
 
-    for (const [player, message] of this.playerMessages) {
-      if (message === firstMessage && isPlaying(player)) return;
+    for (const [player, banner] of this.playerBanners) {
+      if (banner === firstBanner && isPlaying(player)) return;
     }
 
-    for (const [player, message] of this.playerMessages) {
+    for (const [player, banner] of this.playerBanners) {
       if (!isPlaying(player)) continue;
-      group.moveToTop(message);
+      group.moveToTop(banner);
       return;
     }
   }
@@ -222,7 +223,7 @@ export default class MediaMessageGrouping {
       .catch((error) =>
         logger.warnOnce(
           "group-toggle-failed",
-          "GNOME Shell media group could not change expansion state",
+          "GNOME Shell notification banner group could not change expansion state",
           error,
         ),
       );
@@ -256,18 +257,18 @@ export default class MediaMessageGrouping {
     onInvalidated?.(this);
   }
 
-  restoreNativePlayers(context) {
+  restoreNativeBanners(context) {
     const players = context.getPlayers();
     if (!players) return;
 
     for (const player of players) {
-      if (context.hasMessage(player)) continue;
+      if (context.hasBanner(player)) continue;
       try {
         context.callOriginalAddPlayer(player);
       } catch (error) {
         logger.warnOnce(
           "restore-native-player",
-          "GNOME Shell media grouping could not restore a native media message",
+          "GNOME Shell notification banner grouping could not restore a native notification banner",
           error,
         );
       }
@@ -287,8 +288,8 @@ export default class MediaMessageGrouping {
       player.disconnect(signalId);
     this.playerSignalIds.clear();
 
-    for (const message of this.playerMessages.values())
-      this.onMessageRemoving?.(message);
+    for (const banner of this.playerBanners.values())
+      this.onBannerRemoving?.(banner);
 
     if (restoreNative) {
       try {
@@ -296,21 +297,21 @@ export default class MediaMessageGrouping {
       } catch (error) {
         logger.warnOnce(
           "restore-native-group",
-          "GNOME Shell media group could not be fully removed during restoration",
+          "GNOME Shell notification banner group could not be fully removed during restoration",
           error,
         );
       }
-      this.restoreNativePlayers(context);
+      this.restoreNativeBanners(context);
     } else if (this.group) {
       this.disconnectGroupSignals(this.group);
       this.group = null;
       this.mounted = false;
     }
 
-    this.playerMessages.clear();
+    this.playerBanners.clear();
     this.operations = null;
     this.beforeTakeOwnership = null;
-    this.onMessageRemoving = null;
+    this.onBannerRemoving = null;
     this.onChanged = null;
     this.onInvalidated = null;
   }

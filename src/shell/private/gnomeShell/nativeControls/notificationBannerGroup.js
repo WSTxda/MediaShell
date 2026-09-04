@@ -1,8 +1,9 @@
 /**
- * @file messageGroup.js
- * @module shell.private.gnomeShell.mediaControls.messageGroup
+ * @file notificationBannerGroup.js
+ * @module shell.private.gnomeShell.nativeControls.notificationBannerGroup
  *
- * Native-style notification group used only by the private Enhance adapter.
+ * Native-style notification banner group used only by the private Enhance
+ * adapter.
  * Its geometry intentionally mirrors GNOME Shell internals and therefore stays
  * quarantined from reusable MediaShell UI components.
  */
@@ -15,18 +16,18 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 import { installPrimaryClickAction } from "../../../ui/input/pointerActions.js";
 import { prefersReducedMotion } from "../../../ui/accessibility/reducedMotion.js";
 
-const GROUP_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroup";
-const GROUP_LAYOUT_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroupLayout";
+const GROUP_GTYPE_NAME = "MediaShellEnhanceNotificationBannerGroup";
+const GROUP_LAYOUT_GTYPE_NAME = "MediaShellEnhanceNotificationBannerGroupLayout";
 
 // Matches GNOME Shell's private notification-group stack geometry.
 const GROUP_EXPANSION_TIME = 200;
-const MAX_VISIBLE_STACKED_MESSAGES = 3;
+const MAX_VISIBLE_STACKED_BANNERS = 3;
 const ADDITIONAL_BOTTOM_MARGIN_EXPANDED_GROUP = 15;
 const WIDTH_OFFSET_STACKED = 6;
 const HEIGHT_OFFSET_STACKED = 10;
 const HEIGHT_OFFSET_REDUCTION_STACKED = 1.4;
 
-const EnhancedMediaMessageGroupLayout = GObject.registerClass(
+const EnhanceNotificationBannerGroupLayout = GObject.registerClass(
   {
     GTypeName: GROUP_LAYOUT_GTYPE_NAME,
     Properties: {
@@ -41,7 +42,7 @@ const EnhancedMediaMessageGroupLayout = GObject.registerClass(
       ),
     },
   },
-  class EnhancedMediaMessageGroupLayout extends Clutter.LayoutManager {
+  class EnhanceNotificationBannerGroupLayout extends Clutter.LayoutManager {
     constructor(cover, header) {
       super();
       this.cover = cover;
@@ -107,7 +108,7 @@ const EnhancedMediaMessageGroupLayout = GObject.registerClass(
       let offset = HEIGHT_OFFSET_STACKED;
       let minimum = 0;
       let natural = 0;
-      let remaining = MAX_VISIBLE_STACKED_MESSAGES;
+      let remaining = MAX_VISIBLE_STACKED_BANNERS;
 
       for (const child of this.getStack(container)) {
         if (minimum === 0 || natural === 0) {
@@ -170,7 +171,7 @@ const EnhancedMediaMessageGroupLayout = GObject.registerClass(
   },
 );
 
-class EnhancedMediaMessageGroup extends St.Widget {
+class EnhanceNotificationBannerGroup extends St.Widget {
   constructor() {
     const cover = new St.Widget({ name: "cover", reactive: true });
     const header = new St.BoxLayout({
@@ -182,12 +183,12 @@ class EnhancedMediaMessageGroup extends St.Widget {
       styleClass: "message-notification-group",
       xExpand: true,
       reactive: true,
-      layoutManager: new EnhancedMediaMessageGroupLayout(cover, header),
+      layoutManager: new EnhanceNotificationBannerGroupLayout(cover, header),
     });
 
     this.cover = cover;
     this.headerBox = header;
-    this._messages = [];
+    this._banners = [];
     this._expanded = false;
     this._focusChild = null;
 
@@ -223,11 +224,11 @@ class EnhancedMediaMessageGroup extends St.Widget {
   }
 
   get expanded() {
-    return this._expanded || this._messages.length === 1;
+    return this._expanded || this._banners.length === 1;
   }
 
-  get messages() {
-    return [...this._messages];
+  get banners() {
+    return [...this._banners];
   }
 
   get expandedHeight() {
@@ -238,54 +239,54 @@ class EnhancedMediaMessageGroup extends St.Widget {
     return false;
   }
 
-  addMessage(message) {
-    if (!message || this._messages.includes(message)) return false;
+  addBanner(banner) {
+    if (!banner || this._banners.includes(banner)) return false;
 
-    this._messages.unshift(message);
-    message.connectObject(
+    this._banners.unshift(banner);
+    banner.connectObject(
       "key-focus-in",
       () => {
-        this._focusChild = message;
-        this.emit("message-focused", message);
+        this._focusChild = banner;
+        this.emit("banner-focused", banner);
       },
       "clicked",
       () => {
         if (this.expanded) return;
-        GObject.signal_stop_emission_by_name(message, "clicked");
+        GObject.signal_stop_emission_by_name(banner, "clicked");
         this.emit("expand-toggle-requested");
       },
       this,
     );
 
-    this.insert_child_at_index(message, 0);
+    this.insert_child_at_index(banner, 0);
     this.ensureCoverPosition();
     this.syncStackState();
     return true;
   }
 
-  removeMessage(message) {
-    const index = this._messages.indexOf(message);
+  removeBanner(banner) {
+    const index = this._banners.indexOf(banner);
     if (index < 0) return false;
 
-    this._messages.splice(index, 1);
-    if (this._focusChild === message) this._focusChild = null;
-    message.disconnectObject(this);
-    message.destroy();
+    this._banners.splice(index, 1);
+    if (this._focusChild === banner) this._focusChild = null;
+    banner.disconnectObject(this);
+    banner.destroy();
     this.ensureCoverPosition();
     this.syncStackState();
 
-    if (this._expanded && this._messages.length <= 1)
+    if (this._expanded && this._banners.length <= 1)
       this.emit("expand-toggle-requested");
     return true;
   }
 
-  moveToTop(message) {
-    const index = this._messages.indexOf(message);
+  moveToTop(banner) {
+    const index = this._banners.indexOf(banner);
     if (index <= 0) return;
 
-    this._messages.splice(index, 1);
-    this._messages.unshift(message);
-    this.set_child_at_index(message, 0);
+    this._banners.splice(index, 1);
+    this._banners.unshift(banner);
+    this.set_child_at_index(banner, 0);
     this.ensureCoverPosition();
     this.syncStackState();
   }
@@ -308,7 +309,7 @@ class EnhancedMediaMessageGroup extends St.Widget {
   async collapse() {
     if (!this._expanded) return;
 
-    if (this._focusChild?.has_key_focus()) this._messages[0]?.grab_key_focus();
+    if (this._focusChild?.has_key_focus()) this._banners[0]?.grab_key_focus();
 
     this._expanded = false;
     this.notify("expanded");
@@ -328,19 +329,19 @@ class EnhancedMediaMessageGroup extends St.Widget {
   }
 
   syncStackState() {
-    this.cover.visible = !this._expanded && this._messages.length > 1;
+    this.cover.visible = !this._expanded && this._banners.length > 1;
 
-    for (const message of this._messages) {
-      message.remove_style_pseudo_class("second-in-stack");
-      message.remove_style_pseudo_class("lower-in-stack");
+    for (const banner of this._banners) {
+      banner.remove_style_pseudo_class("second-in-stack");
+      banner.remove_style_pseudo_class("lower-in-stack");
     }
 
     if (this.expanded) return;
 
-    const [, second, ...lower] = this._messages;
+    const [, second, ...lower] = this._banners;
     second?.add_style_pseudo_class("second-in-stack");
-    for (const message of lower)
-      message.add_style_pseudo_class("lower-in-stack");
+    for (const banner of lower)
+      banner.add_style_pseudo_class("lower-in-stack");
   }
 
   vfunc_paint(paintContext) {
@@ -353,8 +354,8 @@ class EnhancedMediaMessageGroup extends St.Widget {
   }
 
   vfunc_get_focus_chain() {
-    if (this._expanded) return [...this._messages, this.collapseButton];
-    const top = this._messages[0];
+    if (this._expanded) return [...this._banners, this.collapseButton];
+    const top = this._banners[0];
     return top ? [top] : [];
   }
 
@@ -379,8 +380,8 @@ export default GObject.registerClass(
     },
     Signals: {
       "expand-toggle-requested": {},
-      "message-focused": { param_types: [Clutter.Actor.$gtype] },
+      "banner-focused": { param_types: [Clutter.Actor.$gtype] },
     },
   },
-  EnhancedMediaMessageGroup,
+  EnhanceNotificationBannerGroup,
 );

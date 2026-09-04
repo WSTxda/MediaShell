@@ -28,8 +28,8 @@ let recordsPromise = null;
 
 const PRIVATE_SHELL_BOUNDARIES = Object.freeze([
   {
-    root: "src/shell/private/gnomeShell/mediaControls/",
-    boundary: "src/shell/integrations/nativeMediaControls.js",
+    root: "src/shell/private/gnomeShell/nativeControls/",
+    boundary: "src/shell/integrations/nativeControls.js",
   },
   {
     root: "src/shell/private/gnomeShell/panelMenu/",

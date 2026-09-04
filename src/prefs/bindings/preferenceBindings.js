@@ -279,14 +279,10 @@ const INTERACTIONS_BINDINGS = Object.freeze([
 ]);
 
 const OTHERS_BINDINGS = Object.freeze([
+  [SettingsKeys.NATIVE_CONTROLS_HIDE, "sr-native-controls-hide", "active"],
   [
-    SettingsKeys.NATIVE_MEDIA_CONTROLS_ENHANCED,
-    "sr-native-media-controls-enhanced",
-    "active",
-  ],
-  [
-    SettingsKeys.NATIVE_MEDIA_CONTROLS_HIDDEN,
-    "sr-native-media-controls-hidden",
+    SettingsKeys.NATIVE_CONTROLS_ENHANCE,
+    "sr-native-controls-enhance",
     "active",
   ],
   [SettingsKeys.ARTWORK_CACHE_ENABLED, "sr-artwork-cache-enabled", "active"],
