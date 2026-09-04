@@ -1,21 +1,23 @@
 /**
- * @file gnomeShellMediaGrouping.js
- * @module shell.services.gnomeShellMediaGrouping
+ * @file grouping.js
+ * @module shell.private.gnomeShell.mediaControls.grouping
  *
- * Owns notification-list grouping while Enhance replaces native media messages.
+ * Owns the reversible notification-list grouping transaction while Enhance
+ * replaces native player messages. Native ownership is restored on teardown or
+ * whenever the private grouping contract becomes invalid.
  */
 
-import { createLogger } from "../../shared/logging/logger.js";
-import EnhancedMediaMessageGroup from "../ui/notifications/enhancedMediaMessageGroup.js";
+import { createLogger } from "../../../../shared/logging/logger.js";
+import EnhancedMediaMessageGroup from "./messageGroup.js";
 
-const logger = createLogger("GnomeShellMediaGrouping");
+const logger = createLogger("MediaMessageGrouping");
 
-export default class GnomeShellMediaGrouping {
+export default class MediaMessageGrouping {
   static create(context, callbacks = {}) {
     if (!context) return null;
     const operations = context.resolveGroupingOperations();
     return operations
-      ? new GnomeShellMediaGrouping(context, operations, callbacks)
+      ? new MediaMessageGrouping(context, operations, callbacks)
       : null;
   }
 

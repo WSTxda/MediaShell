@@ -1,8 +1,10 @@
 /**
- * @file gnomeShellMediaControlsCompatibility.js
- * @module shell.services.gnomeShellMediaControlsCompatibility
+ * @file compatibility.js
+ * @module shell.private.gnomeShell.mediaControls.compatibility
  *
- * Resolves the private GNOME Shell media contracts used by Hide and Enhance.
+ * Resolves and feature-detects the private GNOME Shell media contracts used
+ * by Hide and Enhance. Direct reads of Shell-private media fields are confined
+ * to this module so version-specific structure cannot leak into MediaShell.
  */
 
 import * as Main from "resource:///org/gnome/shell/ui/main.js";

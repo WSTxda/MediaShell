@@ -21,8 +21,7 @@ import { NativeMediaControlsModes } from "../shared/settings/contract.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
-import GnomeShellEnhanceMediaControls from "./services/gnomeShellEnhanceMediaControls.js";
-import GnomeShellHideMediaControls from "./services/gnomeShellHideMediaControls.js";
+import NativeMediaControlsIntegration from "./integrations/nativeMediaControls.js";
 import ExtensionResourceRegistry from "./services/extensionResourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
@@ -64,8 +63,7 @@ export default class ExtensionController {
     this.extensionResourceRegistry = new ExtensionResourceRegistry(
       this.extensionPath,
     );
-    this.gnomeShellHideMediaControlsService = null;
-    this.gnomeShellEnhanceMediaControlsService = null;
+    this.nativeMediaControlsIntegration = new NativeMediaControlsIntegration();
     this.settingsSubscriptions = [];
   }
 
@@ -154,7 +152,7 @@ export default class ExtensionController {
         await this.startMediaRuntime(runtimeReconcileGeneration, {
           includeUserServices: true,
         });
-      } else this.reconcileGnomeShellMediaControls();
+      } else this.reconcileNativeMediaControls();
       return;
     }
 
@@ -162,7 +160,7 @@ export default class ExtensionController {
       if (
         this.settings.integration.nativeMediaControlsMode !==
           NativeMediaControlsModes.ENHANCED ||
-        !GnomeShellEnhanceMediaControls.supportsLockScreen()
+        !NativeMediaControlsIntegration.supportsLockScreen()
       ) {
         this.destroyRuntimeComponents();
         return;
@@ -173,7 +171,7 @@ export default class ExtensionController {
         await this.startMediaRuntime(runtimeReconcileGeneration, {
           includeUserServices: false,
         });
-      } else this.reconcileGnomeShellMediaControls();
+      } else this.reconcileNativeMediaControls();
       return;
     }
 
@@ -191,7 +189,7 @@ export default class ExtensionController {
 
     if (includeUserServices) {
       // Hide can be applied before the MediaShell MPRIS runtime exists.
-      this.reconcileGnomeShellMediaControls();
+      this.reconcileNativeMediaControls();
       this.globalShortcutsService = new GlobalShortcutsService(
         this.settings.keybindings,
         (inputAction) => this.executeInputAction(inputAction),
@@ -203,7 +201,7 @@ export default class ExtensionController {
     if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
       return;
 
-    this.reconcileGnomeShellMediaControls();
+    this.reconcileNativeMediaControls();
   }
 
   hasMediaRuntime() {
@@ -213,8 +211,6 @@ export default class ExtensionController {
   hasRuntimeComponents() {
     return Boolean(
       this.globalShortcutsService ||
-      this.gnomeShellEnhanceMediaControlsService ||
-      this.gnomeShellHideMediaControlsService ||
       this.indicator ||
       this.mediaRuntime,
     );
@@ -248,7 +244,7 @@ export default class ExtensionController {
         if (this.runtimeProfile === RuntimeProfiles.UNLOCK_DIALOG)
           void this.scheduleRuntimeProfileReconcile();
         else if (this.runtimeProfile === RuntimeProfiles.USER)
-          this.reconcileGnomeShellMediaControls();
+          this.reconcileNativeMediaControls();
       }),
     );
   }
@@ -263,64 +259,15 @@ export default class ExtensionController {
       this.indicator?.requestSurfaceUpdate({
         popup: PopupRegions.MEDIA_APP_SELECTOR,
       });
-    this.gnomeShellEnhanceMediaControlsService?.reconcile();
+    this.reconcileNativeMediaControls();
   }
 
-  getEnhanceMediaControlsOptions() {
-    return {
-      artworkService: this.mediaRuntime?.artwork ?? null,
-      playbackController: this.mediaRuntime?.playback ?? null,
-      getAvailableMediaApps: () => this.mediaRuntime?.getAvailablePlayers() ?? [],
-    };
-  }
-
-  reconcileGnomeShellMediaControls() {
-    const mode = this.settings?.integration.nativeMediaControlsMode;
-
-    if (this.runtimeProfile === RuntimeProfiles.USER) {
-      if (mode === NativeMediaControlsModes.HIDDEN) {
-        this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
-        if (!this.gnomeShellHideMediaControlsService)
-          this.gnomeShellHideMediaControlsService =
-            new GnomeShellHideMediaControls();
-        this.gnomeShellHideMediaControlsService.reconcile();
-        return;
-      }
-
-      this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
-      if (
-        mode !== NativeMediaControlsModes.ENHANCED ||
-        !this.hasMediaRuntime()
-      ) {
-        this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
-        return;
-      }
-
-      if (!this.gnomeShellEnhanceMediaControlsService)
-        this.gnomeShellEnhanceMediaControlsService =
-          GnomeShellEnhanceMediaControls.createNotificationList(
-            this.getEnhanceMediaControlsOptions(),
-          );
-      this.gnomeShellEnhanceMediaControlsService.reconcile();
-      return;
-    }
-
-    this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
-    if (
-      this.runtimeProfile !== RuntimeProfiles.UNLOCK_DIALOG ||
-      mode !== NativeMediaControlsModes.ENHANCED ||
-      !this.hasMediaRuntime()
-    ) {
-      this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
-      return;
-    }
-
-    if (!this.gnomeShellEnhanceMediaControlsService)
-      this.gnomeShellEnhanceMediaControlsService =
-        GnomeShellEnhanceMediaControls.createLockScreen(
-          this.getEnhanceMediaControlsOptions(),
-        );
-    this.gnomeShellEnhanceMediaControlsService.reconcile();
+  reconcileNativeMediaControls() {
+    this.nativeMediaControlsIntegration?.reconcile({
+      profile: this.runtimeProfile,
+      mode: this.settings?.integration.nativeMediaControlsMode ?? null,
+      mediaRuntime: this.mediaRuntime ?? null,
+    });
   }
 
   rebuildIndicator() {
@@ -420,8 +367,7 @@ export default class ExtensionController {
 
   destroyRuntimeComponents() {
     this.destroyOwnedComponent("globalShortcutsService");
-    this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
-    this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
+    this.nativeMediaControlsIntegration?.reset();
     this.destroyIndicator();
     this.destroyOwnedComponent("mediaRuntime");
     clearIconCache();
@@ -444,6 +390,7 @@ export default class ExtensionController {
     this.settings?.destroy();
     this.settings = null;
     this.runtimeProfile = null;
+    this.destroyOwnedComponent("nativeMediaControlsIntegration");
     this.destroyOwnedComponent("extensionResourceRegistry");
   }
 }

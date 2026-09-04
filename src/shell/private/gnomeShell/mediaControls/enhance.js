@@ -1,24 +1,26 @@
 /**
- * @file gnomeShellEnhanceMediaControls.js
- * @module shell.services.gnomeShellEnhanceMediaControls
+ * @file enhance.js
+ * @module shell.private.gnomeShell.mediaControls.enhance
  *
- * Reversibly enhances one GNOME Shell media surface with MediaShell state.
+ * Reversibly enhances one GNOME Shell media surface by projecting injected
+ * MediaShell players, artwork, and playback capabilities onto private native
+ * messages. The implementation never becomes an authority for MPRIS state.
  */
 
 import GLib from "gi://GLib";
 
-import { createLogger } from "../../shared/logging/logger.js";
-import EnhancedMediaMessageBinding from "../ui/notifications/enhancedMediaMessageBinding.js";
+import { createLogger } from "../../../../shared/logging/logger.js";
+import EnhancedMediaMessageBinding from "./messageBinding.js";
 import {
   connectLockScreenShown,
   resolveLockScreenMediaContext,
   resolveMediaMessageContext,
   resolveNotificationListMediaContext,
   supportsLockScreenMediaContext,
-} from "./gnomeShellMediaControlsCompatibility.js";
-import GnomeShellMediaGrouping from "./gnomeShellMediaGrouping.js";
+} from "./compatibility.js";
+import MediaMessageGrouping from "./grouping.js";
 
-const logger = createLogger("GnomeShellEnhanceMediaControls");
+const logger = createLogger("EnhancedNativeMediaControls");
 
 const NOTIFICATION_LIST_CONFIG = Object.freeze({
   resolveContext: resolveNotificationListMediaContext,
@@ -46,33 +48,33 @@ const LOCK_SCREEN_CONFIG = Object.freeze({
 });
 
 /** Owns enhancement bindings for one private GNOME Shell media surface. */
-export default class GnomeShellEnhanceMediaControls {
+export default class EnhancedMediaControls {
   static supportsLockScreen() {
     return supportsLockScreenMediaContext();
   }
 
   static createNotificationList(options) {
-    return new GnomeShellEnhanceMediaControls(
+    return new EnhancedMediaControls(
       options,
       NOTIFICATION_LIST_CONFIG,
     );
   }
 
   static createLockScreen(options) {
-    return new GnomeShellEnhanceMediaControls(options, LOCK_SCREEN_CONFIG);
+    return new EnhancedMediaControls(options, LOCK_SCREEN_CONFIG);
   }
 
   constructor(
     {
       artworkService,
       playbackController,
-      getAvailableMediaApps,
+      getAvailablePlayers,
     },
     config,
   ) {
     this.artworkService = artworkService;
     this.playbackController = playbackController;
-    this.getAvailableMediaApps = getAvailableMediaApps;
+    this.getAvailablePlayers = getAvailablePlayers;
     this.config = config;
 
     this.context = null;
@@ -164,10 +166,10 @@ export default class GnomeShellEnhanceMediaControls {
   reconcileBindings() {
     if (!this.context) return;
 
-    const mediaAppsByBusName = new Map(
-      this.getAvailableMediaApps()
-        .filter((mediaApp) => mediaApp?.busName)
-        .map((mediaApp) => [mediaApp.busName, mediaApp]),
+    const playersByBusName = new Map(
+      this.getAvailablePlayers()
+        .filter((player) => player?.busName)
+        .map((player) => [player.busName, player]),
     );
     const currentMessages = new Set();
 
@@ -179,9 +181,9 @@ export default class GnomeShellEnhanceMediaControls {
       try {
         const existingBinding = this.bindings.get(message);
         if (existingBinding?.active) {
-          const mediaApp =
-            mediaAppsByBusName.get(existingBinding.busName) ?? null;
-          if (existingBinding.mediaApp === mediaApp) {
+          const player =
+            playersByBusName.get(existingBinding.busName) ?? null;
+          if (existingBinding.player === player) {
             existingBinding.schedulePresentationSync();
             continue;
           }
@@ -192,10 +194,10 @@ export default class GnomeShellEnhanceMediaControls {
         if (!messageContext) continue;
         bindingKey = messageContext.busName;
 
-        const mediaApp = mediaAppsByBusName.get(messageContext.busName) ?? null;
-        if (!mediaApp) continue;
+        const player = playersByBusName.get(messageContext.busName) ?? null;
+        if (!player) continue;
 
-        this.createBinding(message, messageContext, mediaApp);
+        this.createBinding(message, messageContext, player);
       } catch (error) {
         this.removeBinding(message);
         logger.warnOnce(
@@ -239,7 +241,7 @@ export default class GnomeShellEnhanceMediaControls {
     if (!this.grouping) {
       if (this.context.getPlayerMessages().length === 0) return;
 
-      const grouping = GnomeShellMediaGrouping.create(this.context, {
+      const grouping = MediaMessageGrouping.create(this.context, {
         beforeTakeOwnership: () =>
           this.destroyBindings({ restoreNative: false }),
         onMessageRemoving: (message) =>
@@ -276,8 +278,8 @@ export default class GnomeShellEnhanceMediaControls {
     grouping.destroy({ restoreNative });
   }
 
-  createBinding(message, messageContext, mediaApp) {
-    const binding = new EnhancedMediaMessageBinding(messageContext, mediaApp, {
+  createBinding(message, messageContext, player) {
+    const binding = new EnhancedMediaMessageBinding(messageContext, player, {
       artworkService: this.artworkService,
       playbackController: this.playbackController,
       onDestroyed: (destroyedBinding) => {
@@ -341,6 +343,6 @@ export default class GnomeShellEnhanceMediaControls {
     this.config = null;
     this.artworkService = null;
     this.playbackController = null;
-    this.getAvailableMediaApps = null;
+    this.getAvailablePlayers = null;
   }
 }

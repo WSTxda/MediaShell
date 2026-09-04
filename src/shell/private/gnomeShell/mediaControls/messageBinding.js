@@ -1,8 +1,10 @@
 /**
- * @file enhancedMediaMessageBinding.js
- * @module shell.ui.notifications.enhancedMediaMessageBinding
+ * @file messageBinding.js
+ * @module shell.private.gnomeShell.mediaControls.messageBinding
  *
- * Reversibly decorates one GNOME Shell MediaMessage with MediaShell state.
+ * Owns the reversible presentation binding between one private GNOME Shell
+ * MediaMessage and one canonical MprisPlayer. Protocol state and operations are
+ * consumed from MediaShell; this class owns only native-message presentation.
  */
 
 import Clutter from "gi://Clutter";
@@ -13,34 +15,34 @@ import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
-import { IconNames } from "../../../shared/icons.js";
-import { MprisPlayerProperties } from "../../mpris/protocol.js";
-import { PlaybackControlIds } from "../../../shared/playback/controls.js";
-import { PlaybackStatus } from "../../mpris/protocol.js";
-import { normalizeTrackDurationMicroseconds } from "../../mpris/position.js";
-import { resolvePlaybackProgress } from "../../media/playback/progress.js";
-import { createArtworkRequest } from "../../media/artwork/request.js";
+import { IconNames } from "../../../../shared/icons.js";
+import { MprisPlayerProperties } from "../../../mpris/protocol.js";
+import { PlaybackControlIds } from "../../../../shared/playback/controls.js";
+import { PlaybackStatus } from "../../../mpris/protocol.js";
+import { normalizeTrackDurationMicroseconds } from "../../../mpris/position.js";
+import { resolvePlaybackProgress } from "../../../media/playback/progress.js";
+import { createArtworkRequest } from "../../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
   getArtworkPresentationGeometry,
   prepareArtworkPixbuf,
-} from "../../media/artwork/presentation.js";
-import { createLogger } from "../../../shared/logging/logger.js";
-import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
+} from "../../../media/artwork/presentation.js";
+import { createLogger } from "../../../../shared/logging/logger.js";
+import { resolvePlaybackControlState } from "../../../media/playback/controlState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
-import { placeActorAtIndex } from "../components/actorOrder.js";
-import { isCancellationError } from "../../utils/errors.js";
-import { createIcon, setGIcon } from "../../utils/icons.js";
-import { updatePlaybackControlButton } from "../components/playback/button.js";
+} from "../../../constants/actorState.js";
+import { StyleClasses } from "../../../constants/styleClasses.js";
+import { placeActorAtIndex } from "../../../ui/components/actorOrder.js";
+import { isCancellationError } from "../../../utils/errors.js";
+import { createIcon, setGIcon } from "../../../utils/icons.js";
+import { updatePlaybackControlButton } from "../../../ui/components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
-} from "../components/playback/content.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+} from "../../../ui/components/playback/content.js";
+import { styleClassNames } from "../../../utils/styleClasses.js";
 
 const logger = createLogger("EnhancedMediaMessageBinding");
 
@@ -104,7 +106,7 @@ function colorToRgba(color, alphaScale = 1) {
 export default class EnhancedMediaMessageBinding {
   constructor(
     messageContext,
-    mediaApp,
+    player,
     {
       artworkService,
       playbackController,
@@ -113,14 +115,14 @@ export default class EnhancedMediaMessageBinding {
   ) {
     this.context = messageContext;
     this.message = messageContext.message;
-    this.mediaApp = mediaApp;
+    this.player = player;
     this.artworkService = artworkService;
     this.playbackController = playbackController;
     this.onDestroyed = onDestroyed;
 
     this.updateSourceId = null;
     this.refreshExactPosition = false;
-    this.mediaAppPropertyListeners = [];
+    this.playerPropertyListeners = [];
     this.messageSignalIds = [];
     this.positionChangeDisconnect = null;
     this.nativeIconVisibilitySignalId = null;
@@ -187,7 +189,7 @@ export default class EnhancedMediaMessageBinding {
       return true;
     } catch (error) {
       logger.warnOnce(
-        `enable:${this.mediaApp?.busName ?? "unknown"}`,
+        `enable:${this.player?.busName ?? "unknown"}`,
         "Failed to enhance a GNOME Shell media message",
         error,
       );
@@ -260,7 +262,7 @@ export default class EnhancedMediaMessageBinding {
       if (!this.seekEnabled) return Clutter.EVENT_PROPAGATE;
 
       this.dragging = true;
-      this.dragTrackId = this.mediaApp.trackId;
+      this.dragTrackId = this.player.trackId;
       this.resumeAfterDrag = Boolean(this.playbackTransition?.is_playing());
       this.playbackTransition?.pause();
       return Clutter.EVENT_PROPAGATE;
@@ -283,7 +285,7 @@ export default class EnhancedMediaMessageBinding {
   }
 
   createControlButton(controlId) {
-    const initialState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const initialState = resolvePlaybackControlState(this.player, controlId);
     const controlDefinition = initialState.control;
     const button = new St.Button({
       name: `enhanced-${controlDefinition.actorName}`,
@@ -308,10 +310,10 @@ export default class EnhancedMediaMessageBinding {
       if (!button.reactive || !buttonState.action) return;
       if (controlDefinition.isStateControl)
         button.checked = resolvePlaybackControlState(
-          this.mediaApp,
+          this.player,
           controlId,
         ).isActive;
-      void this.playbackController.execute(buttonState.action, this.mediaApp);
+      void this.playbackController.execute(buttonState.action, this.player);
     });
     button.set_child(content.actor);
     this.controlButtons.set(controlId, buttonState);
@@ -356,7 +358,7 @@ export default class EnhancedMediaMessageBinding {
         this.message,
         this.message.connect("expanded", () => {
           this.syncTransportLayout(true);
-          this.syncProgress(this.mediaApp.estimatedPositionMicroseconds);
+          this.syncProgress(this.player.estimatedPositionMicroseconds);
           this.requestExactPosition();
         }),
       ],
@@ -389,16 +391,16 @@ export default class EnhancedMediaMessageBinding {
 
   connectMediaAppState() {
     for (const property of OBSERVED_PLAYER_PROPERTIES) {
-      const listenerId = this.mediaApp.onPropertyChanged(property, () => {
+      const listenerId = this.player.onPropertyChanged(property, () => {
         if (property === MprisPlayerProperties.METADATA)
           this.refreshExactPosition = true;
         this.schedulePresentationSync();
       });
       if (listenerId)
-        this.mediaAppPropertyListeners.push({ property, listenerId });
+        this.playerPropertyListeners.push({ property, listenerId });
     }
 
-    this.positionChangeDisconnect = this.mediaApp.onPositionChanged(
+    this.positionChangeDisconnect = this.player.onPositionChanged(
       (positionMicroseconds) => {
         if (!this.active || this.dragging) return;
         this.syncProgress(positionMicroseconds);
@@ -447,7 +449,7 @@ export default class EnhancedMediaMessageBinding {
     if (!this.active) return;
 
     for (const controlId of CONTROL_IDS) this.syncControl(controlId);
-    this.syncProgress(this.mediaApp.estimatedPositionMicroseconds);
+    this.syncProgress(this.player.estimatedPositionMicroseconds);
     this.syncSeekTheme();
     this.context.setExpandButtonOpacity(ACTIVE_OPACITY);
     if (this.message.mapped) this.syncArtwork();
@@ -458,14 +460,14 @@ export default class EnhancedMediaMessageBinding {
     const buttonState = this.controlButtons.get(controlId);
     if (!buttonState) return;
 
-    const controlState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const controlState = resolvePlaybackControlState(this.player, controlId);
     const isVisible = this.isControlVisible(controlId);
 
     buttonState.action = controlState.action;
     updatePlaybackControlContent(buttonState.content, controlState);
     updatePlaybackControlButton(
       buttonState.button,
-      this.mediaApp,
+      this.player,
       controlState,
       _,
     );
@@ -486,9 +488,9 @@ export default class EnhancedMediaMessageBinding {
 
   isControlVisible(controlId) {
     if (controlId === PlaybackControlIds.REPEAT)
-      return this.mediaApp.canSetLoopStatus;
+      return this.player.canSetLoopStatus;
     if (controlId === PlaybackControlIds.SHUFFLE)
-      return this.mediaApp.canSetShuffle;
+      return this.player.canSetShuffle;
     return true;
   }
 
@@ -509,7 +511,7 @@ export default class EnhancedMediaMessageBinding {
       if (!buttonState) continue;
 
       const controlState = resolvePlaybackControlState(
-        this.mediaApp,
+        this.player,
         controlId,
       );
       this.syncStateControlStyle(
@@ -553,7 +555,7 @@ export default class EnhancedMediaMessageBinding {
 
   getCurrentTrackDurationMicroseconds() {
     return normalizeTrackDurationMicroseconds(
-      this.mediaApp.track.lengthMicroseconds,
+      this.player.track.lengthMicroseconds,
     );
   }
 
@@ -563,11 +565,11 @@ export default class EnhancedMediaMessageBinding {
     const progress = resolvePlaybackProgress(
       positionMicroseconds,
       this.getCurrentTrackDurationMicroseconds(),
-      this.mediaApp.rate,
+      this.player.rate,
     );
     this.progressAvailable = progress !== null;
     this.seekEnabled = Boolean(
-      this.progressAvailable && this.mediaApp.canSetPosition,
+      this.progressAvailable && this.player.canSetPosition,
     );
 
     this.slider.reactive = this.seekEnabled;
@@ -609,7 +611,7 @@ export default class EnhancedMediaMessageBinding {
       !this.dragging &&
       this.message?.mapped &&
       this.message.expanded &&
-      this.mediaApp.playbackStatus === PlaybackStatus.PLAYING
+      this.player.playbackStatus === PlaybackStatus.PLAYING
     ) {
       this.ensureProgressTransitionAttached();
       if (!this.playbackTransition.is_playing())
@@ -631,7 +633,7 @@ export default class EnhancedMediaMessageBinding {
     this.dragTrackId = null;
     this.resumeAfterDrag = false;
 
-    const currentTrackId = this.mediaApp.trackId;
+    const currentTrackId = this.player.trackId;
     const durationMicroseconds = this.getCurrentTrackDurationMicroseconds();
     if (
       !this.seekEnabled ||
@@ -639,7 +641,7 @@ export default class EnhancedMediaMessageBinding {
       dragTrackId !== currentTrackId ||
       !durationMicroseconds
     ) {
-      this.syncProgress(this.mediaApp.estimatedPositionMicroseconds);
+      this.syncProgress(this.player.estimatedPositionMicroseconds);
       return;
     }
 
@@ -649,13 +651,13 @@ export default class EnhancedMediaMessageBinding {
     void Promise.resolve(
       this.playbackController.setPosition(
         requestedPositionMicroseconds,
-        this.mediaApp,
+        this.player,
         currentTrackId,
       ),
     )
       .catch((error) =>
         logger.debugOnce(
-          `seek:${this.mediaApp.busName}`,
+          `seek:${this.player.busName}`,
           "Enhanced media seek failed",
           error,
         ),
@@ -677,13 +679,13 @@ export default class EnhancedMediaMessageBinding {
       return;
 
     const refreshGeneration = ++this.positionRefreshGeneration;
-    const mediaApp = this.mediaApp;
-    void mediaApp.positionMicroseconds
+    const player = this.player;
+    void player.positionMicroseconds
       .then((positionMicroseconds) => {
         if (
           !this.active ||
           refreshGeneration !== this.positionRefreshGeneration ||
-          mediaApp !== this.mediaApp ||
+          player !== this.player ||
           this.dragging
         )
           return;
@@ -691,7 +693,7 @@ export default class EnhancedMediaMessageBinding {
       })
       .catch((error) =>
         logger.debugOnce(
-          `exact-position:${mediaApp.busName}`,
+          `exact-position:${player.busName}`,
           "Could not read exact position for an enhanced media message",
           error,
         ),
@@ -755,8 +757,8 @@ export default class EnhancedMediaMessageBinding {
     if (!this.message?.mapped || !this.albumArtFrame) return;
 
     const request = createArtworkRequest({
-      busName: this.mediaApp.busName,
-      track: this.mediaApp.track,
+      busName: this.player.busName,
+      track: this.player.track,
       width: ENHANCED_ALBUM_ART_SIZE,
       radius: ENHANCED_ALBUM_ART_RADIUS,
     });
@@ -876,7 +878,7 @@ export default class EnhancedMediaMessageBinding {
       loadGeneration === this.albumArtLoadGeneration &&
       !loadCancellable.is_cancelled() &&
       this.loadingAlbumArtKey === request.key &&
-      this.mediaApp?.busName === request.busName
+      this.player?.busName === request.busName
     );
   }
 
@@ -908,9 +910,9 @@ export default class EnhancedMediaMessageBinding {
   }
 
   disconnectMediaAppState() {
-    for (const { property, listenerId } of this.mediaAppPropertyListeners)
-      this.mediaApp.removePropertyChangeListener(property, listenerId);
-    this.mediaAppPropertyListeners = [];
+    for (const { property, listenerId } of this.playerPropertyListeners)
+      this.player.removePropertyChangeListener(property, listenerId);
+    this.playerPropertyListeners = [];
     if (this.positionChangeDisconnect) this.positionChangeDisconnect();
     this.positionChangeDisconnect = null;
   }
@@ -935,7 +937,7 @@ export default class EnhancedMediaMessageBinding {
       this.context.refreshExpandButton();
     } catch (error) {
       logger.debugOnce(
-        `restore:${this.mediaApp?.busName ?? "unknown"}`,
+        `restore:${this.player?.busName ?? "unknown"}`,
         "Native media-message presentation could not be fully restored",
         error,
       );
@@ -977,7 +979,7 @@ export default class EnhancedMediaMessageBinding {
 
     this.context = null;
     this.message = null;
-    this.mediaApp = null;
+    this.player = null;
     this.artworkService = null;
     this.playbackController = null;
     this.onDestroyed = null;
