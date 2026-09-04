@@ -6,7 +6,7 @@
  *
  * The component mirrors GNOME Shell's volume-row interaction: MPRIS property
  * updates resynchronize the slider and icon when no local drag owns the control,
- * while user changes are written through MprisPlayer. The left endpoint toggles
+ * while user changes are written through PlaybackController. The left endpoint toggles
  * mute and restores the last non-zero volume; the right endpoint raises volume by
  * a fixed popup-local step.
  */
@@ -34,8 +34,9 @@ const VOLUME_ICON_NAMES = Object.freeze({
 
 /** Owns the popup volume row. */
 export default class PopupVolumeControl {
-  constructor(popupContent) {
+  constructor(popupContent, playbackController) {
     this.popupContent = popupContent;
+    this.playbackController = playbackController;
     this.actor = null;
     this.muteButton = null;
     this.muteIcon = null;
@@ -109,7 +110,7 @@ export default class PopupVolumeControl {
       const value = this.slider.value;
       if (value > 0) this.lastNonZeroVolume = value;
       this.syncVolumePresentation(value);
-      void this.mediaApp.setVolume(value);
+      void this.playbackController.setVolume(value, this.mediaApp);
     });
     this.slider.connectObject(
       "drag-begin",
@@ -186,12 +187,13 @@ export default class PopupVolumeControl {
     const currentVolume = this.mediaApp.volume;
     if (currentVolume > 0) {
       this.lastNonZeroVolume = currentVolume;
-      void this.mediaApp.setVolume(0);
+      void this.playbackController.setVolume(0, this.mediaApp);
       return;
     }
 
-    void this.mediaApp.setVolume(
+    void this.playbackController.setVolume(
       this.lastNonZeroVolume ?? UNMUTE_DEFAULT_VOLUME,
+      this.mediaApp,
     );
   }
 
@@ -205,7 +207,7 @@ export default class PopupVolumeControl {
 
     const targetVolume = Math.min(currentVolume + VOLUME_UP_STEP, 1);
     this.lastNonZeroVolume = targetVolume;
-    void this.mediaApp.setVolume(targetVolume);
+    void this.playbackController.setVolume(targetVolume, this.mediaApp);
   }
 
   attach() {
@@ -253,6 +255,7 @@ export default class PopupVolumeControl {
 
   destroy() {
     this.remove();
+    this.playbackController = null;
     this.popupContent = null;
   }
 }

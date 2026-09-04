@@ -1,21 +1,20 @@
 /**
- * @file popupMediaAppSelectorController.js
- * @module shell.ui.popup.popupMediaAppSelectorController
+ * @file popupMediaAppSelector.js
+ * @module shell.ui.popup.popupMediaAppSelector
  *
- * Coordinates popup media app selector visibility and selection events.
+ * Owns the popup media-app selector button/list composition and interaction.
  *
- * PopupContent delegates selector state to this controller so the list can be
- * rebuilt independently from album art, the progress bar, and playback controls.
- * It owns the selector list instance and forwards user choices to ExtensionController.
+ * PopupContent delegates selector state to this component so its list can be
+ * reconciled independently from album art, progress, and playback controls.
  */
 
 import PopupMediaAppSelectorButton from "./popupMediaAppSelectorButton.js";
 import PopupMediaAppSelectorList from "./popupMediaAppSelectorList.js";
 
 /**
- * Coordinates popup media app selector visibility and selection events.
+ * Owns the popup media-app selector button/list composition and interaction.
  */
-export default class PopupMediaAppSelectorController {
+export default class PopupMediaAppSelector {
   constructor(popupContent, desktopAppResolver) {
     this.popupContent = popupContent;
     this.mediaAppSelectorButton = new PopupMediaAppSelectorButton(

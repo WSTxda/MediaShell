@@ -16,7 +16,7 @@ import {
   VOLUME_STEP,
 } from "../shared/input/actions.js";
 import { InputActions } from "../shared/input/types.js";
-import { WidgetFlags } from "./ui/widgetFlags.js";
+import { PopupRegions } from "./ui/popup/regions.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
@@ -244,7 +244,7 @@ export default class ExtensionController {
 
   handleSettingChange(_settingKey, settingValue, settingSpec) {
     if (settingSpec.impact)
-      this.indicator?.requestWidgetUpdate(settingSpec.impact);
+      this.indicator?.requestSurfaceUpdate(settingSpec.impact);
 
     switch (settingSpec.action) {
       case SettingsAction.REBUILD_INDICATOR:
@@ -274,7 +274,9 @@ export default class ExtensionController {
 
   handleAvailablePlayersChanged() {
     if (this.runtimeProfile === RuntimeProfiles.USER)
-      this.indicator?.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
+      this.indicator?.requestSurfaceUpdate({
+        popup: PopupRegions.MEDIA_APP_SELECTOR,
+      });
     this.gnomeShellEnhanceMediaControlsService?.reconcile();
   }
 

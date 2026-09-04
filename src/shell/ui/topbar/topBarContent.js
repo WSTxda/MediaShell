@@ -2,10 +2,11 @@
  * @file topBarContent.js
  * @module shell.ui.topbar.topBarContent
  *
- * Owns the MediaShell content rendered inside the GNOME top bar indicator.
+ * Owns and incrementally reconciles the MediaShell top-bar surface.
  *
- * MediaShellIndicator owns the panel actor and popup. This component owns the
- * top bar layout, element order, visibility, renderers, and their teardown.
+ * TopBarContent owns its actor tree, surface-local dirty regions, and the idle
+ * source used to coalesce MPRIS/settings bursts. Popup state is intentionally
+ * absent from this module.
  */
 
 import Clutter from "gi://Clutter";
@@ -13,15 +14,16 @@ import St from "gi://St";
 
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { TopBarElementIds } from "../../../shared/ui/topBar.js";
-import { WidgetFlags } from "../widgetFlags.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
+import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
 import TopBarAlbumArt from "./topBarAlbumArt.js";
 import TopBarMediaAppIcon from "./topBarMediaAppIcon.js";
 import TopBarPlaybackControls from "./topBarPlaybackControls.js";
 import TopBarTrackInformation from "./topBarTrackInformation.js";
 import TopBarVisualizer from "./topBarVisualizer.js";
+import { TopBarRegions } from "./regions.js";
 
 const logger = createLogger("TopBarContent");
 
@@ -35,6 +37,15 @@ export default class TopBarContent {
     this.topBarBox = null;
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
+    this.updateQueue = new CoalescedUpdateQueue(
+      (regions) => this.reconcile(regions),
+      (error) =>
+        logger.errorOnce(
+          "deferred-surface-update",
+          "Deferred top-bar reconciliation failed",
+          error,
+        ),
+    );
     this.mediaAppIcon = new TopBarMediaAppIcon(this, desktopAppResolver);
     this.albumArt = new TopBarAlbumArt(this, artworkService);
     this.trackInformation = new TopBarTrackInformation(this);
@@ -51,8 +62,17 @@ export default class TopBarContent {
     return this.indicator.mediaApp;
   }
 
-  updateWidgets(widgetFlags) {
-    if (!this.indicator) return;
+  requestUpdate(regions) {
+    this.updateQueue?.request(regions & TopBarRegions.ALL);
+  }
+
+  resetPendingUpdates() {
+    this.updateQueue?.cancel();
+  }
+
+  reconcile(regions) {
+    const topBarRegions = regions & TopBarRegions.ALL;
+    if (!this.indicator || !topBarRegions) return;
 
     this.ensureLayout();
 
@@ -81,10 +101,10 @@ export default class TopBarContent {
 
       if (
         elementId === TopBarElementIds.MEDIA_APP_ICON &&
-        (widgetFlags & WidgetFlags.TOP_BAR_MEDIA_APP_ICON ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+        (topBarRegions & TopBarRegions.MEDIA_APP_ICON ||
+          topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar media app icon", () => {
+        this.runComponentUpdate("top bar media app icon", () => {
           if (isVisible) this.mediaAppIcon.render(targetIndex, targetBox);
           else this.mediaAppIcon.remove();
         });
@@ -92,10 +112,10 @@ export default class TopBarContent {
 
       if (
         elementId === TopBarElementIds.ALBUM_ART &&
-        (widgetFlags & WidgetFlags.TOP_BAR_ALBUM_ART ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+        (topBarRegions & TopBarRegions.ARTWORK ||
+          topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar album art", () => {
+        this.runComponentUpdate("top bar album art", () => {
           if (isVisible) this.albumArt.render(targetIndex, targetBox);
           else this.albumArt.remove();
         });
@@ -103,10 +123,10 @@ export default class TopBarContent {
 
       if (
         elementId === TopBarElementIds.TRACK_INFORMATION &&
-        (widgetFlags & WidgetFlags.TOP_BAR_TRACK_INFORMATION ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+        (topBarRegions & TopBarRegions.TRACK_INFORMATION ||
+          topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar track information", () => {
+        this.runComponentUpdate("top bar track information", () => {
           if (isVisible) this.trackInformation.render(targetIndex, targetBox);
           else this.trackInformation.remove();
         });
@@ -114,21 +134,21 @@ export default class TopBarContent {
 
       if (
         elementId === TopBarElementIds.VISUALIZER &&
-        (widgetFlags & WidgetFlags.TOP_BAR_VISUALIZER ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+        (topBarRegions & TopBarRegions.VISUALIZER ||
+          topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar visualizer", () =>
+        this.runComponentUpdate("top bar visualizer", () =>
           this.reconcileVisualizer(targetIndex, targetBox),
         );
       }
 
       if (
         elementId === TopBarElementIds.PLAYBACK_CONTROLS &&
-        (widgetFlags & WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS ||
-          widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER)
+        (topBarRegions & TopBarRegions.PLAYBACK_CONTROLS ||
+          topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runWidgetUpdate("top bar playback controls", () => {
-          if (isVisible) this.playbackControls.render(widgetFlags);
+        this.runComponentUpdate("top bar playback controls", () => {
+          if (isVisible) this.playbackControls.render(topBarRegions);
           else this.playbackControls.remove();
         });
       }
@@ -142,8 +162,9 @@ export default class TopBarContent {
     if (!this.topBarBox.get_parent()) this.indicator.add_child(this.topBarBox);
 
     if (
-      widgetFlags & WidgetFlags.TOP_BAR ||
-      widgetFlags & WidgetFlags.TOP_BAR_ELEMENT_ORDER
+      topBarRegions & TopBarRegions.CONTENT ||
+      topBarRegions & TopBarRegions.LAYOUT ||
+      topBarRegions & TopBarRegions.ELEMENT_ORDER
     )
       this.syncLayout();
   }
@@ -221,7 +242,7 @@ export default class TopBarContent {
     this.visualizer.render(index, targetBox);
   }
 
-  runWidgetUpdate(componentName, update) {
+  runComponentUpdate(componentName, update) {
     try {
       update();
     } catch (error) {
@@ -235,6 +256,9 @@ export default class TopBarContent {
 
   destroy() {
     if (!this.indicator) return;
+
+    this.updateQueue?.destroy();
+    this.updateQueue = null;
     this.indicator = null;
 
     const playbackControls = this.playbackControls;

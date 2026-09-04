@@ -32,7 +32,7 @@ import {
 } from "../src/shared/settings/contract.js";
 import { InputActions } from "../src/shared/input/types.js";
 import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
-import { WidgetFlags } from "../src/shell/ui/widgetFlags.js";
+import { PopupPlaybackControlRegions, PopupRegions } from "../src/shell/ui/popup/regions.js";
 import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
 import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../src/shell/media/playback/surfaceState.js";
@@ -50,7 +50,7 @@ import {
 } from "../src/shell/constants/playbackControls.js";
 import { SETTINGS_SPEC } from "../src/shell/settings/settingsSpec.js";
 import PopupLayoutController from "../src/prefs/controllers/popupLayoutController.js";
-import { reconcileActorOrder } from "../src/shell/utils/actors.js";
+import { reconcileActorOrder } from "../src/shell/ui/components/actorOrder.js";
 import { runCases } from "./helpers.mjs";
 
 function mediaApp(overrides = {}) {
@@ -232,7 +232,8 @@ test("surface policies and popup layout stay consistent", async () => {
           resolvePlaybackControlSurfaceUpdates(
             target,
             PlaybackControlSurfaces.POPUP,
-            WidgetFlags.POPUP_PLAYBACK_SEEK_BACKWARD,
+            PopupPlaybackControlRegions,
+            PopupRegions.PLAYBACK_SEEK_BACKWARD,
           ),
           [{ controlId: PlaybackControlIds.SEEK_BACKWARD, isVisible: true }],
         );
@@ -241,7 +242,8 @@ test("surface policies and popup layout stay consistent", async () => {
           resolvePlaybackControlSurfaceUpdates(
             target,
             PlaybackControlSurfaces.POPUP,
-            WidgetFlags.POPUP_PLAYBACK_CONTROLS,
+            PopupPlaybackControlRegions,
+            PopupRegions.PLAYBACK_CONTROLS,
           ).filter(({ isVisible }) => isVisible),
           [],
         );

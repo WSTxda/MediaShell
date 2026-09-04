@@ -1,6 +1,6 @@
 /**
- * @file playbackControlContent.js
- * @module shell.utils.playbackControlContent
+ * @file content.js
+ * @module shell.ui.components.playback.content
  *
  * Creates and updates the icon-or-label content used by playback buttons.
  *
@@ -10,8 +10,8 @@
 
 import St from "gi://St";
 
-import { PlaybackControlContentKinds } from "../../shared/playback/controls.js";
-import { createIcon, setIconName } from "./icons.js";
+import { PlaybackControlContentKinds } from "../../../../shared/playback/controls.js";
+import { createIcon, setIconName } from "../../../utils/icons.js";
 
 export function createPlaybackControlContent(
   controlDefinition,

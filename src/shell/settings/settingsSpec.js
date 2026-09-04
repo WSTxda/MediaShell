@@ -31,8 +31,9 @@ import {
 import { normalizeInputAction } from "../../shared/input/normalization.js";
 import { InputActions } from "../../shared/input/types.js";
 import { PanelPositions } from "../ui/indicator/panelPosition.js";
-import { WidgetFlags } from "../ui/widgetFlags.js";
-import { getPlaybackControlSurfaceUpdates } from "../media/playback/surfaceUpdates.js";
+import { createSurfaceUpdate } from "../ui/reconciliation/surfaceUpdate.js";
+import { PopupPlaybackControlRegions, PopupRegions } from "../ui/popup/regions.js";
+import { TopBarPlaybackControlRegions, TopBarRegions } from "../ui/topbar/regions.js";
 import { normalizeTrackInformationContent } from "../../shared/ui/trackInformationContent.js";
 import {
   enumValueByIndex,
@@ -77,15 +78,32 @@ function createSecondsToMillisecondsTransform(bounds) {
 
 function createPlaybackControlSettingsSpec(surface) {
   const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
-  const updates = getPlaybackControlSurfaceUpdates(surface);
+  const isPopup = surface === PlaybackControlSurfaces.POPUP;
+  const playbackRegions = isPopup
+    ? PopupPlaybackControlRegions
+    : TopBarPlaybackControlRegions;
+  const showRegions = isPopup
+    ? PopupRegions.PLAYBACK_CONTROLS
+    : TopBarRegions.PLAYBACK_CONTROLS;
+  const createImpact = (regions) =>
+    createSurfaceUpdate(isPopup ? { popup: regions } : { topBar: regions });
+
   return Object.fromEntries([
     [
       show.settingKey,
-      { property: show.property, read: "get_boolean", impact: updates.show },
+      {
+        property: show.property,
+        read: "get_boolean",
+        impact: createImpact(showRegions),
+      },
     ],
     ...controls.map(({ controlId, settingKey, property }) => [
       settingKey,
-      { property, read: "get_boolean", impact: updates.controls[controlId] },
+      {
+        property,
+        read: "get_boolean",
+        impact: createImpact(playbackRegions[controlId]),
+      },
     ]),
   ]);
 }
@@ -102,19 +120,23 @@ export const SETTINGS_SPEC = Object.freeze({
     property: "popupWidth",
     read: "get_uint",
     transform: createNumericConstraint(POPUP_WIDTH_CONSTRAINTS),
-    impact:
-      WidgetFlags.POPUP_ALBUM_ART |
-      WidgetFlags.POPUP_TRACK_INFORMATION |
-      WidgetFlags.POPUP_PROGRESS_BAR |
-      WidgetFlags.POPUP_VOLUME_CONTROL,
+    impact: createSurfaceUpdate({
+      popup:
+        PopupRegions.ARTWORK |
+        PopupRegions.TRACK_INFORMATION |
+        PopupRegions.PROGRESS |
+        PopupRegions.VOLUME,
+    }),
   },
   [SettingsKeys.POPUP_ALBUM_ART_SHOW]: {
     property: "popupAlbumArtShow",
     read: "get_boolean",
-    impact:
-      WidgetFlags.POPUP_ALBUM_ART |
-      WidgetFlags.POPUP_TRACK_INFORMATION |
-      WidgetFlags.POPUP_PROGRESS_BAR,
+    impact: createSurfaceUpdate({
+      popup:
+        PopupRegions.ARTWORK |
+        PopupRegions.TRACK_INFORMATION |
+        PopupRegions.PROGRESS,
+    }),
   },
   [SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS]: {
     property: "popupAlbumArtCornerRadius",
@@ -122,12 +144,12 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(
       POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
     ),
-    impact: WidgetFlags.POPUP_ALBUM_ART,
+    impact: createSurfaceUpdate({ popup: PopupRegions.ARTWORK }),
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SHOW]: {
     property: "popupTrackInformationShow",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ popup: PopupRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT]: {
     property: "popupTrackInformationContent",
@@ -137,23 +159,23 @@ export const SETTINGS_SPEC = Object.freeze({
         value,
         POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
       ),
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ popup: PopupRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.POPUP_PROGRESS_BAR_SHOW]: {
     property: "popupProgressBarShow",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_PROGRESS_BAR,
+    impact: createSurfaceUpdate({ popup: PopupRegions.PROGRESS }),
   },
   [SettingsKeys.POPUP_VOLUME_CONTROL_SHOW]: {
     property: "popupVolumeControlShow",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_VOLUME_CONTROL,
+    impact: createSurfaceUpdate({ popup: PopupRegions.VOLUME }),
   },
   ...POPUP_PLAYBACK_CONTROL_SETTINGS_SPEC,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "popupTrackInformationScrollEnabled",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ popup: PopupRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "popupTrackInformationScrollSpeed",
@@ -161,7 +183,7 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(
       TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
     ),
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ popup: PopupRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "popupTrackInformationScrollPauseMilliseconds",
@@ -169,19 +191,19 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createSecondsToMillisecondsTransform(
       TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
     ),
-    impact: WidgetFlags.POPUP_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ popup: PopupRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.POPUP_MEDIA_APP_ICON_USE_COLOR]: {
     property: "popupMediaAppIconUseColor",
     read: "get_boolean",
-    impact: WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
+    impact: createSurfaceUpdate({ popup: PopupRegions.MEDIA_APP_SELECTOR }),
   },
 
   // Top bar
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW]: {
     property: "topBarTrackInformationShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH]: {
     property: "topBarTrackInformationWidth",
@@ -189,17 +211,17 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(
       TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
     ),
-    impact: WidgetFlags.TOP_BAR_LAYOUT,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.LAYOUT }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK]: {
     property: "topBarTrackInformationWidthLock",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_LAYOUT,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.LAYOUT }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED]: {
     property: "topBarTrackInformationScrollEnabled",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]: {
     property: "topBarTrackInformationScrollSpeed",
@@ -207,7 +229,7 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(
       TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
     ),
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]: {
     property: "topBarTrackInformationScrollPauseMilliseconds",
@@ -215,7 +237,7 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createSecondsToMillisecondsTransform(
       TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
     ),
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT]: {
     property: "topBarTrackInformationContent",
@@ -225,22 +247,22 @@ export const SETTINGS_SPEC = Object.freeze({
         value,
         TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
       ),
-    impact: WidgetFlags.TOP_BAR_TRACK_INFORMATION,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.TRACK_INFORMATION }),
   },
   [SettingsKeys.TOP_BAR_MEDIA_APP_ICON_SHOW]: {
     property: "topBarMediaAppIconShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.MEDIA_APP_ICON }),
   },
   [SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR]: {
     property: "topBarMediaAppIconUseColor",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_MEDIA_APP_ICON,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.MEDIA_APP_ICON }),
   },
   [SettingsKeys.TOP_BAR_ALBUM_ART_SHOW]: {
     property: "topBarAlbumArtShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_ALBUM_ART,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.ARTWORK }),
   },
   [SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS]: {
     property: "topBarAlbumArtCornerRadius",
@@ -248,23 +270,23 @@ export const SETTINGS_SPEC = Object.freeze({
     transform: createNumericConstraint(
       TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS,
     ),
-    impact: WidgetFlags.TOP_BAR_ALBUM_ART,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.ARTWORK }),
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SHOW]: {
     property: "topBarVisualizerShow",
     read: "get_boolean",
-    impact: WidgetFlags.TOP_BAR_VISUALIZER,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.VISUALIZER }),
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_STYLE]: {
     property: "topBarVisualizerStyle",
     read: "get_enum",
-    impact: WidgetFlags.TOP_BAR_VISUALIZER,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.VISUALIZER }),
   },
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: {
     property: "topBarVisualizerSpeed",
     read: "get_uint",
     transform: createNumericConstraint(TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS),
-    impact: WidgetFlags.TOP_BAR_VISUALIZER,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.VISUALIZER }),
   },
   ...TOP_BAR_PLAYBACK_CONTROL_SETTINGS_SPEC,
   [SettingsKeys.TOP_BAR_ELEMENT_ORDER]: {
@@ -272,7 +294,7 @@ export const SETTINGS_SPEC = Object.freeze({
     read: "get_strv",
     transform: (value) =>
       normalizeOrderedValues(value, TOP_BAR_ELEMENT_ORDER_DEFAULT),
-    impact: WidgetFlags.TOP_BAR_ELEMENT_ORDER,
+    impact: createSurfaceUpdate({ topBar: TopBarRegions.ELEMENT_ORDER }),
   },
 
   // Panel

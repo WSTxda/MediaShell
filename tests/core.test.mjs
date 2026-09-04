@@ -18,12 +18,12 @@ import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
-} from "../src/shell/ui/topbar/visualizer/definitions.js";
+} from "../src/shell/ui/components/visualizer/definitions.js";
 import {
   VisualizerAnimationKinds,
   VisualizerSpectrumLayers,
   VisualizerStyles,
-} from "../src/shell/ui/topbar/visualizer/types.js";
+} from "../src/shell/ui/components/visualizer/types.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
@@ -60,7 +60,7 @@ import {
   getVisualizerSpectrumOffsets,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
-} from "../src/shell/ui/topbar/visualizer/animation.js";
+} from "../src/shell/ui/components/visualizer/animation.js";
 import {
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS,
   VisualizerRendererKinds,

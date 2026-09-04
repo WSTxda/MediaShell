@@ -42,7 +42,7 @@ import {
 import { InputActions } from "../../src/shared/input/types.js";
 import { PanelPositions } from "../../src/shell/ui/indicator/panelPosition.js";
 import { TopBarElementIds } from "../../src/shared/ui/topBar.js";
-import { VisualizerStyles } from "../../src/shell/ui/topbar/visualizer/types.js";
+import { VisualizerStyles } from "../../src/shell/ui/components/visualizer/types.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 import { collectBuilderObjectReferences } from "./javascript.mjs";
 import { fail, read, readAssetManifest } from "./files.mjs";

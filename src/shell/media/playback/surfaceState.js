@@ -9,7 +9,6 @@
  */
 
 import { PlaybackControlSurfaceDefinitions } from "../../../shared/playback/surfaces.js";
-import { getPlaybackControlSurfaceUpdates } from "./surfaceUpdates.js";
 
 /**
  * Returns the canonical definition for a playback-control surface.
@@ -46,22 +45,26 @@ export function isPlaybackControlSurfaceVisible(settingsTarget, surface) {
 }
 
 /**
- * Resolves only controls affected by a WidgetFlags update.
+ * Resolves only playback controls whose surface-local dirty region changed.
+ *
+ * The media domain owns visibility policy but deliberately does not know popup
+ * or top-bar region values. Each surface supplies its own control-to-region map.
  *
  * @param {object} settingsTarget - Runtime object populated by SettingsStore.
  * @param {string} surface - Stable playback-control surface ID.
- * @param {number} widgetFlags - Coalesced WidgetFlags mask.
+ * @param {Record<string, number>} controlRegions - Surface-local region map.
+ * @param {number} dirtyRegions - Coalesced dirty-region mask.
  * @returns {Array<{controlId: string, isVisible: boolean}>} Changed controls.
  */
 export function resolvePlaybackControlSurfaceUpdates(
   settingsTarget,
   surface,
-  widgetFlags,
+  controlRegions,
+  dirtyRegions,
 ) {
   const { show, controls } = getPlaybackControlSurfaceDefinition(surface);
-  const updates = getPlaybackControlSurfaceUpdates(surface);
   return controls
-    .filter(({ controlId }) => Boolean(widgetFlags & updates.controls[controlId]))
+    .filter(({ controlId }) => Boolean(dirtyRegions & controlRegions[controlId]))
     .map((control) => ({
       controlId: control.controlId,
       isVisible: isPlaybackControlVisible(settingsTarget, show, control),

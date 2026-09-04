@@ -2,13 +2,12 @@
  * @file popupContent.js
  * @module shell.ui.popup.popupContent
  *
- * Orchestrates every widget inside the MediaShell popup.
+ * Owns and incrementally reconciles the complete MediaShell popup surface.
  *
- * PopupContent owns album art, track information, playback controls, the progress
- * bar, volume control, and media app selector components for the active media app.
- * It applies WidgetFlags immediately while open and accumulates affected regions
- * while closed.
- * MediaShellIndicator owns idle coalescing for bursts of MPRIS changes.
+ * PopupContent owns every popup actor, its surface-local dirty regions, and the
+ * idle source used to coalesce bursts. When the menu is closed it records dirty
+ * regions without rendering, then merges them with the required initial regions
+ * on the next open.
  */
 
 import Clutter from "gi://Clutter";
@@ -16,33 +15,41 @@ import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
-import { WidgetFlags } from "../widgetFlags.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePopupWidth } from "../../../shared/ui/popupLayout.js";
 import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
 import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
+import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
 import PopupAlbumArt from "./popupAlbumArt.js";
 import PopupPlaybackControls from "./popupPlaybackControls.js";
-import PopupMediaAppSelectorController from "./popupMediaAppSelectorController.js";
+import PopupMediaAppSelector from "./popupMediaAppSelector.js";
 import PopupTrackInformation from "./popupTrackInformation.js";
 import PopupProgressBar from "./popupProgressBar.js";
 import PopupVolumeControl from "./popupVolumeControl.js";
+import { PopupRegions } from "./regions.js";
 
 const logger = createLogger("PopupContent");
 
-/**
- * Orchestrates every widget inside the MediaShell popup menu.
- */
+/** Owns and reconciles every widget inside the MediaShell popup menu. */
 export default class PopupContent {
   constructor(
     indicator,
     { artworkService, desktopAppResolver, playbackController },
   ) {
     this.indicator = indicator;
-    this.pendingWidgetFlags = 0;
+    this.pendingClosedRegions = 0;
     this.appliedPopupOuterWidth = null;
+    this.updateQueue = new CoalescedUpdateQueue(
+      (regions) => this.reconcile(regions),
+      (error) =>
+        logger.errorOnce(
+          "deferred-surface-update",
+          "Deferred popup reconciliation failed",
+          error,
+        ),
+    );
     this.popupItem = new PopupMenu.PopupBaseMenuItem({
       style_class: styleClassNames(
         StyleClasses.NO_PADDING,
@@ -53,45 +60,25 @@ export default class PopupContent {
     this.popupItem.set_orientation(Clutter.Orientation.VERTICAL);
     this.popupItem.remove_style_class_name(StyleClasses.POPUP_MENU_ITEM);
 
-    this.mediaAppSelectorController = new PopupMediaAppSelectorController(
+    this.mediaAppSelector = new PopupMediaAppSelector(
       this,
       desktopAppResolver,
     );
     this.albumArt = new PopupAlbumArt(this, artworkService);
     this.trackInformation = new PopupTrackInformation(this);
-    this.progressBar = new PopupProgressBar(this);
+    this.progressBar = new PopupProgressBar(this, playbackController);
     this.playbackControls = new PopupPlaybackControls(this, playbackController);
-    this.volumeControl = new PopupVolumeControl(this);
+    this.volumeControl = new PopupVolumeControl(this, playbackController);
 
     this.menu.addMenuItem(this.popupItem);
     this.popupItemCapturedEventId = this.popupItem.connect(
       "captured-event",
       (_actor, event) =>
-        this.mediaAppSelectorController.handleCapturedEvent(event),
+        this.mediaAppSelector.handleCapturedEvent(event),
     );
     this.menuOpenSignalId = this.menu.connect(
       "open-state-changed",
-      (_menu, isOpen) => {
-        if (isOpen) {
-          let widgetFlags =
-            this.pendingWidgetFlags |
-            WidgetFlags.POPUP_MEDIA_APP_SELECTOR |
-            WidgetFlags.POPUP_ALBUM_ART |
-            WidgetFlags.POPUP_TRACK_INFORMATION |
-            WidgetFlags.POPUP_PLAYBACK_CONTROLS;
-          if (this.extensionController.popupProgressBarShow)
-            widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
-          if (this.extensionController.popupVolumeControlShow)
-            widgetFlags |= WidgetFlags.POPUP_VOLUME_CONTROL;
-          this.pendingWidgetFlags = 0;
-          this.updateWidgets(widgetFlags, true);
-          this.syncProgressBarPlaybackState();
-        } else {
-          this.mediaAppSelectorController.close();
-          this.albumArt.cancelAlbumArtLoad();
-          this.progressBar.pause();
-        }
-      },
+      (_menu, isOpen) => this.handleOpenStateChanged(isOpen),
     );
   }
 
@@ -108,6 +95,42 @@ export default class PopupContent {
     return this.indicator.menu;
   }
 
+  requestUpdate(regions) {
+    this.updateQueue?.request(regions & PopupRegions.ALL);
+  }
+
+  resetPendingUpdates() {
+    this.updateQueue?.cancel();
+    this.pendingClosedRegions = 0;
+  }
+
+  handleOpenStateChanged(isOpen) {
+    if (isOpen) {
+      let regions =
+        this.pendingClosedRegions |
+        PopupRegions.MEDIA_APP_SELECTOR |
+        PopupRegions.ARTWORK |
+        PopupRegions.TRACK_INFORMATION |
+        PopupRegions.PLAYBACK_CONTROLS;
+      if (this.extensionController.popupProgressBarShow)
+        regions |= PopupRegions.PROGRESS;
+      if (this.extensionController.popupVolumeControlShow)
+        regions |= PopupRegions.VOLUME;
+
+      // Opening is already a synchronous Shell transition. Cancel any queued
+      // idle pass and reconcile the accumulated state once against current data.
+      this.updateQueue.cancel();
+      this.pendingClosedRegions = 0;
+      this.reconcile(regions, true);
+      this.syncProgressBarPlaybackState();
+      return;
+    }
+
+    this.mediaAppSelector.close();
+    this.albumArt.cancelAlbumArtLoad();
+    this.progressBar.pause();
+  }
+
   isActiveMediaApp(mediaApp) {
     return this.indicator.isActiveMediaApp(mediaApp);
   }
@@ -118,29 +141,30 @@ export default class PopupContent {
 
   toggleMediaAppPin(mediaApp) {
     const pinStateChanged = this.mediaRuntime?.togglePlayerPin(mediaApp) ?? false;
-    if (pinStateChanged)
-      this.indicator.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
+    if (pinStateChanged) this.requestUpdate(PopupRegions.MEDIA_APP_SELECTOR);
     return pinStateChanged;
   }
 
-  updateWidgets(widgetFlags, forceRender = false) {
-    const popupFlags = widgetFlags & WidgetFlags.POPUP;
-    if (popupFlags === 0) return;
+  reconcile(regions, forceRender = false) {
+    const popupRegions = regions & PopupRegions.ALL;
+    if (!popupRegions || !this.indicator) return;
 
+    // Preserve the 2.x behavior where popup geometry is kept current even when
+    // rendering is deferred while the menu is closed.
     this.syncPopupSize();
     if (!forceRender && !this.menu.isOpen) {
-      this.pendingWidgetFlags |= popupFlags;
+      this.pendingClosedRegions |= popupRegions;
       return;
     }
 
-    if (popupFlags & WidgetFlags.POPUP_MEDIA_APP_SELECTOR) {
-      this.runWidgetUpdate("media app selector", () =>
-        this.mediaAppSelectorController.render(),
+    if (popupRegions & PopupRegions.MEDIA_APP_SELECTOR) {
+      this.runComponentUpdate("media app selector", () =>
+        this.mediaAppSelector.render(),
       );
     }
 
-    if (popupFlags & WidgetFlags.POPUP_ALBUM_ART) {
-      this.runWidgetUpdate("album art", () => {
+    if (popupRegions & PopupRegions.ARTWORK) {
+      this.runComponentUpdate("album art", () => {
         if (this.extensionController.popupAlbumArtShow)
           return this.albumArt.render();
         this.albumArt.remove();
@@ -148,8 +172,8 @@ export default class PopupContent {
       });
     }
 
-    if (popupFlags & WidgetFlags.POPUP_TRACK_INFORMATION) {
-      this.runWidgetUpdate("track information", () => {
+    if (popupRegions & PopupRegions.TRACK_INFORMATION) {
+      this.runComponentUpdate("track information", () => {
         if (this.extensionController.popupTrackInformationShow)
           return this.trackInformation.render();
         this.trackInformation.remove();
@@ -157,8 +181,8 @@ export default class PopupContent {
       });
     }
 
-    if (popupFlags & WidgetFlags.POPUP_PROGRESS_BAR) {
-      this.runWidgetUpdate("progress bar", () => {
+    if (popupRegions & PopupRegions.PROGRESS) {
+      this.runComponentUpdate("progress bar", () => {
         if (this.extensionController.popupProgressBarShow)
           return this.progressBar.render();
         this.progressBar.remove();
@@ -166,22 +190,22 @@ export default class PopupContent {
       });
     }
 
-    if (popupFlags & WidgetFlags.POPUP_PLAYBACK_CONTROLS) {
-      this.runWidgetUpdate("playback controls", () => {
+    if (popupRegions & PopupRegions.PLAYBACK_CONTROLS) {
+      this.runComponentUpdate("playback controls", () => {
         if (
           isPlaybackControlSurfaceVisible(
             this.extensionController,
             PlaybackControlSurfaces.POPUP,
           )
         )
-          return this.playbackControls.render(popupFlags);
+          return this.playbackControls.render(popupRegions);
         this.playbackControls.remove();
         return null;
       });
     }
 
-    if (popupFlags & WidgetFlags.POPUP_VOLUME_CONTROL) {
-      this.runWidgetUpdate("volume control", () => {
+    if (popupRegions & PopupRegions.VOLUME) {
+      this.runComponentUpdate("volume control", () => {
         if (this.extensionController.popupVolumeControlShow)
           return this.volumeControl.render();
         this.volumeControl.remove();
@@ -193,7 +217,7 @@ export default class PopupContent {
       this.volumeControl.reconcilePosition();
   }
 
-  runWidgetUpdate(componentName, update) {
+  runComponentUpdate(componentName, update) {
     try {
       const result = update();
       result?.catch?.((error) =>
@@ -204,8 +228,8 @@ export default class PopupContent {
         ),
       );
     } catch (error) {
-      // A single malformed actor or third-party metadata value must not
-      // prevent the remaining popup sections from reconciling.
+      // A single malformed actor or third-party metadata value must not prevent
+      // the remaining popup sections from reconciling.
       logger.errorOnce(
         `component-update:${componentName}`,
         `Popup ${componentName} update failed`,
@@ -282,12 +306,15 @@ export default class PopupContent {
     if (width === this.appliedPopupOuterWidth) return;
     this.appliedPopupOuterWidth = width;
     this.popupItem.style = this.buildFixedWidthStyle(width);
-    this.mediaAppSelectorController.syncMediaAppSelectorWidth();
+    this.mediaAppSelector.syncMediaAppSelectorWidth();
   }
 
   destroy() {
     const indicator = this.indicator;
     if (!indicator) return;
+
+    this.updateQueue?.destroy();
+    this.updateQueue = null;
     this.indicator = null;
 
     const menu = indicator.menu;
@@ -302,14 +329,14 @@ export default class PopupContent {
     const playbackControls = this.playbackControls;
     const volumeControl = this.volumeControl;
     const albumArt = this.albumArt;
-    const mediaAppSelectorController = this.mediaAppSelectorController;
+    const mediaAppSelector = this.mediaAppSelector;
     const popupItem = this.popupItem;
     this.progressBar = null;
     this.trackInformation = null;
     this.playbackControls = null;
     this.volumeControl = null;
     this.albumArt = null;
-    this.mediaAppSelectorController = null;
+    this.mediaAppSelector = null;
     this.popupItem = null;
 
     progressBar?.destroy();
@@ -317,10 +344,10 @@ export default class PopupContent {
     playbackControls?.destroy();
     volumeControl?.destroy();
     albumArt?.destroy();
-    mediaAppSelectorController?.destroy();
+    mediaAppSelector?.destroy();
     popupItem?.destroy();
 
-    this.pendingWidgetFlags = 0;
+    this.pendingClosedRegions = 0;
     this.appliedPopupOuterWidth = null;
   }
 }

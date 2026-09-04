@@ -5,7 +5,7 @@
  * Validates cross-file playback data that must agree for the extension to build
  * and render safely.
  *
- * The checker verifies IDs, settings ownership, bit flags, input mappings, and
+ * The checker verifies IDs, settings ownership, local update regions, input mappings, and
  * MPRIS signatures. Product choices such as exact order, defaults, and visual
  * policy are covered by behavior tests instead of being duplicated here.
  */
@@ -30,12 +30,33 @@ import {
   MprisPlayerProperties,
   MprisPlayerSignals,
 } from "../../src/shell/mpris/protocol.js";
-import { WidgetFlags } from "../../src/shell/ui/widgetFlags.js";
-import { PlaybackControlSurfaceUpdates } from "../../src/shell/media/playback/surfaceUpdates.js";
+import {
+  PopupPlaybackControlRegions,
+  PopupRegions,
+} from "../../src/shell/ui/popup/regions.js";
+import {
+  TopBarPlaybackControlRegions,
+  TopBarRegions,
+} from "../../src/shell/ui/topbar/regions.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 
 const PREFERENCES_UI_SOURCE = "assets/ui/prefs.ui";
 const INPUT_ACTION_MODEL_ID = "model-input-actions";
+
+const SurfaceRegionDefinitions = Object.freeze({
+  popup: Object.freeze({
+    show: PopupRegions.PLAYBACK_CONTROLS,
+    controls: PopupPlaybackControlRegions,
+    regions: PopupRegions,
+    compoundNames: new Set(["PLAYBACK_CONTROLS", "ALL"]),
+  }),
+  "top-bar": Object.freeze({
+    show: TopBarRegions.PLAYBACK_CONTROLS,
+    controls: TopBarPlaybackControlRegions,
+    regions: TopBarRegions,
+    compoundNames: new Set(["PLAYBACK_CONTROLS", "CONTENT", "ALL"]),
+  }),
+});
 
 function duplicateValues(values) {
   const duplicates = new Set();
@@ -56,7 +77,7 @@ function same(left, right) {
 }
 
 function cloneSurface(surface, definition) {
-  const updates = PlaybackControlSurfaceUpdates[surface];
+  const updates = SurfaceRegionDefinitions[surface];
   return {
     show: { ...definition.show, impact: updates.show },
     controls: definition.controls.map((control) => ({
@@ -90,7 +111,12 @@ export function createPlaybackContractSnapshot(manifest) {
       ]),
     ),
     schema: manifest.schema,
-    widgetFlags: { ...WidgetFlags },
+    surfaceRegions: Object.fromEntries(
+      Object.entries(SurfaceRegionDefinitions).map(([surface, definition]) => [
+        surface,
+        { ...definition.regions },
+      ]),
+    ),
     inputDefinitions: INPUT_ACTION_DEFINITIONS.map((definition) => ({
       ...definition,
     })),
@@ -168,9 +194,11 @@ function validateSettingOwner(snapshot, errors, surface, item, label) {
     errors.push(`${item.settingKey}: missing runtime settings owner`);
     return;
   }
+  const specImpact =
+    surface === "popup" ? spec.impact?.popup : spec.impact?.topBar;
   if (
     spec.property !== item.property ||
-    spec.impact !== item.impact ||
+    specImpact !== item.impact ||
     spec.read !== "get_boolean"
   )
     errors.push(`${item.settingKey}: surface policy and SETTINGS_SPEC differ`);
@@ -252,31 +280,31 @@ function validateInputs(snapshot, errors) {
 }
 
 function validateFlags(snapshot, errors) {
-  const compound = new Set([
-    "TOP_BAR_PLAYBACK_CONTROLS",
-    "TOP_BAR",
-    "POPUP_PLAYBACK_CONTROLS",
-    "POPUP",
-    "ALL",
-  ]);
-  const individual = Object.entries(snapshot.widgetFlags).filter(
-    ([name]) => !compound.has(name),
-  );
-  for (const [name, value] of individual) {
-    if (!isSingleBit(value))
-      errors.push(`${name}: widget flag must be one bit`);
-  }
-  for (const duplicate of duplicateValues(individual.map(([, value]) => value)))
-    errors.push(`widget flags: duplicate individual bit ${duplicate}`);
+  for (const [surface, regions] of Object.entries(snapshot.surfaceRegions)) {
+    const definition = SurfaceRegionDefinitions[surface];
+    if (!definition) {
+      errors.push(`${surface}: unknown surface-region definition`);
+      continue;
+    }
 
-  const knownFlags = new Set(Object.values(snapshot.widgetFlags));
-  for (const [surface, definition] of Object.entries(snapshot.surfaces)) {
+    const individual = Object.entries(regions).filter(
+      ([name]) => !definition.compoundNames.has(name),
+    );
+    for (const [name, value] of individual) {
+      if (!isSingleBit(value))
+        errors.push(`${surface}/${name}: update region must be one bit`);
+    }
+    for (const duplicate of duplicateValues(individual.map(([, value]) => value)))
+      errors.push(`${surface}: duplicate individual region ${duplicate}`);
+
+    const knownRegions = new Set(Object.values(regions));
+    const surfaceDefinition = snapshot.surfaces[surface];
     for (const [label, item] of [
-      ["show", definition.show],
-      ...definition.controls.map((control) => [control.controlId, control]),
+      ["show", surfaceDefinition.show],
+      ...surfaceDefinition.controls.map((control) => [control.controlId, control]),
     ]) {
-      if (!knownFlags.has(item.impact))
-        errors.push(`${surface}/${label}: unknown update flag ${item.impact}`);
+      if (!knownRegions.has(item.impact))
+        errors.push(`${surface}/${label}: unknown update region ${item.impact}`);
     }
   }
 }

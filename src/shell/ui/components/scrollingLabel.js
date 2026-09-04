@@ -1,6 +1,6 @@
 /**
  * @file scrollingLabel.js
- * @module shell.ui.scrollingLabel
+ * @module shell.ui.components.scrollingLabel
  *
  * Provides a Shell actor that scrolls overflowing text while preserving read position.
  *
@@ -15,13 +15,13 @@ import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
-import { GTypeNames } from "../../shared/gobject.js";
-import { StyleClasses } from "../constants/styleClasses.js";
+import { GTypeNames } from "../../../shared/gobject.js";
+import { StyleClasses } from "../../constants/styleClasses.js";
 import {
   connectReducedMotionChanged,
   disconnectReducedMotionChanged,
   prefersReducedMotion,
-} from "../utils/reducedMotion.js";
+} from "../../utils/reducedMotion.js";
 
 const SCROLL_CYCLE_GAP = "  ".repeat(5);
 const SCROLL_CYCLE_COPIES = 3;

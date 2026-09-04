@@ -1,6 +1,6 @@
 /**
  * @file definitions.js
- * @module shell.ui.topbar.visualizer.definitions
+ * @module shell.ui.components.visualizer.definitions
  *
  * Declares pure visualizer animation contracts and tuning parameters.
  *
