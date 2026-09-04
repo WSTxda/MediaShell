@@ -668,12 +668,12 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Настройте интеграцию MediaShell с GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native controls"
-msgstr "Нативные элементы управления"
+msgid "Native control"
+msgstr "Нативный элемент управления"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure the default media controls in the notification center"
-msgstr "Настройте стандартные элементы управления мультимедиа в центре уведомлений"
+msgid "Settings for native media controls in the notification center"
+msgstr "Настройки нативных элементов управления мультимедиа в центре уведомлений"
 
 #: assets/ui/prefs.ui:911
 msgid "Private API integration"
@@ -688,16 +688,16 @@ msgid "Hide native control"
 msgstr "Скрыть нативный элемент управления"
 
 #: assets/ui/prefs.ui:935
-msgid "Hide the media controls banner from the notification center"
-msgstr "Скрыть баннер управления мультимедиа из центра уведомлений"
+msgid "Hide media control banners from the notification center"
+msgstr "Скрыть баннеры управления мультимедиа из центра уведомлений"
 
 #: assets/ui/prefs.ui:940
 msgid "Enhanced native control"
 msgstr "Улучшенный нативный элемент управления"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
-msgstr "Применить современный улучшенный стиль к баннеру управления мультимедиа в центре уведомлений и на экране блокировки"
+msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
+msgstr "Применить современный улучшенный стиль к баннерам управления мультимедиа в центре уведомлений и на экране блокировки"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

@@ -902,8 +902,8 @@
         <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
           <object class="AdwExpanderRow" id="er-native-controls">
-            <property name="title" translatable="yes">Native controls</property>
-            <property name="subtitle" translatable="yes">Configure the default media controls in the notification center</property>
+            <property name="title" translatable="yes">Native control</property>
+            <property name="subtitle" translatable="yes">Settings for native media controls in the notification center</property>
             <property name="expanded">false</property>
             <child type="suffix">
               <object class="GtkMenuButton" id="mb-native-controls-info">
@@ -932,13 +932,13 @@
             <child>
               <object class="AdwSwitchRow" id="sr-native-controls-hide">
                 <property name="title" translatable="yes">Hide native control</property>
-                <property name="subtitle" translatable="yes">Hide the media controls banner from the notification center</property>
+                <property name="subtitle" translatable="yes">Hide media control banners from the notification center</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-native-controls-enhance">
                 <property name="title" translatable="yes">Enhanced native control</property>
-                <property name="subtitle" translatable="yes">Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen</property>
+                <property name="subtitle" translatable="yes">Apply a modern and enhanced style to media control banners in the notification center and on the lock screen</property>
               </object>
             </child>
           </object>
