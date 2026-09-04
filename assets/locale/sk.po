@@ -665,12 +665,12 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Nastavte, ako sa MediaShell integruje s GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native controls"
-msgstr "Natívne ovládacie prvky"
+msgid "Native control"
+msgstr "Natívny ovládací prvok"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure the default media controls in the notification center"
-msgstr "Nastavte predvolené ovládanie médií v centre oznámení"
+msgid "Settings for native media controls in the notification center"
+msgstr "Nastavenia natívnych ovládacích prvkov médií v centre oznámení"
 
 #: assets/ui/prefs.ui:911
 msgid "Private API integration"
@@ -685,16 +685,16 @@ msgid "Hide native control"
 msgstr "Skryť natívny ovládací prvok"
 
 #: assets/ui/prefs.ui:935
-msgid "Hide the media controls banner from the notification center"
-msgstr "Skryť banner ovládania médií z centra oznámení"
+msgid "Hide media control banners from the notification center"
+msgstr "Skryť bannery ovládania médií z centra oznámení"
 
 #: assets/ui/prefs.ui:940
 msgid "Enhanced native control"
 msgstr "Vylepšený natívny ovládací prvok"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
-msgstr "Použiť moderný a vylepšený štýl na banner ovládania médií v centre oznámení a na uzamknutej obrazovke"
+msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
+msgstr "Použiť moderný a vylepšený štýl na bannery ovládania médií v centre oznámení a na uzamknutej obrazovke"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

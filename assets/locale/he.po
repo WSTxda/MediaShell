@@ -664,12 +664,12 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "שליטה באופן השילוב של MediaShell עם GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native controls"
-msgstr "פקדים מובנים"
+msgid "Native control"
+msgstr "פקד מובנה"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure the default media controls in the notification center"
-msgstr "הגדרת פקדי המדיה המוגדרים כברירת מחדל במרכז ההתראות"
+msgid "Settings for native media controls in the notification center"
+msgstr "הגדרות לפקדי המדיה המובנים במרכז ההתראות"
 
 #: assets/ui/prefs.ui:911
 msgid "Private API integration"
@@ -684,16 +684,16 @@ msgid "Hide native control"
 msgstr "הסתרת הפקד המובנה"
 
 #: assets/ui/prefs.ui:935
-msgid "Hide the media controls banner from the notification center"
-msgstr "הסתרת כרזת פקדי המדיה ממרכז ההתראות"
+msgid "Hide media control banners from the notification center"
+msgstr "הסתרת כרזות פקדי המדיה ממרכז ההתראות"
 
 #: assets/ui/prefs.ui:940
 msgid "Enhanced native control"
 msgstr "פקד מובנה משופר"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
-msgstr "החלת סגנון מודרני ומשופר על כרזת פקד המדיה במרכז ההתראות ובמסך הנעילה"
+msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
+msgstr "החלת סגנון מודרני ומשופר על כרזות פקדי המדיה במרכז ההתראות ובמסך הנעילה"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

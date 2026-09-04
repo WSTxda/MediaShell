@@ -664,11 +664,11 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr ""
 
 #: assets/ui/prefs.ui:905
-msgid "Native controls"
+msgid "Native control"
 msgstr ""
 
 #: assets/ui/prefs.ui:906
-msgid "Configure the default media controls in the notification center"
+msgid "Settings for native media controls in the notification center"
 msgstr ""
 
 #: assets/ui/prefs.ui:911
@@ -684,7 +684,7 @@ msgid "Hide native control"
 msgstr ""
 
 #: assets/ui/prefs.ui:935
-msgid "Hide the media controls banner from the notification center"
+msgid "Hide media control banners from the notification center"
 msgstr ""
 
 #: assets/ui/prefs.ui:940
@@ -692,7 +692,7 @@ msgid "Enhanced native control"
 msgstr ""
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
+msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
 msgstr ""
 
 #: assets/ui/prefs.ui:950

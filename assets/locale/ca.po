@@ -666,12 +666,12 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controla com s'integra MediaShell amb GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native controls"
-msgstr "Controls natius"
+msgid "Native control"
+msgstr "Control natiu"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure the default media controls in the notification center"
-msgstr "Configura els controls multimèdia predeterminats al centre de notificacions"
+msgid "Settings for native media controls in the notification center"
+msgstr "Configuració dels controls multimèdia natius al centre de notificacions"
 
 #: assets/ui/prefs.ui:911
 msgid "Private API integration"
@@ -686,16 +686,16 @@ msgid "Hide native control"
 msgstr "Amaga el control natiu"
 
 #: assets/ui/prefs.ui:935
-msgid "Hide the media controls banner from the notification center"
-msgstr "Amaga el bàner dels controls multimèdia del centre de notificacions"
+msgid "Hide media control banners from the notification center"
+msgstr "Amaga els bàners dels controls multimèdia del centre de notificacions"
 
 #: assets/ui/prefs.ui:940
 msgid "Enhanced native control"
 msgstr "Control natiu millorat"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
-msgstr "Aplica un estil modern i millorat al bàner del control multimèdia al centre de notificacions i a la pantalla de bloqueig"
+msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
+msgstr "Aplica un estil modern i millorat als bàners de controls multimèdia del centre de notificacions i de la pantalla de bloqueig"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"
