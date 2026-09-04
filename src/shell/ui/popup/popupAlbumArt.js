@@ -5,6 +5,7 @@
  * Owns popup album-art presentation, request lifecycle, and playback animation.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import St from "gi://St";
@@ -23,10 +24,9 @@ import { createLogger } from "../../../shared/logging/logger.js";
 import {
   POPUP_ALBUM_ART_PAUSED_SCALE,
   POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
-} from "../../constants/popup.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
-import { isCancellationError } from "../../utils/errors.js";
-import { createIcon, setGIcon } from "../../utils/icons.js";
+} from "./presentation.js";
+import { isCancellationError } from "../../platform/gioErrors.js";
+import { createIcon, setGIcon } from "../icons.js";
 
 const logger = createLogger("PopupAlbumArt");
 
@@ -55,16 +55,16 @@ export default class PopupAlbumArt {
     return this.popupContent.settings;
   }
 
-  get mediaApp() {
-    return this.popupContent.mediaApp;
+  get player() {
+    return this.popupContent.player;
   }
 
   get popupItem() {
     return this.popupContent.popupItem;
   }
 
-  get mediaAppSelectorActor() {
-    return this.popupContent.mediaAppSelector.actor;
+  get playerSelectorActor() {
+    return this.popupContent.playerSelector.actor;
   }
 
   get actor() {
@@ -92,15 +92,15 @@ export default class PopupAlbumArt {
   render() {
     const geometry = this.getAlbumArtGeometry();
     const request = createArtworkRequest({
-      busName: this.mediaApp.busName,
-      track: this.mediaApp.track,
+      busName: this.player.busName,
+      track: this.player.track,
       ...geometry,
     });
 
     this.ensureActor();
     this.syncAlbumArtGeometry(geometry.width, geometry.radius);
     this.attach();
-    this.syncPlaybackState(this.mediaApp.playbackStatus, false);
+    this.syncPlaybackState(this.player.playbackStatus, false);
 
     if (this.loadedAlbumArtKey === request.key) {
       this.syncLoadedAlbumArt(geometry.width, geometry.radius);
@@ -187,8 +187,8 @@ export default class PopupAlbumArt {
     const renderPixbuf = this.preparedAlbumArt.pixbuf;
 
     this.albumArtImage.content = null;
-    this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.remove_style_class_name(StyleClasses.ALBUM_ART_FALLBACK);
+    this.albumArtImage.remove_style_class_name(NativeStyleClasses.BUTTON);
+    this.albumArtImage.remove_style_class_name(MediaShellStyleClasses.ALBUM_ART_FALLBACK);
     setGIcon(this.albumArtImage, renderPixbuf, IconNames.MEDIA);
     this.albumArtImage.set_icon_size(imageSize);
     this.albumArtFrame.opacity = 255;
@@ -199,7 +199,7 @@ export default class PopupAlbumArt {
 
     this.albumArtImage = createIcon(
       {
-        styleClass: StyleClasses.ALBUM_ART_IMAGE,
+        styleClass: MediaShellStyleClasses.ALBUM_ART_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -208,7 +208,7 @@ export default class PopupAlbumArt {
       IconNames.MEDIA,
     );
     this.albumArtFrame = new St.Bin({
-      styleClass: StyleClasses.ALBUM_ART_FRAME,
+      styleClass: MediaShellStyleClasses.ALBUM_ART_FRAME,
       xExpand: false,
       yExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
@@ -265,8 +265,8 @@ export default class PopupAlbumArt {
     );
     this.syncAlbumArtGeometry(width, radius);
     this.albumArtImage.content = null;
-    this.albumArtImage.add_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.add_style_class_name(StyleClasses.ALBUM_ART_FALLBACK);
+    this.albumArtImage.add_style_class_name(NativeStyleClasses.BUTTON);
+    this.albumArtImage.add_style_class_name(MediaShellStyleClasses.ALBUM_ART_FALLBACK);
     setGIcon(
       this.albumArtImage,
       icon ?? this.fallbackAlbumArtIcon,
@@ -279,10 +279,10 @@ export default class PopupAlbumArt {
 
   attach() {
     if (this.albumArtFrame.get_parent()) return;
-    if (this.mediaAppSelectorActor?.get_parent() === this.popupItem)
+    if (this.playerSelectorActor?.get_parent() === this.popupItem)
       this.popupItem.insert_child_above(
         this.albumArtFrame,
-        this.mediaAppSelectorActor,
+        this.playerSelectorActor,
       );
     else this.popupItem.add_child(this.albumArtFrame);
   }
@@ -293,7 +293,7 @@ export default class PopupAlbumArt {
       loadGeneration === this.albumArtLoadGeneration &&
       !loadCancellable.is_cancelled() &&
       this.loadingAlbumArtKey === request.key &&
-      this.mediaApp?.busName === request.busName
+      this.player?.busName === request.busName
     );
   }
 

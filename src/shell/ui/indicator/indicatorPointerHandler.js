@@ -17,16 +17,18 @@ import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 
 import { InputActions } from "../../../shared/input/types.js";
+import { suspendPanelMenuPrimaryActivation } from "../../integrations/panelMenu.js";
 
 /**
  * Installs pointer gestures for the non-playback regions of the panel indicator.
  */
 export default class IndicatorPointerHandler {
-  constructor(indicator) {
+  constructor(indicator, inputActions) {
     this.indicator = indicator;
+    this.inputActions = inputActions;
     this.pointerActionCleanups = [];
     this.primaryActivationTimeoutId = null;
-    this.disabledClickGesture = null;
+    this.restoreDefaultPanelActivation = null;
   }
 
   get interactions() {
@@ -36,13 +38,9 @@ export default class IndicatorPointerHandler {
   install() {
     this.indicator.topBarContent.ensureLayout();
 
-    if (
-      this.indicator._clickGesture &&
-      typeof this.indicator._clickGesture.set_enabled === "function"
-    ) {
-      this.indicator._clickGesture.set_enabled(false);
-      this.disabledClickGesture = this.indicator._clickGesture;
-    }
+    this.restoreDefaultPanelActivation = suspendPanelMenuPrimaryActivation(
+      this.indicator,
+    );
 
     for (const actor of [
       this.indicator.topBarContent.topBarActionBoxBefore,
@@ -175,7 +173,7 @@ export default class IndicatorPointerHandler {
   }
 
   #executeInputAction(inputAction) {
-    this.indicator.extensionController.executeInputAction(inputAction);
+    this.inputActions?.execute(inputAction);
   }
 
   destroy() {
@@ -185,12 +183,9 @@ export default class IndicatorPointerHandler {
       GLib.Source.remove(this.primaryActivationTimeoutId);
       this.primaryActivationTimeoutId = null;
     }
-    if (
-      this.disabledClickGesture &&
-      typeof this.disabledClickGesture.set_enabled === "function"
-    )
-      this.disabledClickGesture.set_enabled(true);
-    this.disabledClickGesture = null;
+    this.restoreDefaultPanelActivation?.();
+    this.restoreDefaultPanelActivation = null;
+    this.inputActions = null;
     this.indicator = null;
   }
 }

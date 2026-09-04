@@ -11,21 +11,17 @@
 
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import {
-  PLAYBACK_ACTION_BY_INPUT_ACTION,
-  VOLUME_STEP,
-} from "../shared/input/actions.js";
-import { InputActions } from "../shared/input/types.js";
 import { PopupRegions } from "./ui/popup/regions.js";
 import { NativeMediaControlsModes } from "../shared/settings/contract.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
-import GlobalShortcutsService from "./services/globalShortcutsService.js";
+import InputActionDispatcher from "./input/actionDispatcher.js";
+import GlobalShortcuts from "./input/globalShortcuts.js";
 import NativeMediaControlsIntegration from "./integrations/nativeMediaControls.js";
-import ExtensionResourceRegistry from "./services/extensionResourceRegistry.js";
+import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
-import { clearIconCache } from "./utils/icons.js";
+import { clearIconCache } from "./ui/icons.js";
 
 const logger = createLogger("ExtensionController");
 
@@ -60,7 +56,7 @@ export default class ExtensionController {
     this.runtimeProfile = null;
     this.sessionModeSignalId = null;
     this.indicator = null;
-    this.extensionResourceRegistry = new ExtensionResourceRegistry(
+    this.resourceRegistry = new ResourceRegistry(
       this.extensionPath,
     );
     this.nativeMediaControlsIntegration = new NativeMediaControlsIntegration();
@@ -71,7 +67,7 @@ export default class ExtensionController {
     const lifecycleGeneration = ++this.lifecycleGeneration;
 
     try {
-      this.extensionResourceRegistry.register();
+      this.resourceRegistry.register();
       this.settings = new MediaShellSettings(this.extensionInstance.getSettings());
       this.installSettingsSubscriptions();
       this.sessionModeSignalId = Main.sessionMode.connect("updated", () =>
@@ -188,13 +184,19 @@ export default class ExtensionController {
     });
 
     if (includeUserServices) {
+      this.inputActionDispatcher = new InputActionDispatcher({
+        mediaRuntime: this.mediaRuntime,
+        onTogglePopup: () => this.indicator?.menu.toggle(),
+        onOpenPreferences: () => this.openPreferences(),
+      });
+
       // Hide can be applied before the MediaShell MPRIS runtime exists.
       this.reconcileNativeMediaControls();
-      this.globalShortcutsService = new GlobalShortcutsService(
+      this.globalShortcuts = new GlobalShortcuts(
         this.settings.keybindings,
-        (inputAction) => this.executeInputAction(inputAction),
+        (inputAction) => this.inputActionDispatcher?.execute(inputAction),
       );
-      this.globalShortcutsService.enable();
+      this.globalShortcuts.enable();
     }
 
     await this.mediaRuntime.init();
@@ -210,7 +212,8 @@ export default class ExtensionController {
 
   hasRuntimeComponents() {
     return Boolean(
-      this.globalShortcutsService ||
+      this.globalShortcuts ||
+      this.inputActionDispatcher ||
       this.indicator ||
       this.mediaRuntime,
     );
@@ -257,7 +260,7 @@ export default class ExtensionController {
   handleAvailablePlayersChanged() {
     if (this.runtimeProfile === RuntimeProfiles.USER)
       this.indicator?.requestSurfaceUpdate({
-        popup: PopupRegions.MEDIA_APP_SELECTOR,
+        popup: PopupRegions.PLAYER_SELECTOR,
       });
     this.reconcileNativeMediaControls();
   }
@@ -273,12 +276,12 @@ export default class ExtensionController {
   rebuildIndicator() {
     if (this.runtimeProfile !== RuntimeProfiles.USER) return;
 
-    const mediaApp = this.mediaRuntime?.activePlayer ?? null;
+    const player = this.mediaRuntime?.activePlayer ?? null;
     this.destroyIndicator();
-    if (mediaApp) this.handleActivePlayerChanged(mediaApp);
+    if (player) this.handleActivePlayerChanged(player);
   }
 
-  handleActivePlayerChanged(mediaApp) {
+  handleActivePlayerChanged(player) {
     if (
       this.runtimeProfile !== RuntimeProfiles.USER ||
       resolveRuntimeProfile() !== RuntimeProfiles.USER
@@ -287,19 +290,20 @@ export default class ExtensionController {
       return;
     }
 
-    if (!mediaApp) {
+    if (!player) {
       this.destroyIndicator();
       return;
     }
 
     if (this.indicator) {
-      this.indicator.setMediaApp(mediaApp);
+      this.indicator.setPlayer(player);
       return;
     }
 
-    this.indicator = new MediaShellIndicator(mediaApp, this, {
+    this.indicator = new MediaShellIndicator(player, {
       mediaRuntime: this.mediaRuntime,
       settings: this.settings,
+      inputActions: this.inputActionDispatcher,
     });
     // Panel slot name — must match the extension's registered status area identifier.
     Main.panel.addToStatusArea(
@@ -308,39 +312,6 @@ export default class ExtensionController {
       this.settings.panel.index,
       this.settings.panel.position,
     );
-  }
-
-  togglePopup() {
-    this.indicator?.menu.toggle();
-  }
-
-  executeInputAction(inputAction) {
-    if (this.runtimeProfile !== RuntimeProfiles.USER) return;
-
-    const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
-    if (playbackAction) return this.mediaRuntime?.playback.execute(playbackAction);
-
-    switch (inputAction) {
-      case InputActions.VOLUME_UP:
-        return this.mediaRuntime?.playback.increaseVolume(VOLUME_STEP);
-      case InputActions.VOLUME_DOWN:
-        return this.mediaRuntime?.playback.decreaseVolume(VOLUME_STEP);
-      case InputActions.TOGGLE_POPUP:
-        this.togglePopup();
-        break;
-      case InputActions.OPEN_PREFERENCES:
-        this.openPreferences();
-        break;
-      case InputActions.RAISE_APP:
-        return this.mediaRuntime?.playback.raise();
-      case InputActions.QUIT_APP:
-        return this.mediaRuntime?.playback.quit();
-      case InputActions.SWITCH_APP:
-        this.mediaRuntime?.switchPlayer();
-        break;
-      default:
-        break;
-    }
   }
 
   openPreferences() {
@@ -357,19 +328,18 @@ export default class ExtensionController {
     indicator.destroy();
   }
 
-  destroyOwnedComponent(propertyName) {
-    const ownedComponent = this[propertyName];
-    this[propertyName] = null;
-    if (!ownedComponent) return;
-
-    ownedComponent.destroy();
-  }
-
   destroyRuntimeComponents() {
-    this.destroyOwnedComponent("globalShortcutsService");
+    this.globalShortcuts?.destroy();
+    this.globalShortcuts = null;
+
     this.nativeMediaControlsIntegration?.reset();
     this.destroyIndicator();
-    this.destroyOwnedComponent("mediaRuntime");
+
+    this.inputActionDispatcher?.destroy();
+    this.inputActionDispatcher = null;
+
+    this.mediaRuntime?.destroy();
+    this.mediaRuntime = null;
     clearIconCache();
   }
 
@@ -390,7 +360,11 @@ export default class ExtensionController {
     this.settings?.destroy();
     this.settings = null;
     this.runtimeProfile = null;
-    this.destroyOwnedComponent("nativeMediaControlsIntegration");
-    this.destroyOwnedComponent("extensionResourceRegistry");
+
+    this.nativeMediaControlsIntegration?.destroy();
+    this.nativeMediaControlsIntegration = null;
+
+    this.resourceRegistry?.destroy();
+    this.resourceRegistry = null;
   }
 }

@@ -8,6 +8,7 @@
  * delegates state and execution to the shared playback-control domain.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -19,16 +20,14 @@ import { TopBarPlaybackControlRegions } from "./regions.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
-import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../../constants/playbackControls.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
+} from "../actorState.js";
+import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../components/playback/order.js";
 import { reconcileActorOrder } from "../components/actorOrder.js";
 import { updatePlaybackControlButton } from "../components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
 } from "../components/playback/content.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
 
 /** Renders configurable playback controls inside the top bar. */
 export default class TopBarPlaybackControls {
@@ -43,8 +42,8 @@ export default class TopBarPlaybackControls {
     return this.topBarContent.settings;
   }
 
-  get mediaApp() {
-    return this.topBarContent.mediaApp;
+  get player() {
+    return this.topBarContent.player;
   }
 
   render(dirtyRegions) {
@@ -71,8 +70,8 @@ export default class TopBarPlaybackControls {
     if (this.actor) return;
 
     this.actor = new St.BoxLayout({
-      name: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
-      styleClass: StyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
+      name: MediaShellStyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
+      styleClass: MediaShellStyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
     });
   }
 
@@ -82,7 +81,7 @@ export default class TopBarPlaybackControls {
       return;
     }
 
-    const controlState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const controlState = resolvePlaybackControlState(this.player, controlId);
     const buttonState = this.ensurePlaybackControl(controlState.control);
     this.syncPlaybackControl(buttonState, controlState);
   }
@@ -93,26 +92,26 @@ export default class TopBarPlaybackControls {
 
     const button = new St.Button({
       name: controlDefinition.actorName,
-      styleClass: StyleClasses.TOP_BAR_CONTROL_BUTTON,
+      styleClass: MediaShellStyleClasses.TOP_BAR_CONTROL_BUTTON,
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
       toggleMode: controlDefinition.isStateControl,
     });
     const content = createPlaybackControlContent(controlDefinition, {
       iconStyleClass: styleClassNames(
-        StyleClasses.SYSTEM_STATUS_ICON,
-        StyleClasses.NO_MARGIN,
-        StyleClasses.TOP_BAR_CONTROL_ICON,
+        NativeStyleClasses.SYSTEM_STATUS_ICON,
+        NativeStyleClasses.NO_MARGIN,
+        MediaShellStyleClasses.TOP_BAR_CONTROL_ICON,
       ),
       labelStyleClass: styleClassNames(
-        StyleClasses.NO_MARGIN,
-        StyleClasses.TOP_BAR_CONTROL_LABEL,
+        NativeStyleClasses.NO_MARGIN,
+        MediaShellStyleClasses.TOP_BAR_CONTROL_LABEL,
       ),
     });
     buttonState = { button, content, signalId: 0, action: null };
     buttonState.signalId = button.connect("clicked", () => {
       if (!buttonState.button.reactive) return;
-      void this.playbackController.execute(buttonState.action, this.mediaApp);
+      void this.playbackController.execute(buttonState.action, this.player);
     });
     button.set_child(content.actor);
     this.controlButtons.set(controlDefinition.id, buttonState);
@@ -133,7 +132,7 @@ export default class TopBarPlaybackControls {
     updatePlaybackControlContent(buttonState.content, { iconName, labelText });
     updatePlaybackControlButton(
       buttonState.button,
-      this.mediaApp,
+      this.player,
       controlState,
       _,
     );

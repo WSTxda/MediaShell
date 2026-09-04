@@ -334,7 +334,7 @@ export default class DesktopAppResolver {
 
   // Lifecycle decisions intentionally accept only the exact MPRIS DesktopEntry.
   // Identity, bus-name, WM-class, running-app and search heuristics are suitable
-  // for presentation, but are not strong enough evidence to destroy a media app.
+  // for presentation, but are not strong enough evidence to destroy an MPRIS player.
   resolveLifecycleShellApp(desktopEntry) {
     const desktopFileBasename = stripDesktopFileSuffix(desktopEntry);
     if (!desktopFileBasename) return null;
@@ -455,7 +455,7 @@ export default class DesktopAppResolver {
     }
   }
 
-  isMediaAppBlocked(identity, desktopEntry, blockedAppIds, busName = "") {
+  isPlayerBlocked(identity, desktopEntry, blockedAppIds, busName = "") {
     const blockedAppIdSet =
       blockedAppIds instanceof Set
         ? blockedAppIds

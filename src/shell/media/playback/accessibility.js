@@ -24,13 +24,13 @@ function withDetail(label, detail) {
 /**
  * Resolves the assistive-technology name for one playback control.
  *
- * @param {object} mediaApp - Normalized media-app state.
+ * @param {object} player - Normalized player state.
  * @param {object} controlState - Result from resolvePlaybackControlState().
  * @param {(message: string) => string} _ - Translation function.
  * @returns {string} Localized accessible name.
  */
 export function resolvePlaybackControlAccessibleName(
-  mediaApp,
+  player,
   controlState,
   _ = (message) => message,
 ) {
@@ -54,9 +54,9 @@ export function resolvePlaybackControlAccessibleName(
       return withDetail(_("Seek forward"), `${RELATIVE_SEEK_SECONDS} s`);
     case PlaybackControlIds.REPEAT: {
       const repeatMode =
-        mediaApp.loopStatus === LoopStatus.TRACK
+        player.loopStatus === LoopStatus.TRACK
           ? _("Track")
-          : mediaApp.loopStatus === LoopStatus.PLAYLIST
+          : player.loopStatus === LoopStatus.PLAYLIST
             ? _("Playlist")
             : _("None");
       return withDetail(_("Repeat"), repeatMode);

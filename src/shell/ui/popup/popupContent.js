@@ -10,6 +10,7 @@
  * on the next open.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
@@ -18,13 +19,11 @@ import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePopupWidth } from "../../../shared/ui/popupLayout.js";
 import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
-import { POPUP_CONTAINER_PADDING } from "../../constants/popup.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+import { POPUP_CONTAINER_PADDING } from "./presentation.js";
 import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
 import PopupAlbumArt from "./popupAlbumArt.js";
 import PopupPlaybackControls from "./popupPlaybackControls.js";
-import PopupMediaAppSelector from "./popupMediaAppSelector.js";
+import PopupPlayerSelector from "./popupPlayerSelector.js";
 import PopupTrackInformation from "./popupTrackInformation.js";
 import PopupProgressBar from "./popupProgressBar.js";
 import PopupVolumeControl from "./popupVolumeControl.js";
@@ -54,15 +53,15 @@ export default class PopupContent {
     );
     this.popupItem = new PopupMenu.PopupBaseMenuItem({
       style_class: styleClassNames(
-        StyleClasses.NO_PADDING,
-        StyleClasses.POPUP_BOX,
+        NativeStyleClasses.NO_PADDING,
+        MediaShellStyleClasses.POPUP_BOX,
       ),
       activate: false,
     });
     this.popupItem.set_orientation(Clutter.Orientation.VERTICAL);
-    this.popupItem.remove_style_class_name(StyleClasses.POPUP_MENU_ITEM);
+    this.popupItem.remove_style_class_name(NativeStyleClasses.POPUP_MENU_ITEM);
 
-    this.mediaAppSelector = new PopupMediaAppSelector(
+    this.playerSelector = new PopupPlayerSelector(
       this,
       desktopAppResolver,
     );
@@ -76,7 +75,7 @@ export default class PopupContent {
     this.popupItemCapturedEventId = this.popupItem.connect(
       "captured-event",
       (_actor, event) =>
-        this.mediaAppSelector.handleCapturedEvent(event),
+        this.playerSelector.handleCapturedEvent(event),
     );
     this.menuOpenSignalId = this.menu.connect(
       "open-state-changed",
@@ -88,8 +87,8 @@ export default class PopupContent {
   get mediaRuntime() {
     return this.indicator.mediaRuntime;
   }
-  get mediaApp() {
-    return this.indicator.mediaApp;
+  get player() {
+    return this.indicator.player;
   }
   get menu() {
     return this.indicator.menu;
@@ -117,7 +116,7 @@ export default class PopupContent {
       ], PopupRegions.TRACK_INFORMATION],
       [["progressBarShow"], PopupRegions.PROGRESS],
       [["volumeControlShow"], PopupRegions.VOLUME],
-      [["mediaAppIconUseColor"], PopupRegions.MEDIA_APP_SELECTOR],
+      [["mediaAppIconUseColor"], PopupRegions.PLAYER_SELECTOR],
       [["playbackControlsShow"], PopupRegions.PLAYBACK_CONTROLS],
       [["playbackControlsShuffleShow"], PopupRegions.PLAYBACK_SHUFFLE],
       [["playbackControlsSeekBackwardShow"], PopupRegions.PLAYBACK_SEEK_BACKWARD],
@@ -148,7 +147,7 @@ export default class PopupContent {
     if (isOpen) {
       let regions =
         this.pendingClosedRegions |
-        PopupRegions.MEDIA_APP_SELECTOR |
+        PopupRegions.PLAYER_SELECTOR |
         PopupRegions.ARTWORK |
         PopupRegions.TRACK_INFORMATION |
         PopupRegions.PLAYBACK_CONTROLS;
@@ -166,22 +165,22 @@ export default class PopupContent {
       return;
     }
 
-    this.mediaAppSelector.close();
+    this.playerSelector.close();
     this.albumArt.cancelAlbumArtLoad();
     this.progressBar.pause();
   }
 
-  isActiveMediaApp(mediaApp) {
-    return this.indicator.isActiveMediaApp(mediaApp);
+  isActivePlayer(player) {
+    return this.indicator.isActivePlayer(player);
   }
 
-  selectMediaApp(mediaApp) {
-    return this.mediaRuntime?.selectPlayer(mediaApp) ?? false;
+  selectPlayer(player) {
+    return this.mediaRuntime?.selectPlayer(player) ?? false;
   }
 
-  toggleMediaAppPin(mediaApp) {
-    const pinStateChanged = this.mediaRuntime?.togglePlayerPin(mediaApp) ?? false;
-    if (pinStateChanged) this.requestUpdate(PopupRegions.MEDIA_APP_SELECTOR);
+  togglePlayerPin(player) {
+    const pinStateChanged = this.mediaRuntime?.togglePlayerPin(player) ?? false;
+    if (pinStateChanged) this.requestUpdate(PopupRegions.PLAYER_SELECTOR);
     return pinStateChanged;
   }
 
@@ -197,9 +196,9 @@ export default class PopupContent {
       return;
     }
 
-    if (popupRegions & PopupRegions.MEDIA_APP_SELECTOR) {
-      this.runComponentUpdate("media app selector", () =>
-        this.mediaAppSelector.render(),
+    if (popupRegions & PopupRegions.PLAYER_SELECTOR) {
+      this.runComponentUpdate("player selector", () =>
+        this.playerSelector.render(),
       );
     }
 
@@ -281,7 +280,7 @@ export default class PopupContent {
   syncProgressBarPlaybackState() {
     if (
       !this.menu.isOpen ||
-      this.mediaApp.playbackStatus !== PlaybackStatus.PLAYING
+      this.player.playbackStatus !== PlaybackStatus.PLAYING
     ) {
       this.progressBar.pause();
       return;
@@ -300,7 +299,7 @@ export default class PopupContent {
   syncAlbumArtPlaybackState() {
     if (!this.menu.isOpen || !this.settings.artworkShow)
       return;
-    this.albumArt.syncPlaybackState(this.mediaApp.playbackStatus);
+    this.albumArt.syncPlaybackState(this.player.playbackStatus);
   }
 
   buildFixedWidthStyle(width) {
@@ -346,7 +345,7 @@ export default class PopupContent {
     if (width === this.appliedPopupOuterWidth) return;
     this.appliedPopupOuterWidth = width;
     this.popupItem.style = this.buildFixedWidthStyle(width);
-    this.mediaAppSelector.syncMediaAppSelectorWidth();
+    this.playerSelector.syncPlayerSelectorWidth();
   }
 
   destroy() {
@@ -372,14 +371,14 @@ export default class PopupContent {
     const playbackControls = this.playbackControls;
     const volumeControl = this.volumeControl;
     const albumArt = this.albumArt;
-    const mediaAppSelector = this.mediaAppSelector;
+    const playerSelector = this.playerSelector;
     const popupItem = this.popupItem;
     this.progressBar = null;
     this.trackInformation = null;
     this.playbackControls = null;
     this.volumeControl = null;
     this.albumArt = null;
-    this.mediaAppSelector = null;
+    this.playerSelector = null;
     this.popupItem = null;
 
     progressBar?.destroy();
@@ -387,7 +386,7 @@ export default class PopupContent {
     playbackControls?.destroy();
     volumeControl?.destroy();
     albumArt?.destroy();
-    mediaAppSelector?.destroy();
+    playerSelector?.destroy();
     popupItem?.destroy();
 
     this.pendingClosedRegions = 0;

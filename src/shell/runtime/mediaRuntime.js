@@ -47,11 +47,11 @@ export default class MediaRuntime {
   }
 
   get activePlayer() {
-    return this.registry?.activeMediaApp ?? null;
+    return this.registry?.activePlayer ?? null;
   }
 
   get availablePlayers() {
-    return this.registry?.getAvailableMediaApps() ?? [];
+    return this.registry?.getAvailablePlayers() ?? [];
   }
 
   async init() {
@@ -65,9 +65,9 @@ export default class MediaRuntime {
         this.proxyFactory,
         this.identity,
         {
-          onAvailableMediaAppsChanged: () =>
+          onAvailablePlayersChanged: () =>
             this.callbacks?.onAvailablePlayersChanged?.(),
-          onActiveMediaAppChanged: (player) =>
+          onActivePlayerChanged: (player) =>
             this.callbacks?.onActivePlayerChanged?.(player),
         },
       );
@@ -86,15 +86,15 @@ export default class MediaRuntime {
   }
 
   selectPlayer(player) {
-    return this.registry?.selectMediaApp(player) ?? false;
+    return this.registry?.selectPlayer(player) ?? false;
   }
 
   switchPlayer() {
-    return this.registry?.switchMediaApp() ?? false;
+    return this.registry?.switchPlayer() ?? false;
   }
 
   togglePlayerPin(player) {
-    return this.registry?.toggleMediaAppPin(player) ?? false;
+    return this.registry?.togglePlayerPin(player) ?? false;
   }
 
   async setBlockedAppIds(blockedAppIds) {

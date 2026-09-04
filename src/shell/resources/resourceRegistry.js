@@ -1,10 +1,10 @@
 /**
- * @file extensionResourceRegistry.js
- * @module shell.services.extensionResourceRegistry
+ * @file resourceRegistry.js
+ * @module shell.resources.resourceRegistry
  *
  * Registers compiled resources needed by the Shell runtime.
  *
- * ExtensionController uses this service to expose bundled icons, UI assets, and
+ * ExtensionController uses this registry to expose bundled icons, UI assets, and
  * D-Bus introspection XML while the extension is enabled. The registry owns the
  * Gio.Resource handle and unregisters it during disable.
  */
@@ -15,12 +15,12 @@ import GLib from "gi://GLib";
 import { COMPILED_RESOURCE_FILENAME } from "../../shared/resources.js";
 import { createLogger } from "../../shared/logging/logger.js";
 
-const logger = createLogger("ExtensionResourceRegistry");
+const logger = createLogger("ResourceRegistry");
 
 /**
  * Registers compiled resources needed by the Shell runtime.
  */
-export default class ExtensionResourceRegistry {
+export default class ResourceRegistry {
   constructor(extensionPath) {
     this.extensionPath = extensionPath;
     this.resource = null;

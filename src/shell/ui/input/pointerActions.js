@@ -1,6 +1,6 @@
 /**
  * @file pointerActions.js
- * @module shell.utils.pointerActions
+ * @module shell.ui.input.pointerActions
  *
  * Installs Shell pointer gestures and button-release fallbacks for actor actions.
  *

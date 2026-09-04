@@ -75,7 +75,7 @@ import {
   mprisOperationSucceeded,
   mprisOperationUnsupported,
 } from "./operationResult.js";
-import { getOperationErrorName, isCancellationError } from "../utils/errors.js";
+import { getOperationErrorName, isCancellationError } from "../platform/gioErrors.js";
 import MprisPositionTracker from "./positionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");

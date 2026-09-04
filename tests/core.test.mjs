@@ -64,7 +64,7 @@ import {
 import {
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS,
   VisualizerRendererKinds,
-} from "../src/shell/constants/visualizer.js";
+} from "../src/shell/ui/components/visualizer/presentation.js";
 import { runCases } from "./helpers.mjs";
 
 const PWA_ID = "cinhimbnkkaeohfgghhklpknlkffjgod";

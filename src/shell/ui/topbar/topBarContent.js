@@ -9,6 +9,7 @@
  * absent from this module.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
@@ -16,10 +17,9 @@ import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { TopBarElementIds } from "../../../shared/ui/topBar.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
 import TopBarAlbumArt from "./topBarAlbumArt.js";
-import TopBarMediaAppIcon from "./topBarMediaAppIcon.js";
+import TopBarAppIcon from "./topBarAppIcon.js";
 import TopBarPlaybackControls from "./topBarPlaybackControls.js";
 import TopBarTrackInformation from "./topBarTrackInformation.js";
 import TopBarVisualizer from "./topBarVisualizer.js";
@@ -48,7 +48,7 @@ export default class TopBarContent {
           error,
         ),
     );
-    this.mediaAppIcon = new TopBarMediaAppIcon(this, desktopAppResolver);
+    this.appIcon = new TopBarAppIcon(this, desktopAppResolver);
     this.albumArt = new TopBarAlbumArt(this, artworkService);
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
@@ -57,8 +57,8 @@ export default class TopBarContent {
     this.installSettingsSubscriptions();
   }
 
-  get mediaApp() {
-    return this.indicator.mediaApp;
+  get player() {
+    return this.indicator.player;
   }
 
 
@@ -72,7 +72,7 @@ export default class TopBarContent {
         "trackInformationScrollSpeed",
         "trackInformationScrollPauseMilliseconds",
       ], TopBarRegions.TRACK_INFORMATION],
-      [["mediaAppIconShow", "mediaAppIconUseColor"], TopBarRegions.MEDIA_APP_ICON],
+      [["mediaAppIconShow", "mediaAppIconUseColor"], TopBarRegions.APP_ICON],
       [["artworkShow", "artworkCornerRadius"], TopBarRegions.ARTWORK],
       [["visualizerShow", "visualizerStyle", "visualizerSpeed"], TopBarRegions.VISUALIZER],
       [["playbackControlsShow"], TopBarRegions.PLAYBACK_CONTROLS],
@@ -130,18 +130,18 @@ export default class TopBarContent {
         : afterPlaybackIndex;
 
       if (
-        elementId === TopBarElementIds.MEDIA_APP_ICON &&
-        (topBarRegions & TopBarRegions.MEDIA_APP_ICON ||
+        elementId === TopBarElementIds.APP_ICON &&
+        (topBarRegions & TopBarRegions.APP_ICON ||
           topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runComponentUpdate("top bar media app icon", () => {
-          if (isVisible) this.mediaAppIcon.render(targetIndex, targetBox);
-          else this.mediaAppIcon.remove();
+        this.runComponentUpdate("top bar player icon", () => {
+          if (isVisible) this.appIcon.render(targetIndex, targetBox);
+          else this.appIcon.remove();
         });
       }
 
       if (
-        elementId === TopBarElementIds.ALBUM_ART &&
+        elementId === TopBarElementIds.ARTWORK &&
         (topBarRegions & TopBarRegions.ARTWORK ||
           topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
@@ -203,7 +203,7 @@ export default class TopBarContent {
     if (this.topBarBox) return;
 
     this.topBarBox = new St.BoxLayout({
-      styleClass: StyleClasses.TOP_BAR_BOX,
+      styleClass: MediaShellStyleClasses.TOP_BAR_BOX,
     });
     this.topBarActionBoxBefore = this.createActionBox();
     this.topBarActionBoxAfter = this.createActionBox();
@@ -236,7 +236,7 @@ export default class TopBarContent {
 
   createActionBox() {
     return new St.BoxLayout({
-      styleClass: StyleClasses.TOP_BAR_ACTION_BOX,
+      styleClass: MediaShellStyleClasses.TOP_BAR_ACTION_BOX,
       reactive: true,
       trackHover: false,
       xExpand: false,
@@ -245,9 +245,9 @@ export default class TopBarContent {
   }
 
   isElementVisible(elementId) {
-    if (elementId === TopBarElementIds.MEDIA_APP_ICON)
+    if (elementId === TopBarElementIds.APP_ICON)
       return this.settings.mediaAppIconShow;
-    if (elementId === TopBarElementIds.ALBUM_ART)
+    if (elementId === TopBarElementIds.ARTWORK)
       return this.settings.artworkShow;
     if (elementId === TopBarElementIds.TRACK_INFORMATION)
       return this.settings.trackInformationShow;
@@ -297,18 +297,18 @@ export default class TopBarContent {
     const playbackControls = this.playbackControls;
     const visualizer = this.visualizer;
     const trackInformation = this.trackInformation;
-    const mediaAppIcon = this.mediaAppIcon;
+    const appIcon = this.appIcon;
     const albumArt = this.albumArt;
     this.playbackControls = null;
     this.visualizer = null;
     this.trackInformation = null;
-    this.mediaAppIcon = null;
+    this.appIcon = null;
     this.albumArt = null;
 
     playbackControls?.destroy();
     visualizer?.destroy();
     trackInformation?.destroy();
-    mediaAppIcon?.destroy();
+    appIcon?.destroy();
     albumArt?.destroy();
 
     this.topBarBox?.get_parent()?.remove_child(this.topBarBox);

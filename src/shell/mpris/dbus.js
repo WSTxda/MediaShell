@@ -15,12 +15,12 @@ export const DBUS_DAEMON_OBJECT_PATH = "/org/freedesktop/DBus";
 /** Standard properties interface used to read and write remote properties. */
 export const DBUS_PROPERTIES_IFACE_NAME = "org.freedesktop.DBus.Properties";
 
-/** D-Bus daemon methods used for media-app discovery. */
+/** D-Bus daemon methods used for MPRIS player discovery. */
 export const DbusDaemonMethods = Object.freeze({
   LIST_NAMES: "ListNames",
 });
 
-/** D-Bus daemon signals used for media-app discovery. */
+/** D-Bus daemon signals used for MPRIS player discovery. */
 export const DbusDaemonSignals = Object.freeze({
   NAME_OWNER_CHANGED: "NameOwnerChanged",
 });

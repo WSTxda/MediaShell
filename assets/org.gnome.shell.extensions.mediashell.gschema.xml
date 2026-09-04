@@ -186,7 +186,7 @@
       <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
-      <default>['MEDIA_APP_ICON', 'ALBUM_ART', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
+      <default>['APP_ICON', 'ARTWORK', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
     </key>
 
     <!-- Panel -->

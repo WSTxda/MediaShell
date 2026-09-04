@@ -8,7 +8,7 @@
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";
 
 export const TopBarRegions = Object.freeze({
-  MEDIA_APP_ICON: 1 << 0,
+  APP_ICON: 1 << 0,
   ARTWORK: 1 << 1,
   TRACK_INFORMATION: 1 << 2,
   PLAYBACK_SHUFFLE: 1 << 3,

@@ -11,10 +11,10 @@ import test from "node:test";
 
 import { PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import {
-  chooseActiveMediaApp,
-  chooseNextMediaApp,
-  chooseReconciledMediaApp,
-  orderMediaAppsDeterministically,
+  chooseActivePlayer,
+  chooseNextPlayer,
+  chooseReconciledPlayer,
+  orderPlayersDeterministically,
 } from "../src/shell/mpris/selection.js";
 import { runCases } from "./helpers.mjs";
 
@@ -66,26 +66,26 @@ test("active media-app selection remains deterministic across priority, cycling,
       "priority",
       () => {
         assert.equal(
-          chooseActiveMediaApp(
+          chooseActivePlayer(
             [invalid, stopped, current, paused, playing, pinned],
             current.busName,
           ),
           pinned,
         );
         assert.equal(
-          chooseActiveMediaApp(
+          chooseActivePlayer(
             [stopped, current, paused, playing],
             current.busName,
           ),
           playing,
         );
         assert.equal(
-          chooseActiveMediaApp([stopped, current, paused], current.busName),
+          chooseActivePlayer([stopped, current, paused], current.busName),
           current,
         );
-        assert.equal(chooseActiveMediaApp([stopped, paused]), paused);
-        assert.equal(chooseActiveMediaApp([stopped]), stopped);
-        assert.equal(chooseActiveMediaApp([invalid]), null);
+        assert.equal(chooseActivePlayer([stopped, paused]), paused);
+        assert.equal(chooseActivePlayer([stopped]), stopped);
+        assert.equal(chooseActivePlayer([invalid]), null);
       },
     ],
     [
@@ -108,8 +108,8 @@ test("active media-app selection remains deterministic across priority, cycling,
           [beta, gamma, alpha],
           [alpha, beta, gamma],
         ]) {
-          assert.equal(chooseActiveMediaApp(apps, beta.busName), beta);
-          assert.equal(chooseActiveMediaApp(apps), alpha);
+          assert.equal(chooseActivePlayer(apps, beta.busName), beta);
+          assert.equal(chooseActivePlayer(apps), alpha);
         }
       },
     ],
@@ -129,16 +129,16 @@ test("active media-app selection remains deterministic across priority, cycling,
           PlaybackStatus.STOPPED,
         );
         assert.deepEqual(
-          orderMediaAppsDeterministically([gamma, alpha, beta]),
+          orderPlayersDeterministically([gamma, alpha, beta]),
           [alpha, beta, gamma],
         );
-        assert.equal(chooseNextMediaApp([alpha]), null);
+        assert.equal(chooseNextPlayer([alpha]), null);
         assert.equal(
-          chooseNextMediaApp([gamma, invalid, alpha, beta], alpha),
+          chooseNextPlayer([gamma, invalid, alpha, beta], alpha),
           beta,
         );
-        assert.equal(chooseNextMediaApp([beta, alpha, gamma], gamma), alpha);
-        assert.equal(chooseNextMediaApp([gamma, beta, alpha], null), alpha);
+        assert.equal(chooseNextPlayer([beta, alpha, gamma], gamma), alpha);
+        assert.equal(chooseNextPlayer([gamma, beta, alpha], null), alpha);
       },
     ],
     [
@@ -154,19 +154,19 @@ test("active media-app selection remains deterministic across priority, cycling,
           { pinned: true },
         );
         assert.equal(
-          chooseReconciledMediaApp([paused], pending.busName, pending),
+          chooseReconciledPlayer([paused], pending.busName, pending),
           null,
         );
         assert.equal(
-          chooseReconciledMediaApp([paused, playing], pending.busName, pending),
+          chooseReconciledPlayer([paused, playing], pending.busName, pending),
           playing,
         );
         assert.equal(
-          chooseReconciledMediaApp([paused, pinned], pending.busName, pending),
+          chooseReconciledPlayer([paused, pinned], pending.busName, pending),
           pinned,
         );
         assert.equal(
-          chooseReconciledMediaApp(
+          chooseReconciledPlayer(
             [playing],
             pinnedPending.busName,
             pinnedPending,
@@ -174,7 +174,7 @@ test("active media-app selection remains deterministic across priority, cycling,
           null,
         );
         assert.equal(
-          chooseReconciledMediaApp([paused], paused.busName, null),
+          chooseReconciledPlayer([paused], paused.busName, null),
           paused,
         );
       },

@@ -3,12 +3,12 @@
  * @module shell.mpris.registry
  *
  * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
- * and selects the active media app.
+ * and selects the active player.
  *
- * The registry watches NameOwnerChanged, creates media-app models through
+ * The registry watches NameOwnerChanged, creates MprisPlayer models through
  * MprisProxyFactory,
  * applies blocked-app filtering, and schedules grace-period removals when an
- * endpoint disappears. It is the source of truth for the active media app shown by
+ * endpoint disappears. It is the source of truth for the active player shown by
  * MediaShellIndicator and PopupContent.
  */
 
@@ -31,12 +31,12 @@ import {
 } from "./clientPolicy.js";
 import { normalizeUniqueStrings } from "../../shared/format.js";
 import { createLogger } from "../../shared/logging/logger.js";
-import { isCancellationError } from "../utils/errors.js";
+import { isCancellationError } from "../platform/gioErrors.js";
 import MprisPlayer from "./player.js";
 import {
-  chooseNextMediaApp,
-  chooseReconciledMediaApp,
-  orderMediaAppsDeterministically,
+  chooseNextPlayer,
+  chooseReconciledPlayer,
+  orderPlayersDeterministically,
 } from "./selection.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
@@ -45,22 +45,22 @@ const logger = createLogger("MprisPlayerRegistry");
 
 /**
  * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
- * and selects the active media app.
+ * and selects the active player.
  */
 export default class MprisPlayerRegistry {
   constructor(mprisProxyFactory, desktopAppResolver, callbacks = {}) {
     this.mprisProxyFactory = mprisProxyFactory;
     this.desktopAppResolver = desktopAppResolver;
-    this.onAvailableMediaAppsChanged = callbacks.onAvailableMediaAppsChanged;
-    this.onActiveMediaAppChanged = callbacks.onActiveMediaAppChanged;
-    this.mediaAppsByBusName = new Map();
-    this.availableMediaApps = [];
-    this.pendingMediaAppsByBusName = new Map();
+    this.onAvailablePlayersChanged = callbacks.onAvailablePlayersChanged;
+    this.onActivePlayerChanged = callbacks.onActivePlayerChanged;
+    this.playersByBusName = new Map();
+    this.availablePlayers = [];
+    this.pendingPlayersByBusName = new Map();
     this.pendingRemovalBusNames = new Set();
     this.pendingRemovalSourceIds = new Map();
-    this.pendingRemovalAppStateConnections = new Map();
+    this.pendingRemovalPlayerStateConnections = new Map();
     this.blockedAppIds = new Set();
-    this.activeMediaApp = null;
+    this.activePlayer = null;
     this.previousActiveBusName = null;
     this.busDaemonProxy = null;
     this.nameOwnerChangedSignalId = null;
@@ -91,18 +91,18 @@ export default class MprisPlayerRegistry {
       (_proxy, _sender, [busName, _oldOwner, newOwner]) => {
         if (!busName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
 
-        if (!newOwner) this.scheduleMediaAppRemoval(busName);
-        else this.reconcileMediaAppOwner(busName);
+        if (!newOwner) this.schedulePlayerRemoval(busName);
+        else this.reconcilePlayerOwner(busName);
       },
     );
 
     try {
-      await this.discoverRunningMediaApps();
+      await this.discoverRunningPlayers();
     } catch (error) {
       if (isCancellationError(error)) return;
-      // The owner-change signal remains active, so media apps can still be
+      // The owner-change signal remains active, so players can still be
       // discovered later even if the initial ListNames call failed.
-      logger.warn("Initial MPRIS app discovery failed", error);
+      logger.warn("Initial MPRIS player discovery failed", error);
     }
   }
 
@@ -110,28 +110,28 @@ export default class MprisPlayerRegistry {
     if (this.isDestroyed || !this.busDaemonProxy) return;
 
     if (!this.busDaemonProxy.get_name_owner()) {
-      for (const busName of this.mediaAppsByBusName.keys())
-        this.scheduleMediaAppRemoval(busName);
+      for (const busName of this.playersByBusName.keys())
+        this.schedulePlayerRemoval(busName);
       return;
     }
 
-    this.discoverRunningMediaApps().catch((error) => {
+    this.discoverRunningPlayers().catch((error) => {
       if (!isCancellationError(error))
         logger.warn(
-          "Failed to rediscover MPRIS apps after D-Bus recovery",
+          "Failed to rediscover MPRIS players after D-Bus recovery",
           error,
         );
     });
   }
 
-  reconcileMediaAppOwner(busName) {
-    const mediaApp = this.mediaAppsByBusName.get(busName);
-    if (!mediaApp) {
-      this.registerMediaApp(busName).catch((error) => {
+  reconcilePlayerOwner(busName) {
+    const player = this.playersByBusName.get(busName);
+    if (!player) {
+      this.registerPlayer(busName).catch((error) => {
         if (!isCancellationError(error))
           logger.warnOnce(
             `register:${busName}`,
-            "Failed to add MPRIS app",
+            "Failed to add MPRIS player",
             busName,
             error,
           );
@@ -141,13 +141,13 @@ export default class MprisPlayerRegistry {
 
     // Gio.DBusProxy follows the owner of a well-known name, flushes its
     // cached properties when the owner disappears, and reloads them when
-    // a new owner appears. Keep the same MprisPlayer and available-media-app
+    // a new owner appears. Keep the same MprisPlayer and existing surface
     // actors
     // so a direct old-owner -> new-owner hand-off does not destroy and rebuild
     // the top bar between adjacent browser media sessions.
     this.cancelScheduledRemoval(busName);
-    mediaApp.adoptCurrentNameOwner();
-    mediaApp.refreshMetadata().catch((error) => {
+    player.adoptCurrentNameOwner();
+    player.refreshMetadata().catch((error) => {
       if (!isCancellationError(error))
         logger.debugOnce(
           `owner-recovery-metadata:${busName}`,
@@ -156,11 +156,11 @@ export default class MprisPlayerRegistry {
           error,
         );
     });
-    this.refreshAvailableMediaApps();
-    this.reconcileActiveMediaApp();
+    this.refreshAvailablePlayers();
+    this.reconcileActivePlayer();
   }
 
-  async discoverRunningMediaApps() {
+  async discoverRunningPlayers() {
     if (!this.busDaemonProxy || this.isDestroyed) return;
 
     const listNamesResult = await this.busDaemonProxy.call(
@@ -171,16 +171,16 @@ export default class MprisPlayerRegistry {
       this.operationCancellable,
     );
     const [busNames] = listNamesResult.deepUnpack();
-    const mediaAppBusNames = busNames.filter((busName) =>
+    const playerBusNames = busNames.filter((busName) =>
       busName.startsWith(MPRIS_BUS_NAME_PREFIX),
     );
     const registrationResults = await Promise.allSettled(
-      mediaAppBusNames.map((busName) => {
-        if (this.mediaAppsByBusName.has(busName)) {
-          this.reconcileMediaAppOwner(busName);
+      playerBusNames.map((busName) => {
+        if (this.playersByBusName.has(busName)) {
+          this.reconcilePlayerOwner(busName);
           return Promise.resolve();
         }
-        return this.registerMediaApp(busName);
+        return this.registerPlayer(busName);
       }),
     );
 
@@ -188,133 +188,133 @@ export default class MprisPlayerRegistry {
       const registrationResult = registrationResults[index];
       if (registrationResult.status === "rejected")
         logger.warn(
-          "A discovered MPRIS app could not be initialized",
-          mediaAppBusNames[index],
+          "A discovered MPRIS player could not be initialized",
+          playerBusNames[index],
           registrationResult.reason,
         );
     }
   }
 
-  async registerMediaApp(busName) {
+  async registerPlayer(busName) {
     if (
       this.isDestroyed ||
-      this.mediaAppsByBusName.has(busName) ||
-      this.pendingMediaAppsByBusName.has(busName)
+      this.playersByBusName.has(busName) ||
+      this.pendingPlayersByBusName.has(busName)
     )
       return;
 
     const lifecycleGeneration = this.lifecycleGeneration;
-    const mediaApp = new MprisPlayer(busName, this.mprisProxyFactory);
+    const player = new MprisPlayer(busName, this.mprisProxyFactory);
     let adopted = false;
-    this.pendingMediaAppsByBusName.set(busName, mediaApp);
+    this.pendingPlayersByBusName.set(busName, player);
 
     try {
-      const initialized = await mediaApp.init();
+      const initialized = await player.init();
       if (
         !initialized ||
-        mediaApp.isDestroyed ||
+        player.isDestroyed ||
         this.isDestroyed ||
         lifecycleGeneration !== this.lifecycleGeneration ||
-        this.pendingMediaAppsByBusName.get(busName) !== mediaApp
+        this.pendingPlayersByBusName.get(busName) !== player
       ) {
-        mediaApp.destroy();
+        player.destroy();
         return;
       }
 
       if (
-        this.desktopAppResolver.isMediaAppBlocked(
-          mediaApp.identity,
-          mediaApp.desktopEntry,
+        this.desktopAppResolver.isPlayerBlocked(
+          player.identity,
+          player.desktopEntry,
           this.blockedAppIds,
-          mediaApp.busName,
+          player.busName,
         )
       ) {
-        mediaApp.destroy();
+        player.destroy();
         return;
       }
 
-      mediaApp.onPropertyChanged(MprisPlayerStateProperties.IS_PINNED, () =>
-        this.reconcileActiveMediaApp(),
+      player.onPropertyChanged(MprisPlayerStateProperties.IS_PINNED, () =>
+        this.reconcileActivePlayer(),
       );
-      mediaApp.onPropertyChanged(MprisPlayerProperties.PLAYBACK_STATUS, () =>
-        this.reconcileActiveMediaApp(),
+      player.onPropertyChanged(MprisPlayerProperties.PLAYBACK_STATUS, () =>
+        this.reconcileActivePlayer(),
       );
-      mediaApp.onPropertyChanged(
+      player.onPropertyChanged(
         MprisPlayerStateProperties.IS_INVALID,
         () => {
-          this.refreshAvailableMediaApps();
-          this.reconcileActiveMediaApp();
+          this.refreshAvailablePlayers();
+          this.reconcileActivePlayer();
         },
       );
       const revalidateIdentity = () => {
         if (
-          this.desktopAppResolver.isMediaAppBlocked(
-            mediaApp.identity,
-            mediaApp.desktopEntry,
+          this.desktopAppResolver.isPlayerBlocked(
+            player.identity,
+            player.desktopEntry,
             this.blockedAppIds,
-            mediaApp.busName,
+            player.busName,
           )
         ) {
-          this.unregisterMediaApp(mediaApp.busName);
+          this.unregisterPlayer(player.busName);
           return;
         }
         // Identity changes can alter the resolved name or icon even
         // when the available proxy list itself is unchanged.
-        this.refreshAvailableMediaApps(true);
+        this.refreshAvailablePlayers(true);
       };
-      mediaApp.onPropertyChanged(
+      player.onPropertyChanged(
         MprisRootProperties.IDENTITY,
         revalidateIdentity,
       );
-      mediaApp.onPropertyChanged(
+      player.onPropertyChanged(
         MprisRootProperties.DESKTOP_ENTRY,
         revalidateIdentity,
       );
 
-      this.mediaAppsByBusName.set(busName, mediaApp);
+      this.playersByBusName.set(busName, player);
       adopted = true;
-      this.refreshAvailableMediaApps();
-      this.reconcileActiveMediaApp();
+      this.refreshAvailablePlayers();
+      this.reconcileActivePlayer();
     } catch (error) {
       if (!isCancellationError(error)) throw error;
     } finally {
-      if (this.pendingMediaAppsByBusName.get(busName) === mediaApp)
-        this.pendingMediaAppsByBusName.delete(busName);
-      if (!adopted && !mediaApp.isDestroyed) mediaApp.destroy();
+      if (this.pendingPlayersByBusName.get(busName) === player)
+        this.pendingPlayersByBusName.delete(busName);
+      if (!adopted && !player.isDestroyed) player.destroy();
     }
   }
 
-  scheduleMediaAppRemoval(busName) {
-    const pendingMediaApp = this.pendingMediaAppsByBusName.get(busName);
-    if (pendingMediaApp) {
-      this.unregisterMediaApp(busName);
+  schedulePlayerRemoval(busName) {
+    const pendingPlayer = this.pendingPlayersByBusName.get(busName);
+    if (pendingPlayer) {
+      this.unregisterPlayer(busName);
       return;
     }
-    const mediaApp = this.mediaAppsByBusName.get(busName);
-    if (!mediaApp || this.pendingRemovalSourceIds.has(busName)) return;
+    const player = this.playersByBusName.get(busName);
+    if (!player || this.pendingRemovalSourceIds.has(busName)) return;
 
     this.pendingRemovalBusNames.add(busName);
 
     // D-Bus ownership is the lifecycle authority. Hide the ownerless
-    // endpoint from the selector immediately, but retain the active media app
+    // endpoint from the selector immediately, but retain the active player
     // for a bounded hand-off window so a replacement owner can reuse it.
-    this.refreshAvailableMediaApps();
-    this.reconcileActiveMediaApp();
+    this.refreshAvailablePlayers();
+    this.reconcileActivePlayer();
 
     // Shell.App state may only corroborate the D-Bus owner loss when MPRIS
     // supplies an exact DesktopEntry. Presentation heuristics are explicitly
     // excluded from lifecycle decisions.
-    if (this.observeExactMediaAppShutdown(busName, mediaApp)) return;
+    if (this.observeExactPlayerShutdown(busName, player)) return;
 
     const sourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       MPRIS_OWNER_HANDOFF_GRACE_MS,
       () => {
         this.pendingRemovalSourceIds.delete(busName);
-        const mediaApp = this.mediaAppsByBusName.get(busName);
-        if (mediaApp?.hasBusOwner) this.reconcileMediaAppOwner(busName);
+        const player = this.playersByBusName.get(busName);
+        if (player?.hasBusOwner) this.reconcilePlayerOwner(busName);
         else {
-          this.unregisterMediaApp(busName);
+          this.unregisterPlayer(busName);
         }
         return GLib.SOURCE_REMOVE;
       },
@@ -322,9 +322,9 @@ export default class MprisPlayerRegistry {
     this.pendingRemovalSourceIds.set(busName, sourceId);
   }
 
-  observeExactMediaAppShutdown(busName, mediaApp) {
+  observeExactPlayerShutdown(busName, player) {
     const shellApp = this.desktopAppResolver.resolveLifecycleShellApp(
-      mediaApp.desktopEntry,
+      player.desktopEntry,
     );
     const removeIfStopped = () => {
       if (
@@ -333,7 +333,7 @@ export default class MprisPlayerRegistry {
       )
         return false;
 
-      this.unregisterMediaApp(busName);
+      this.unregisterPlayer(busName);
       return true;
     };
 
@@ -342,7 +342,7 @@ export default class MprisPlayerRegistry {
 
     try {
       const stateSignalId = shellApp.connect("notify::state", removeIfStopped);
-      this.pendingRemovalAppStateConnections.set(busName, {
+      this.pendingRemovalPlayerStateConnections.set(busName, {
         shellApp,
         stateSignalId,
       });
@@ -370,10 +370,10 @@ export default class MprisPlayerRegistry {
       canceled = true;
     }
 
-    const stateSignal = this.pendingRemovalAppStateConnections.get(busName);
+    const stateSignal = this.pendingRemovalPlayerStateConnections.get(busName);
     if (stateSignal) {
       stateSignal.shellApp.disconnect(stateSignal.stateSignalId);
-      this.pendingRemovalAppStateConnections.delete(busName);
+      this.pendingRemovalPlayerStateConnections.delete(busName);
       canceled = true;
     }
 
@@ -381,152 +381,152 @@ export default class MprisPlayerRegistry {
     return canceled;
   }
 
-  unregisterMediaApp(busName) {
+  unregisterPlayer(busName) {
     this.cancelScheduledRemoval(busName);
-    const pendingMediaApp = this.pendingMediaAppsByBusName.get(busName);
-    if (pendingMediaApp) {
-      pendingMediaApp.destroy();
-      this.pendingMediaAppsByBusName.delete(busName);
+    const pendingPlayer = this.pendingPlayersByBusName.get(busName);
+    if (pendingPlayer) {
+      pendingPlayer.destroy();
+      this.pendingPlayersByBusName.delete(busName);
     }
 
-    const mediaApp = this.mediaAppsByBusName.get(busName);
-    if (!mediaApp) return;
+    const player = this.playersByBusName.get(busName);
+    if (!player) return;
 
-    mediaApp.destroy();
-    this.mediaAppsByBusName.delete(busName);
-    this.refreshAvailableMediaApps();
-    this.reconcileActiveMediaApp();
+    player.destroy();
+    this.playersByBusName.delete(busName);
+    this.refreshAvailablePlayers();
+    this.reconcileActivePlayer();
   }
 
-  refreshAvailableMediaApps(forceNotification = false) {
-    const nextAvailableMediaApps = orderMediaAppsDeterministically(
-      [...this.mediaAppsByBusName.values()].filter(
-        (mediaApp) =>
-          !mediaApp.isInvalid &&
-          !this.pendingRemovalBusNames.has(mediaApp.busName),
+  refreshAvailablePlayers(forceNotification = false) {
+    const nextAvailablePlayers = orderPlayersDeterministically(
+      [...this.playersByBusName.values()].filter(
+        (player) =>
+          !player.isInvalid &&
+          !this.pendingRemovalBusNames.has(player.busName),
       ),
     );
     const listChanged =
-      nextAvailableMediaApps.length !== this.availableMediaApps.length ||
-      nextAvailableMediaApps.some(
-        (mediaApp, index) => mediaApp !== this.availableMediaApps[index],
+      nextAvailablePlayers.length !== this.availablePlayers.length ||
+      nextAvailablePlayers.some(
+        (player, index) => player !== this.availablePlayers[index],
       );
     if (!listChanged && !forceNotification) return false;
 
-    this.availableMediaApps = nextAvailableMediaApps;
+    this.availablePlayers = nextAvailablePlayers;
     this.invokeCallbackSafely(
-      this.onAvailableMediaAppsChanged,
-      this.availableMediaApps,
-      "available-media-apps-changed",
+      this.onAvailablePlayersChanged,
+      this.availablePlayers,
+      "available-players-changed",
     );
     return true;
   }
 
-  getAvailableMediaApps() {
-    return this.availableMediaApps;
+  getAvailablePlayers() {
+    return this.availablePlayers;
   }
 
-  getPinnedMediaApp() {
+  getPinnedPlayer() {
     return (
-      orderMediaAppsDeterministically([
-        ...this.mediaAppsByBusName.values(),
-      ]).find((mediaApp) => mediaApp.isPinned) ?? null
+      orderPlayersDeterministically([
+        ...this.playersByBusName.values(),
+      ]).find((player) => player.isPinned) ?? null
     );
   }
 
-  isRegisteredMediaApp(mediaApp) {
+  isRegisteredPlayer(player) {
     return Boolean(
       !this.isDestroyed &&
-      mediaApp &&
-      !mediaApp.isInvalid &&
-      !this.pendingRemovalBusNames.has(mediaApp.busName) &&
-      this.mediaAppsByBusName.get(mediaApp.busName) === mediaApp,
+      player &&
+      !player.isInvalid &&
+      !this.pendingRemovalBusNames.has(player.busName) &&
+      this.playersByBusName.get(player.busName) === player,
     );
   }
 
-  #setActiveMediaApp(mediaApp, { remember = true } = {}) {
-    if (mediaApp && remember) this.previousActiveBusName = mediaApp.busName;
-    if (this.activeMediaApp === mediaApp) return false;
+  #setActivePlayer(player, { remember = true } = {}) {
+    if (player && remember) this.previousActiveBusName = player.busName;
+    if (this.activePlayer === player) return false;
 
-    this.activeMediaApp = mediaApp;
+    this.activePlayer = player;
     this.invokeCallbackSafely(
-      this.onActiveMediaAppChanged,
-      mediaApp,
-      "active-media-app-changed",
+      this.onActivePlayerChanged,
+      player,
+      "active-player-changed",
     );
     return true;
   }
 
-  selectMediaApp(mediaApp) {
-    if (!this.isRegisteredMediaApp(mediaApp)) return false;
+  selectPlayer(player) {
+    if (!this.isRegisteredPlayer(player)) return false;
 
-    const pinnedMediaApp = this.getPinnedMediaApp();
-    if (pinnedMediaApp && pinnedMediaApp !== mediaApp) return false;
+    const pinnedPlayer = this.getPinnedPlayer();
+    if (pinnedPlayer && pinnedPlayer !== player) return false;
 
-    this.#setActiveMediaApp(mediaApp);
+    this.#setActivePlayer(player);
     return true;
   }
 
-  switchMediaApp() {
-    if (this.getPinnedMediaApp()) return false;
+  switchPlayer() {
+    if (this.getPinnedPlayer()) return false;
 
-    const targetMediaApp = chooseNextMediaApp(
-      this.getAvailableMediaApps(),
-      this.activeMediaApp,
+    const targetPlayer = chooseNextPlayer(
+      this.getAvailablePlayers(),
+      this.activePlayer,
     );
-    return targetMediaApp ? this.selectMediaApp(targetMediaApp) : false;
+    return targetPlayer ? this.selectPlayer(targetPlayer) : false;
   }
 
-  pinMediaApp(mediaApp) {
-    if (!this.isRegisteredMediaApp(mediaApp)) return false;
+  pinPlayer(player) {
+    if (!this.isRegisteredPlayer(player)) return false;
 
-    const pinnedMediaApp = this.getPinnedMediaApp();
-    if (pinnedMediaApp && pinnedMediaApp !== mediaApp) {
+    const pinnedPlayer = this.getPinnedPlayer();
+    if (pinnedPlayer && pinnedPlayer !== player) {
       return false;
     }
-    if (!this.selectMediaApp(mediaApp)) return false;
-    if (mediaApp.isPinned) return true;
+    if (!this.selectPlayer(player)) return false;
+    if (player.isPinned) return true;
 
-    mediaApp.pin();
+    player.pin();
     return true;
   }
 
-  unpinMediaApp(mediaApp) {
+  unpinPlayer(player) {
     if (
       this.isDestroyed ||
-      !mediaApp ||
-      this.mediaAppsByBusName.get(mediaApp.busName) !== mediaApp ||
-      !mediaApp.isPinned
+      !player ||
+      this.playersByBusName.get(player.busName) !== player ||
+      !player.isPinned
     )
       return false;
 
-    mediaApp.unpin();
+    player.unpin();
     return true;
   }
 
-  toggleMediaAppPin(mediaApp) {
-    if (!mediaApp) return false;
-    return mediaApp.isPinned
-      ? this.unpinMediaApp(mediaApp)
-      : this.pinMediaApp(mediaApp);
+  togglePlayerPin(player) {
+    if (!player) return false;
+    return player.isPinned
+      ? this.unpinPlayer(player)
+      : this.pinPlayer(player);
   }
 
-  reconcileActiveMediaApp() {
-    const pendingActiveMediaApp =
+  reconcileActivePlayer() {
+    const pendingActivePlayer =
       this.previousActiveBusName &&
       this.pendingRemovalBusNames.has(this.previousActiveBusName)
-        ? (this.mediaAppsByBusName.get(this.previousActiveBusName) ?? null)
+        ? (this.playersByBusName.get(this.previousActiveBusName) ?? null)
         : null;
-    const nextActiveMediaApp = chooseReconciledMediaApp(
-      this.availableMediaApps,
+    const nextActivePlayer = chooseReconciledPlayer(
+      this.availablePlayers,
       this.previousActiveBusName,
-      pendingActiveMediaApp,
+      pendingActivePlayer,
     );
 
     // Preserve the previous bus name while the UI is intentionally empty
     // during an owner hand-off. A real replacement updates it normally.
-    this.#setActiveMediaApp(nextActiveMediaApp, {
-      remember: nextActiveMediaApp !== null,
+    this.#setActivePlayer(nextActivePlayer, {
+      remember: nextActivePlayer !== null,
     });
   }
 
@@ -545,25 +545,25 @@ export default class MprisPlayerRegistry {
   async setBlockedAppIds(blockedAppIds) {
     this.blockedAppIds = new Set(normalizeUniqueStrings(blockedAppIds));
 
-    for (const mediaApp of [...this.mediaAppsByBusName.values()]) {
+    for (const player of [...this.playersByBusName.values()]) {
       if (
-        this.desktopAppResolver.isMediaAppBlocked(
-          mediaApp.identity,
-          mediaApp.desktopEntry,
+        this.desktopAppResolver.isPlayerBlocked(
+          player.identity,
+          player.desktopEntry,
           this.blockedAppIds,
-          mediaApp.busName,
+          player.busName,
         )
       ) {
-        this.unregisterMediaApp(mediaApp.busName);
+        this.unregisterPlayer(player.busName);
       }
     }
 
     try {
-      await this.discoverRunningMediaApps();
+      await this.discoverRunningPlayers();
     } catch (error) {
       if (!isCancellationError(error))
         logger.warn(
-          "Failed to refresh media apps after blocked-app change",
+          "Failed to refresh players after blocked-app change",
           error,
         );
     }
@@ -585,24 +585,24 @@ export default class MprisPlayerRegistry {
     for (const busName of [...this.pendingRemovalBusNames])
       this.cancelScheduledRemoval(busName);
     this.pendingRemovalSourceIds.clear();
-    this.pendingRemovalAppStateConnections.clear();
+    this.pendingRemovalPlayerStateConnections.clear();
     this.pendingRemovalBusNames.clear();
 
-    for (const mediaApp of this.mediaAppsByBusName.values()) mediaApp.destroy();
-    for (const mediaApp of this.pendingMediaAppsByBusName.values())
-      mediaApp.destroy();
+    for (const player of this.playersByBusName.values()) player.destroy();
+    for (const player of this.pendingPlayersByBusName.values())
+      player.destroy();
 
-    this.mediaAppsByBusName.clear();
-    this.availableMediaApps = [];
-    this.pendingMediaAppsByBusName.clear();
-    this.activeMediaApp = null;
+    this.playersByBusName.clear();
+    this.availablePlayers = [];
+    this.pendingPlayersByBusName.clear();
+    this.activePlayer = null;
     this.previousActiveBusName = null;
     this.busDaemonProxy = null;
     this.desktopAppResolver = null;
     this.nameOwnerChangedSignalId = null;
     this.busDaemonOwnerSignalId = null;
-    this.onAvailableMediaAppsChanged = null;
-    this.onActiveMediaAppChanged = null;
+    this.onAvailablePlayersChanged = null;
+    this.onActivePlayerChanged = null;
     this.mprisProxyFactory = null;
   }
 }

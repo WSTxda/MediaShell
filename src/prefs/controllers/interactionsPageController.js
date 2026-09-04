@@ -8,7 +8,7 @@
  * GSettings, and restores the previous value when the user cancels or enters an
  * invalid shortcut. It is preferences-only and never registers global keybindings.
  *
- * @see src/shell/services/globalShortcutsService.js
+ * @see src/shell/input/globalShortcuts.js
  */
 
 import Adw from "gi://Adw";

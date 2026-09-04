@@ -11,6 +11,7 @@
  * a fixed popup-local step.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -19,10 +20,8 @@ import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
-import { POPUP_VOLUME_CONTROL_HORIZONTAL_INSET } from "../../constants/popup.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+} from "../actorState.js";
+import { POPUP_VOLUME_CONTROL_HORIZONTAL_INSET } from "./presentation.js";
 
 const UNMUTE_DEFAULT_VOLUME = 0.25;
 const VOLUME_UP_STEP = 0.1;
@@ -45,12 +44,12 @@ export default class PopupVolumeControl {
     this.volumeUpIcon = null;
     this.sliderChangedId = null;
     this.isDragging = false;
-    this.mediaAppBusName = null;
+    this.playerBusName = null;
     this.lastNonZeroVolume = null;
   }
 
-  get mediaApp() {
-    return this.popupContent.mediaApp;
+  get player() {
+    return this.popupContent.player;
   }
 
   get popupItem() {
@@ -63,8 +62,8 @@ export default class PopupVolumeControl {
 
   render() {
     this.ensureActor();
-    if (this.mediaAppBusName !== this.mediaApp.busName) {
-      this.mediaAppBusName = this.mediaApp.busName;
+    if (this.playerBusName !== this.player.busName) {
+      this.playerBusName = this.player.busName;
       this.lastNonZeroVolume = null;
     }
     const width =
@@ -72,7 +71,7 @@ export default class PopupVolumeControl {
       POPUP_VOLUME_CONTROL_HORIZONTAL_INSET * 2;
     this.actor.width = width;
     this.actor.style = this.popupContent.buildFixedWidthStyle(width);
-    this.syncVolume(this.mediaApp.volume);
+    this.syncVolume(this.player.volume);
     this.syncControlState();
     this.attach();
   }
@@ -81,7 +80,7 @@ export default class PopupVolumeControl {
     if (this.actor) return;
 
     this.actor = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_VOLUME_CONTROL,
+      styleClass: MediaShellStyleClasses.POPUP_VOLUME_CONTROL,
       xExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
@@ -94,9 +93,9 @@ export default class PopupVolumeControl {
     this.muteButton = new St.Button({
       child: this.muteIcon,
       styleClass: styleClassNames(
-        StyleClasses.ICON_BUTTON,
-        StyleClasses.FLAT,
-        StyleClasses.POPUP_VOLUME_ICON_BUTTON,
+        NativeStyleClasses.ICON_BUTTON,
+        NativeStyleClasses.FLAT,
+        MediaShellStyleClasses.POPUP_VOLUME_ICON_BUTTON,
       ),
       xExpand: false,
       yAlign: Clutter.ActorAlign.CENTER,
@@ -110,7 +109,7 @@ export default class PopupVolumeControl {
       const value = this.slider.value;
       if (value > 0) this.lastNonZeroVolume = value;
       this.syncVolumePresentation(value);
-      void this.playbackController.setVolume(value, this.mediaApp);
+      void this.playbackController.setVolume(value, this.player);
     });
     this.slider.connectObject(
       "drag-begin",
@@ -132,9 +131,9 @@ export default class PopupVolumeControl {
     this.volumeUpButton = new St.Button({
       child: this.volumeUpIcon,
       styleClass: styleClassNames(
-        StyleClasses.ICON_BUTTON,
-        StyleClasses.FLAT,
-        StyleClasses.POPUP_VOLUME_ICON_BUTTON,
+        NativeStyleClasses.ICON_BUTTON,
+        NativeStyleClasses.FLAT,
+        MediaShellStyleClasses.POPUP_VOLUME_ICON_BUTTON,
       ),
       xExpand: false,
       yAlign: Clutter.ActorAlign.CENTER,
@@ -172,7 +171,7 @@ export default class PopupVolumeControl {
   }
 
   syncControlState() {
-    const isReactive = this.mediaApp.canControl;
+    const isReactive = this.player.canControl;
     this.slider.reactive = isReactive;
     this.muteButton.reactive = isReactive;
     this.muteButton.canFocus = isReactive;
@@ -182,32 +181,32 @@ export default class PopupVolumeControl {
   }
 
   toggleMute() {
-    if (!this.mediaApp.canControl) return;
+    if (!this.player.canControl) return;
 
-    const currentVolume = this.mediaApp.volume;
+    const currentVolume = this.player.volume;
     if (currentVolume > 0) {
       this.lastNonZeroVolume = currentVolume;
-      void this.playbackController.setVolume(0, this.mediaApp);
+      void this.playbackController.setVolume(0, this.player);
       return;
     }
 
     void this.playbackController.setVolume(
       this.lastNonZeroVolume ?? UNMUTE_DEFAULT_VOLUME,
-      this.mediaApp,
+      this.player,
     );
   }
 
   increaseVolume() {
-    if (!this.mediaApp.canControl) return;
+    if (!this.player.canControl) return;
 
-    const currentVolume = Number.isFinite(this.mediaApp.volume)
-      ? Math.max(0, this.mediaApp.volume)
+    const currentVolume = Number.isFinite(this.player.volume)
+      ? Math.max(0, this.player.volume)
       : 0;
     if (currentVolume >= 1) return;
 
     const targetVolume = Math.min(currentVolume + VOLUME_UP_STEP, 1);
     this.lastNonZeroVolume = targetVolume;
-    void this.playbackController.setVolume(targetVolume, this.mediaApp);
+    void this.playbackController.setVolume(targetVolume, this.player);
   }
 
   attach() {
@@ -249,7 +248,7 @@ export default class PopupVolumeControl {
     this.volumeUpIcon = null;
     this.sliderChangedId = null;
     this.isDragging = false;
-    this.mediaAppBusName = null;
+    this.playerBusName = null;
     this.lastNonZeroVolume = null;
   }
 

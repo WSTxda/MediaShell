@@ -14,7 +14,7 @@ import GLib from "gi://GLib";
 
 import { EXTENSION_UUID } from "../../../shared/project.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import { isCancellationError } from "../../utils/errors.js";
+import { isCancellationError } from "../../platform/gioErrors.js";
 import {
   ARTWORK_CACHE_MAX_BYTES,
   ARTWORK_MAX_BYTES,

@@ -6,10 +6,10 @@
  * the canonical property lists hydrated by MediaShell.
  */
 
-/** Prefix shared by every MPRIS media-app bus name. */
+/** Prefix shared by every MPRIS player bus name. */
 export const MPRIS_BUS_NAME_PREFIX = "org.mpris.MediaPlayer2.";
 
-/** Root MPRIS interface implemented by the media app endpoint. */
+/** Root MPRIS interface implemented by the player endpoint. */
 export const MPRIS_ROOT_IFACE_NAME = "org.mpris.MediaPlayer2";
 
 /** MPRIS Player interface that exposes transport state, metadata, and controls. */

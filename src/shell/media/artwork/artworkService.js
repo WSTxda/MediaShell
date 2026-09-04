@@ -16,7 +16,7 @@ import GLib from "gi://GLib";
 import Soup from "gi://Soup";
 
 import { createLogger } from "../../../shared/logging/logger.js";
-import { isCancellationError } from "../../utils/errors.js";
+import { isCancellationError } from "../../platform/gioErrors.js";
 import ArtworkCache, { createArtworkCacheKey } from "./artworkCache.js";
 import {
   ARTWORK_MAX_BYTES,

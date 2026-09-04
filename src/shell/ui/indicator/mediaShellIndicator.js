@@ -9,6 +9,7 @@
  * surface updates and owns listeners tied to the currently active player.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
@@ -25,7 +26,6 @@ import {
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../media/identity/constants.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/popupContent.js";
 import TopBarContent from "../topbar/topBarContent.js";
 import IndicatorPointerHandler from "./indicatorPointerHandler.js";
@@ -38,13 +38,14 @@ const logger = createLogger("MediaShellIndicator");
 
 /** Owns the panel indicator and the active-player listener lifecycle. */
 class MediaShellIndicator extends PanelMenu.Button {
-  constructor(mediaApp, extensionController, { mediaRuntime, settings }) {
+  constructor(player, { mediaRuntime, settings, inputActions }) {
     super(0.5, "MediaShell", false);
-    this.mediaApp = mediaApp;
-    this.extensionController = extensionController;
+    this.player = player;
+    this.destroyed = false;
+    this.inputActions = inputActions;
     this.mediaRuntime = mediaRuntime;
     this.settings = settings;
-    this.mediaAppPropertyListenerIds = new Map();
+    this.playerPropertyListenerIds = new Map();
     this.desktopAppResolutionRetrySourceId = null;
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
     this.disconnectPositionChangeListener = null;
@@ -57,51 +58,51 @@ class MediaShellIndicator extends PanelMenu.Button {
     };
     this.topBarContent = new TopBarContent(this, surfaceDependencies);
     this.popupContent = new PopupContent(this, surfaceDependencies);
-    this.pointerHandler = new IndicatorPointerHandler(this);
-    this.addMediaAppPropertyListeners();
+    this.pointerHandler = new IndicatorPointerHandler(this, inputActions);
+    this.addPlayerPropertyListeners();
     this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
     this.scheduleDesktopAppResolutionRetry();
     this.pointerHandler.install();
-    this.menu.box.add_style_class_name(StyleClasses.POPUP_CONTAINER);
+    this.menu.box.add_style_class_name(MediaShellStyleClasses.POPUP_CONTAINER);
   }
 
   vfunc_event() {
     return Clutter.EVENT_PROPAGATE;
   }
 
-  setMediaApp(mediaApp) {
+  setPlayer(player) {
     if (
-      !this.extensionController ||
-      !mediaApp ||
-      this.isActiveMediaApp(mediaApp)
+      this.destroyed ||
+      !player ||
+      this.isActivePlayer(player)
     )
       return;
 
-    this.removeMediaAppPropertyListeners();
+    this.removePlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
     this.cancelDesktopAppResolutionRetry();
-    this.mediaApp = mediaApp;
-    this.addMediaAppPropertyListeners();
+    this.player = player;
+    this.addPlayerPropertyListeners();
     // Preserve existing actors during feed/player hand-offs. Each surface
     // reconciles the new player into its current actor tree instead of remounting.
     this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
     this.scheduleDesktopAppResolutionRetry();
   }
 
-  isActiveMediaApp(mediaApp) {
+  isActivePlayer(player) {
     return Boolean(
-      this.mediaApp && mediaApp && this.mediaApp.busName === mediaApp.busName,
+      this.player && player && this.player.busName === player.busName,
     );
   }
 
   requestSurfaceUpdate({ popup = 0, topBar = 0 } = {}) {
-    if (!this.extensionController) return;
+    if (this.destroyed) return;
     if (topBar) this.topBarContent?.requestUpdate(topBar);
     if (popup) this.popupContent?.requestUpdate(popup);
   }
 
   reconcileSurfacesNow({ popup = 0, topBar = 0 } = {}) {
-    if (!this.extensionController) return;
+    if (this.destroyed) return;
     if (topBar) this.topBarContent?.reconcile(topBar);
     if (popup) this.popupContent?.reconcile(popup);
   }
@@ -111,23 +112,23 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.popupContent?.resetPendingUpdates();
   }
 
-  addMediaAppPropertyListeners() {
-    this.addMediaAppPropertyListener(MprisPlayerProperties.METADATA, () => {
+  addPlayerPropertyListeners() {
+    this.addPlayerPropertyListener(MprisPlayerProperties.METADATA, () => {
       this.requestMetadataSurfaceUpdate();
     });
-    const updateMediaAppIdentity = () => {
+    const updatePlayerIdentity = () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
       this.scheduleDesktopAppResolutionRetry();
     };
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisRootProperties.IDENTITY,
-      updateMediaAppIdentity,
+      updatePlayerIdentity,
     );
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisRootProperties.DESKTOP_ENTRY,
-      updateMediaAppIdentity,
+      updatePlayerIdentity,
     );
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisPlayerProperties.PLAYBACK_STATUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAYBACK_STATUS);
@@ -135,57 +136,57 @@ class MediaShellIndicator extends PanelMenu.Button {
         this.popupContent.syncProgressBarPlaybackState();
       },
     );
-    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SEEK_CAPABILITY);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.NEXT_CAPABILITY);
     });
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisPlayerProperties.CAN_GO_PREVIOUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PREVIOUS_CAPABILITY);
       },
     );
-    this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.CONTROL_CAPABILITY);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SHUFFLE);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.LOOP_STATUS);
     });
-    this.addMediaAppPropertyListener(MprisPlayerProperties.VOLUME, () => {
+    this.addPlayerPropertyListener(MprisPlayerProperties.VOLUME, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.VOLUME);
     });
-    this.addMediaAppPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
+    this.addPlayerPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PIN);
     });
     const updatePlaybackSpeedControl = () =>
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.RATE);
-    this.addMediaAppPropertyListener(MprisPlayerProperties.RATE, () => {
-      this.popupContent.setPlaybackRate(this.mediaApp.rate);
+    this.addPlayerPropertyListener(MprisPlayerProperties.RATE, () => {
+      this.popupContent.setPlaybackRate(this.player.rate);
       updatePlaybackSpeedControl();
     });
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisPlayerProperties.MINIMUM_RATE,
       updatePlaybackSpeedControl,
     );
-    this.addMediaAppPropertyListener(
+    this.addPlayerPropertyListener(
       MprisPlayerProperties.MAXIMUM_RATE,
       updatePlaybackSpeedControl,
     );
-    const observedMediaApp = this.mediaApp;
-    this.disconnectPositionChangeListener = observedMediaApp.onPositionChanged(
+    const observedPlayer = this.player;
+    this.disconnectPositionChangeListener = observedPlayer.onPositionChanged(
       (positionMicroseconds) => {
-        if (this.mediaApp !== observedMediaApp) return;
+        if (this.player !== observedPlayer) return;
         this.popupContent.setPlaybackPosition(positionMicroseconds);
       },
     );
@@ -206,12 +207,12 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.desktopAppResolutionRetryAttemptsRemaining =
       DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS;
 
-    const observedMediaApp = this.mediaApp;
+    const observedPlayer = this.player;
     this.desktopAppResolutionRetrySourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
       () => {
-        if (!this.extensionController || this.mediaApp !== observedMediaApp) {
+        if (this.destroyed || this.player !== observedPlayer) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
@@ -219,7 +220,7 @@ class MediaShellIndicator extends PanelMenu.Button {
 
         // A resolved top-bar icon proves Shell has associated the endpoint with
         // a desktop app. Otherwise retry only a small, bounded number of times.
-        if (this.topBarContent.mediaAppIcon.iconKey !== null) {
+        if (this.topBarContent.appIcon.iconKey !== null) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
@@ -244,25 +245,25 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
   }
 
-  removeMediaAppPropertyListeners() {
+  removePlayerPropertyListeners() {
     this.disconnectPositionChangeListener?.();
     this.disconnectPositionChangeListener = null;
 
-    if (this.mediaApp) {
+    if (this.player) {
       for (const [
         property,
         listenerId,
-      ] of this.mediaAppPropertyListenerIds.entries()) {
-        this.mediaApp.removePropertyChangeListener(property, listenerId);
+      ] of this.playerPropertyListenerIds.entries()) {
+        this.player.removePropertyChangeListener(property, listenerId);
       }
     }
-    this.mediaAppPropertyListenerIds.clear();
+    this.playerPropertyListenerIds.clear();
   }
 
-  addMediaAppPropertyListener(property, callback) {
-    const observedMediaApp = this.mediaApp;
+  addPlayerPropertyListener(property, callback) {
+    const observedPlayer = this.player;
     const safeCallback = () => {
-      if (this.mediaApp !== observedMediaApp) return;
+      if (this.player !== observedPlayer) return;
       try {
         callback();
       } catch (error) {
@@ -273,17 +274,18 @@ class MediaShellIndicator extends PanelMenu.Button {
         );
       }
     };
-    const listenerId = observedMediaApp.onPropertyChanged(
+    const listenerId = observedPlayer.onPropertyChanged(
       property,
       safeCallback,
     );
-    this.mediaAppPropertyListenerIds.set(property, listenerId);
+    this.playerPropertyListenerIds.set(property, listenerId);
   }
 
   destroyOwnedResources() {
-    if (!this.extensionController) return;
+    if (this.destroyed) return;
+    this.destroyed = true;
 
-    this.removeMediaAppPropertyListeners();
+    this.removePlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
     this.cancelDesktopAppResolutionRetry();
 
@@ -293,10 +295,10 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.pointerHandler = null;
     this.popupContent = null;
     this.topBarContent = null;
-    this.mediaApp = null;
+    this.player = null;
     this.mediaRuntime = null;
     this.settings = null;
-    this.extensionController = null;
+    this.inputActions = null;
 
     pointerHandler?.destroy();
     popupContent?.destroy();
@@ -304,7 +306,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   destroy() {
-    if (!this.extensionController) return;
+    if (this.destroyed) return;
 
     // PanelMenu.Button destroys its PopupMenu children as part of actor teardown.
     // Clean MediaShell-owned menu state first while Shell objects are still valid.

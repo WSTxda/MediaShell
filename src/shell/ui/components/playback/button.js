@@ -15,18 +15,18 @@ import { resolvePlaybackControlAccessibleName } from "../../../media/playback/ac
  * Applies canonical interaction and accessibility state to a Shell button.
  *
  * @param {object} button - St.Button-like actor.
- * @param {object} mediaApp - Normalized media-app state.
+ * @param {object} player - Normalized player state.
  * @param {object} controlState - Result from resolvePlaybackControlState().
  * @param {(message: string) => string} gettext - Translation function.
  */
 export function updatePlaybackControlButton(
   button,
-  mediaApp,
+  player,
   controlState,
   gettext,
 ) {
   button.set_accessible_name(
-    resolvePlaybackControlAccessibleName(mediaApp, controlState, gettext),
+    resolvePlaybackControlAccessibleName(player, controlState, gettext),
   );
   button.trackHover = controlState.isReactive;
   button.reactive = controlState.isReactive;

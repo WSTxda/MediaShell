@@ -36,8 +36,8 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     this.trackInformationRow = this._row_track_information;
     this.visualizerRow = this._row_visualizer;
     this.playbackControlsRow = this._row_playback_controls;
-    this.mediaAppIconRow.elementId = TopBarElementIds.MEDIA_APP_ICON;
-    this.albumArtRow.elementId = TopBarElementIds.ALBUM_ART;
+    this.mediaAppIconRow.elementId = TopBarElementIds.APP_ICON;
+    this.albumArtRow.elementId = TopBarElementIds.ARTWORK;
     this.trackInformationRow.elementId = TopBarElementIds.TRACK_INFORMATION;
     this.visualizerRow.elementId = TopBarElementIds.VISUALIZER;
     this.playbackControlsRow.elementId = TopBarElementIds.PLAYBACK_CONTROLS;

@@ -1,14 +1,14 @@
 /**
- * @file playbackControls.js
- * @module shell.constants.playbackControls
+ * @file order.js
+ * @module shell.ui.components.playback.order
  *
  * Defines Shell-only playback-control layout policy.
  *
- * Logical identity and state live in shared constants and utilities. This module
+ * Logical identity and state live in the shared playback contract. This module
  * owns only the ordered placement of those logical controls on Shell surfaces.
  */
 
-import { PlaybackControlIds } from "../../shared/playback/controls.js";
+import { PlaybackControlIds } from "../../../../shared/playback/controls.js";
 
 /** Popup transport-row order. */
 export const POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER = Object.freeze([

@@ -1,13 +1,13 @@
 /**
- * @file globalShortcutsService.js
- * @module shell.services.globalShortcutsService
+ * @file globalShortcuts.js
+ * @module shell.input.globalShortcuts
  *
  * Registers and removes global media-action keybindings via GNOME Shell.
  *
- * The service owns every Main.wm.addKeybinding call for MediaShell actions and
- * removes all registered bindings on destroy. GNOME Shell requires the native
- * Gio.Settings object for addKeybinding(), while action execution remains owned
- * by ExtensionController.
+ * This owner encapsulates every Main.wm.addKeybinding call for MediaShell actions
+ * and removes all registered bindings on destroy. GNOME Shell requires the native
+ * Gio.Settings object for addKeybinding(); action execution is delegated to the
+ * injected input dispatcher.
  */
 
 import Meta from "gi://Meta";
@@ -18,12 +18,12 @@ import { INPUT_ACTION_DEFINITIONS } from "../../shared/input/actions.js";
 import { InputActions } from "../../shared/input/types.js";
 import { createLogger } from "../../shared/logging/logger.js";
 
-const logger = createLogger("GlobalShortcutsService");
+const logger = createLogger("GlobalShortcuts");
 
 /**
  * Registers and removes global media-action keybindings via GNOME Shell.
  */
-export default class GlobalShortcutsService {
+export default class GlobalShortcuts {
   constructor(settings, onInputAction) {
     this.settings = settings;
     this.onInputAction = onInputAction;

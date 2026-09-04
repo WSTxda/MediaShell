@@ -18,8 +18,8 @@ export const PlayerSurfaceUpdates = Object.freeze({
     topBar: TopBarRegions.ALL,
   }),
   IDENTITY: createSurfaceUpdate({
-    popup: PopupRegions.MEDIA_APP_SELECTOR,
-    topBar: TopBarRegions.MEDIA_APP_ICON,
+    popup: PopupRegions.PLAYER_SELECTOR,
+    topBar: TopBarRegions.APP_ICON,
   }),
   PLAYBACK_STATUS: createSurfaceUpdate({
     popup: PopupRegions.PLAYBACK_PLAY_PAUSE | PopupRegions.PROGRESS,
@@ -62,7 +62,7 @@ export const PlayerSurfaceUpdates = Object.freeze({
     topBar: TopBarRegions.PLAYBACK_REPEAT,
   }),
   VOLUME: createSurfaceUpdate({ popup: PopupRegions.VOLUME }),
-  PIN: createSurfaceUpdate({ popup: PopupRegions.MEDIA_APP_SELECTOR }),
+  PIN: createSurfaceUpdate({ popup: PopupRegions.PLAYER_SELECTOR }),
   RATE: createSurfaceUpdate({ popup: PopupRegions.PLAYBACK_SPEED }),
 });
 

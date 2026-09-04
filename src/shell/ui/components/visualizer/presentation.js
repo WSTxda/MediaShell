@@ -1,6 +1,6 @@
 /**
- * @file visualizer.js
- * @module shell.constants.visualizer
+ * @file presentation.js
+ * @module shell.ui.components.visualizer.presentation
  *
  * Defines Shell geometry, renderer identities, and style presentation policy.
  *
@@ -9,15 +9,15 @@
  * CSS classes, pivot, and optional shared animation identity.
  */
 
+import { MediaShellStyleClasses } from "../../style.js";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
-} from "../ui/components/visualizer/definitions.js";
+} from "./definitions.js";
 import {
   VisualizerAnimationKinds,
   VisualizerStyles,
-} from "../ui/components/visualizer/types.js";
-import { StyleClasses } from "./styleClasses.js";
+} from "./types.js";
 
 /** Default visualizer actor height used in the compact top bar indicator. */
 export const VISUALIZER_HEIGHT = 16;
@@ -95,30 +95,29 @@ export const TOP_BAR_VISUALIZER_STYLE_DEFINITIONS = Object.freeze({
     rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
     elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
     pivotY: 1,
-    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_BEATS,
-    barStyleClass: StyleClasses.TOP_BAR_VISUALIZER_BEATS_BAR,
+    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_BEATS,
+    barStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_BEATS_BAR,
   }),
   [VisualizerStyles.PULSE]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.PULSE,
     rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
     elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
     pivotY: 0.5,
-    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_PULSE,
-    barStyleClass: StyleClasses.TOP_BAR_VISUALIZER_PULSE_BAR,
+    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_PULSE,
+    barStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_PULSE_BAR,
   }),
   [VisualizerStyles.CLASSIC]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.BEATS,
     rendererKind: VisualizerRendererKinds.SEGMENTED_BARS,
     elementCount: TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
-    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC,
-    columnStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC_COLUMN,
-    segmentStyleClass: StyleClasses.TOP_BAR_VISUALIZER_CLASSIC_BLOCK,
+    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC,
+    columnStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC_COLUMN,
+    segmentStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC_BLOCK,
   }),
   [VisualizerStyles.SPECTRUM]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.SPECTRUM,
     rendererKind: VisualizerRendererKinds.SPECTRUM,
     elementCount: 0,
-    containerStyleClass: StyleClasses.TOP_BAR_VISUALIZER_SPECTRUM,
   }),
   [VisualizerStyles.VINYL]: createStyleDefinition({
     rendererKind: VisualizerRendererKinds.VINYL,
