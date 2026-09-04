@@ -46,7 +46,7 @@ import {
 import {
   executePlaybackControlAction,
   resolveSeekOffsetMicroseconds,
-} from "../src/shell/mpris/playbackControlExecutor.js";
+} from "../src/shell/media/playback/playbackController.js";
 import { runCases } from "./helpers.mjs";
 
 test("MPRIS operations return explicit results through one executor", async () => {

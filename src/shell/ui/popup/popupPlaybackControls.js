@@ -28,7 +28,6 @@ import {
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
 } from "../../constants/playbackControls.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { executePlaybackControlAction } from "../../mpris/playbackControlExecutor.js";
 import { reconcileActorOrder } from "../../utils/actors.js";
 import { updatePlaybackControlButton } from "../../utils/playbackControlButton.js";
 import {
@@ -39,12 +38,13 @@ import { styleClassNames } from "../../utils/styleClasses.js";
 
 /** Renders configurable playback controls inside the popup. */
 export default class PopupPlaybackControls {
-  constructor(popupContent) {
+  constructor(popupContent, playbackController) {
     this.popupContent = popupContent;
     this.actor = null;
     this.primaryControlsBox = null;
     this.secondaryControlsBox = null;
     this.controlButtons = new Map();
+    this.playbackController = playbackController;
   }
 
   get extensionController() {
@@ -142,7 +142,7 @@ export default class PopupPlaybackControls {
     buttonState = { button, content, signalId: 0, action: null };
     buttonState.signalId = button.connect("clicked", () => {
       if (!buttonState.button.reactive) return;
-      void executePlaybackControlAction(this.mediaApp, buttonState.action);
+      void this.playbackController.execute(buttonState.action, this.mediaApp);
     });
     button.set_child(content.actor);
     this.controlButtons.set(controlDefinition.id, buttonState);
@@ -230,6 +230,7 @@ export default class PopupPlaybackControls {
 
   destroy() {
     this.remove();
+    this.playbackController = null;
     this.popupContent = null;
   }
 }

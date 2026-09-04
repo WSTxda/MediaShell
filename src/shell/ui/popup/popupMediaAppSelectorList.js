@@ -96,7 +96,7 @@ export default class PopupMediaAppSelectorList {
   }
 
   open() {
-    const mediaApps = this.extensionController.getAvailableMediaApps();
+    const mediaApps = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
     if (mediaApps.length <= 1) return;
 
     this.revealer = new St.BoxLayout({
@@ -146,7 +146,7 @@ export default class PopupMediaAppSelectorList {
 
   refreshMediaApps() {
     if (!this.revealer) return;
-    const mediaApps = this.extensionController.getAvailableMediaApps();
+    const mediaApps = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
     if (mediaApps.length <= 1) {
       this.close();
       return;

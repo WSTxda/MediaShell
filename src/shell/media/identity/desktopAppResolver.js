@@ -1,10 +1,10 @@
 /**
  * @file desktopAppResolver.js
- * @module shell.services.desktopAppResolver
+ * @module shell.media.identity.desktopAppResolver
  *
  * Resolves MPRIS identity hints to installed desktop applications.
  *
- * One ExtensionController-owned instance owns bounded Shell.App and Gio.AppInfo
+ * One MediaRuntime-owned instance owns bounded Shell.App and Gio.AppInfo
  * caches. Misses use a short TTL so unresolved browser/PWA identities can be
  * retried when desktop metadata appears later. Teardown releases cached
  * Shell.App and Gio.AppInfo references.
@@ -16,23 +16,28 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
-import {
-  resolveBrowserIdentityCandidate,
-  resolveChromiumPwaAppId,
-} from "../../shared/identity/browser.js";
-import { IconNames } from "../../shared/icons.js";
+import { IconNames } from "../../../shared/icons.js";
 import {
   DESKTOP_APP_RESOLVER_CACHE_LIMIT,
   DESKTOP_APP_RESOLVER_MISS_CACHE_TTL_MS,
-} from "../constants/desktopApp.js";
+} from "./constants.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
   buildNormalizedAppIdentityCandidates,
   normalizeAppIdentity,
   stripDesktopFileSuffix,
-} from "../media/identity/appIdentity.js";
-import { createLogger } from "../../shared/logging/logger.js";
+} from "./appIdentity.js";
+import {
+  getAppInfoSafely,
+  readAppStringSafely,
+  readDesktopAppIcon,
+} from "./appInfo.js";
+import {
+  resolveChromiumAppInfo,
+  resolveChromiumShellApp,
+} from "./pwa/chromium.js";
+import { createLogger } from "../../../shared/logging/logger.js";
 
 const logger = createLogger("DesktopAppResolver");
 
@@ -47,57 +52,6 @@ function storeBoundedCacheValue(cache, key, value) {
   if (cache.size > DESKTOP_APP_RESOLVER_CACHE_LIMIT)
     cache.delete(cache.keys().next().value);
   return value;
-}
-
-function readAppStringSafely(getter) {
-  try {
-    return String(getter() ?? "");
-  } catch (error) {
-    logger.debugOnce(
-      "app-metadata",
-      "App metadata became unavailable during lookup",
-      error,
-    );
-    return "";
-  }
-}
-
-function readCachedResolvedApp(cache, key) {
-  const desktopApp = cache.get(key) ?? null;
-  if (!desktopApp) return null;
-
-  // A cached Shell.App or Gio.AppInfo remains useful after its windows close,
-  // but discard an object whose desktop ID can no longer be read.
-  const appId = readAppStringSafely(() => desktopApp.get_id?.());
-  if (appId) return desktopApp;
-  cache.delete(key);
-  return null;
-}
-
-function normalizedIdentityContains(normalizedValue, normalizedCandidate) {
-  if (normalizedValue === normalizedCandidate) return true;
-  if (normalizedCandidate.length < 3 || normalizedValue.length < 3)
-    return false;
-
-  const paddedValue = ` ${normalizedValue} `;
-  const paddedCandidate = ` ${normalizedCandidate} `;
-  return (
-    paddedValue.includes(paddedCandidate) ||
-    paddedCandidate.includes(paddedValue)
-  );
-}
-
-function getAppInfoSafely(desktopApp) {
-  try {
-    return desktopApp?.get_app_info?.() ?? null;
-  } catch (error) {
-    logger.debugOnce(
-      "app-info",
-      "Desktop app metadata became unavailable during lookup",
-      error,
-    );
-    return null;
-  }
 }
 
 function getNormalizedAppIdentityValues(desktopApp) {
@@ -116,140 +70,6 @@ function getNormalizedAppIdentityValues(desktopApp) {
   ]
     .map(normalizeAppIdentity)
     .filter(Boolean);
-}
-
-function createMediaIdentityDescriptor(identity, desktopEntry, busName) {
-  return { identity, desktopEntry, busName };
-}
-
-function buildExactDesktopEntryCandidates(desktopEntry) {
-  const basename = stripDesktopFileSuffix(desktopEntry);
-  return basename ? [`${basename}.desktop`, basename] : [];
-}
-
-function findShellAppByExactDesktopEntry(appSystem, desktopEntry) {
-  for (const appId of buildExactDesktopEntryCandidates(desktopEntry)) {
-    const desktopApp = appSystem.lookup_app(appId);
-    if (desktopApp) return desktopApp;
-  }
-  return null;
-}
-
-function findAppInfoByExactDesktopEntry(desktopEntry) {
-  for (const appId of buildExactDesktopEntryCandidates(desktopEntry)) {
-    const desktopApp = Gio.DesktopAppInfo.new(appId);
-    if (desktopApp) return desktopApp;
-  }
-  return null;
-}
-
-/**
- * Reads installed-app metadata into the pure descriptor used by browser/PWA scoring.
- *
- * Shell.App and Gio.AppInfo expose overlapping but not identical accessors. The
- * resolver keeps the read side here and passes only strings to shared identity
- * helpers so browser matching remains testable outside GNOME Shell.
- *
- * @param {Shell.App|Gio.AppInfo|null} desktopApp - Shell or desktop app object.
- * @returns {object} Descriptor accepted by shared browser identity helpers.
- */
-function readDesktopAppDescriptor(desktopApp) {
-  const appInfo = getAppInfoSafely(desktopApp) ?? desktopApp ?? null;
-  return {
-    desktopId: readAppStringSafely(
-      () => desktopApp?.get_id?.() || appInfo?.get_id?.(),
-    ),
-    startupWmClass: readAppStringSafely(
-      () =>
-        desktopApp?.get_startup_wm_class?.() ||
-        appInfo?.get_startup_wm_class?.(),
-    ),
-    commandline: readAppStringSafely(
-      () => desktopApp?.get_commandline?.() || appInfo?.get_commandline?.(),
-    ),
-  };
-}
-
-/**
- * Resolves a media app against scored browser/PWA candidates.
- *
- * The shared scorer returns a match only for strong evidence in the desktop ID,
- * StartupWMClass, or Chromium's explicit `--app-id` launcher argument. Ordinary
- * browser media keeps the existing resolver fallback path.
- *
- * @param {object} mediaIdentity - MPRIS identity, desktop entry, and bus name.
- * @param {{desktopApp: Shell.App|Gio.AppInfo}[]} entries
- *   Installed desktop app candidates.
- * @returns {Shell.App|Gio.AppInfo|null} Strongly matched desktop app, if any.
- */
-function resolveBrowserIdentityApp(mediaIdentity, entries) {
-  const descriptorEntries = entries
-    .map((entry) => ({
-      ...entry,
-      descriptor: readDesktopAppDescriptor(entry.desktopApp),
-    }))
-    .filter((entry) => entry.descriptor.desktopId);
-  const match = resolveBrowserIdentityCandidate(
-    mediaIdentity,
-    descriptorEntries.map((entry) => entry.descriptor),
-  );
-  if (!match) return null;
-
-  const entry =
-    descriptorEntries.find(
-      (candidate) => candidate.descriptor === match.descriptor,
-    ) ?? null;
-  if (!entry) return null;
-
-  return entry.desktopApp;
-}
-
-/**
- * Finds a Shell.App for browser/PWA media before fuzzy name matching runs.
- *
- * Running and installed apps are evaluated as one desktop-ID-keyed set. Runtime
- * state is not identity evidence: two installed launchers with equally strong
- * metadata remain ambiguous even when only one currently has an open window.
- */
-function findShellAppByBrowserIdentity(
-  appSystem,
-  runningApps,
-  identity,
-  desktopEntry,
-  busName,
-) {
-  const desktopAppsById = new Map();
-  for (const desktopApp of runningApps) {
-    const appId = readAppStringSafely(() => desktopApp.get_id?.());
-    if (appId) desktopAppsById.set(appId, desktopApp);
-  }
-  for (const desktopApp of Gio.AppInfo.get_all()) {
-    const appId = readAppStringSafely(() => desktopApp.get_id?.());
-    if (appId && !desktopAppsById.has(appId))
-      desktopAppsById.set(appId, desktopApp);
-  }
-
-  const match = resolveBrowserIdentityApp(
-    createMediaIdentityDescriptor(identity, desktopEntry, busName),
-    [...desktopAppsById.values()].map((desktopApp) => ({ desktopApp })),
-  );
-  const appId = readAppStringSafely(() => match?.get_id?.());
-  if (!appId) return null;
-
-  return appSystem.lookup_app(appId) ?? desktopAppsById.get(appId) ?? null;
-}
-
-/**
- * Finds Gio.AppInfo for browser/PWA media when Shell.App resolution misses.
- *
- * This preserves icons and display names for desktop entries that are known to
- * Gio but not currently associated with a running Shell.App.
- */
-function findAppInfoByBrowserIdentity(identity, desktopEntry, busName) {
-  return resolveBrowserIdentityApp(
-    createMediaIdentityDescriptor(identity, desktopEntry, busName),
-    Gio.AppInfo.get_all().map((desktopApp) => ({ desktopApp })),
-  );
 }
 
 function appMatchesIdentityCandidates(desktopApp, normalizedCandidates) {
@@ -336,14 +156,6 @@ function findShellAppByHeuristicLookup(appSystem, lookupHints) {
   return null;
 }
 
-function readDesktopAppIcon(desktopApp) {
-  if (!desktopApp) return null;
-
-  const directIcon = desktopApp.get_icon?.();
-  if (directIcon) return directIcon;
-  return getAppInfoSafely(desktopApp)?.get_icon?.() ?? null;
-}
-
 /**
  * Resolves MPRIS identity hints to installed desktop applications.
  */
@@ -361,41 +173,18 @@ export default class DesktopAppResolver {
     try {
       const appSystem = Shell.AppSystem.get_default();
       let runningApps = null;
-      const mediaIdentity = createMediaIdentityDescriptor(
+      const chromiumPwaApp = resolveChromiumShellApp(
+        appSystem,
         identity,
         desktopEntry,
         busName,
       );
-      const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
-      if (pwaAppId && resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId) {
-        const exactDesktopApp = findShellAppByExactDesktopEntry(
-          appSystem,
-          desktopEntry,
+      if (chromiumPwaApp)
+        return storeBoundedCacheValue(
+          this.#shellAppCache,
+          appCacheKey,
+          chromiumPwaApp,
         );
-        if (exactDesktopApp)
-          return storeBoundedCacheValue(
-            this.#shellAppCache,
-            appCacheKey,
-            exactDesktopApp,
-          );
-      }
-
-      if (pwaAppId) {
-        runningApps = appSystem.get_running();
-        const browserIdentityApp = findShellAppByBrowserIdentity(
-          appSystem,
-          runningApps,
-          identity,
-          desktopEntry,
-          busName,
-        );
-        if (browserIdentityApp)
-          return storeBoundedCacheValue(
-            this.#shellAppCache,
-            appCacheKey,
-            browserIdentityApp,
-          );
-      }
 
       const appIdCandidates = buildDesktopAppIdCandidates(
         identity,
@@ -479,35 +268,17 @@ export default class DesktopAppResolver {
     if (cachedApp) return cachedApp;
 
     try {
-      const mediaIdentity = createMediaIdentityDescriptor(
+      const chromiumPwaApp = resolveChromiumAppInfo(
         identity,
         desktopEntry,
         busName,
       );
-      const pwaAppId = resolveChromiumPwaAppId(mediaIdentity);
-      if (pwaAppId && resolveChromiumPwaAppId({ desktopEntry }) === pwaAppId) {
-        const exactDesktopApp = findAppInfoByExactDesktopEntry(desktopEntry);
-        if (exactDesktopApp)
-          return storeBoundedCacheValue(
-            this.#appInfoCache,
-            appCacheKey,
-            exactDesktopApp,
-          );
-      }
-
-      if (pwaAppId) {
-        const browserIdentityApp = findAppInfoByBrowserIdentity(
-          identity,
-          desktopEntry,
-          busName,
+      if (chromiumPwaApp)
+        return storeBoundedCacheValue(
+          this.#appInfoCache,
+          appCacheKey,
+          chromiumPwaApp,
         );
-        if (browserIdentityApp)
-          return storeBoundedCacheValue(
-            this.#appInfoCache,
-            appCacheKey,
-            browserIdentityApp,
-          );
-      }
 
       const appIdCandidates = buildDesktopAppIdCandidates(
         identity,

@@ -57,7 +57,7 @@ export default class PopupMediaAppSelectorButton {
     this.ensureActors();
 
     const hasMultipleMediaApps =
-      this.extensionController.getAvailableMediaApps().length > 1;
+      (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length > 1;
     if (hasMultipleMediaApps !== this.hasMultipleMediaApps) {
       this.hasMultipleMediaApps = hasMultipleMediaApps;
       this.button.reactive = hasMultipleMediaApps;
@@ -159,7 +159,7 @@ export default class PopupMediaAppSelectorButton {
     this.disconnectButtonClickAction = installPrimaryClickAction(
       this.button,
       () => this.onActivate?.(),
-      () => this.extensionController.getAvailableMediaApps().length > 1,
+      () => (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length > 1,
     );
   }
 

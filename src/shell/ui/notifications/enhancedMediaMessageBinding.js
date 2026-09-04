@@ -29,7 +29,6 @@ import {
 } from "../../constants/actorState.js";
 import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/albumArt.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { executePlaybackControlAction } from "../../mpris/playbackControlExecutor.js";
 import { loadAlbumArtResult } from "../../utils/albumArtLoading.js";
 import { prepareAlbumArtPixbuf } from "../../utils/albumArtPixbuf.js";
 import { getAlbumArtPresentationGeometry } from "../../utils/albumArtPresentation.js";
@@ -116,12 +115,18 @@ export default class EnhancedMediaMessageBinding {
   constructor(
     messageContext,
     mediaApp,
-    { albumArtLoader, getAlbumArtCacheEnabled, onDestroyed = null },
+    {
+      albumArtLoader,
+      playbackController,
+      getAlbumArtCacheEnabled,
+      onDestroyed = null,
+    },
   ) {
     this.context = messageContext;
     this.message = messageContext.message;
     this.mediaApp = mediaApp;
     this.albumArtLoader = albumArtLoader;
+    this.playbackController = playbackController;
     this.getAlbumArtCacheEnabled = getAlbumArtCacheEnabled;
     this.onDestroyed = onDestroyed;
 
@@ -318,7 +323,7 @@ export default class EnhancedMediaMessageBinding {
           this.mediaApp,
           controlId,
         ).isActive;
-      void executePlaybackControlAction(this.mediaApp, buttonState.action);
+      void this.playbackController.execute(buttonState.action, this.mediaApp);
     });
     button.set_child(content.actor);
     this.controlButtons.set(controlId, buttonState);
@@ -1009,6 +1014,7 @@ export default class EnhancedMediaMessageBinding {
     this.message = null;
     this.mediaApp = null;
     this.albumArtLoader = null;
+    this.playbackController = null;
     this.getAlbumArtCacheEnabled = null;
     this.onDestroyed = null;
     this.transportBox = null;

@@ -5,7 +5,7 @@
  * Owns the MediaShell panel indicator, popup, and surface orchestration.
  *
  * ExtensionController mounts this actor into Main.panel and supplies active
- * media-app state from MprisPlayerRegistry. The class coalesces WidgetFlags into
+ * media-app state from MediaRuntime. The class coalesces WidgetFlags into
  * idle updates and delegates pointer gestures to IndicatorPointerHandler.
  */
 
@@ -23,7 +23,7 @@ import { MprisPlayerStateProperties } from "../../mpris/clientPolicy.js";
 import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
-} from "../../constants/desktopApp.js";
+} from "../../media/identity/constants.js";
 import { WidgetFlags } from "../widgetFlags.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
@@ -38,21 +38,22 @@ const logger = createLogger("MediaShellIndicator");
  * surfaces.
  */
 class MediaShellIndicator extends PanelMenu.Button {
-  constructor(
-    mediaApp,
-    extensionController,
-    { albumArtLoader, desktopAppResolver },
-  ) {
+  constructor(mediaApp, extensionController, { albumArtLoader, mediaRuntime }) {
     super(0.5, "MediaShell", false);
     this.mediaApp = mediaApp;
     this.extensionController = extensionController;
+    this.mediaRuntime = mediaRuntime;
     this.mediaAppPropertyListenerIds = new Map();
     this.desktopAppResolutionRetrySourceId = null;
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
     this.widgetUpdateSourceId = null;
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
-    const surfaceDependencies = { albumArtLoader, desktopAppResolver };
+    const surfaceDependencies = {
+      albumArtLoader,
+      desktopAppResolver: mediaRuntime.identity,
+      playbackController: mediaRuntime.playback,
+    };
     this.topBarContent = new TopBarContent(this, surfaceDependencies);
     this.popupContent = new PopupContent(this, surfaceDependencies);
     this.pointerHandler = new IndicatorPointerHandler(this);
@@ -383,6 +384,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.popupContent = null;
     this.topBarContent = null;
     this.mediaApp = null;
+    this.mediaRuntime = null;
     this.extensionController = null;
 
     pointerHandler?.destroy();
