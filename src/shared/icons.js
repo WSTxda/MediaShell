@@ -5,7 +5,7 @@
  * Defines symbolic icon names used for runtime fallbacks.
  *
  * Icon names remain centralized so Shell UI and preferences use the same themed
- * fallback chain when application icons, media icons, or album art is missing.
+ * fallback chain when application icons, media icons, or artwork is missing.
  * Only add entries here when an icon name is shared across modules.
  */
 

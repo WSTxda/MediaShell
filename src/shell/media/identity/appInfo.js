@@ -27,6 +27,22 @@ export function readAppStringSafely(getter) {
   }
 }
 
+/**
+ * Returns a cached Shell.App/Gio.AppInfo only while its desktop ID remains
+ * readable. Shell may invalidate application metadata independently of MPRIS,
+ * so a stale cache entry must fall back to normal resolution instead of
+ * poisoning every icon/name lookup for the endpoint.
+ */
+export function readCachedResolvedApp(cache, key) {
+  const desktopApp = cache.get(key) ?? null;
+  if (!desktopApp) return null;
+
+  const appId = readAppStringSafely(() => desktopApp.get_id?.());
+  if (appId) return desktopApp;
+  cache.delete(key);
+  return null;
+}
+
 export function getAppInfoSafely(desktopApp) {
   try {
     return desktopApp?.get_app_info?.() ?? null;

@@ -15,10 +15,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import {
-  DbusDaemonMethods,
-  DbusDaemonSignals,
-} from "./dbus.js";
+import { DbusDaemonMethods, DbusDaemonSignals } from "./dbus.js";
 import {
   MPRIS_BUS_NAME_PREFIX,
   MprisPlayerProperties,
@@ -239,13 +236,10 @@ export default class MprisPlayerRegistry {
       player.onPropertyChanged(MprisPlayerProperties.PLAYBACK_STATUS, () =>
         this.reconcileActivePlayer(),
       );
-      player.onPropertyChanged(
-        MprisPlayerStateProperties.IS_INVALID,
-        () => {
-          this.refreshAvailablePlayers();
-          this.reconcileActivePlayer();
-        },
-      );
+      player.onPropertyChanged(MprisPlayerStateProperties.IS_INVALID, () => {
+        this.refreshAvailablePlayers();
+        this.reconcileActivePlayer();
+      });
       const revalidateIdentity = () => {
         if (
           this.desktopAppResolver.isPlayerBlocked(
@@ -402,8 +396,7 @@ export default class MprisPlayerRegistry {
     const nextAvailablePlayers = orderPlayersDeterministically(
       [...this.playersByBusName.values()].filter(
         (player) =>
-          !player.isInvalid &&
-          !this.pendingRemovalBusNames.has(player.busName),
+          !player.isInvalid && !this.pendingRemovalBusNames.has(player.busName),
       ),
     );
     const listChanged =
@@ -428,9 +421,9 @@ export default class MprisPlayerRegistry {
 
   getPinnedPlayer() {
     return (
-      orderPlayersDeterministically([
-        ...this.playersByBusName.values(),
-      ]).find((player) => player.isPinned) ?? null
+      orderPlayersDeterministically([...this.playersByBusName.values()]).find(
+        (player) => player.isPinned,
+      ) ?? null
     );
   }
 
@@ -506,9 +499,7 @@ export default class MprisPlayerRegistry {
 
   togglePlayerPin(player) {
     if (!player) return false;
-    return player.isPinned
-      ? this.unpinPlayer(player)
-      : this.pinPlayer(player);
+    return player.isPinned ? this.unpinPlayer(player) : this.pinPlayer(player);
   }
 
   reconcileActivePlayer() {

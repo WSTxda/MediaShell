@@ -70,7 +70,8 @@ test("playback contracts reject broken cross-file references", async () => {
         ].controls.find(
           ({ controlId }) => controlId === PlaybackControlIds.PREVIOUS,
         );
-        snapshot.runtimeSettings[previous.settingKey].property = "wrongProperty";
+        snapshot.runtimeSettings[previous.settingKey].property =
+          "wrongProperty";
         expectDiagnostic(
           validatePlaybackContractSnapshot(snapshot),
           "surface policy and runtime settings differ",

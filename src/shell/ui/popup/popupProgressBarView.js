@@ -18,10 +18,7 @@ import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { GTypeNames } from "../../../shared/gobject.js";
 import { formatDurationMilliseconds } from "../../../shared/format.js";
-import {
-  ACTIVE_OPACITY,
-  INACTIVE_OPACITY,
-} from "../actorState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../actorState.js";
 import { normalizePositionPlaybackRate } from "../../mpris/position.js";
 
 /**

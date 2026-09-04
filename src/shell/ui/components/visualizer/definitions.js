@@ -9,10 +9,7 @@
  * remain owned by Shell-specific modules.
  */
 
-import {
-  VisualizerAnimationKinds,
-  VisualizerSpectrumLayers,
-} from "./types.js";
+import { VisualizerAnimationKinds, VisualizerSpectrumLayers } from "./types.js";
 
 /** Number of frequency-like bands generated for Beats and Pulse. */
 export const TOP_BAR_VISUALIZER_BAND_COUNT = 4;

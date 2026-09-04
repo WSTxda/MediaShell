@@ -9,7 +9,11 @@
  * track text, visualizer, and playback control layout.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
+import {
+  MediaShellStyleClasses,
+  NativeStyleClasses,
+  styleClassNames,
+} from "../style.js";
 import { IconNames } from "../../../shared/icons.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import { createIcon, setGIcon } from "../icons.js";
@@ -37,7 +41,7 @@ export default class TopBarAppIcon {
   render(index, parentBox) {
     const identity = this.player.identity;
     const desktopEntry = this.player.desktopEntry;
-    const useColoredIcon = this.settings.mediaAppIconUseColor;
+    const useColoredIcon = this.settings.appIconUseColor;
     const iconKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}`;
 
     // St can retain the previously resolved symbolic/regular texture when
@@ -82,8 +86,8 @@ export default class TopBarAppIcon {
           MediaShellStyleClasses.TOP_BAR_APP_ICON,
           NativeStyleClasses.NO_MARGIN,
           useColoredIcon
-            ? NativeStyleClasses.COLORED_ICON
-            : NativeStyleClasses.SYMBOLIC_ICON,
+            ? MediaShellStyleClasses.COLORED_ICON
+            : MediaShellStyleClasses.SYMBOLIC_ICON,
         ),
       },
       IconNames.MEDIA,

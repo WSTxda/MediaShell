@@ -15,10 +15,7 @@ import {
   resolveBrowserIdentityCandidate,
   resolveChromiumPwaAppId,
 } from "../../../../shared/identity/browser.js";
-import {
-  readAppStringSafely,
-  readDesktopAppDescriptor,
-} from "../appInfo.js";
+import { readAppStringSafely, readDesktopAppDescriptor } from "../appInfo.js";
 import { stripDesktopFileSuffix } from "../appIdentity.js";
 
 function createMediaIdentityDescriptor(identity, desktopEntry, busName) {

@@ -124,7 +124,7 @@ export function extractChromiumPwaCommandLineAppIds(...values) {
  * Conflicting IDs are not ranked. Returning an empty string forces the caller to
  * keep the normal browser identity instead of choosing one source arbitrarily.
  *
- * @param {object} mediaIdentity - MPRIS identity hints for one media app.
+ * @param {object} mediaIdentity - MPRIS identity hints for one player session.
  * @param {unknown} [mediaIdentity.identity] - MPRIS Identity.
  * @param {unknown} [mediaIdentity.desktopEntry] - MPRIS DesktopEntry.
  * @param {unknown} [mediaIdentity.busName] - MPRIS bus name.
@@ -166,14 +166,14 @@ export function buildBrowserIdentityAliases(descriptor = {}) {
 }
 
 /**
- * Scores how strongly an installed app descriptor matches a browser media app.
+ * Scores how strongly an installed app descriptor matches a browser player session.
  *
  * The score uses only deterministic Chromium desktop integration metadata:
  * desktop ID, StartupWMClass, and the explicit `--app-id` launcher argument.
  * Display names, executable names, window titles, process IDs, and browser-brand
  * lists are intentionally excluded.
  *
- * @param {object} mediaIdentity - MPRIS/runtime identity hints for one media app.
+ * @param {object} mediaIdentity - MPRIS/runtime identity hints for one player session.
  * @param {object} descriptor - Installed app descriptor.
  * @returns {{score: number, reason: string, appId: string}} Match score and explanation.
  */
@@ -235,9 +235,9 @@ export function scoreBrowserIdentityCandidate(
  *
  * The best score must identify one desktop ID. Equal-strength matches for
  * different launchers are ambiguous and therefore return `null`; enumeration
- * order must never decide which browser profile or package owns the media app.
+ * order must never decide which browser profile or package owns the player session.
  *
- * @param {object} mediaIdentity - MPRIS/runtime identity hints for one media app.
+ * @param {object} mediaIdentity - MPRIS/runtime identity hints for one player session.
  * @param {object[]} descriptors - Installed app descriptors to score.
  * @returns {{descriptor: object, score: number, reason: string, appId: string}|null} Best unambiguous match.
  */

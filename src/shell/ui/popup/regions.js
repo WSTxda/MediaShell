@@ -5,7 +5,7 @@
  * Dirty-region vocabulary owned exclusively by the popup surface.
  *
  * Regions are bitmasks so bursts can be merged cheaply while preserving the
- * granular actor reconciliation used by MediaShell 2.x.
+ * granular actor reconciliation used by the popup surface.
  */
 
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";

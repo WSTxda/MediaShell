@@ -126,13 +126,13 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Metadata</property>
         <child>
-          <object class="AdwExpanderRow" id="er-popup-album-art">
+          <object class="AdwExpanderRow" id="er-popup-artwork">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Album art</property>
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSpinRow" id="sp-popup-album-art-corner-radius">
+              <object class="AdwSpinRow" id="sp-popup-artwork-corner-radius">
                 <property name="title" translatable="yes">Corner radius</property>
                 <property name="subtitle" translatable="yes">0 disables rounded corners</property>
                 <property name="adjustment">
@@ -231,7 +231,7 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Apps</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-popup-media-app-icon-use-color">
+          <object class="AdwSwitchRow" id="sr-popup-app-icon-use-color">
             <property name="title" translatable="yes">Colored app icon</property>
             <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
           </object>
@@ -411,13 +411,13 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Metadata</property>
         <child>
-          <object class="AdwExpanderRow" id="er-top-bar-album-art">
+          <object class="AdwExpanderRow" id="er-top-bar-artwork">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">Album art</property>
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSpinRow" id="sp-top-bar-album-art-corner-radius">
+              <object class="AdwSpinRow" id="sp-top-bar-artwork-corner-radius">
                 <property name="title" translatable="yes">Corner radius</property>
                 <property name="subtitle" translatable="yes">0 disables rounded corners</property>
                 <property name="adjustment">
@@ -516,13 +516,13 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Apps</property>
         <child>
-          <object class="AdwExpanderRow" id="er-top-bar-media-app-icon">
+          <object class="AdwExpanderRow" id="er-top-bar-app-icon">
             <property name="show-enable-switch">true</property>
             <property name="title" translatable="yes">App icon</property>
             <property name="subtitle" translatable="yes">Show the app icon</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSwitchRow" id="sr-top-bar-media-app-icon-use-color">
+              <object class="AdwSwitchRow" id="sr-top-bar-app-icon-use-color">
                 <property name="title" translatable="yes">Colored app icon</property>
                 <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
               </object>

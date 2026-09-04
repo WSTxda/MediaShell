@@ -4,12 +4,15 @@
  *
  * Selects and owns the private GNOME Shell media-controls implementation for
  * the active session profile. The adapter is the only composition point that
- * knows about Hide/Enhance internals; MediaShell injects runtime capabilities.
+ * knows about Hidden/Enhanced implementation details; MediaShell injects runtime capabilities.
  */
 
 import { NativeMediaControlsModes } from "../../../../shared/settings/contract.js";
+import { createLogger } from "../../../../shared/logging/logger.js";
 import EnhancedMediaControls from "./enhance.js";
 import HiddenMediaControls from "./hide.js";
+
+const logger = createLogger("NativeMediaControlsAdapter");
 
 const RuntimeProfiles = Object.freeze({
   USER: "user",
@@ -29,10 +32,7 @@ function resolveImplementation(profile, mode, mediaRuntime) {
   )
     return Implementations.HIDDEN_NOTIFICATION_LIST;
 
-  if (
-    mode !== NativeMediaControlsModes.ENHANCED ||
-    !mediaRuntime?.initialized
-  )
+  if (mode !== NativeMediaControlsModes.ENHANCED || !mediaRuntime?.initialized)
     return null;
 
   if (profile === RuntimeProfiles.USER)
@@ -66,8 +66,15 @@ export default class GnomeShellMediaControlsAdapter {
     );
 
     if (this.implementationKind !== implementationKind) {
+      const previousKind = this.implementationKind;
       this.reset();
       this.implementationKind = implementationKind;
+      logger.debug(
+        "Native media integration changed",
+        previousKind ?? "default",
+        "→",
+        implementationKind ?? "default",
+      );
       this.implementation = this.createImplementation(
         implementationKind,
         mediaRuntime,

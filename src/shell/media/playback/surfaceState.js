@@ -64,7 +64,9 @@ export function resolvePlaybackControlSurfaceUpdates(
 ) {
   const { show, controls } = getPlaybackControlSurfaceDefinition(surface);
   return controls
-    .filter(({ controlId }) => Boolean(dirtyRegions & controlRegions[controlId]))
+    .filter(({ controlId }) =>
+      Boolean(dirtyRegions & controlRegions[controlId]),
+    )
     .map((control) => ({
       controlId: control.controlId,
       isVisible: isPlaybackControlVisible(settingsTarget, show, control),

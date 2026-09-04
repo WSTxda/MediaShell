@@ -398,11 +398,7 @@ export default class ArtworkService {
   ) {
     if (!artworkUri) return null;
     try {
-      return await this.#loadUri(
-        artworkUri,
-        cacheEnabled,
-        loadCancellable,
-      );
+      return await this.#loadUri(artworkUri, cacheEnabled, loadCancellable);
     } catch (error) {
       if (isCancellationError(error)) throw error;
       logger.debugOnce(

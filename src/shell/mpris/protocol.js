@@ -21,7 +21,6 @@ export const MPRIS_OBJECT_PATH = "/org/mpris/MediaPlayer2";
 /** Sentinel track path reported by MPRIS when no concrete track is available. */
 export const MPRIS_NO_TRACK_PATH = "/org/mpris/MediaPlayer2/TrackList/NoTrack";
 
-
 /** Values defined by the MPRIS Player.PlaybackStatus property. */
 export const PlaybackStatus = Object.freeze({
   PLAYING: "Playing",

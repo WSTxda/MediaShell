@@ -17,10 +17,6 @@
     <value nick="SWITCH_APP"       value="12" />
     <value nick="SEEK_BACKWARD"    value="13" />
     <value nick="SEEK_FORWARD"     value="14" />
-    <!-- Legacy rate-action nicks remain readable but are no longer executable. -->
-    <value nick="RATE_DECREASE"     value="15" />
-    <value nick="RATE_INCREASE"     value="16" />
-    <value nick="RATE_RESET"        value="17" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
@@ -108,7 +104,7 @@
       <range min="0" max="10" />
       <default>1</default>
     </key>
-    <key name="popup-media-app-icon-use-color" type="b">
+    <key name="popup-app-icon-use-color" type="b">
       <default>true</default>
     </key>
 
@@ -137,10 +133,10 @@
     <key name="top-bar-track-information-content" type="as">
       <default>['TITLE', '•', 'ARTIST']</default>
     </key>
-    <key name="top-bar-media-app-icon-show" type="b">
+    <key name="top-bar-app-icon-show" type="b">
       <default>true</default>
     </key>
-    <key name="top-bar-media-app-icon-use-color" type="b">
+    <key name="top-bar-app-icon-use-color" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-artwork-show" type="b">

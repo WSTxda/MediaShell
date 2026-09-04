@@ -71,12 +71,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   setPlayer(player) {
-    if (
-      this.destroyed ||
-      !player ||
-      this.isActivePlayer(player)
-    )
-      return;
+    if (this.destroyed || !player || this.isActivePlayer(player)) return;
 
     this.removePlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
@@ -132,7 +127,7 @@ class MediaShellIndicator extends PanelMenu.Button {
       MprisPlayerProperties.PLAYBACK_STATUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAYBACK_STATUS);
-        this.popupContent.syncAlbumArtPlaybackState();
+        this.popupContent.syncArtworkPlaybackState();
         this.popupContent.syncProgressBarPlaybackState();
       },
     );
@@ -195,9 +190,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   requestMetadataSurfaceUpdate() {
     this.requestSurfaceUpdate(
       createMetadataSurfaceUpdate(
-        Boolean(
-          this.menu?.isOpen && this.settings.popup.progressBarShow,
-        ),
+        Boolean(this.menu?.isOpen && this.settings.popup.progressBarShow),
       ),
     );
   }
@@ -274,10 +267,7 @@ class MediaShellIndicator extends PanelMenu.Button {
         );
       }
     };
-    const listenerId = observedPlayer.onPropertyChanged(
-      property,
-      safeCallback,
-    );
+    const listenerId = observedPlayer.onPropertyChanged(property, safeCallback);
     this.playerPropertyListenerIds.set(property, listenerId);
   }
 

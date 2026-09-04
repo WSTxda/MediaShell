@@ -35,6 +35,7 @@ import { DbusPropertiesMethods } from "./dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
+  MprisMetadataKeys,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
@@ -64,6 +65,7 @@ import {
   createMprisTrack,
   metadataContainsTrack,
   normalizeMprisMetadata,
+  normalizeMprisTrackId,
 } from "./metadata.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { normalizePlaybackRateRange } from "./playbackRate.js";
@@ -75,7 +77,10 @@ import {
   mprisOperationSucceeded,
   mprisOperationUnsupported,
 } from "./operationResult.js";
-import { getOperationErrorName, isCancellationError } from "../platform/gioErrors.js";
+import {
+  getOperationErrorName,
+  isCancellationError,
+} from "../platform/gioErrors.js";
 import MprisPositionTracker from "./positionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
@@ -216,7 +221,9 @@ export default class MprisPlayer {
     this.metadataRevision = hasStableMetadata
       ? createMprisMetadataRevision(metadata)
       : "";
-    this.track = hasStableMetadata ? createMprisTrack(metadata) : createMprisTrack();
+    this.track = hasStableMetadata
+      ? createMprisTrack(metadata)
+      : createMprisTrack();
     this.hasCurrentTrackMetadata = false;
     this.hasPresentedTrackMetadata ||= hasStableMetadata;
     this.positionTracker?.resetForOwnerChange();
@@ -511,10 +518,7 @@ export default class MprisPlayer {
   setInvalid(isInvalid) {
     if (isInvalid === this.isInvalid) return;
     this.isInvalid = isInvalid;
-    this.emitPropertyChanged(
-      MprisPlayerStateProperties.IS_INVALID,
-      isInvalid,
-    );
+    this.emitPropertyChanged(MprisPlayerStateProperties.IS_INVALID, isInvalid);
   }
 
   storeNormalizedMetadata(metadata, revision = null) {
@@ -675,7 +679,9 @@ export default class MprisPlayer {
     return Boolean(this.state[MprisPlayerProperties.CAN_CONTROL]);
   }
   get trackId() {
-    return this.track.id;
+    // SetPosition is a protocol operation, so source its TrackId directly from
+    // the current normalized MPRIS Metadata rather than the semantic Track DTO.
+    return normalizeMprisTrackId(this.metadata[MprisMetadataKeys.TRACK_ID]);
   }
   get canSetPosition() {
     return this.canControl && this.canSeek && this.trackId !== null;
@@ -703,9 +709,7 @@ export default class MprisPlayer {
     return Boolean(this.state[MprisRootProperties.CAN_RAISE]);
   }
   get desktopEntry() {
-    return normalizeMprisString(
-      this.state[MprisRootProperties.DESKTOP_ENTRY],
-    );
+    return normalizeMprisString(this.state[MprisRootProperties.DESKTOP_ENTRY]);
   }
   get identity() {
     return normalizeMprisString(this.state[MprisRootProperties.IDENTITY]);

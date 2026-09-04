@@ -28,8 +28,10 @@ import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
   normalizeAppIdentity,
+  normalizedIdentityContains,
   stripDesktopFileSuffix,
 } from "../src/shell/media/identity/appIdentity.js";
+import { readCachedResolvedApp } from "../src/shell/media/identity/appInfo.js";
 import {
   buildBrowserIdentityAliases,
   extractChromiumPwaAppIds,
@@ -311,6 +313,23 @@ test("identity and search stay generic, normalized, and service-agnostic", async
             "org.mozilla.firefox.desktop",
           ).includes("org.mozilla.firefox"),
         );
+        assert.equal(
+          normalizedIdentityContains("google chrome", "chrome"),
+          true,
+        );
+        assert.equal(
+          normalizedIdentityContains("com google chrome", "google chrome"),
+          true,
+        );
+        assert.equal(normalizedIdentityContains("mpv", "pv"), false);
+
+        const cache = new Map();
+        const resolvedApp = { get_id: () => "org.example.Player.desktop" };
+        cache.set("player", resolvedApp);
+        assert.equal(readCachedResolvedApp(cache, "player"), resolvedApp);
+        cache.set("stale", { get_id: () => "" });
+        assert.equal(readCachedResolvedApp(cache, "stale"), null);
+        assert.equal(cache.has("stale"), false);
       },
     ],
     [
@@ -336,7 +355,7 @@ test("identity and search stay generic, normalized, and service-agnostic", async
           [PWA_ID],
         );
         const mediaIdentity = {
-          identity: "Media app",
+          identity: "Media Player",
           desktopEntry: `chromium-${PWA_ID}-Default`,
           busName: "org.mpris.MediaPlayer2.chromium.instance123",
         };
@@ -344,7 +363,7 @@ test("identity and search stay generic, normalized, and service-agnostic", async
         assert.deepEqual(
           scoreBrowserIdentityCandidate(mediaIdentity, {
             desktopId: `org.example.Browser-${PWA_ID}-Default.desktop`,
-            displayName: "Media app",
+            displayName: "Media Player",
           }),
           { score: 1200, reason: "desktopId", appId: PWA_ID },
         );

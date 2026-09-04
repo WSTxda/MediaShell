@@ -56,17 +56,6 @@ function checkAssetsAndTranslations() {
   ]);
 }
 
-function checkRefactorAssets() {
-  runCommand("parsed assets", "python3", [
-    "scripts/dev/assets.py",
-    "--check-resources",
-  ]);
-  runCommand("development script syntax", "bash", [
-    "-n",
-    "scripts/development.sh",
-  ]);
-}
-
 async function checkRuntime() {
   const gates = [
     ["source", checkSource],
@@ -76,17 +65,6 @@ async function checkRuntime() {
   ];
   for (const [label, check] of gates) await runGate(label, check);
   console.log(`\nAll ${gates.length} runtime validation gates passed.`);
-}
-
-async function checkRefactorRuntime() {
-  const gates = [
-    ["source", checkSource],
-    ["assets", checkRefactorAssets],
-  ];
-  for (const [label, check] of gates) await runGate(label, check);
-  console.log(
-    `\nAll ${gates.length} refactor validation gates passed (behavior, declarative contracts, and translation freshness skipped).`,
-  );
 }
 
 async function checkNativeCompilation() {
@@ -114,14 +92,13 @@ const [command = "check", argument] = process.argv.slice(2);
 try {
   if (command === "check") await checkDevelopment();
   else if (command === "runtime") await checkRuntime();
-  else if (command === "refactor") await checkRefactorRuntime();
   else if (command === "native") await checkNativeCompilation();
   else if (command === "package")
     await checkPackage(argument ?? EXTENSION_PACKAGE);
   else
     throw new Error(
       `Unknown command: ${command}\n` +
-        "Use 'check', 'runtime', 'refactor', 'native', or 'package [zip]'.",
+        "Use 'check', 'runtime', 'native', or 'package [zip]'.",
     );
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

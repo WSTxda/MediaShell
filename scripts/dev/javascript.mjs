@@ -297,8 +297,10 @@ export async function checkImportsAndBoundaries() {
       for (const error of validateRelativeImport(layer, targetLayer, specifier))
         errors.push(`${record.file}:${item.line}: ${error}: ${target}`);
 
-      for (const { root: privateRoot, boundary: privateBoundary } of
-        PRIVATE_SHELL_BOUNDARIES) {
+      for (const {
+        root: privateRoot,
+        boundary: privateBoundary,
+      } of PRIVATE_SHELL_BOUNDARIES) {
         if (
           target.startsWith(privateRoot) &&
           !record.file.startsWith(privateRoot) &&

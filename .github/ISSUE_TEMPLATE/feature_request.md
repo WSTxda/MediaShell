@@ -8,23 +8,28 @@ assignees: ""
 
 ## Proposal
 
-Describe the requested behavior using the canonical MediaShell terms when applicable:
-media app selector, track information, playback controls, progress bar, album art,
-visualizer, mouse actions, keyboard shortcuts, blocked apps, Hide GNOME media controls,
-or Enhance GNOME media controls.
+Describe the behavior you want. Use MediaShell's current vocabulary where it helps: MPRIS player, player selector, Track, Playback, Artwork, AppIcon, Popup, Top Bar, or native media controls (`Default`, `Hidden`, `Enhanced`).
 
 ## Motivation
 
-Explain the user workflow or limitation this would address.
+Explain the workflow or limitation this would improve. A concrete use case is more useful than a description of the implementation you expect.
 
 ## Expected behavior
 
-Describe how the feature should behave, including defaults, settings, and interaction with existing components.
+Describe the visible behavior, defaults, configuration, and interaction with existing surfaces. If the feature introduces a new control or element, explain where it belongs and how it behaves when the player does not expose the required MPRIS capability.
 
-## Compatibility and lifecycle
+## Architecture and compatibility
 
-Note any expected MPRIS, D-Bus, GNOME Shell, performance, accessibility, or settings implications.
+Call out any known implications for:
+
+- MPRIS or D-Bus semantics;
+- GNOME Shell 48–51 compatibility or private Shell APIs;
+- Popup / Top Bar independence;
+- settings and Preferences;
+- lifecycle, asynchronous work, or caching;
+- accessibility or reduced motion;
+- performance in the GNOME Shell process.
 
 ## Alternatives
 
-Describe existing workarounds or simpler approaches you considered.
+Describe existing workarounds or a smaller behavior that would solve the same problem.

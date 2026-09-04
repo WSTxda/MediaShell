@@ -5,8 +5,8 @@
  * Renders configurable track metadata inside the GNOME top bar.
  *
  * TopBarContent owns this component and passes the ordered metadata fields chosen
- * in preferences. It uses ScrollingLabel for long text and shared metadata
- * helpers for field assembly. TopBarContent owns layout orchestration, while this
+ * in preferences. It uses ScrollingLabel for long text and the canonical Track presentation
+ * helper for field assembly. TopBarContent owns layout orchestration, while this
  * component preserves the original metadata width and Lock width contract.
  */
 
@@ -23,12 +23,8 @@ export default class TopBarTrackInformation {
     this.topBarContent = topBarContent;
     this.actor = null;
     this.renderKey = null;
-    this.width = normalizeWidth(
-      this.settings.trackInformationWidth,
-    );
-    this.isFixedWidth = Boolean(
-      this.settings.trackInformationWidthLock,
-    );
+    this.width = normalizeWidth(this.settings.trackInformationWidth);
+    this.isFixedWidth = Boolean(this.settings.trackInformationWidthLock);
   }
 
   get settings() {
@@ -41,7 +37,7 @@ export default class TopBarTrackInformation {
 
   render(index, parentBox) {
     const text = buildTrackInformationText(
-      this.player.metadata,
+      this.player.track,
       this.settings.trackInformationContent,
     );
     const renderKey = [
@@ -68,7 +64,9 @@ export default class TopBarTrackInformation {
         this.settings.trackInformationScrollPauseMilliseconds,
     });
 
-    label.add_style_class_name(MediaShellStyleClasses.TOP_BAR_TRACK_INFORMATION);
+    label.add_style_class_name(
+      MediaShellStyleClasses.TOP_BAR_TRACK_INFORMATION,
+    );
 
     const oldLabel = this.actor;
     this.actor = label;

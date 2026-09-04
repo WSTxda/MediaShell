@@ -71,10 +71,10 @@ const POPUP_BINDINGS = Object.freeze([
     "sr-popup-volume-control-show",
     "active",
   ],
-  [SettingsKeys.POPUP_ARTWORK_SHOW, "er-popup-album-art", "enable-expansion"],
+  [SettingsKeys.POPUP_ARTWORK_SHOW, "er-popup-artwork", "enable-expansion"],
   [
     SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS,
-    "sp-popup-album-art-corner-radius",
+    "sp-popup-artwork-corner-radius",
     "value",
   ],
   [
@@ -98,8 +98,8 @@ const POPUP_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.POPUP_MEDIA_APP_ICON_USE_COLOR,
-    "sr-popup-media-app-icon-use-color",
+    SettingsKeys.POPUP_APP_ICON_USE_COLOR,
+    "sr-popup-app-icon-use-color",
     "active",
   ],
 ]);
@@ -153,23 +153,19 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.TOP_BAR_MEDIA_APP_ICON_SHOW,
-    "er-top-bar-media-app-icon",
+    SettingsKeys.TOP_BAR_APP_ICON_SHOW,
+    "er-top-bar-app-icon",
     "enable-expansion",
   ],
   [
-    SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR,
-    "sr-top-bar-media-app-icon-use-color",
+    SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
+    "sr-top-bar-app-icon-use-color",
     "active",
   ],
-  [
-    SettingsKeys.TOP_BAR_ARTWORK_SHOW,
-    "er-top-bar-album-art",
-    "enable-expansion",
-  ],
+  [SettingsKeys.TOP_BAR_ARTWORK_SHOW, "er-top-bar-artwork", "enable-expansion"],
   [
     SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS,
-    "sp-top-bar-album-art-corner-radius",
+    "sp-top-bar-artwork-corner-radius",
     "value",
   ],
 ]);
@@ -288,11 +284,7 @@ const OTHERS_BINDINGS = Object.freeze([
     "cr-native-media-controls-mode",
     "selected",
   ],
-  [
-    SettingsKeys.ARTWORK_CACHE_ENABLED,
-    "sr-artwork-cache-enabled",
-    "active",
-  ],
+  [SettingsKeys.ARTWORK_CACHE_ENABLED, "sr-artwork-cache-enabled", "active"],
 ]);
 
 export const PREFERENCE_WIDGET_BINDINGS = Object.freeze([

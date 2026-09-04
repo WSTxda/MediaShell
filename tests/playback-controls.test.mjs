@@ -11,7 +11,6 @@ import test from "node:test";
 
 import {
   INPUT_ACTION_DEFINITIONS,
-  LEGACY_INPUT_ACTION_SCHEMA_NICKS,
   MOUSE_ACTION_VALUES,
   PLAYBACK_ACTION_BY_INPUT_ACTION,
 } from "../src/shared/input/actions.js";
@@ -32,7 +31,10 @@ import {
 } from "../src/shared/settings/contract.js";
 import { InputActions } from "../src/shared/input/types.js";
 import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
-import { PopupPlaybackControlRegions, PopupRegions } from "../src/shell/ui/popup/regions.js";
+import {
+  PopupPlaybackControlRegions,
+  PopupRegions,
+} from "../src/shell/ui/popup/regions.js";
 import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
 import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../src/shell/media/playback/surfaceState.js";
@@ -52,7 +54,7 @@ import PopupLayoutController from "../src/prefs/controllers/popupLayoutControlle
 import { reconcileActorOrder } from "../src/shell/ui/components/actorOrder.js";
 import { runCases } from "./helpers.mjs";
 
-function mediaApp(overrides = {}) {
+function player(overrides = {}) {
   return {
     playbackStatus: PlaybackStatus.PAUSED,
     loopStatus: LoopStatus.NONE,
@@ -117,20 +119,20 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
       "play pause stop",
       () => {
         assert.equal(
-          resolvePlaybackControlState(mediaApp(), PlaybackControlIds.PLAY_PAUSE)
+          resolvePlaybackControlState(player(), PlaybackControlIds.PLAY_PAUSE)
             .action,
           PlaybackControlActions.PLAY,
         );
         assert.equal(
           resolvePlaybackControlState(
-            mediaApp({ playbackStatus: PlaybackStatus.PLAYING }),
+            player({ playbackStatus: PlaybackStatus.PLAYING }),
             PlaybackControlIds.PLAY_PAUSE,
           ).action,
           PlaybackControlActions.PAUSE,
         );
         assert.equal(
           resolvePlaybackControlState(
-            mediaApp({
+            player({
               playbackStatus: PlaybackStatus.PLAYING,
               canPause: false,
             }),
@@ -145,21 +147,21 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
       () => {
         assert.equal(
           resolvePlaybackControlState(
-            mediaApp({ canSetShuffle: false }),
+            player({ canSetShuffle: false }),
             PlaybackControlIds.SHUFFLE,
           ).isReactive,
           false,
         );
         assert.equal(
           resolvePlaybackControlState(
-            mediaApp({ canSetLoopStatus: false }),
+            player({ canSetLoopStatus: false }),
             PlaybackControlIds.REPEAT,
           ).isReactive,
           false,
         );
         assert.equal(
           resolvePlaybackControlState(
-            mediaApp({ canSetPlaybackRate: false }),
+            player({ canSetPlaybackRate: false }),
             PlaybackControlIds.SPEED,
           ).isReactive,
           false,
@@ -169,7 +171,7 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
     [
       "accessible names",
       () => {
-        const paused = mediaApp();
+        const paused = player();
         const seek = resolvePlaybackControlState(
           paused,
           PlaybackControlIds.SEEK_BACKWARD,
@@ -178,11 +180,14 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
           resolvePlaybackControlAccessibleName(paused, seek),
           "Seek backward: 10 s",
         );
-        const repeatApp = mediaApp({ loopStatus: LoopStatus.TRACK });
+        const repeatPlayer = player({ loopStatus: LoopStatus.TRACK });
         assert.equal(
           resolvePlaybackControlAccessibleName(
-            repeatApp,
-            resolvePlaybackControlState(repeatApp, PlaybackControlIds.REPEAT),
+            repeatPlayer,
+            resolvePlaybackControlState(
+              repeatPlayer,
+              PlaybackControlIds.REPEAT,
+            ),
           ),
           "Repeat: Track",
         );
@@ -344,7 +349,7 @@ test("surface policies and popup layout stay consistent", async () => {
   ]);
 });
 
-test("input actions stay append-only while executable lists exclude retired speed actions", async () => {
+test("input actions expose only executable 3.x actions", async () => {
   await runCases([
     [
       "persisted values",
@@ -365,18 +370,9 @@ test("input actions stay append-only while executable lists exclude retired spee
           SWITCH_APP: 12,
           SEEK_BACKWARD: 13,
           SEEK_FORWARD: 14,
-          RESERVED_15: 15,
-          RESERVED_16: 16,
-          RESERVED_17: 17,
         });
-        for (const legacy of [15, 16, 17])
-          assert.equal(normalizeInputAction(legacy), InputActions.NONE);
-        assert.deepEqual(LEGACY_INPUT_ACTION_SCHEMA_NICKS, {
-          15: "RATE_DECREASE",
-          16: "RATE_INCREASE",
-          17: "RATE_RESET",
-        });
-
+        for (const unsupported of [15, 16, 17])
+          assert.equal(normalizeInputAction(unsupported), InputActions.NONE);
       },
     ],
     [

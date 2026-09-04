@@ -165,7 +165,6 @@ export function normalizeMprisMetadata(metadataValue) {
   return normalized;
 }
 
-
 function cloneTextList(value) {
   return Object.freeze(Array.isArray(value) ? [...value] : []);
 }
@@ -199,9 +198,11 @@ export function createMprisTrack(metadata = {}) {
     ),
     composer: normalizeProtocolText(safeMetadata[MprisMetadataKeys.COMPOSER]),
     discNumber:
-      normalizeProtocolInteger(safeMetadata[MprisMetadataKeys.DISC_NUMBER]) ?? null,
+      normalizeProtocolInteger(safeMetadata[MprisMetadataKeys.DISC_NUMBER]) ??
+      null,
     trackNumber:
-      normalizeProtocolInteger(safeMetadata[MprisMetadataKeys.TRACK_NUMBER]) ?? null,
+      normalizeProtocolInteger(safeMetadata[MprisMetadataKeys.TRACK_NUMBER]) ??
+      null,
   });
 }
 

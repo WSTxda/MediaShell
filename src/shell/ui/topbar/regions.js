@@ -22,13 +22,7 @@ export const TopBarRegions = Object.freeze({
   LAYOUT: 1 << 11,
   ELEMENT_ORDER: 1 << 12,
   PLAYBACK_CONTROLS:
-    (1 << 3) |
-    (1 << 4) |
-    (1 << 5) |
-    (1 << 6) |
-    (1 << 7) |
-    (1 << 9) |
-    (1 << 10),
+    (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 9) | (1 << 10),
   CONTENT:
     (1 << 0) |
     (1 << 1) |

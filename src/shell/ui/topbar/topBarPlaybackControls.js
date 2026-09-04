@@ -8,7 +8,11 @@
  * delegates state and execution to the shared playback-control domain.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
+import {
+  MediaShellStyleClasses,
+  NativeStyleClasses,
+  styleClassNames,
+} from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -17,10 +21,7 @@ import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../../media/playback/surfaceState.js";
 import { TopBarPlaybackControlRegions } from "./regions.js";
-import {
-  ACTIVE_OPACITY,
-  INACTIVE_OPACITY,
-} from "../actorState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../actorState.js";
 import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../components/playback/order.js";
 import { reconcileActorOrder } from "../components/actorOrder.js";
 import { updatePlaybackControlButton } from "../components/playback/button.js";

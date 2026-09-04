@@ -23,6 +23,8 @@ import {
   normalizeMprisTrackId,
 } from "../src/shell/mpris/metadata.js";
 import {
+  MPRIS_EMPTY_STOPPED_GRACE_MS,
+  MPRIS_OWNER_HANDOFF_GRACE_MS,
   MprisPlayerValidity,
   matchesMprisOwnerSnapshot,
   resolveMprisOwnerTransition,
@@ -45,6 +47,7 @@ import {
 } from "../src/shell/mpris/operationResult.js";
 import {
   executePlaybackControlAction,
+  executeSetPosition,
   resolveSeekOffsetMicroseconds,
 } from "../src/shell/media/playback/playbackController.js";
 import { runCases } from "./helpers.mjs";
@@ -138,6 +141,38 @@ test("MPRIS operations return explicit results through one executor", async () =
       },
     ],
     [
+      "absolute seek delegates track identity to the MPRIS player",
+      async () => {
+        const trackId = "/org/example/Track/1";
+        let received = null;
+        const player = {
+          busName: "org.mpris.MediaPlayer2.test",
+          trackId,
+          setPosition: async (...arguments_) => {
+            received = arguments_;
+            return arguments_[0] === trackId
+              ? mprisOperationSucceeded()
+              : mprisOperationUnsupported(
+                  MprisOperationReasons.INVALID_ARGUMENT,
+                );
+          },
+        };
+
+        const result = await executeSetPosition(player, 1_000, trackId);
+        assert.equal(result.status, MprisOperationStatuses.SUCCESS);
+        assert.deepEqual(received, [trackId, 1_000]);
+
+        received = null;
+        const staleTrackId = "/org/example/Track/stale";
+        const stale = await executeSetPosition(player, 500, staleTrackId);
+        assert.deepEqual(
+          stale,
+          mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT),
+        );
+        assert.deepEqual(received, [staleTrackId, 500]);
+      },
+    ],
+    [
       "speed cycle",
       async () => {
         let received = null;
@@ -161,6 +196,8 @@ test("MPRIS operations return explicit results through one executor", async () =
 });
 
 test("MPRIS owner transitions recover replacement processes without accepting stale replies", () => {
+  assert.equal(MPRIS_EMPTY_STOPPED_GRACE_MS, 5_000);
+  assert.equal(MPRIS_OWNER_HANDOFF_GRACE_MS, 5_000);
   assert.deepEqual(resolveMprisOwnerTransition(null, null), {
     owner: null,
     hasOwner: false,
