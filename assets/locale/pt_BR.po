@@ -320,8 +320,8 @@ msgstr "Nenhum"
 msgid "Playback speed"
 msgstr "Velocidade de reprodução"
 
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:197
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:210
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
 msgid "Media"
 msgstr "Mídia"
 
@@ -664,36 +664,36 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controle como o MediaShell se integra ao GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native media controls"
-msgstr ""
+msgid "Native controls"
+msgstr "Controles nativos"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure GNOME's built-in media controls"
-msgstr ""
+msgid "Configure the default media controls in the notification center"
+msgstr "Configure os controles de mídia padrão na central de notificações"
 
 #: assets/ui/prefs.ui:911
-msgid "Private GNOME Shell integration"
-msgstr ""
+msgid "Private API integration"
+msgstr "Integração com API privada"
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later."
-msgstr ""
+msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
+msgstr "Estas opções usam APIs privadas para funcionar. A estabilidade pode variar dependendo da versão do GNOME ou de personalizações da distribuição."
 
 #: assets/ui/prefs.ui:934
-msgid "Enhance media controls"
-msgstr "Aprimorar controles de mídia"
+msgid "Hide native control"
+msgstr "Ocultar controle nativo"
 
 #: assets/ui/prefs.ui:935
-msgid "Use MediaShell styling for visible native controls and the lock screen on GNOME 49+"
-msgstr ""
+msgid "Hide the media controls banner from the notification center"
+msgstr "Ocultar o banner de controles de mídia da central de notificações"
 
 #: assets/ui/prefs.ui:940
-msgid "Hide media controls"
-msgstr "Ocultar controles de mídia"
+msgid "Enhanced native control"
+msgstr "Controle nativo aprimorado"
 
 #: assets/ui/prefs.ui:941
-msgid "Hide native media controls from the notification center only"
-msgstr ""
+msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
+msgstr "Aplicar um estilo moderno e aprimorado ao banner de controle de mídia na central de notificações e na tela de bloqueio"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

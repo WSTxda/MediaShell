@@ -901,21 +901,21 @@
         <property name="title" translatable="yes">System</property>
         <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
-          <object class="AdwExpanderRow" id="er-native-media-controls">
-            <property name="title" translatable="yes">Native media controls</property>
-            <property name="subtitle" translatable="yes">Configure GNOME's built-in media controls</property>
+          <object class="AdwExpanderRow" id="er-native-controls">
+            <property name="title" translatable="yes">Native controls</property>
+            <property name="subtitle" translatable="yes">Configure the default media controls in the notification center</property>
             <property name="expanded">false</property>
             <child type="suffix">
-              <object class="GtkMenuButton" id="mb-native-media-controls-info">
+              <object class="GtkMenuButton" id="mb-native-controls-info">
                 <property name="icon-name">info-outline-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Private GNOME Shell integration</property>
+                <property name="tooltip-text" translatable="yes">Private API integration</property>
                 <property name="has-frame">false</property>
                 <property name="valign">center</property>
                 <property name="popover">
                   <object class="GtkPopover">
                     <property name="child">
                       <object class="GtkLabel">
-                        <property name="label" translatable="yes">These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later.</property>
+                        <property name="label" translatable="yes">These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations.</property>
                         <property name="wrap">true</property>
                         <property name="max-width-chars">42</property>
                         <property name="xalign">0</property>
@@ -930,15 +930,15 @@
               </object>
             </child>
             <child>
-              <object class="AdwSwitchRow" id="sr-native-media-controls-enhanced">
-                <property name="title" translatable="yes">Enhance media controls</property>
-                <property name="subtitle" translatable="yes">Use MediaShell styling for visible native controls and the lock screen on GNOME 49+</property>
+              <object class="AdwSwitchRow" id="sr-native-controls-hide">
+                <property name="title" translatable="yes">Hide native control</property>
+                <property name="subtitle" translatable="yes">Hide the media controls banner from the notification center</property>
               </object>
             </child>
             <child>
-              <object class="AdwSwitchRow" id="sr-native-media-controls-hidden">
-                <property name="title" translatable="yes">Hide media controls</property>
-                <property name="subtitle" translatable="yes">Hide native media controls from the notification center only</property>
+              <object class="AdwSwitchRow" id="sr-native-controls-enhance">
+                <property name="title" translatable="yes">Enhanced native control</property>
+                <property name="subtitle" translatable="yes">Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen</property>
               </object>
             </child>
           </object>

@@ -1,18 +1,18 @@
 /**
  * @file adapter.js
- * @module shell.private.gnomeShell.mediaControls.adapter
+ * @module shell.private.gnomeShell.nativeControls.adapter
  *
- * Selects and owns the private GNOME Shell media-controls implementation for
+ * Selects and owns the private GNOME Shell native controls implementation for
  * the active session profile. Hide and Enhance are independent user choices:
- * Hide owns the notification-list visibility policy, while Enhance can project
- * MediaShell presentation onto any supported native media surface.
+ * Hide owns notification center banner visibility, while Enhance can project
+ * MediaShell presentation onto any supported native control surface.
  */
 
 import { createLogger } from "../../../../shared/logging/logger.js";
-import EnhancedMediaControls from "./enhance.js";
-import HiddenMediaControls from "./hide.js";
+import EnhanceNativeControls from "./enhance.js";
+import HideNativeControls from "./hide.js";
 
-const logger = createLogger("NativeMediaControlsAdapter");
+const logger = createLogger("NativeControlsAdapter");
 
 const SessionProfiles = Object.freeze({
   USER: "user",
@@ -20,18 +20,18 @@ const SessionProfiles = Object.freeze({
 });
 
 const Implementations = Object.freeze({
-  HIDDEN_NOTIFICATION_LIST: "hidden-notification-list",
-  ENHANCED_NOTIFICATION_LIST: "enhanced-notification-list",
-  ENHANCED_LOCK_SCREEN: "enhanced-lock-screen",
+  HIDE_NOTIFICATION_CENTER: "hide-notification-center",
+  ENHANCE_NOTIFICATION_CENTER: "enhance-notification-center",
+  ENHANCE_LOCK_SCREEN: "enhance-lock-screen",
 });
 
 function resolveImplementation(profile, hide, enhance, mediaRuntime) {
   if (profile === SessionProfiles.USER) {
-    // Hiding the notification-list surface takes precedence there, but does not
-    // disable lock-screen enhancement in another session profile.
-    if (hide) return Implementations.HIDDEN_NOTIFICATION_LIST;
+    // Hide takes precedence in the notification center, but does not disable
+    // lock-screen Enhance in another session profile.
+    if (hide) return Implementations.HIDE_NOTIFICATION_CENTER;
     if (enhance && mediaRuntime?.initialized)
-      return Implementations.ENHANCED_NOTIFICATION_LIST;
+      return Implementations.ENHANCE_NOTIFICATION_CENTER;
     return null;
   }
 
@@ -39,17 +39,17 @@ function resolveImplementation(profile, hide, enhance, mediaRuntime) {
     profile === SessionProfiles.UNLOCK_DIALOG &&
     enhance &&
     mediaRuntime?.initialized &&
-    EnhancedMediaControls.supportsLockScreen()
+    EnhanceNativeControls.supportsLockScreen()
   )
-    return Implementations.ENHANCED_LOCK_SCREEN;
+    return Implementations.ENHANCE_LOCK_SCREEN;
 
   return null;
 }
 
-/** Owns the active private GNOME Shell media-controls implementation. */
-export default class GnomeShellMediaControlsAdapter {
-  static supportsLockScreen() {
-    return EnhancedMediaControls.supportsLockScreen();
+/** Owns the active private GNOME Shell native controls implementation. */
+export default class GnomeShellNativeControlsAdapter {
+  static supportsLockScreenEnhance() {
+    return EnhanceNativeControls.supportsLockScreen();
   }
 
   constructor() {
@@ -70,7 +70,7 @@ export default class GnomeShellMediaControlsAdapter {
       this.reset();
       this.implementationKind = implementationKind;
       logger.debug(
-        "Native media integration changed",
+        "Native controls integration changed",
         previousKind ?? "default",
         "→",
         implementationKind ?? "default",
@@ -86,14 +86,14 @@ export default class GnomeShellMediaControlsAdapter {
 
   createImplementation(implementationKind, mediaRuntime) {
     switch (implementationKind) {
-      case Implementations.HIDDEN_NOTIFICATION_LIST:
-        return new HiddenMediaControls();
-      case Implementations.ENHANCED_NOTIFICATION_LIST:
-        return EnhancedMediaControls.createNotificationList(
+      case Implementations.HIDE_NOTIFICATION_CENTER:
+        return new HideNativeControls();
+      case Implementations.ENHANCE_NOTIFICATION_CENTER:
+        return EnhanceNativeControls.createNotificationCenter(
           this.createEnhanceOptions(mediaRuntime),
         );
-      case Implementations.ENHANCED_LOCK_SCREEN:
-        return EnhancedMediaControls.createLockScreen(
+      case Implementations.ENHANCE_LOCK_SCREEN:
+        return EnhanceNativeControls.createLockScreen(
           this.createEnhanceOptions(mediaRuntime),
         );
       default:

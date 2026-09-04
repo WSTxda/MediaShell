@@ -10,7 +10,7 @@ This document describes the durable architecture. Implementation conventions and
 2. **The owner of a resource owns its teardown.** Signals, GLib sources, cancellables, actors, private API overrides, asynchronous generations, caches, and sessions are destroyed by the object that creates them.
 3. **MPRIS/D-Bus owns endpoint truth.** Desktop application identity may corroborate presentation and app actions; it does not decide whether an MPRIS endpoint exists.
 4. **Shared means cross-process or toolkit-independent.** Code used by Popup and Top Bar is not automatically `shared`; both surfaces run in the Shell process and normally reuse Shell media/UI capabilities instead.
-5. **Surfaces compose capabilities.** Popup, Top Bar, native GNOME media integration, and any future surface consume the same runtime instead of adding new MPRIS, artwork, cache, selection, or playback implementations.
+5. **Surfaces compose capabilities.** Popup, Top Bar, GNOME native controls integration, and any future surface consume the same runtime instead of adding new MPRIS, artwork, cache, selection, or playback implementations.
 6. **Private Shell APIs are quarantined.** The MediaShell core never imports its private GNOME Shell adapters. Private adapters consume the public MediaShell runtime and absorb version-specific Shell internals.
 
 ## Repository and process boundaries
@@ -54,7 +54,7 @@ It owns extension-lifetime resources:
 - `MediaShellSettings`;
 - session-mode subscription;
 - one `MediaRuntime`;
-- one `NativeMediaControlsIntegration` boundary.
+- one `NativeControlsIntegration` boundary.
 
 Session modes gate presentation and input without rebuilding the canonical media runtime:
 
@@ -67,12 +67,12 @@ ExtensionController
       │    ├── InputActionDispatcher
       │    ├── GlobalShortcuts
       │    ├── MediaShellIndicator
-      │    └── notification-list native integration
+      │    └── notification center native controls integration
       │
       ├── unlock-dialog
       │    ├── keep an existing MediaRuntime alive
       │    ├── no Top Bar or global shortcuts
-      │    └── optional enhanced lock-screen adapter on Shell 49+
+      │    └── optional native controls Enhance adapter on the lock screen on Shell 49+
       │
       └── unsupported mode
            └── tear down MediaShell runtime state
@@ -208,7 +208,7 @@ ArtworkService
               └── coalesced pruning
 ```
 
-Popup, Top Bar, and native enhancement request artwork from the same service. They do not know whether the result came from disk, network, a local file, a thumbnail, or another consumer's in-flight request.
+Popup, Top Bar, and native controls Enhance request artwork from the same service. They do not know whether the result came from disk, network, a local file, a thumbnail, or another consumer's in-flight request.
 
 Each visual owner still owns its own actor, geometry, request generation, cancellable, animation, and stale-result rejection because those lifecycles are surface-specific.
 
@@ -228,18 +228,18 @@ The Shell runtime exposes owner-scoped views:
 
 ```text
 MediaShellSettings
-├── popup        → PopupContent
-├── topBar       → TopBarContent
-├── panel        → ExtensionController / panel placement
-├── interactions → pointer/input behavior
-├── integration  → native media controls visibility/enhancement
-├── media        → MediaRuntime blocklist/artwork cache
-└── keybindings  → GNOME global shortcut registration
+├── popup          → PopupContent
+├── topBar         → TopBarContent
+├── panel          → ExtensionController / panel placement
+├── interactions   → pointer/input behavior
+├── nativeControls → NativeControlsIntegration Hide/Enhance
+├── media          → MediaRuntime blocklist/artwork cache
+└── keybindings    → GNOME global shortcut registration
 ```
 
 There is no global settings-to-widget action table and no property injection onto `ExtensionController`. Each owner observes only the settings it understands and converts a relevant change into its own local reconciliation.
 
-Native GNOME media controls expose independent Hide and Enhance settings because they govern different surfaces: Hide controls notification-list visibility, while Enhance styles visible native controls and can also project onto the supported lock-screen surface. When both are enabled, the notification-list surface stays hidden and lock-screen enhancement remains available on GNOME Shell 49+.
+GNOME native controls expose independent Hide and Enhance settings because they govern different surfaces: Hide removes the media control notification banner from the notification center, while Enhance applies MediaShell presentation to a visible notification banner and to the supported lock screen surface. When both are enabled, the notification center banner stays absent while lock screen Enhance remains available on GNOME Shell 49+.
 
 ## UI surfaces and incremental reconciliation
 
@@ -281,18 +281,18 @@ Reusable Shell presentation primitives live under `src/shell/ui/components/`. Su
 Normal MediaShell code reaches private Shell behavior only through public integration boundaries:
 
 ```text
-shell/integrations/nativeMediaControls.js
+shell/integrations/nativeControls.js
         ↓
-private/gnomeShell/mediaControls/adapter.js
+private/gnomeShell/nativeControls/adapter.js
 
 shell/integrations/panelMenu.js
         ↓
 private/gnomeShell/panelMenu/compatibility.js
 ```
 
-All direct notification-media internals are confined to the media-controls compatibility module. PanelMenu `_clickGesture` compatibility is confined to its own adapter. The validator rejects direct imports of the private tree from other normal modules.
+All direct internals for notification center and lock screen native controls are confined to `private/gnomeShell/nativeControls/compatibility.js`. Exact upstream private identifiers such as `MediaMessage`, `_mediaControls`, `_playerToMessage`, and `_players` remain unchanged at that compatibility boundary; MediaShell vocabulary outside it uses native controls, notification center, notification banner, Hide, and Enhance. PanelMenu `_clickGesture` compatibility is confined to its own adapter. The validator rejects direct imports of the private tree from other normal modules.
 
-Hidden and Enhanced integrations are consumers of MediaShell capabilities. Their settings are independent: Hide owns notification-list visibility, while Enhance can style the notification list and the supported lock-screen surface. This allows the notification-list controls to stay hidden while lock-screen controls remain enhanced. Enhanced presentation receives injected player, playback, and artwork capabilities; it does not become a second MPRIS implementation. Unsupported private structures fail open by preserving/restoring native GNOME behavior.
+Hide and Enhance are consumers of MediaShell capabilities. Their settings are independent: Hide owns notification center banner removal, while Enhance owns MediaShell presentation on notification banners and on the supported lock screen surface. This allows the notification center banner to stay absent while lock screen Enhance remains active. Enhance receives injected player, playback, and artwork capabilities; it does not become a second MPRIS implementation. Unsupported private structures fail open by preserving or restoring native GNOME behavior.
 
 ## Preferences process
 

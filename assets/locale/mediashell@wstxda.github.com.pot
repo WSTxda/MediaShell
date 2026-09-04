@@ -325,8 +325,8 @@ msgstr ""
 msgid "Playback speed"
 msgstr ""
 
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:197
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:210
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
 msgid "Media"
 msgstr ""
 
@@ -664,35 +664,35 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr ""
 
 #: assets/ui/prefs.ui:905
-msgid "Native media controls"
+msgid "Native controls"
 msgstr ""
 
 #: assets/ui/prefs.ui:906
-msgid "Configure GNOME's built-in media controls"
+msgid "Configure the default media controls in the notification center"
 msgstr ""
 
 #: assets/ui/prefs.ui:911
-msgid "Private GNOME Shell integration"
+msgid "Private API integration"
 msgstr ""
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later."
+msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
 msgstr ""
 
 #: assets/ui/prefs.ui:934
-msgid "Enhance media controls"
+msgid "Hide native control"
 msgstr ""
 
 #: assets/ui/prefs.ui:935
-msgid "Use MediaShell styling for visible native controls and the lock screen on GNOME 49+"
+msgid "Hide the media controls banner from the notification center"
 msgstr ""
 
 #: assets/ui/prefs.ui:940
-msgid "Hide media controls"
+msgid "Enhanced native control"
 msgstr ""
 
 #: assets/ui/prefs.ui:941
-msgid "Hide native media controls from the notification center only"
+msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
 msgstr ""
 
 #: assets/ui/prefs.ui:950

@@ -33,7 +33,8 @@ export default class MediaShellExtension extends Extension {
   }
 
   disable() {
-    // `unlock-dialog` is required only for the optional lock-screen media enhancement.
+    // `unlock-dialog` is required only for the optional native controls
+    // Enhance surface on the lock screen.
     const extensionController = this.extensionController;
     this.extensionController = null;
     extensionController?.destroy();

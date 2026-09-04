@@ -1,72 +1,74 @@
 /**
  * @file hide.js
- * @module shell.private.gnomeShell.mediaControls.hide
+ * @module shell.private.gnomeShell.nativeControls.hide
  *
- * Reversibly suppresses native notification-list media messages through the
- * compatibility contract. It owns every override and restores native players
- * when the mode, owner, session profile, or extension lifecycle changes.
+ * Reversibly removes native media control notification banners from the
+ * notification center
+ * through the compatibility contract. It owns every override and restores the
+ * native banners when the setting, owner, session profile, or extension
+ * lifecycle changes.
  */
 
 import { createLogger } from "../../../../shared/logging/logger.js";
-import { resolveNotificationListMediaContext } from "./compatibility.js";
+import { resolveNotificationCenterContext } from "./compatibility.js";
 
-const logger = createLogger("HiddenNativeMediaControls");
+const logger = createLogger("HideNativeControls");
 
-export default class HiddenMediaControls {
+export default class HideNativeControls {
   constructor() {
     this.context = null;
     this.removePlayerOverrides = null;
     this.ownerDestroySignalId = null;
-    this.hiddenPlayers = new Set();
+    this.removedPlayers = new Set();
   }
 
   reconcile() {
     try {
       this.reconcileContext();
     } catch (error) {
-      this.restoreNativeMediaControls();
+      this.restoreNotificationBanners();
       logger.warnOnce(
-        "notification-list-reconcile-failed",
-        "GNOME Shell media controls could not be hidden; preserving native controls",
+        "notification-center-hide-reconcile-failed",
+        "GNOME Shell notification center Hide could not be reconciled; preserving native controls",
         error,
       );
     }
   }
 
   reconcileContext() {
-    const context = resolveNotificationListMediaContext();
+    const context = resolveNotificationCenterContext();
     if (!context) {
-      this.restoreNativeMediaControls();
+      this.restoreNotificationBanners();
       logger.warnOnce(
-        "notification-list-context-unavailable",
-        "GNOME Shell notification-list media controls could not be resolved",
+        "notification-center-context-unavailable",
+        "GNOME Shell notification center native controls could not be resolved for Hide",
       );
       return;
     }
 
     if (this.context?.owner === context.owner && this.removePlayerOverrides) {
-      this.removeCurrentMediaControls();
+      this.removeCurrentNotificationBanners();
       return;
     }
 
-    this.restoreNativeMediaControls();
-    if (this.applyPatch(context)) this.removeCurrentMediaControls();
+    this.restoreNotificationBanners();
+    if (this.applyPatch(context)) this.removeCurrentNotificationBanners();
   }
 
   applyPatch(context) {
-    const hiddenPlayers = this.hiddenPlayers;
+    const removedPlayers = this.removedPlayers;
     let removePlayerOverrides = null;
     let ownerDestroySignalId = null;
 
     try {
       removePlayerOverrides = context.installPlayerOverrides({
         onAddPlayer: (player) => {
-          hiddenPlayers.add(player);
+          removedPlayers.add(player);
           return undefined;
         },
         onRemovePlayer: (player) => {
-          hiddenPlayers.delete(player);
-          if (!context.hasMessage(player)) return undefined;
+          removedPlayers.delete(player);
+          if (!context.hasBanner(player)) return undefined;
           return context.callOriginalRemovePlayer(player);
         },
       });
@@ -77,15 +79,15 @@ export default class HiddenMediaControls {
         this.removePlayerOverrides = null;
         this.ownerDestroySignalId = null;
         removePlayerOverrides();
-        hiddenPlayers.clear();
+        removedPlayers.clear();
       });
     } catch (error) {
       if (ownerDestroySignalId !== null)
         context.owner.disconnect(ownerDestroySignalId);
       removePlayerOverrides?.();
       logger.warnOnce(
-        "notification-list-patch-failed",
-        "Failed to patch GNOME Shell notification-list media controls",
+        "notification-center-hide-patch-failed",
+        "Failed to patch GNOME Shell notification center native controls for Hide",
         error,
       );
       return false;
@@ -97,25 +99,25 @@ export default class HiddenMediaControls {
     return true;
   }
 
-  removeCurrentMediaControls() {
+  removeCurrentNotificationBanners() {
     const context = this.context;
     if (!context) return;
 
-    for (const player of context.getPlayersWithMessages()) {
-      this.hiddenPlayers.add(player);
+    for (const player of context.getPlayersWithBanners()) {
+      this.removedPlayers.add(player);
       try {
         context.callOriginalRemovePlayer(player);
       } catch (error) {
         logger.warnOnce(
-          "remove-native-media-control",
-          "Failed to hide a GNOME Shell media control",
+          "notification-center-hide-banner-failed",
+          "Failed to hide a GNOME Shell native notification banner",
           error,
         );
       }
     }
   }
 
-  restoreNativeMediaControls() {
+  restoreNotificationBanners() {
     const context = this.context;
     const removePlayerOverrides = this.removePlayerOverrides;
     const ownerDestroySignalId = this.ownerDestroySignalId;
@@ -129,30 +131,30 @@ export default class HiddenMediaControls {
     removePlayerOverrides?.();
 
     if (!context) {
-      this.hiddenPlayers.clear();
+      this.removedPlayers.clear();
       return;
     }
 
     const players = context.getPlayers();
     const currentPlayers = players ? new Set(players) : null;
-    for (const player of this.hiddenPlayers) {
+    for (const player of this.removedPlayers) {
       if (currentPlayers && !currentPlayers.has(player)) continue;
-      if (context.hasMessage(player)) continue;
+      if (context.hasBanner(player)) continue;
 
       try {
         context.callOriginalAddPlayer(player);
       } catch (error) {
         logger.warnOnce(
-          "restore-native-media-control",
-          "Failed to restore a GNOME Shell media control",
+          "notification-center-restore-banner-failed",
+          "Failed to restore a GNOME Shell native notification banner after Hide",
           error,
         );
       }
     }
-    this.hiddenPlayers.clear();
+    this.removedPlayers.clear();
   }
 
   destroy() {
-    this.restoreNativeMediaControls();
+    this.restoreNotificationBanners();
   }
 }

@@ -231,10 +231,10 @@ Do not solve a local update problem by rebuilding the entire indicator, Popup, o
 
 ## Private GNOME Shell APIs
 
-Private media-control fields/methods belong only in:
+Private native controls fields and methods belong only in:
 
 ```text
-src/shell/private/gnomeShell/mediaControls/compatibility.js
+src/shell/private/gnomeShell/nativeControls/compatibility.js
 ```
 
 PanelMenu private click-gesture compatibility belongs under:
@@ -291,8 +291,8 @@ Minimum release-oriented scenarios include:
 - seekable and non-seekable players;
 - controls toggled live from Preferences;
 - artwork cache on/off, local and remote artwork;
-- native media Hide/Enhance combinations, including both enabled together;
-- lock/unlock enhancement where supported;
+- native controls Hide/Enhance combinations, including both enabled together;
+- lock/unlock Enhance where supported;
 - reduced-motion enabled/disabled;
 - extension disable while asynchronous artwork/MPRIS work is active.
 

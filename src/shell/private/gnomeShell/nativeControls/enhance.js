@@ -1,42 +1,43 @@
 /**
  * @file enhance.js
- * @module shell.private.gnomeShell.mediaControls.enhance
+ * @module shell.private.gnomeShell.nativeControls.enhance
  *
- * Reversibly enhances one GNOME Shell media surface by projecting injected
- * MediaShell players, artwork, and playback capabilities onto private native
- * messages. The implementation never becomes an authority for MPRIS state.
+ * Applies and reverses Enhance on one GNOME Shell native control surface by
+ * projecting injected MediaShell players, artwork, and playback capabilities
+ * onto private notification banners. The implementation never becomes an
+ * authority for MPRIS state.
  */
 
 import GLib from "gi://GLib";
 
 import { createLogger } from "../../../../shared/logging/logger.js";
-import EnhancedMediaMessageBinding from "./messageBinding.js";
+import EnhanceNotificationBannerBinding from "./notificationBannerBinding.js";
 import {
   connectLockScreenShown,
-  resolveLockScreenMediaContext,
-  resolveMediaMessageContext,
-  resolveNotificationListMediaContext,
-  supportsLockScreenMediaContext,
+  resolveLockScreenContext,
+  resolveNotificationBannerContext,
+  resolveNotificationCenterContext,
+  supportsLockScreenContext,
 } from "./compatibility.js";
-import MediaMessageGrouping from "./grouping.js";
+import NotificationBannerGrouping from "./notificationBannerGrouping.js";
 
-const logger = createLogger("EnhancedNativeMediaControls");
+const logger = createLogger("EnhanceNativeControls");
 
-const NOTIFICATION_LIST_CONFIG = Object.freeze({
-  resolveContext: resolveNotificationListMediaContext,
+const NOTIFICATION_CENTER_CONFIG = Object.freeze({
+  resolveContext: resolveNotificationCenterContext,
   grouping: true,
   watchLockScreen: false,
   warnUnavailable: true,
-  unavailableWarningKey: "notification-list-context-unavailable",
+  unavailableWarningKey: "notification-center-context-unavailable",
   unavailableWarningMessage:
-    "GNOME Shell notification-list media messages could not be resolved for enhancement",
-  reconcileWarningKey: "notification-list-reconcile-failed",
+    "GNOME Shell notification center banners could not be resolved for Enhance",
+  reconcileWarningKey: "notification-center-reconcile-failed",
   reconcileWarningMessage:
-    "GNOME Shell notification-list media enhancement could not be reconciled; preserving native controls",
+    "GNOME Shell notification center Enhance could not be reconciled; preserving native controls",
 });
 
 const LOCK_SCREEN_CONFIG = Object.freeze({
-  resolveContext: resolveLockScreenMediaContext,
+  resolveContext: resolveLockScreenContext,
   grouping: false,
   watchLockScreen: true,
   warnUnavailable: false,
@@ -44,21 +45,21 @@ const LOCK_SCREEN_CONFIG = Object.freeze({
   unavailableWarningMessage: null,
   reconcileWarningKey: "lock-screen-reconcile-failed",
   reconcileWarningMessage:
-    "GNOME Shell lock-screen media enhancement could not be reconciled; preserving native controls",
+    "GNOME Shell lock screen Enhance could not be reconciled; preserving native controls",
 });
 
-/** Owns enhancement bindings for one private GNOME Shell media surface. */
-export default class EnhancedMediaControls {
+/** Owns Enhance bindings for one private GNOME Shell native control surface. */
+export default class EnhanceNativeControls {
   static supportsLockScreen() {
-    return supportsLockScreenMediaContext();
+    return supportsLockScreenContext();
   }
 
-  static createNotificationList(options) {
-    return new EnhancedMediaControls(options, NOTIFICATION_LIST_CONFIG);
+  static createNotificationCenter(options) {
+    return new EnhanceNativeControls(options, NOTIFICATION_CENTER_CONFIG);
   }
 
   static createLockScreen(options) {
-    return new EnhancedMediaControls(options, LOCK_SCREEN_CONFIG);
+    return new EnhanceNativeControls(options, LOCK_SCREEN_CONFIG);
   }
 
   constructor(
@@ -120,7 +121,7 @@ export default class EnhancedMediaControls {
       this.attachContext(context);
     }
 
-    if (this.config.grouping) this.reconcileNotificationGroupingSafely();
+    if (this.config.grouping) this.reconcileNotificationBannerGroupingSafely();
     this.reconcileBindings();
   }
 
@@ -151,9 +152,9 @@ export default class EnhancedMediaControls {
     });
   }
 
-  getPlayerMessages() {
-    if (this.grouping) return this.grouping.getPlayerMessages();
-    return this.context ? this.context.getPlayerMessages() : [];
+  getPlayerBanners() {
+    if (this.grouping) return this.grouping.getPlayerBanners();
+    return this.context ? this.context.getPlayerBanners() : [];
   }
 
   reconcileBindings() {
@@ -164,80 +165,80 @@ export default class EnhancedMediaControls {
         .filter((player) => player?.busName)
         .map((player) => [player.busName, player]),
     );
-    const currentMessages = new Set();
+    const currentBanners = new Set();
 
-    for (const [_nativePlayer, message] of this.getPlayerMessages()) {
-      if (!message) continue;
-      currentMessages.add(message);
+    for (const [_nativePlayer, banner] of this.getPlayerBanners()) {
+      if (!banner) continue;
+      currentBanners.add(banner);
 
       let bindingKey = "unknown";
       try {
-        const existingBinding = this.bindings.get(message);
+        const existingBinding = this.bindings.get(banner);
         if (existingBinding?.active) {
           const player = playersByBusName.get(existingBinding.busName) ?? null;
           if (existingBinding.player === player) {
             existingBinding.schedulePresentationSync();
             continue;
           }
-          this.removeBinding(message);
+          this.removeBinding(banner);
         }
 
-        const messageContext = resolveMediaMessageContext(message);
-        if (!messageContext) continue;
-        bindingKey = messageContext.busName;
+        const bannerContext = resolveNotificationBannerContext(banner);
+        if (!bannerContext) continue;
+        bindingKey = bannerContext.busName;
 
-        const player = playersByBusName.get(messageContext.busName) ?? null;
+        const player = playersByBusName.get(bannerContext.busName) ?? null;
         if (!player) continue;
 
-        this.createBinding(message, messageContext, player);
+        this.createBinding(banner, bannerContext, player);
       } catch (error) {
-        this.removeBinding(message);
+        this.removeBinding(banner);
         logger.warnOnce(
-          `message-binding:${bindingKey}`,
-          "A GNOME Shell media message could not be enhanced; keeping that message native",
+          `banner-binding:${bindingKey}`,
+          "A GNOME Shell notification banner could not use Enhance; keeping that banner native",
           error,
         );
       }
     }
 
-    for (const [message, binding] of [...this.bindings.entries()]) {
-      if (!currentMessages.has(message) || !binding.active)
-        this.removeBinding(message, {
-          restoreNative: currentMessages.has(message),
+    for (const [banner, binding] of [...this.bindings.entries()]) {
+      if (!currentBanners.has(banner) || !binding.active)
+        this.removeBinding(banner, {
+          restoreNative: currentBanners.has(banner),
         });
     }
   }
 
-  reconcileNotificationGroupingSafely() {
+  reconcileNotificationBannerGroupingSafely() {
     try {
-      this.reconcileNotificationGrouping();
+      this.reconcileNotificationBannerGrouping();
     } catch (error) {
       this.groupingFailed = true;
-      this.destroyNotificationGrouping();
+      this.destroyNotificationBannerGrouping();
       logger.warnOnce(
-        "notification-list-grouping-reconcile-failed",
-        "GNOME Shell media-message grouping could not be reconciled; keeping enhanced messages individual",
+        "notification-center-grouping-reconcile-failed",
+        "GNOME Shell notification banner grouping could not be reconciled; keeping Enhance banners individual",
         error,
       );
     }
   }
 
-  reconcileNotificationGrouping() {
+  reconcileNotificationBannerGrouping() {
     if (!this.context || !this.config.grouping) {
-      this.destroyNotificationGrouping();
+      this.destroyNotificationBannerGrouping();
       return;
     }
 
     if (this.groupingFailed) return;
 
     if (!this.grouping) {
-      if (this.context.getPlayerMessages().length === 0) return;
+      if (this.context.getPlayerBanners().length === 0) return;
 
-      const grouping = MediaMessageGrouping.create(this.context, {
+      const grouping = NotificationBannerGrouping.create(this.context, {
         beforeTakeOwnership: () =>
           this.destroyBindings({ restoreNative: false }),
-        onMessageRemoving: (message) =>
-          this.removeBinding(message, { restoreNative: false }),
+        onBannerRemoving: (banner) =>
+          this.removeBinding(banner, { restoreNative: false }),
         onChanged: () => this.scheduleReconcile(),
         onInvalidated: (invalidatedGrouping) => {
           if (this.grouping !== invalidatedGrouping) return;
@@ -250,8 +251,8 @@ export default class EnhancedMediaControls {
       if (!grouping) {
         this.groupingFailed = true;
         logger.warnOnce(
-          "notification-list-grouping-context-unavailable",
-          "GNOME Shell media-message grouping is unavailable; keeping enhanced messages individual",
+          "notification-center-grouping-context-unavailable",
+          "GNOME Shell notification banner grouping is unavailable; keeping Enhance banners individual",
         );
         return;
       }
@@ -262,7 +263,7 @@ export default class EnhancedMediaControls {
     this.grouping.reconcile();
   }
 
-  destroyNotificationGrouping({ restoreNative = true } = {}) {
+  destroyNotificationBannerGrouping({ restoreNative = true } = {}) {
     const grouping = this.grouping;
     if (!grouping) return;
 
@@ -270,38 +271,38 @@ export default class EnhancedMediaControls {
     grouping.destroy({ restoreNative });
   }
 
-  createBinding(message, messageContext, player) {
-    const binding = new EnhancedMediaMessageBinding(messageContext, player, {
+  createBinding(banner, bannerContext, player) {
+    const binding = new EnhanceNotificationBannerBinding(bannerContext, player, {
       artworkService: this.artworkService,
       playbackController: this.playbackController,
       onDestroyed: (destroyedBinding) => {
-        if (this.bindings.get(message) === destroyedBinding) {
-          this.bindings.delete(message);
+        if (this.bindings.get(banner) === destroyedBinding) {
+          this.bindings.delete(banner);
           this.scheduleReconcile();
         }
       },
     });
 
     if (!binding.enable()) return;
-    this.bindings.set(message, binding);
+    this.bindings.set(banner, binding);
   }
 
-  removeBinding(message, { restoreNative = true } = {}) {
-    const binding = this.bindings.get(message);
+  removeBinding(banner, { restoreNative = true } = {}) {
+    const binding = this.bindings.get(banner);
     if (!binding) return;
 
-    this.bindings.delete(message);
+    this.bindings.delete(banner);
     binding.destroy({ restoreNative });
   }
 
   destroyBindings({ restoreNative = true } = {}) {
-    for (const [message] of [...this.bindings.entries()])
-      this.removeBinding(message, { restoreNative });
+    for (const [banner] of [...this.bindings.entries()])
+      this.removeBinding(banner, { restoreNative });
   }
 
   detachContext({ restoreNative = true } = {}) {
     if (this.config?.grouping)
-      this.destroyNotificationGrouping({ restoreNative });
+      this.destroyNotificationBannerGrouping({ restoreNative });
     this.destroyBindings({ restoreNative });
 
     const context = this.context;

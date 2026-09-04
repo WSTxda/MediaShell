@@ -321,8 +321,8 @@ msgstr "Žiadna"
 msgid "Playback speed"
 msgstr "Rýchlosť prehrávania"
 
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:197
-#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:210
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
+#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
 msgid "Media"
 msgstr "Médiá"
 
@@ -665,36 +665,36 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Nastavte, ako sa MediaShell integruje s GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native media controls"
-msgstr ""
+msgid "Native controls"
+msgstr "Natívne ovládacie prvky"
 
 #: assets/ui/prefs.ui:906
-msgid "Configure GNOME's built-in media controls"
-msgstr ""
+msgid "Configure the default media controls in the notification center"
+msgstr "Nastavte predvolené ovládanie médií v centre oznámení"
 
 #: assets/ui/prefs.ui:911
-msgid "Private GNOME Shell integration"
-msgstr ""
+msgid "Private API integration"
+msgstr "Integrácia pomocou súkromného API"
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later."
-msgstr ""
+msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
+msgstr "Tieto možnosti používajú na fungovanie súkromné API. Stabilita sa môže líšiť v závislosti od verzie GNOME alebo úprav distribúcie."
 
 #: assets/ui/prefs.ui:934
-msgid "Enhance media controls"
-msgstr "Vylepšiť ovládanie médií"
+msgid "Hide native control"
+msgstr "Skryť natívny ovládací prvok"
 
 #: assets/ui/prefs.ui:935
-msgid "Use MediaShell styling for visible native controls and the lock screen on GNOME 49+"
-msgstr ""
+msgid "Hide the media controls banner from the notification center"
+msgstr "Skryť banner ovládania médií z centra oznámení"
 
 #: assets/ui/prefs.ui:940
-msgid "Hide media controls"
-msgstr "Skryť ovládanie médií"
+msgid "Enhanced native control"
+msgstr "Vylepšený natívny ovládací prvok"
 
 #: assets/ui/prefs.ui:941
-msgid "Hide native media controls from the notification center only"
-msgstr ""
+msgid "Apply a modern and enhanced style to the media control banner in the notification center and on the lock screen"
+msgstr "Použiť moderný a vylepšený štýl na banner ovládania médií v centre oznámení a na uzamknutej obrazovke"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"
