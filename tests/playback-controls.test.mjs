@@ -31,7 +31,7 @@ import {
   SettingsKeys,
 } from "../src/shared/settings/contract.js";
 import { InputActions } from "../src/shared/input/types.js";
-import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/playbackState.js";
+import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import { WidgetFlags } from "../src/shell/ui/widgetFlags.js";
 import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
 import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";

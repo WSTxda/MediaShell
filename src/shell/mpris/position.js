@@ -1,19 +1,22 @@
 /**
- * @file positionProjection.js
- * @module shell.mpris.positionProjection
+ * @file position.js
+ * @module shell.mpris.position
  *
  * Pure playback-position normalization, track identity, and interpolation policy.
  *
- * PlaybackPositionTracker supplies clock values and D-Bus anchors, while this module
+ * MprisPositionTracker supplies clock values and D-Bus anchors, while this module
  * performs deterministic calculations that remain testable outside GNOME Shell.
  */
 
 import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "./protocol.js";
-import {
-  POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
-  POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,
-} from "./positionConstants.js";
-import { PlaybackStatus } from "./playbackState.js";
+import { PlaybackStatus } from "./protocol.js";
+
+
+/** Maximum age of a local projection before an exact Position refresh is requested. */
+export const POSITION_ESTIMATE_MAX_AGE_MICROSECONDS = 30 * 1000 * 1000;
+
+/** Maximum tolerated monotonic/wall-clock divergence before re-anchoring. */
+export const POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS = 2 * 1000 * 1000;
 
 function normalizeIdentityValue(value) {
   if (Array.isArray(value))

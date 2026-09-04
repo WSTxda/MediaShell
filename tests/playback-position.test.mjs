@@ -16,15 +16,15 @@ import {
 import {
   POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
   POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,
-} from "../src/shell/mpris/positionConstants.js";
-import { PlaybackStatus } from "../src/shell/mpris/playbackState.js";
+} from "../src/shell/mpris/position.js";
+import { PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import {
   normalizePlaybackPositionMicroseconds,
   normalizePositionPlaybackRate,
   normalizeTrackDurationMicroseconds,
   resolvePlaybackPositionEstimate,
   resolvePlaybackPositionTrackContext,
-} from "../src/shell/mpris/positionProjection.js";
+} from "../src/shell/mpris/position.js";
 import { runCases } from "./helpers.mjs";
 
 function estimate(overrides = {}) {

@@ -10,7 +10,7 @@
  */
 
 import { MprisMetadataKeys } from "../../mpris/protocol.js";
-import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import PopupProgressBarView from "./popupProgressBarView.js";
 

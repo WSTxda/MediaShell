@@ -1,14 +1,12 @@
 /**
- * @file metadata.js
- * @module shell.media.track.metadata
+ * @file presentation.js
+ * @module shell.media.track.presentation
  *
- * Normalizes untrusted MPRIS metadata into stable protocol and display values.
+ * Formats canonical MPRIS track metadata for MediaShell presentation.
  *
- * MprisMediaApp uses the canonical metadata object and revision helpers before
- * publishing state. PopupTrackInformation and TopBarTrackInformation use the
- * display helpers so both surfaces share field extraction, list formatting,
- * custom text handling, and missing-metadata rules without sharing actor code.
- * Every helper stays pure so the policy can be tested outside GNOME Shell.
+ * This layer owns configurable TrackInfo fields, list formatting, custom text,
+ * and single-line sanitization. Protocol normalization lives in shell/mpris, so
+ * UI surfaces share presentation rules without depending on raw D-Bus variants.
  */
 
 import { MprisMetadataKeys } from "../../mpris/protocol.js";
@@ -26,84 +24,8 @@ const METADATA_FIELD_KEYS = Object.freeze({
   [TrackInformationFields.TRACK_NUMBER]: MprisMetadataKeys.TRACK_NUMBER,
 });
 
-const TEXT_METADATA_KEYS = Object.freeze([
-  MprisMetadataKeys.TRACK_ID,
-  MprisMetadataKeys.ART_URL,
-  MprisMetadataKeys.URL,
-  MprisMetadataKeys.TITLE,
-  MprisMetadataKeys.ALBUM,
-  MprisMetadataKeys.CONTENT_CREATED,
-  MprisMetadataKeys.COMPOSER,
-]);
-
-const LIST_METADATA_KEYS = Object.freeze([
-  MprisMetadataKeys.ARTIST,
-  MprisMetadataKeys.ALBUM_ARTIST,
-  MprisMetadataKeys.GENRE,
-]);
-
-const INTEGER_METADATA_KEYS = Object.freeze([
-  MprisMetadataKeys.DISC_NUMBER,
-  MprisMetadataKeys.TRACK_NUMBER,
-]);
-
-const REVISION_METADATA_KEYS = Object.freeze([
-  MprisMetadataKeys.TRACK_ID,
-  MprisMetadataKeys.LENGTH,
-  MprisMetadataKeys.ART_URL,
-  MprisMetadataKeys.URL,
-  MprisMetadataKeys.TITLE,
-  MprisMetadataKeys.ARTIST,
-  MprisMetadataKeys.ALBUM,
-  MprisMetadataKeys.ALBUM_ARTIST,
-  MprisMetadataKeys.GENRE,
-  MprisMetadataKeys.CONTENT_CREATED,
-  MprisMetadataKeys.COMPOSER,
-  MprisMetadataKeys.DISC_NUMBER,
-  MprisMetadataKeys.TRACK_NUMBER,
-]);
-
 function unpackMetadataValue(value) {
   return value?.recursiveUnpack?.() ?? value?.deepUnpack?.() ?? value;
-}
-
-function normalizeProtocolText(value) {
-  const unpacked = unpackMetadataValue(value);
-  return typeof unpacked === "string" ? unpacked.trim() : "";
-}
-
-function normalizeProtocolTextList(value) {
-  const unpacked = unpackMetadataValue(value);
-  const values = Array.isArray(unpacked) ? unpacked : [unpacked];
-  return values.map((item) => normalizeProtocolText(item)).filter(Boolean);
-}
-
-function normalizeProtocolInteger(value) {
-  const unpacked = unpackMetadataValue(value);
-  if (
-    unpacked === null ||
-    unpacked === undefined ||
-    unpacked === "" ||
-    typeof unpacked === "boolean"
-  )
-    return null;
-  const numericValue = Number(unpacked);
-  return Number.isSafeInteger(numericValue) ? numericValue : null;
-}
-
-function normalizeProtocolLength(value) {
-  const unpacked = unpackMetadataValue(value);
-  if (
-    unpacked === null ||
-    unpacked === undefined ||
-    unpacked === "" ||
-    typeof unpacked === "boolean"
-  )
-    return null;
-  const numericValue = Number(unpacked);
-  return Number.isFinite(numericValue) && numericValue >= 0
-    ? numericValue
-    : null;
 }
 
 /**

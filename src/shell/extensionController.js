@@ -22,8 +22,8 @@ import {
   MprisOperationReasons,
   mprisOperationUnsupported,
 } from "./mpris/operationResult.js";
-import MprisProxyFactory from "./mpris/mprisProxyFactory.js";
-import MediaAppRegistry from "./mpris/mediaAppRegistry.js";
+import MprisProxyFactory from "./mpris/proxyFactory.js";
+import MprisPlayerRegistry from "./mpris/registry.js";
 import { executePlaybackControlAction } from "./mpris/playbackControlExecutor.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
 import GnomeShellEnhanceMediaControls from "./services/gnomeShellEnhanceMediaControls.js";
@@ -210,7 +210,7 @@ export default class ExtensionController {
     if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
       return;
 
-    this.mediaAppRegistry = new MediaAppRegistry(
+    this.mprisPlayerRegistry = new MprisPlayerRegistry(
       this.mprisProxyFactory,
       this.desktopAppResolver,
       {
@@ -220,8 +220,8 @@ export default class ExtensionController {
           this.handleActiveMediaAppChanged(mediaApp),
       },
     );
-    this.mediaAppRegistry.blockedAppIds = new Set(this.blockedAppIds);
-    await this.mediaAppRegistry.init();
+    this.mprisPlayerRegistry.blockedAppIds = new Set(this.blockedAppIds);
+    await this.mprisPlayerRegistry.init();
     if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
       return;
 
@@ -233,7 +233,7 @@ export default class ExtensionController {
       this.desktopAppResolver &&
       this.albumArtLoader &&
       this.mprisProxyFactory &&
-      this.mediaAppRegistry,
+      this.mprisPlayerRegistry,
     );
   }
 
@@ -243,7 +243,7 @@ export default class ExtensionController {
       this.gnomeShellEnhanceMediaControlsService ||
       this.gnomeShellHideMediaControlsService ||
       this.indicator ||
-      this.mediaAppRegistry ||
+      this.mprisPlayerRegistry ||
       this.mprisProxyFactory ||
       this.albumArtLoader ||
       this.desktopAppResolver,
@@ -278,7 +278,7 @@ export default class ExtensionController {
           this.rebuildIndicator();
         break;
       case SettingsAction.UPDATE_BLOCKED_APPS:
-        this.mediaAppRegistry
+        this.mprisPlayerRegistry
           ?.setBlockedAppIds(settingValue)
           .catch((error) =>
             logger.warn("Failed to apply the blocked-app list", error),
@@ -359,7 +359,7 @@ export default class ExtensionController {
   rebuildIndicator() {
     if (this.runtimeProfile !== RuntimeProfiles.USER) return;
 
-    const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
+    const mediaApp = this.mprisPlayerRegistry?.activeMediaApp ?? null;
     this.destroyIndicator();
     if (mediaApp) this.handleActiveMediaAppChanged(mediaApp);
   }
@@ -397,20 +397,20 @@ export default class ExtensionController {
   }
 
   getAvailableMediaApps() {
-    return this.mediaAppRegistry?.getAvailableMediaApps() ?? [];
+    return this.mprisPlayerRegistry?.getAvailableMediaApps() ?? [];
   }
 
   selectMediaApp(mediaApp) {
-    return this.mediaAppRegistry?.selectMediaApp(mediaApp) ?? false;
+    return this.mprisPlayerRegistry?.selectMediaApp(mediaApp) ?? false;
   }
 
   switchMediaApp() {
-    return this.mediaAppRegistry?.switchMediaApp() ?? false;
+    return this.mprisPlayerRegistry?.switchMediaApp() ?? false;
   }
 
   toggleMediaAppPin(mediaApp) {
     const pinStateChanged =
-      this.mediaAppRegistry?.toggleMediaAppPin(mediaApp) ?? false;
+      this.mprisPlayerRegistry?.toggleMediaAppPin(mediaApp) ?? false;
     if (pinStateChanged)
       this.indicator?.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
     return pinStateChanged;
@@ -423,7 +423,7 @@ export default class ExtensionController {
   executeInputAction(inputAction) {
     if (this.runtimeProfile !== RuntimeProfiles.USER) return;
 
-    const mediaApp = this.mediaAppRegistry?.activeMediaApp ?? null;
+    const mediaApp = this.mprisPlayerRegistry?.activeMediaApp ?? null;
     const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
     if (playbackAction)
       return executePlaybackControlAction(mediaApp, playbackAction);
@@ -488,7 +488,7 @@ export default class ExtensionController {
     this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
     this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
     this.destroyIndicator();
-    this.destroyOwnedComponent("mediaAppRegistry");
+    this.destroyOwnedComponent("mprisPlayerRegistry");
     this.destroyOwnedComponent("mprisProxyFactory");
     this.destroyOwnedComponent("albumArtLoader");
     this.destroyOwnedComponent("desktopAppResolver");

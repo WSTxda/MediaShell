@@ -1,8 +1,8 @@
 /**
- * @file mprisMediaApp.js
- * @module shell.mpris.mprisMediaApp
+ * @file player.js
+ * @module shell.mpris.player
  *
- * Models one MediaShell media app backed by an MPRIS service.
+ * Models one MPRIS player endpoint owned by a session-bus service.
  *
  * Each instance owns the root, Player, and Properties D-Bus proxies, cached
  * player properties, metadata
@@ -25,7 +25,7 @@
  *       ▼
  *   [destroyed]
  *
- * @see src/shell/mpris/playbackPositionTracker.js
+ * @see src/shell/mpris/positionTracker.js
  */
 
 import Gio from "gi://Gio";
@@ -35,46 +35,39 @@ import { DbusPropertiesMethods } from "./dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
-  MprisMetadataKeys,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
   MprisRootMethods,
   MprisRootProperties,
+  normalizeLoopStatus,
+  normalizeMprisString,
+  normalizePlaybackStatus,
   MPRIS_PLAYER_PROPERTY_NAMES,
   MPRIS_ROOT_PROPERTY_NAMES,
 } from "./protocol.js";
-import {
-  MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
-  MediaAppStateProperties,
-} from "../constants/mediaApp.js";
-import { MediaAppValidity } from "./playerValidity.js";
-import { LoopStatus, PlaybackStatus } from "./playbackState.js";
+import { LoopStatus, PlaybackStatus } from "./protocol.js";
 import {
   DBUS_CALL_TIMEOUT_MS,
+  MPRIS_EMPTY_STOPPED_GRACE_MS,
   MPRIS_INIT_POLL_INTERVAL_MS,
   MPRIS_INIT_TIMEOUT_MS,
-} from "../constants/mpris.js";
-import { finiteNumberOr } from "../../shared/format.js";
-import { normalizeAppIdentityHint } from "../media/identity/appIdentity.js";
-import {
-  createMprisMetadataRevision,
-  normalizeMprisMetadata,
-} from "../media/track/metadata.js";
-import { createLogger } from "../../shared/logging/logger.js";
-import {
-  metadataContainsTrack,
-  normalizeMprisTrackId,
-  normalizeLoopStatus,
-  normalizePlaybackStatus,
-  resolveMediaAppValidity,
-} from "./normalization.js";
-import { normalizePlaybackRateRange } from "./playbackRate.js";
-import {
+  MprisPlayerStateProperties,
+  MprisPlayerValidity,
   matchesMprisOwnerSnapshot,
   resolveMprisOwnerTransition,
-} from "./owner.js";
-import { resolvePlaybackPositionTrackContext } from "./positionProjection.js";
+  resolveMprisPlayerValidity,
+} from "./clientPolicy.js";
+import { finiteNumberOr } from "../../shared/format.js";
+import {
+  createMprisMetadataRevision,
+  createMprisTrack,
+  metadataContainsTrack,
+  normalizeMprisMetadata,
+} from "./metadata.js";
+import { createLogger } from "../../shared/logging/logger.js";
+import { normalizePlaybackRateRange } from "./playbackRate.js";
+import { resolvePlaybackPositionTrackContext } from "./position.js";
 import {
   MprisOperationReasons,
   mprisOperationCancelled,
@@ -83,11 +76,11 @@ import {
   mprisOperationUnsupported,
 } from "./operationResult.js";
 import { getOperationErrorName, isCancellationError } from "../utils/errors.js";
-import PlaybackPositionTracker from "./playbackPositionTracker.js";
+import MprisPositionTracker from "./positionTracker.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
-const logger = createLogger("MprisMediaApp");
+const logger = createLogger("MprisPlayer");
 const LOOP_STATUS_ORDER = Object.freeze([
   LoopStatus.NONE,
   LoopStatus.PLAYLIST,
@@ -96,14 +89,14 @@ const LOOP_STATUS_ORDER = Object.freeze([
 const LOOP_STATUS_VALUES = new Set(LOOP_STATUS_ORDER);
 
 /**
- * Models one MediaShell media app backed by an MPRIS service.
+ * Models one MPRIS player endpoint owned by a session-bus service.
  */
-export default class MprisMediaApp {
+export default class MprisPlayer {
   constructor(busName, mprisProxyFactory) {
     this.busName = busName;
     this.mprisProxyFactory = mprisProxyFactory;
     this.pinned = false;
-    this.isMediaAppInvalid = true;
+    this.isInvalid = true;
     this.propertyChangeListeners = new Map();
     this.nextPropertyChangeListenerId = 1;
     this.proxySignalConnections = [];
@@ -117,6 +110,7 @@ export default class MprisMediaApp {
     // Normalize proxy variants once; UI getters are intentionally allocation-free.
     this.state = Object.create(null);
     this.metadataRevision = "";
+    this.track = createMprisTrack();
     this.nameOwner = null;
     this.ownerGeneration = 0;
   }
@@ -145,7 +139,7 @@ export default class MprisMediaApp {
     this.adoptCurrentNameOwner(undefined, { refreshState: false });
     this.hydrateState(rootProxy, MPRIS_ROOT_PROPERTY_NAMES);
     this.hydrateState(playerProxy, MPRIS_PLAYER_PROPERTY_NAMES);
-    this.positionTracker = new PlaybackPositionTracker(
+    this.positionTracker = new MprisPositionTracker(
       propertiesProxy,
       this.operationCancellable,
     );
@@ -222,6 +216,7 @@ export default class MprisMediaApp {
     this.metadataRevision = hasStableMetadata
       ? createMprisMetadataRevision(metadata)
       : "";
+    this.track = hasStableMetadata ? createMprisTrack(metadata) : createMprisTrack();
     this.hasCurrentTrackMetadata = false;
     this.hasPresentedTrackMetadata ||= hasStableMetadata;
     this.positionTracker?.resetForOwnerChange();
@@ -467,23 +462,23 @@ export default class MprisMediaApp {
   reconcileValidity() {
     const hasIdentity = Boolean(this.identity || this.desktopEntry);
     const hasTrackMetadata = this.hasCurrentTrackMetadata;
-    const validity = resolveMediaAppValidity({
+    const validity = resolveMprisPlayerValidity({
       hasIdentity,
       hasTrackMetadata,
       hasPresentedTrackMetadata: this.hasPresentedTrackMetadata,
       playbackStatus: this.playbackStatus,
     });
 
-    if (validity === MediaAppValidity.INVALID) {
+    if (validity === MprisPlayerValidity.INVALID) {
       this.cancelMetadataInvalidation();
-      this.setMediaAppInvalid(true);
+      this.setInvalid(true);
       return;
     }
 
-    if (validity === MediaAppValidity.VALID) {
+    if (validity === MprisPlayerValidity.VALID) {
       if (hasTrackMetadata) this.hasPresentedTrackMetadata = true;
       this.cancelMetadataInvalidation();
-      this.setMediaAppInvalid(false);
+      this.setInvalid(false);
       return;
     }
 
@@ -493,7 +488,7 @@ export default class MprisMediaApp {
     if (this.metadataInvalidationSourceId !== null) return;
     this.metadataInvalidationSourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
-      MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
+      MPRIS_EMPTY_STOPPED_GRACE_MS,
       () => {
         this.metadataInvalidationSourceId = null;
         if (
@@ -501,7 +496,7 @@ export default class MprisMediaApp {
           !this.hasCurrentTrackMetadata &&
           this.playbackStatus === PlaybackStatus.STOPPED
         )
-          this.setMediaAppInvalid(true);
+          this.setInvalid(true);
         return GLib.SOURCE_REMOVE;
       },
     );
@@ -513,17 +508,18 @@ export default class MprisMediaApp {
     this.metadataInvalidationSourceId = null;
   }
 
-  setMediaAppInvalid(isInvalid) {
-    if (isInvalid === this.isMediaAppInvalid) return;
-    this.isMediaAppInvalid = isInvalid;
+  setInvalid(isInvalid) {
+    if (isInvalid === this.isInvalid) return;
+    this.isInvalid = isInvalid;
     this.emitPropertyChanged(
-      MediaAppStateProperties.IS_MEDIA_APP_INVALID,
+      MprisPlayerStateProperties.IS_INVALID,
       isInvalid,
     );
   }
 
   storeNormalizedMetadata(metadata, revision = null) {
     this.state[MprisPlayerProperties.METADATA] = metadata;
+    this.track = createMprisTrack(metadata);
     this.metadataRevision = revision ?? createMprisMetadataRevision(metadata);
     this.hasCurrentTrackMetadata = metadataContainsTrack(metadata);
     return metadata;
@@ -605,13 +601,13 @@ export default class MprisMediaApp {
   pin() {
     if (this.pinned) return;
     this.pinned = true;
-    this.emitPropertyChanged(MediaAppStateProperties.IS_PINNED, true);
+    this.emitPropertyChanged(MprisPlayerStateProperties.IS_PINNED, true);
   }
 
   unpin() {
     if (!this.pinned) return;
     this.pinned = false;
-    this.emitPropertyChanged(MediaAppStateProperties.IS_PINNED, false);
+    this.emitPropertyChanged(MprisPlayerStateProperties.IS_PINNED, false);
   }
 
   get isDestroyed() {
@@ -679,7 +675,7 @@ export default class MprisMediaApp {
     return Boolean(this.state[MprisPlayerProperties.CAN_CONTROL]);
   }
   get trackId() {
-    return normalizeMprisTrackId(this.metadata[MprisMetadataKeys.TRACK_ID]);
+    return this.track.id;
   }
   get canSetPosition() {
     return this.canControl && this.canSeek && this.trackId !== null;
@@ -707,12 +703,12 @@ export default class MprisMediaApp {
     return Boolean(this.state[MprisRootProperties.CAN_RAISE]);
   }
   get desktopEntry() {
-    return normalizeAppIdentityHint(
+    return normalizeMprisString(
       this.state[MprisRootProperties.DESKTOP_ENTRY],
     );
   }
   get identity() {
-    return normalizeAppIdentityHint(this.state[MprisRootProperties.IDENTITY]);
+    return normalizeMprisString(this.state[MprisRootProperties.IDENTITY]);
   }
 
   set loopStatus(value) {
@@ -1071,6 +1067,7 @@ export default class MprisMediaApp {
     this.positionTracker?.destroy();
     this.propertyChangeListeners.clear();
     this.state = null;
+    this.track = null;
     this.metadataRefreshPromise = null;
     this.hasCurrentTrackMetadata = false;
     this.rootProxy = null;

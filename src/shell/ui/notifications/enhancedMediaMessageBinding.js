@@ -19,7 +19,7 @@ import {
   MprisPlayerProperties,
 } from "../../mpris/protocol.js";
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";
-import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createAlbumArtRequest } from "../../media/artwork/policy.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";

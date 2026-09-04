@@ -17,15 +17,21 @@ import {
   PlaybackControlActions,
   RELATIVE_SEEK_SECONDS,
 } from "../src/shared/playback/controls.js";
-import { MediaAppValidity } from "../src/shell/mpris/playerValidity.js";
-import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/playbackState.js";
+import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import {
   metadataContainsTrack,
   normalizeMprisTrackId,
+} from "../src/shell/mpris/metadata.js";
+import {
+  MprisPlayerValidity,
+  matchesMprisOwnerSnapshot,
+  resolveMprisOwnerTransition,
+  resolveMprisPlayerValidity,
+} from "../src/shell/mpris/clientPolicy.js";
+import {
   normalizeLoopStatus,
   normalizePlaybackStatus,
-  resolveMediaAppValidity,
-} from "../src/shell/mpris/normalization.js";
+} from "../src/shell/mpris/protocol.js";
 import {
   MprisOperationReasons,
   MprisOperationStatuses,
@@ -37,10 +43,6 @@ import {
   mprisOperationUnsupported,
   normalizeMprisOperationResult,
 } from "../src/shell/mpris/operationResult.js";
-import {
-  matchesMprisOwnerSnapshot,
-  resolveMprisOwnerTransition,
-} from "../src/shell/mpris/owner.js";
 import {
   executePlaybackControlAction,
   resolveSeekOffsetMicroseconds,
@@ -252,7 +254,7 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
               hasPresentedTrackMetadata: false,
               playbackStatus: PlaybackStatus.PLAYING,
             },
-            MediaAppValidity.INVALID,
+            MprisPlayerValidity.INVALID,
           ],
           [
             {
@@ -261,7 +263,7 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
               hasPresentedTrackMetadata: false,
               playbackStatus: PlaybackStatus.STOPPED,
             },
-            MediaAppValidity.VALID,
+            MprisPlayerValidity.VALID,
           ],
           [
             {
@@ -270,7 +272,7 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
               hasPresentedTrackMetadata: false,
               playbackStatus: PlaybackStatus.PLAYING,
             },
-            MediaAppValidity.VALID,
+            MprisPlayerValidity.VALID,
           ],
           [
             {
@@ -279,7 +281,7 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
               hasPresentedTrackMetadata: true,
               playbackStatus: PlaybackStatus.STOPPED,
             },
-            MediaAppValidity.EMPTY_STOPPED_GRACE,
+            MprisPlayerValidity.EMPTY_STOPPED_GRACE,
           ],
           [
             {
@@ -288,11 +290,11 @@ test("untrusted MPRIS state normalizes to specification-safe visibility defaults
               hasPresentedTrackMetadata: false,
               playbackStatus: PlaybackStatus.STOPPED,
             },
-            MediaAppValidity.INVALID,
+            MprisPlayerValidity.INVALID,
           ],
         ];
         for (const [state, expected] of cases)
-          assert.equal(resolveMediaAppValidity(state), expected);
+          assert.equal(resolveMprisPlayerValidity(state), expected);
       },
     ],
   ]);

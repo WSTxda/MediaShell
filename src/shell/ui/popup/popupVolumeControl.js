@@ -6,7 +6,7 @@
  *
  * The component mirrors GNOME Shell's volume-row interaction: MPRIS property
  * updates resynchronize the slider and icon when no local drag owns the control,
- * while user changes are written through MprisMediaApp. The left endpoint toggles
+ * while user changes are written through MprisPlayer. The left endpoint toggles
  * mute and restores the last non-zero volume; the right endpoint raises volume by
  * a fixed popup-local step.
  */

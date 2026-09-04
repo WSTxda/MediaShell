@@ -5,7 +5,7 @@
  * Owns the MediaShell panel indicator, popup, and surface orchestration.
  *
  * ExtensionController mounts this actor into Main.panel and supplies active
- * media-app state from MediaAppRegistry. The class coalesces WidgetFlags into
+ * media-app state from MprisPlayerRegistry. The class coalesces WidgetFlags into
  * idle updates and delegates pointer gestures to IndicatorPointerHandler.
  */
 
@@ -19,7 +19,7 @@ import {
   MprisRootProperties,
 } from "../../mpris/protocol.js";
 import { GTypeNames } from "../../../shared/gobject.js";
-import { MediaAppStateProperties } from "../../constants/mediaApp.js";
+import { MprisPlayerStateProperties } from "../../mpris/clientPolicy.js";
 import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
@@ -245,7 +245,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.addMediaAppPropertyListener(MprisPlayerProperties.VOLUME, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_VOLUME_CONTROL);
     });
-    this.addMediaAppPropertyListener(MediaAppStateProperties.IS_PINNED, () => {
+    this.addMediaAppPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
       this.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
     });
     const updatePlaybackSpeedControl = () =>

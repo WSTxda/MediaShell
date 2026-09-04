@@ -1,12 +1,12 @@
 /**
- * @file mprisProxyFactory.js
- * @module shell.mpris.mprisProxyFactory
+ * @file proxyFactory.js
+ * @module shell.mpris.proxyFactory
  *
  * Loads bundled D-Bus introspection and creates typed MPRIS proxies.
  *
  * The factory owns the parsed introspection cache for one extension lifecycle and
  * creates root, player, properties, and bus-watch proxies with a shared
- * cancellable. MediaAppRegistry depends on it for every MPRIS endpoint it tracks.
+ * cancellable. MprisPlayerRegistry depends on it for every MPRIS endpoint it tracks.
  */
 
 import Gio from "gi://Gio";

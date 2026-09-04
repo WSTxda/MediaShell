@@ -18,7 +18,7 @@ import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
 } from "./visualizer/definitions.js";
-import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { PlaybackStatus } from "../../mpris/protocol.js";
 import {
   VisualizerSpectrumLayers,
   VisualizerStyles,

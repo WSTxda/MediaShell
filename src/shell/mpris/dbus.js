@@ -3,7 +3,7 @@
  * @module shell.mpris.dbus
  *
  * Defines the core D-Bus daemon and Properties interface contracts used by
- * MediaShell. MPRIS-specific names and property lists live in mpris.js.
+ * MediaShell. MPRIS-specific names and property lists live in protocol.js.
  */
 
 /** Interface name for the session D-Bus daemon used by ListNames and NameOwnerChanged. */

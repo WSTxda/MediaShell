@@ -9,13 +9,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { PlaybackStatus } from "../src/shell/mpris/playbackState.js";
+import { PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import {
   chooseActiveMediaApp,
   chooseNextMediaApp,
   chooseReconciledMediaApp,
   orderMediaAppsDeterministically,
-} from "../src/shell/mpris/mediaAppSelectionPolicy.js";
+} from "../src/shell/mpris/selection.js";
 import { runCases } from "./helpers.mjs";
 
 function mediaApp(
@@ -26,7 +26,7 @@ function mediaApp(
   return {
     busName,
     playbackStatus,
-    isMediaAppInvalid: invalid,
+    isInvalid: invalid,
     get isPinned() {
       return pinned;
     },

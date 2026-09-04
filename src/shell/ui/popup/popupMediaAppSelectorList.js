@@ -7,7 +7,7 @@
  * The list owns row creation, active-row styling, pin controls, and reveal
  * animation for the media app selector. It receives MediaApp state and the
  * lifecycle-scoped desktop-app resolver from the controller, then emits user
- * intent without changing MediaAppRegistry directly.
+ * intent without changing MprisPlayerRegistry directly.
  */
 
 import Clutter from "gi://Clutter";
