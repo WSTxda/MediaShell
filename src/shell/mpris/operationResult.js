@@ -97,7 +97,7 @@ export function isMprisOperationResult(value) {
 /**
  * Normalizes legacy/no-value delegates as successful completed operations.
  *
- * MprisMediaApp returns a full result, while this fallback keeps executor test
+ * MprisPlayer returns a full result, while this fallback keeps executor test
  * doubles and compatible third-party delegates from reintroducing undefined.
  */
 export function normalizeMprisOperationResult(value) {

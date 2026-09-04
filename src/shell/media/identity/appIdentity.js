@@ -11,7 +11,10 @@
 
 import { extractChromiumPwaAppIds } from "../../../shared/identity/browser.js";
 
-import { MPRIS_BUS_NAME_PREFIX } from "../../mpris/protocol.js";
+import {
+  MPRIS_BUS_NAME_PREFIX,
+  normalizeMprisString,
+} from "../../mpris/protocol.js";
 
 const DESKTOP_FILE_SUFFIX = ".desktop";
 const EPHEMERAL_BUS_SEGMENT_PATTERN =
@@ -24,11 +27,7 @@ const EPHEMERAL_BUS_SEGMENT_PATTERN =
  * @returns {string} Safe single-line string, or an empty string.
  */
 export function normalizeAppIdentityHint(value) {
-  if (typeof value !== "string") return "";
-  return value
-    .replace(/[\u0000-\u001f\u007f]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeMprisString(value);
 }
 
 /**

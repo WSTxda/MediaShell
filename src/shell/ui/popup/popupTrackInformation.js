@@ -14,7 +14,7 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { TrackInformationFields } from "../../../shared/ui/trackInformation.js";
-import { buildTrackInformationItems } from "../../media/track/metadata.js";
+import { buildTrackInformationItems } from "../../media/track/presentation.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import ScrollingLabel from "../scrollingLabel.js";
 

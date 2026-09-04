@@ -2,10 +2,10 @@
  * @file playbackControlExecutor.js
  * @module shell.mpris.playbackControlExecutor
  *
- * Executes resolved playback action IDs against the active MprisMediaApp.
+ * Executes resolved playback action IDs against the active MprisPlayer.
  *
  * This is the single Shell boundary used by popup, top bar, and input dispatch.
- * MprisMediaApp remains responsible for capability checks and all D-Bus calls.
+ * MprisPlayer remains responsible for capability checks and all D-Bus calls.
  */
 
 import {
@@ -74,7 +74,7 @@ export function resolveSeekOffsetMicroseconds(action) {
     : null;
 }
 
-/** Executes one canonical playback action against a MprisMediaApp-like object. */
+/** Executes one canonical playback action against a MprisPlayer-like object. */
 export async function executePlaybackControlAction(mediaApp, action) {
   const seekOffset = resolveSeekOffsetMicroseconds(action);
   if (seekOffset !== null) return executeDelegate(mediaApp, "seek", seekOffset);

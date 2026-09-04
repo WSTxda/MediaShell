@@ -1,11 +1,11 @@
 /**
- * @file playbackPositionTracker.js
- * @module shell.mpris.playbackPositionTracker
+ * @file positionTracker.js
+ * @module shell.mpris.positionTracker
  *
  * Tracks MPRIS position using exact reads, Seeked signals, and bounded projection.
  *
- * MprisMediaApp delegates position state here so UI components can render a live
- * estimate without polling D-Bus. Pure calculation stays in shared utilities;
+ * MprisPlayer delegates position state here so UI components can render a live
+ * estimate without polling D-Bus. Pure calculation stays in position.js;
  * this class owns Gio calls, clock snapshots, listener delivery, and lifecycle.
  */
 
@@ -17,20 +17,20 @@ import {
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerProperties,
 } from "./protocol.js";
-import { DBUS_CALL_TIMEOUT_MS } from "../constants/mpris.js";
-import { PlaybackStatus } from "./playbackState.js";
+import { DBUS_CALL_TIMEOUT_MS } from "./clientPolicy.js";
+import { PlaybackStatus } from "./protocol.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import {
   normalizePlaybackPositionMicroseconds,
   normalizePositionPlaybackRate,
   normalizeTrackDurationMicroseconds,
   resolvePlaybackPositionEstimate,
-} from "./positionProjection.js";
+} from "./position.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
-const logger = createLogger("PlaybackPositionTracker");
+const logger = createLogger("MprisPositionTracker");
 
 const DEFAULT_CLOCK = Object.freeze({
   getMonotonicTime: () => GLib.get_monotonic_time(),
@@ -40,7 +40,7 @@ const DEFAULT_CLOCK = Object.freeze({
 /**
  * Tracks MPRIS position using explicit reads, Seeked signals, and clock projection.
  */
-export default class PlaybackPositionTracker {
+export default class MprisPositionTracker {
   constructor(propertiesProxy, operationCancellable = null, clock = {}) {
     this.propertiesProxy = propertiesProxy;
     this.operationCancellable = operationCancellable;

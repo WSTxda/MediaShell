@@ -14,7 +14,7 @@ import {
   PlaybackControlIds,
   RELATIVE_SEEK_SECONDS,
 } from "../../../shared/playback/controls.js";
-import { LoopStatus } from "../../mpris/playbackState.js";
+import { LoopStatus } from "../../mpris/protocol.js";
 
 function withDetail(label, detail) {
   const normalizedDetail = String(detail ?? "").trim();

@@ -10,7 +10,7 @@
  * component preserves the original metadata width and Lock width contract.
  */
 
-import { buildTrackInformationText } from "../../media/track/metadata.js";
+import { buildTrackInformationText } from "../../media/track/presentation.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import ScrollingLabel from "../scrollingLabel.js";

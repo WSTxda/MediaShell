@@ -11,7 +11,7 @@ import St from "gi://St";
 
 import { IconNames } from "../../../shared/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
-import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { PlaybackStatus } from "../../mpris/protocol.js";
 import {
   calculateAlbumArtCornerRadius,
   createAlbumArtRequest,

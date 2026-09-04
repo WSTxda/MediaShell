@@ -1,8 +1,8 @@
 /**
- * @file mediaAppRegistry.js
- * @module shell.mpris.mediaAppRegistry
+ * @file registry.js
+ * @module shell.mpris.registry
  *
- * Discovers MPRIS bus names, owns MprisMediaApp instances, filters blocked apps,
+ * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
  * and selects the active media app.
  *
  * The registry watches NameOwnerChanged, creates media-app models through
@@ -25,29 +25,29 @@ import {
   MprisRootProperties,
 } from "./protocol.js";
 import {
-  MEDIA_APP_DISAPPEARANCE_GRACE_MS,
-  MediaAppStateProperties,
-} from "../constants/mediaApp.js";
-import { DBUS_LIST_NAMES_TIMEOUT_MS } from "../constants/mpris.js";
+  DBUS_LIST_NAMES_TIMEOUT_MS,
+  MPRIS_OWNER_HANDOFF_GRACE_MS,
+  MprisPlayerStateProperties,
+} from "./clientPolicy.js";
 import { normalizeUniqueStrings } from "../../shared/format.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { isCancellationError } from "../utils/errors.js";
-import MprisMediaApp from "./mprisMediaApp.js";
+import MprisPlayer from "./player.js";
 import {
   chooseNextMediaApp,
   chooseReconciledMediaApp,
   orderMediaAppsDeterministically,
-} from "./mediaAppSelectionPolicy.js";
+} from "./selection.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
-const logger = createLogger("MediaAppRegistry");
+const logger = createLogger("MprisPlayerRegistry");
 
 /**
- * Discovers MPRIS bus names, owns MprisMediaApp instances, filters blocked apps,
+ * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
  * and selects the active media app.
  */
-export default class MediaAppRegistry {
+export default class MprisPlayerRegistry {
   constructor(mprisProxyFactory, desktopAppResolver, callbacks = {}) {
     this.mprisProxyFactory = mprisProxyFactory;
     this.desktopAppResolver = desktopAppResolver;
@@ -141,7 +141,7 @@ export default class MediaAppRegistry {
 
     // Gio.DBusProxy follows the owner of a well-known name, flushes its
     // cached properties when the owner disappears, and reloads them when
-    // a new owner appears. Keep the same MprisMediaApp and available-media-app
+    // a new owner appears. Keep the same MprisPlayer and available-media-app
     // actors
     // so a direct old-owner -> new-owner hand-off does not destroy and rebuild
     // the top bar between adjacent browser media sessions.
@@ -204,7 +204,7 @@ export default class MediaAppRegistry {
       return;
 
     const lifecycleGeneration = this.lifecycleGeneration;
-    const mediaApp = new MprisMediaApp(busName, this.mprisProxyFactory);
+    const mediaApp = new MprisPlayer(busName, this.mprisProxyFactory);
     let adopted = false;
     this.pendingMediaAppsByBusName.set(busName, mediaApp);
 
@@ -233,14 +233,14 @@ export default class MediaAppRegistry {
         return;
       }
 
-      mediaApp.onPropertyChanged(MediaAppStateProperties.IS_PINNED, () =>
+      mediaApp.onPropertyChanged(MprisPlayerStateProperties.IS_PINNED, () =>
         this.reconcileActiveMediaApp(),
       );
       mediaApp.onPropertyChanged(MprisPlayerProperties.PLAYBACK_STATUS, () =>
         this.reconcileActiveMediaApp(),
       );
       mediaApp.onPropertyChanged(
-        MediaAppStateProperties.IS_MEDIA_APP_INVALID,
+        MprisPlayerStateProperties.IS_INVALID,
         () => {
           this.refreshAvailableMediaApps();
           this.reconcileActiveMediaApp();
@@ -308,7 +308,7 @@ export default class MediaAppRegistry {
 
     const sourceId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
-      MEDIA_APP_DISAPPEARANCE_GRACE_MS,
+      MPRIS_OWNER_HANDOFF_GRACE_MS,
       () => {
         this.pendingRemovalSourceIds.delete(busName);
         const mediaApp = this.mediaAppsByBusName.get(busName);
@@ -402,7 +402,7 @@ export default class MediaAppRegistry {
     const nextAvailableMediaApps = orderMediaAppsDeterministically(
       [...this.mediaAppsByBusName.values()].filter(
         (mediaApp) =>
-          !mediaApp.isMediaAppInvalid &&
+          !mediaApp.isInvalid &&
           !this.pendingRemovalBusNames.has(mediaApp.busName),
       ),
     );
@@ -438,7 +438,7 @@ export default class MediaAppRegistry {
     return Boolean(
       !this.isDestroyed &&
       mediaApp &&
-      !mediaApp.isMediaAppInvalid &&
+      !mediaApp.isInvalid &&
       !this.pendingRemovalBusNames.has(mediaApp.busName) &&
       this.mediaAppsByBusName.get(mediaApp.busName) === mediaApp,
     );

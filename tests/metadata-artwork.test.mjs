@@ -20,12 +20,15 @@ import {
   selectAlbumArtCacheEvictions,
 } from "../src/shell/media/artwork/policy.js";
 import {
-  buildTrackInformationText,
   createMprisMetadataRevision,
+  createMprisTrack,
+  normalizeMprisMetadata,
+} from "../src/shell/mpris/metadata.js";
+import {
+  buildTrackInformationText,
   formatArtistNames,
   normalizeMetadataDisplayText,
-  normalizeMprisMetadata,
-} from "../src/shell/media/track/metadata.js";
+} from "../src/shell/media/track/presentation.js";
 import { runCases } from "./helpers.mjs";
 
 test("metadata normalization produces one stable and display-safe domain shape", async () => {
@@ -61,6 +64,21 @@ test("metadata normalization produces one stable and display-safe domain shape",
           [MprisMetadataKeys.ALBUM_ARTIST]: ["Album Artist"],
           [MprisMetadataKeys.TRACK_NUMBER]: 3,
           "vendor:extension": "kept",
+        });
+        assert.deepEqual(createMprisTrack(metadata), {
+          id: "/org/example/Track/1",
+          lengthMicroseconds: 180_000_000,
+          artUrl: "",
+          url: "",
+          title: "Track",
+          artists: ["Artist A", "Artist B"],
+          album: "",
+          albumArtists: ["Album Artist"],
+          genres: [],
+          contentCreated: "",
+          composer: "",
+          discNumber: null,
+          trackNumber: 3,
         });
         assert.deepEqual(normalizeMprisMetadata([]), {});
       },

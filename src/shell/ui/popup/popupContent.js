@@ -15,7 +15,7 @@ import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
-import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { PlaybackStatus } from "../../mpris/protocol.js";
 import { WidgetFlags } from "../widgetFlags.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePopupWidth } from "../../../shared/ui/popupLayout.js";

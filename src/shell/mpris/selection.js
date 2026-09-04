@@ -1,6 +1,6 @@
 /**
- * @file mediaAppSelectionPolicy.js
- * @module shell.mpris.mediaAppSelectionPolicy
+ * @file selection.js
+ * @module shell.mpris.selection
  *
  * Chooses active and next media apps from registered MPRIS proxies.
  *
@@ -9,7 +9,7 @@
  * bus name while preserving the previous active endpoint inside the same tier.
  */
 
-import { PlaybackStatus } from "./playbackState.js";
+import { PlaybackStatus } from "./protocol.js";
 
 function getMediaAppOrderKey(mediaApp) {
   return String(mediaApp?.busName ?? "");
@@ -61,7 +61,7 @@ export function chooseActiveMediaApp(
   previousActiveBusName = null,
 ) {
   const validMediaApps = orderMediaAppsDeterministically(
-    mediaApps.filter((mediaApp) => !mediaApp.isMediaAppInvalid),
+    mediaApps.filter((mediaApp) => !mediaApp.isInvalid),
   );
   if (validMediaApps.length === 0) return null;
 
@@ -130,7 +130,7 @@ export function chooseReconciledMediaApp(
  */
 export function chooseNextMediaApp(mediaApps = [], activeMediaApp = null) {
   const orderedMediaApps = orderMediaAppsDeterministically(
-    mediaApps.filter((mediaApp) => !mediaApp.isMediaAppInvalid),
+    mediaApps.filter((mediaApp) => !mediaApp.isInvalid),
   );
   if (orderedMediaApps.length <= 1) return null;
 

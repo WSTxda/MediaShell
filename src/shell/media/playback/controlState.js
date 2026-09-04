@@ -5,7 +5,7 @@
  * Resolves one logical playback control into pure presentation and action data.
  *
  * Popup and top bar consume the same result while retaining separate actors and
- * styling. The resolver never captures a live MprisMediaApp in a callback; Shell
+ * styling. The resolver never captures a live MprisPlayer in a callback; Shell
  * execution is delegated to the playback-control executor.
  */
 
@@ -14,7 +14,7 @@ import {
   PlaybackControlDefinitions,
   PlaybackControlIds,
 } from "../../../shared/playback/controls.js";
-import { LoopStatus, PlaybackStatus } from "../../mpris/playbackState.js";
+import { LoopStatus, PlaybackStatus } from "../../mpris/protocol.js";
 import { canChangePlaybackRate, formatPlaybackRate } from "../../mpris/playbackRate.js";
 
 function createControlState(
