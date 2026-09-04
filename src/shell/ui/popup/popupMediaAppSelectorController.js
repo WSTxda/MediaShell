@@ -37,7 +37,7 @@ export default class PopupMediaAppSelectorController {
   render() {
     this.mediaAppSelectorButton.render();
     const availableMediaAppCount =
-      this.popupContent.extensionController.getAvailableMediaApps().length;
+      (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length;
     if (availableMediaAppCount <= 1) this.mediaAppSelectorList.close();
     else if (this.mediaAppSelectorList.isOpen)
       this.mediaAppSelectorList.refreshMediaApps();

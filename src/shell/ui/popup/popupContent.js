@@ -36,7 +36,10 @@ const logger = createLogger("PopupContent");
  * Orchestrates every widget inside the MediaShell popup menu.
  */
 export default class PopupContent {
-  constructor(indicator, { albumArtLoader, desktopAppResolver }) {
+  constructor(
+    indicator,
+    { albumArtLoader, desktopAppResolver, playbackController },
+  ) {
     this.indicator = indicator;
     this.pendingWidgetFlags = 0;
     this.appliedPopupOuterWidth = null;
@@ -57,7 +60,7 @@ export default class PopupContent {
     this.albumArt = new PopupAlbumArt(this, albumArtLoader);
     this.trackInformation = new PopupTrackInformation(this);
     this.progressBar = new PopupProgressBar(this);
-    this.playbackControls = new PopupPlaybackControls(this);
+    this.playbackControls = new PopupPlaybackControls(this, playbackController);
     this.volumeControl = new PopupVolumeControl(this);
 
     this.menu.addMenuItem(this.popupItem);
@@ -95,6 +98,9 @@ export default class PopupContent {
   get extensionController() {
     return this.indicator.extensionController;
   }
+  get mediaRuntime() {
+    return this.indicator.mediaRuntime;
+  }
   get mediaApp() {
     return this.indicator.mediaApp;
   }
@@ -107,11 +113,14 @@ export default class PopupContent {
   }
 
   selectMediaApp(mediaApp) {
-    return this.extensionController.selectMediaApp(mediaApp);
+    return this.mediaRuntime?.selectPlayer(mediaApp) ?? false;
   }
 
   toggleMediaAppPin(mediaApp) {
-    return this.extensionController.toggleMediaAppPin(mediaApp);
+    const pinStateChanged = this.mediaRuntime?.togglePlayerPin(mediaApp) ?? false;
+    if (pinStateChanged)
+      this.indicator.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
+    return pinStateChanged;
   }
 
   updateWidgets(widgetFlags, forceRender = false) {

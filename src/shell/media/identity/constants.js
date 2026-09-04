@@ -1,6 +1,6 @@
 /**
- * @file desktopApp.js
- * @module shell.constants.desktopApp
+ * @file constants.js
+ * @module shell.media.identity.constants
  *
  * Defines desktop-application resolution cache and retry policy.
  *

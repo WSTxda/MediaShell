@@ -2,7 +2,7 @@
  * @file extensionController.js
  * @module shell.extensionController
  *
- * Coordinates the MediaShell runtime lifecycle inside GNOME Shell.
+ * Composes extension lifecycle around the MediaShell runtime inside GNOME Shell.
  *
  * Settings and resources live for the extension lifecycle. Runtime profiles keep
  * the user session separate from the optional lock-screen enhancement, while
@@ -18,18 +18,11 @@ import {
 import { InputActions } from "../shared/input/types.js";
 import { WidgetFlags } from "./ui/widgetFlags.js";
 import { createLogger } from "../shared/logging/logger.js";
-import {
-  MprisOperationReasons,
-  mprisOperationUnsupported,
-} from "./mpris/operationResult.js";
-import MprisProxyFactory from "./mpris/proxyFactory.js";
-import MprisPlayerRegistry from "./mpris/registry.js";
-import { executePlaybackControlAction } from "./mpris/playbackControlExecutor.js";
+import MediaRuntime from "./runtime/mediaRuntime.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
 import GnomeShellEnhanceMediaControls from "./services/gnomeShellEnhanceMediaControls.js";
 import GnomeShellHideMediaControls from "./services/gnomeShellHideMediaControls.js";
 import AlbumArtLoader from "./services/albumArtLoader.js";
-import DesktopAppResolver from "./services/desktopAppResolver.js";
 import ExtensionResourceRegistry from "./services/extensionResourceRegistry.js";
 import { SettingsAction } from "./settings/settingsSpec.js";
 import SettingsStore from "./settings/settingsStore.js";
@@ -192,8 +185,17 @@ export default class ExtensionController {
   }
 
   async startMediaRuntime(runtimeReconcileGeneration, { includeUserServices }) {
-    this.desktopAppResolver = new DesktopAppResolver();
+    // Artwork remains a separate owned service until the dedicated artwork
+    // refactor. Protocol, playback, and desktop identity now live together in
+    // MediaRuntime so every consumer sees one coherent media capability graph.
     this.albumArtLoader = new AlbumArtLoader();
+    this.mediaRuntime = new MediaRuntime({
+      blockedAppIds: this.blockedAppIds,
+      callbacks: {
+        onAvailablePlayersChanged: () => this.handleAvailablePlayersChanged(),
+        onActivePlayerChanged: (player) => this.handleActivePlayerChanged(player),
+      },
+    });
 
     if (includeUserServices) {
       // Hide can be applied before the MediaShell MPRIS runtime exists.
@@ -205,23 +207,7 @@ export default class ExtensionController {
       this.globalShortcutsService.enable();
     }
 
-    this.mprisProxyFactory = new MprisProxyFactory();
-    await this.mprisProxyFactory.init();
-    if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
-      return;
-
-    this.mprisPlayerRegistry = new MprisPlayerRegistry(
-      this.mprisProxyFactory,
-      this.desktopAppResolver,
-      {
-        onAvailableMediaAppsChanged: () =>
-          this.handleAvailableMediaAppsChanged(),
-        onActiveMediaAppChanged: (mediaApp) =>
-          this.handleActiveMediaAppChanged(mediaApp),
-      },
-    );
-    this.mprisPlayerRegistry.blockedAppIds = new Set(this.blockedAppIds);
-    await this.mprisPlayerRegistry.init();
+    await this.mediaRuntime.init();
     if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
       return;
 
@@ -229,12 +215,7 @@ export default class ExtensionController {
   }
 
   hasMediaRuntime() {
-    return Boolean(
-      this.desktopAppResolver &&
-      this.albumArtLoader &&
-      this.mprisProxyFactory &&
-      this.mprisPlayerRegistry,
-    );
+    return Boolean(this.mediaRuntime?.initialized);
   }
 
   hasRuntimeComponents() {
@@ -243,10 +224,8 @@ export default class ExtensionController {
       this.gnomeShellEnhanceMediaControlsService ||
       this.gnomeShellHideMediaControlsService ||
       this.indicator ||
-      this.mprisPlayerRegistry ||
-      this.mprisProxyFactory ||
-      this.albumArtLoader ||
-      this.desktopAppResolver,
+      this.mediaRuntime ||
+      this.albumArtLoader,
     );
   }
 
@@ -278,7 +257,7 @@ export default class ExtensionController {
           this.rebuildIndicator();
         break;
       case SettingsAction.UPDATE_BLOCKED_APPS:
-        this.mprisPlayerRegistry
+        this.mediaRuntime
           ?.setBlockedAppIds(settingValue)
           .catch((error) =>
             logger.warn("Failed to apply the blocked-app list", error),
@@ -298,7 +277,7 @@ export default class ExtensionController {
     }
   }
 
-  handleAvailableMediaAppsChanged() {
+  handleAvailablePlayersChanged() {
     if (this.runtimeProfile === RuntimeProfiles.USER)
       this.indicator?.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
     this.gnomeShellEnhanceMediaControlsService?.reconcile();
@@ -307,7 +286,8 @@ export default class ExtensionController {
   getEnhanceMediaControlsOptions() {
     return {
       albumArtLoader: this.albumArtLoader,
-      getAvailableMediaApps: () => this.getAvailableMediaApps(),
+      playbackController: this.mediaRuntime?.playback ?? null,
+      getAvailableMediaApps: () => this.mediaRuntime?.getAvailablePlayers() ?? [],
       getAlbumArtCacheEnabled: () => this.albumArtCacheEnabled,
     };
   }
@@ -359,12 +339,12 @@ export default class ExtensionController {
   rebuildIndicator() {
     if (this.runtimeProfile !== RuntimeProfiles.USER) return;
 
-    const mediaApp = this.mprisPlayerRegistry?.activeMediaApp ?? null;
+    const mediaApp = this.mediaRuntime?.activePlayer ?? null;
     this.destroyIndicator();
-    if (mediaApp) this.handleActiveMediaAppChanged(mediaApp);
+    if (mediaApp) this.handleActivePlayerChanged(mediaApp);
   }
 
-  handleActiveMediaAppChanged(mediaApp) {
+  handleActivePlayerChanged(mediaApp) {
     if (
       this.runtimeProfile !== RuntimeProfiles.USER ||
       resolveRuntimeProfile() !== RuntimeProfiles.USER
@@ -385,7 +365,7 @@ export default class ExtensionController {
 
     this.indicator = new MediaShellIndicator(mediaApp, this, {
       albumArtLoader: this.albumArtLoader,
-      desktopAppResolver: this.desktopAppResolver,
+      mediaRuntime: this.mediaRuntime,
     });
     // Panel slot name — must match the extension's registered status area identifier.
     Main.panel.addToStatusArea(
@@ -396,26 +376,6 @@ export default class ExtensionController {
     );
   }
 
-  getAvailableMediaApps() {
-    return this.mprisPlayerRegistry?.getAvailableMediaApps() ?? [];
-  }
-
-  selectMediaApp(mediaApp) {
-    return this.mprisPlayerRegistry?.selectMediaApp(mediaApp) ?? false;
-  }
-
-  switchMediaApp() {
-    return this.mprisPlayerRegistry?.switchMediaApp() ?? false;
-  }
-
-  toggleMediaAppPin(mediaApp) {
-    const pinStateChanged =
-      this.mprisPlayerRegistry?.toggleMediaAppPin(mediaApp) ?? false;
-    if (pinStateChanged)
-      this.indicator?.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
-    return pinStateChanged;
-  }
-
   togglePopup() {
     this.indicator?.menu.toggle();
   }
@@ -423,20 +383,14 @@ export default class ExtensionController {
   executeInputAction(inputAction) {
     if (this.runtimeProfile !== RuntimeProfiles.USER) return;
 
-    const mediaApp = this.mprisPlayerRegistry?.activeMediaApp ?? null;
     const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
-    if (playbackAction)
-      return executePlaybackControlAction(mediaApp, playbackAction);
+    if (playbackAction) return this.mediaRuntime?.playback.execute(playbackAction);
 
     switch (inputAction) {
       case InputActions.VOLUME_UP:
-        return mediaApp
-          ? mediaApp.setVolume(Math.min(mediaApp.volume + VOLUME_STEP, 1))
-          : mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
+        return this.mediaRuntime?.playback.increaseVolume(VOLUME_STEP);
       case InputActions.VOLUME_DOWN:
-        return mediaApp
-          ? mediaApp.setVolume(Math.max(mediaApp.volume - VOLUME_STEP, 0))
-          : mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
+        return this.mediaRuntime?.playback.decreaseVolume(VOLUME_STEP);
       case InputActions.TOGGLE_POPUP:
         this.togglePopup();
         break;
@@ -444,17 +398,11 @@ export default class ExtensionController {
         this.openPreferences();
         break;
       case InputActions.RAISE_APP:
-        return (
-          mediaApp?.raise() ??
-          mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET)
-        );
+        return this.mediaRuntime?.playback.raise();
       case InputActions.QUIT_APP:
-        return (
-          mediaApp?.quit() ??
-          mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET)
-        );
+        return this.mediaRuntime?.playback.quit();
       case InputActions.SWITCH_APP:
-        this.switchMediaApp();
+        this.mediaRuntime?.switchPlayer();
         break;
       default:
         break;
@@ -488,10 +436,8 @@ export default class ExtensionController {
     this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
     this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
     this.destroyIndicator();
-    this.destroyOwnedComponent("mprisPlayerRegistry");
-    this.destroyOwnedComponent("mprisProxyFactory");
+    this.destroyOwnedComponent("mediaRuntime");
     this.destroyOwnedComponent("albumArtLoader");
-    this.destroyOwnedComponent("desktopAppResolver");
     clearIconCache();
   }
 

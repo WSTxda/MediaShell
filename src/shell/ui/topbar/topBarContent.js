@@ -27,7 +27,10 @@ const logger = createLogger("TopBarContent");
 
 /** Owns and reconciles every component rendered in the top bar. */
 export default class TopBarContent {
-  constructor(indicator, { albumArtLoader, desktopAppResolver }) {
+  constructor(
+    indicator,
+    { albumArtLoader, desktopAppResolver, playbackController },
+  ) {
     this.indicator = indicator;
     this.topBarBox = null;
     this.topBarActionBoxBefore = null;
@@ -37,7 +40,7 @@ export default class TopBarContent {
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
-    this.playbackControls = new TopBarPlaybackControls(this);
+    this.playbackControls = new TopBarPlaybackControls(this, playbackController);
   }
 
   get extensionController() {
