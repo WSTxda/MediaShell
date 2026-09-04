@@ -67,6 +67,17 @@ async function checkRuntime() {
   console.log(`\nAll ${gates.length} runtime validation gates passed.`);
 }
 
+async function checkRefactorRuntime() {
+  const gates = [
+    ["source", checkSource],
+    ["assets and translations", checkAssetsAndTranslations],
+  ];
+  for (const [label, check] of gates) await runGate(label, check);
+  console.log(
+    `\nAll ${gates.length} refactor validation gates passed (behavior and declarative contract tests skipped).`,
+  );
+}
+
 async function checkNativeCompilation() {
   await runGate("native compilation", () =>
     runCommand("GNOME and gettext toolchain", "python3", [
@@ -92,13 +103,14 @@ const [command = "check", argument] = process.argv.slice(2);
 try {
   if (command === "check") await checkDevelopment();
   else if (command === "runtime") await checkRuntime();
+  else if (command === "refactor") await checkRefactorRuntime();
   else if (command === "native") await checkNativeCompilation();
   else if (command === "package")
     await checkPackage(argument ?? EXTENSION_PACKAGE);
   else
     throw new Error(
       `Unknown command: ${command}\n` +
-        "Use 'check', 'runtime', 'native', or 'package [zip]'.",
+        "Use 'check', 'runtime', 'refactor', 'native', or 'package [zip]'.",
     );
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

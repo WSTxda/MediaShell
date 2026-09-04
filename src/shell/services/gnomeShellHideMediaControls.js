@@ -5,7 +5,7 @@
  * Reversibly suppresses native media messages in the notification list.
  */
 
-import { createLogger } from "../../shared/utils/log.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { resolveNotificationListMediaContext } from "./gnomeShellMediaControlsCompatibility.js";
 
 const logger = createLogger("GnomeShellHideMediaControls");

@@ -14,14 +14,14 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import {
   PLAYBACK_ACTION_BY_INPUT_ACTION,
   VOLUME_STEP,
-} from "../shared/constants/inputActions.js";
-import { InputActions } from "../shared/enums/input.js";
-import { WidgetFlags } from "../shared/enums/widgetFlags.js";
-import { createLogger } from "../shared/utils/log.js";
+} from "../shared/input/actions.js";
+import { InputActions } from "../shared/input/types.js";
+import { WidgetFlags } from "./ui/widgetFlags.js";
+import { createLogger } from "../shared/logging/logger.js";
 import {
   MprisOperationReasons,
   mprisOperationUnsupported,
-} from "../shared/utils/mprisOperationResult.js";
+} from "./mpris/operationResult.js";
 import MprisProxyFactory from "./mpris/mprisProxyFactory.js";
 import MediaAppRegistry from "./mpris/mediaAppRegistry.js";
 import { executePlaybackControlAction } from "./mpris/playbackControlExecutor.js";

@@ -10,7 +10,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { createLogger } from "../../shared/utils/log.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { isCancellationError } from "./errors.js";
 
 const logger = createLogger("albumArtSource");

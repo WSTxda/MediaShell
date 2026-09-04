@@ -16,7 +16,7 @@
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 
-import { InputActions } from "../../../shared/enums/input.js";
+import { InputActions } from "../../../shared/input/types.js";
 
 /**
  * Installs pointer gestures for the non-playback regions of the panel indicator.

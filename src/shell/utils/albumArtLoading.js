@@ -10,7 +10,7 @@
 import GdkPixbuf from "gi://GdkPixbuf";
 import Gio from "gi://Gio";
 
-import { createLogger } from "../../shared/utils/log.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { ALBUM_ART_RENDER_SCALE } from "../constants/albumArt.js";
 import { resolveAlbumArtSource } from "./albumArtSource.js";
 import { isCancellationError } from "./errors.js";

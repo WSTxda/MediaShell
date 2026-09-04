@@ -17,15 +17,15 @@ import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import {
   MprisPlayerProperties,
   MprisRootProperties,
-} from "../../../shared/constants/mpris.js";
-import { GTypeNames } from "../../../shared/constants/gtypes.js";
+} from "../../mpris/protocol.js";
+import { GTypeNames } from "../../../shared/gobject.js";
 import { MediaAppStateProperties } from "../../constants/mediaApp.js";
 import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../constants/desktopApp.js";
-import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
-import { createLogger } from "../../../shared/utils/log.js";
+import { WidgetFlags } from "../widgetFlags.js";
+import { createLogger } from "../../../shared/logging/logger.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/popupContent.js";
 import TopBarContent from "../topbar/topBarContent.js";

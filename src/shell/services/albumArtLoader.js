@@ -24,9 +24,9 @@ import {
   ALBUM_ART_READ_CHUNK_BYTES,
   ALBUM_ART_REQUEST_TIMEOUT_SECONDS,
 } from "../constants/albumArt.js";
-import { EXTENSION_UUID } from "../../shared/constants/project.js";
-import { selectAlbumArtCacheEvictions } from "../../shared/utils/albumArt.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { EXTENSION_UUID } from "../../shared/project.js";
+import { selectAlbumArtCacheEvictions } from "../media/artwork/policy.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.File.prototype, "read_async", "read_finish");

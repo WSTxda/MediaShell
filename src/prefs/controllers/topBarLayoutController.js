@@ -12,9 +12,9 @@
 import {
   SettingsKeys,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
-} from "../../shared/constants/settings.js";
-import { arraysEqual } from "../../shared/utils/collections.js";
-import { normalizeOrderedValues } from "../../shared/utils/format.js";
+} from "../../shared/settings/contract.js";
+import { arraysEqual } from "../../shared/collections.js";
+import { normalizeOrderedValues } from "../../shared/format.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,

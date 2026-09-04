@@ -17,9 +17,9 @@ import Gio from "gi://Gio";
 import {
   MOUSE_ACTION_INDEX_BY_VALUE,
   MOUSE_ACTION_VALUES,
-} from "../../shared/constants/inputActions.js";
-import { normalizeInputAction } from "../../shared/utils/inputActions.js";
-import { InputActions } from "../../shared/enums/input.js";
+} from "../../shared/input/actions.js";
+import { normalizeInputAction } from "../../shared/input/normalization.js";
+import { InputActions } from "../../shared/input/types.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,

@@ -13,9 +13,9 @@ import {
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
   SettingsKeys,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
-} from "../../shared/constants/settings.js";
-import { arraysEqual } from "../../shared/utils/collections.js";
-import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
+} from "../../shared/settings/contract.js";
+import { arraysEqual } from "../../shared/collections.js";
+import { normalizeTrackInformationContent } from "../../shared/ui/trackInformationContent.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,

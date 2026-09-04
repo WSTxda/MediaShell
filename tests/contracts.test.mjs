@@ -9,8 +9,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { PlaybackControlIds } from "../src/shared/constants/playbackControls.js";
-import { PlaybackControlSurfaces } from "../src/shared/constants/playbackControlSurfaces.js";
+import { PlaybackControlIds } from "../src/shared/playback/controls.js";
+import { PlaybackControlSurfaces } from "../src/shared/playback/surfaces.js";
 import { readAssetManifest } from "../scripts/dev/files.mjs";
 import {
   createPlaybackContractSnapshot,

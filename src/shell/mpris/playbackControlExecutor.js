@@ -11,15 +11,15 @@
 import {
   PlaybackControlActions,
   RELATIVE_SEEK_SECONDS,
-} from "../../shared/constants/playbackControls.js";
-import { createLogger } from "../../shared/utils/log.js";
+} from "../../shared/playback/controls.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import {
   MprisOperationReasons,
   mprisOperationFailed,
   mprisOperationUnsupported,
   normalizeMprisOperationResult,
-} from "../../shared/utils/mprisOperationResult.js";
-import { resolveNextPlaybackRate } from "../../shared/utils/playbackRate.js";
+} from "./operationResult.js";
+import { resolveNextPlaybackRate } from "./playbackRate.js";
 
 const MEDIA_APP_METHOD_BY_ACTION = Object.freeze({
   [PlaybackControlActions.TOGGLE_SHUFFLE]: "toggleShuffle",

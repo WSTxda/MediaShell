@@ -15,12 +15,12 @@ import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
-import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { GTypeNames } from "../../shared/gobject.js";
 import {
   buildSearchIndex,
   matchesSearchTokens,
   tokenizeSearchQuery,
-} from "../../shared/utils/search.js";
+} from "../search.js";
 import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,

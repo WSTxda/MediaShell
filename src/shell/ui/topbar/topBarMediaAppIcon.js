@@ -9,7 +9,7 @@
  * track text, visualizer, and playback control layout.
  */
 
-import { IconNames } from "../../../shared/constants/icons.js";
+import { IconNames } from "../../../shared/icons.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";

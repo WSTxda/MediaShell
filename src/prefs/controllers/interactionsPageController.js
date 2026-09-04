@@ -18,7 +18,7 @@ import Gtk from "gi://Gtk";
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
-} from "../../shared/constants/inputActions.js";
+} from "../../shared/input/actions.js";
 import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,

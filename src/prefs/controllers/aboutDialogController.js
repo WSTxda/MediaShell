@@ -18,8 +18,8 @@ import {
   EXTENSION_ICON_NAME,
   EXTENSION_NAME,
   PROJECT_URLS,
-} from "../../shared/constants/project.js";
-import { createLogger } from "../../shared/utils/log.js";
+} from "../../shared/project.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _ } from "../translations.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";
 

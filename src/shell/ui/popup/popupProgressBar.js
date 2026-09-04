@@ -9,9 +9,9 @@
  * from album art, track information, and playback control rendering.
  */
 
-import { MprisMetadataKeys } from "../../../shared/constants/mpris.js";
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { createLogger } from "../../../shared/utils/log.js";
+import { MprisMetadataKeys } from "../../mpris/protocol.js";
+import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { createLogger } from "../../../shared/logging/logger.js";
 import PopupProgressBarView from "./popupProgressBarView.js";
 
 const logger = createLogger("PopupProgressBar");

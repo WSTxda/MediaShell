@@ -9,12 +9,12 @@
  * source of truth for automatic settings synchronization.
  */
 
-import { PlaybackControlIds } from "../../shared/constants/playbackControls.js";
+import { PlaybackControlIds } from "../../shared/playback/controls.js";
 import {
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
-} from "../../shared/constants/playbackControlSurfaces.js";
-import { SettingsKeys } from "../../shared/constants/settings.js";
+} from "../../shared/playback/surfaces.js";
+import { SettingsKeys } from "../../shared/settings/contract.js";
 
 const PLAYBACK_CONTROL_WIDGET_SUFFIXES = Object.freeze({
   [PlaybackControlIds.SHUFFLE]: "shuffle-show",

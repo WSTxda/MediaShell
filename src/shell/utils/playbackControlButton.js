@@ -9,7 +9,7 @@
  * identical for the same canonical control state.
  */
 
-import { resolvePlaybackControlAccessibleName } from "../../shared/utils/playbackControlAccessibility.js";
+import { resolvePlaybackControlAccessibleName } from "../media/playback/accessibility.js";
 
 /**
  * Applies canonical interaction and accessibility state to a Shell button.

@@ -13,8 +13,8 @@
 import Adw from "gi://Adw";
 import GLib from "gi://GLib";
 
-import { SettingsKeys } from "../../shared/constants/settings.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { SettingsKeys } from "../../shared/settings/contract.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _, ngettext } from "../translations.js";
 import { TOAST_TIMEOUT_SECONDS } from "../constants/preferencesUi.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";

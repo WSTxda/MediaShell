@@ -10,13 +10,13 @@ import Gio from "gi://Gio";
 import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import { IconNames } from "../../../shared/constants/icons.js";
-import { TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/constants/settings.js";
+import { IconNames } from "../../../shared/icons.js";
+import { TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import {
   calculateAlbumArtCornerRadius,
   createAlbumArtRequest,
-} from "../../../shared/utils/albumArt.js";
-import { createLogger } from "../../../shared/utils/log.js";
+} from "../../media/artwork/policy.js";
+import { createLogger } from "../../../shared/logging/logger.js";
 import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/albumArt.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import { loadAlbumArtResult } from "../../utils/albumArtLoading.js";

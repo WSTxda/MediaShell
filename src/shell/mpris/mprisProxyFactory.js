@@ -15,13 +15,13 @@ import {
   DBUS_DAEMON_IFACE_NAME,
   DBUS_DAEMON_OBJECT_PATH,
   DBUS_PROPERTIES_IFACE_NAME,
-} from "../../shared/constants/dbus.js";
+} from "./dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_OBJECT_PATH,
   MPRIS_PLAYER_IFACE_NAME,
-} from "../../shared/constants/mpris.js";
-import { ResourceUris } from "../../shared/constants/resources.js";
+} from "./protocol.js";
+import { ResourceUris } from "../../shared/resources.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(

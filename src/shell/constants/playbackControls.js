@@ -8,7 +8,7 @@
  * owns only the ordered placement of those logical controls on Shell surfaces.
  */
 
-import { PlaybackControlIds } from "../../shared/constants/playbackControls.js";
+import { PlaybackControlIds } from "../../shared/playback/controls.js";
 
 /** Popup transport-row order. */
 export const POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER = Object.freeze([

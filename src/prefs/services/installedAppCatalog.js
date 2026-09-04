@@ -12,9 +12,9 @@
 
 import Gio from "gi://Gio";
 
-import { IconNames } from "../../shared/constants/icons.js";
-import { buildBrowserIdentityAliases } from "../../shared/utils/browserIdentity.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { IconNames } from "../../shared/icons.js";
+import { buildBrowserIdentityAliases } from "../../shared/identity/browser.js";
+import { createLogger } from "../../shared/logging/logger.js";
 
 const logger = createLogger("installedAppCatalog");
 

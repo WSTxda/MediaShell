@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import St from "gi://St";
 
-import { IconNames } from "../../shared/constants/icons.js";
+import { IconNames } from "../../shared/icons.js";
 
 const fallbackIcons = new Map();
 

@@ -13,16 +13,16 @@ import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
-import { IconNames } from "../../../shared/constants/icons.js";
+import { IconNames } from "../../../shared/icons.js";
 import {
   MprisMetadataKeys,
   MprisPlayerProperties,
-} from "../../../shared/constants/mpris.js";
-import { PlaybackControlIds } from "../../../shared/constants/playbackControls.js";
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
-import { createAlbumArtRequest } from "../../../shared/utils/albumArt.js";
-import { createLogger } from "../../../shared/utils/log.js";
-import { resolvePlaybackControlState } from "../../../shared/utils/playbackControlState.js";
+} from "../../mpris/protocol.js";
+import { PlaybackControlIds } from "../../../shared/playback/controls.js";
+import { PlaybackStatus } from "../../mpris/playbackState.js";
+import { createAlbumArtRequest } from "../../media/artwork/policy.js";
+import { createLogger } from "../../../shared/logging/logger.js";
+import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,

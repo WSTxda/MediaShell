@@ -15,8 +15,8 @@ import St from "gi://St";
 
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
-import { GTypeNames } from "../../../shared/constants/gtypes.js";
-import { formatDurationMilliseconds } from "../../../shared/utils/format.js";
+import { GTypeNames } from "../../../shared/gobject.js";
+import { formatDurationMilliseconds } from "../../../shared/format.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,

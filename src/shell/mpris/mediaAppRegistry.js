@@ -18,19 +18,19 @@ import GLib from "gi://GLib";
 import {
   DbusDaemonMethods,
   DbusDaemonSignals,
-} from "../../shared/constants/dbus.js";
+} from "./dbus.js";
 import {
   MPRIS_BUS_NAME_PREFIX,
   MprisPlayerProperties,
   MprisRootProperties,
-} from "../../shared/constants/mpris.js";
+} from "./protocol.js";
 import {
   MEDIA_APP_DISAPPEARANCE_GRACE_MS,
   MediaAppStateProperties,
 } from "../constants/mediaApp.js";
 import { DBUS_LIST_NAMES_TIMEOUT_MS } from "../constants/mpris.js";
-import { normalizeUniqueStrings } from "../../shared/utils/format.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { normalizeUniqueStrings } from "../../shared/format.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import { isCancellationError } from "../utils/errors.js";
 import MprisMediaApp from "./mprisMediaApp.js";
 import {

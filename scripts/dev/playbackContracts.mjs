@@ -15,22 +15,23 @@ import {
   KEYBOARD_SHORTCUT_KEYS,
   MOUSE_ACTION_VALUES,
   PLAYBACK_ACTION_BY_INPUT_ACTION,
-} from "../../src/shared/constants/inputActions.js";
+} from "../../src/shared/input/actions.js";
 import {
   PLAYBACK_CONTROL_DEFINITIONS,
   PlaybackControlActions,
   PlaybackControlContentKinds,
   PlaybackControlGroups,
   PlaybackControlIds,
-} from "../../src/shared/constants/playbackControls.js";
-import { PlaybackControlSurfaceDefinitions } from "../../src/shared/constants/playbackControlSurfaces.js";
+} from "../../src/shared/playback/controls.js";
+import { PlaybackControlSurfaceDefinitions } from "../../src/shared/playback/surfaces.js";
 import {
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerMethods,
   MprisPlayerProperties,
   MprisPlayerSignals,
-} from "../../src/shared/constants/mpris.js";
-import { WidgetFlags } from "../../src/shared/enums/widgetFlags.js";
+} from "../../src/shell/mpris/protocol.js";
+import { WidgetFlags } from "../../src/shell/ui/widgetFlags.js";
+import { PlaybackControlSurfaceUpdates } from "../../src/shell/media/playback/surfaceUpdates.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 
 const PREFERENCES_UI_SOURCE = "assets/ui/prefs.ui";
@@ -54,10 +55,14 @@ function same(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function cloneSurface(definition) {
+function cloneSurface(surface, definition) {
+  const updates = PlaybackControlSurfaceUpdates[surface];
   return {
-    show: { ...definition.show },
-    controls: definition.controls.map((control) => ({ ...control })),
+    show: { ...definition.show, impact: updates.show },
+    controls: definition.controls.map((control) => ({
+      ...control,
+      impact: updates.controls[control.controlId],
+    })),
   };
 }
 
@@ -71,7 +76,7 @@ export function createPlaybackContractSnapshot(manifest) {
     controlIds: { ...PlaybackControlIds },
     surfaces: Object.fromEntries(
       Object.entries(PlaybackControlSurfaceDefinitions).map(
-        ([surface, definition]) => [surface, cloneSurface(definition)],
+        ([surface, definition]) => [surface, cloneSurface(surface, definition)],
       ),
     ),
     settingsSpec: Object.fromEntries(

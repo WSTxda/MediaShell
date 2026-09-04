@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { EXTENSION_UUID } from "../../shared/constants/project.js";
+import { EXTENSION_UUID } from "../../shared/project.js";
 
 Gio._promisify(Gio.File.prototype, "delete_async", "delete_finish");
 Gio._promisify(

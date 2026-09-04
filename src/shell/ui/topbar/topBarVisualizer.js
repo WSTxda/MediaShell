@@ -17,19 +17,19 @@ import St from "gi://St";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
-} from "../../../shared/constants/visualizer.js";
-import { PlaybackStatus } from "../../../shared/enums/playback.js";
+} from "./visualizer/definitions.js";
+import { PlaybackStatus } from "../../mpris/playbackState.js";
 import {
   VisualizerSpectrumLayers,
   VisualizerStyles,
-} from "../../../shared/enums/visualizer.js";
+} from "./visualizer/types.js";
 import {
   getVisualizerLevels,
   getVisualizerSpectrumOffsets,
   getVisualizerSpeedMultiplier,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
-} from "../../../shared/utils/visualizer.js";
+} from "./visualizer/animation.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
