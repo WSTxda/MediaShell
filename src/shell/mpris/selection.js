@@ -56,18 +56,13 @@ export function orderPlayersDeterministically(players = []) {
  * @param {string|null} previousActiveBusName - Last active MPRIS bus name.
  * @returns {object|null} Chosen player, or null when none are available.
  */
-export function chooseActivePlayer(
-  players = [],
-  previousActiveBusName = null,
-) {
+export function chooseActivePlayer(players = [], previousActiveBusName = null) {
   const validPlayers = orderPlayersDeterministically(
     players.filter((player) => !player.isInvalid),
   );
   if (validPlayers.length === 0) return null;
 
-  const pinnedPlayers = validPlayers.filter(
-    (player) => player.isPinned,
-  );
+  const pinnedPlayers = validPlayers.filter((player) => player.isPinned);
   if (pinnedPlayers.length > 0)
     return choosePreferredTierPlayer(pinnedPlayers, previousActiveBusName);
 
@@ -106,10 +101,7 @@ export function chooseReconciledPlayer(
   previousActiveBusName = null,
   pendingActivePlayer = null,
 ) {
-  const nextActivePlayer = chooseActivePlayer(
-    players,
-    previousActiveBusName,
-  );
+  const nextActivePlayer = chooseActivePlayer(players, previousActiveBusName);
   if (!pendingActivePlayer) return nextActivePlayer;
 
   const replacementShouldTakeOver = Boolean(

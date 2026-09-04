@@ -1,75 +1,102 @@
 # Contributing
 
-This document defines the requirements for contributing to MediaShell. Use [Architecture](docs/ARCHITECTURE.md) for ownership and process boundaries, and [Development](docs/DEVELOPMENT.md) for toolchain, implementation conventions, validation details, and live debugging.
+This document defines the requirements for contributing to MediaShell. Read [Architecture](docs/ARCHITECTURE.md) for ownership/process boundaries and [Development](docs/DEVELOPMENT.md) for toolchain, naming, validation, translations, and live debugging.
 
 ## Before editing
 
-Identify the component that already owns the behavior, its callers, and every persisted or external contract affected by the change. Extend that path when its responsibility matches; do not create a parallel service, renderer, settings path, or lifecycle owner for local convenience.
+Identify the component that already owns the behavior, its callers, and every persisted or external contract affected by the change. Extend that path when its responsibility matches; do not create a parallel MPRIS implementation, artwork loader/cache, playback executor, settings path, renderer, or lifecycle owner for local convenience.
 
-An architectural, structural, naming, or cross-surface refactor must include an integration map with:
+For architectural, structural, naming, cross-surface, settings, asynchronous, or private-API work, build an integration map covering:
 
-- the existing owners and call paths studied;
-- the authoritative integration point and code to reuse;
-- exact files and symbols to add, move, rename, or remove;
-- process-boundary, lifecycle, asynchronous-result, and compatibility risks;
-- deterministic checks and live GNOME scenarios required for validation.
+- existing owners and call paths studied;
+- authoritative integration point and code to reuse;
+- files/symbols to add, move, rename, replace, or remove;
+- process-boundary and dependency-direction effects;
+- lifecycle/cancellation/stale-result risks;
+- persisted/protocol/private-platform contracts involved;
+- deterministic checks and live GNOME scenarios required.
 
-Internal moves and renames must update call sites atomically. Do not retain aliases, wrappers, duplicate implementations, or transitional directories without a real compatibility requirement.
+Internal moves and renames must update call sites atomically. Do not leave aliases, compatibility wrappers, duplicate implementations, or transitional directories without a real compatibility requirement.
+
+## Behavior-preservation rule
+
+**Never remove, simplify, relocate, or replace behavior until its purpose, owner, lifecycle, protocol implications, and existing safeguards are understood. A refactor may replace the mechanism; it must not accidentally discard the behavior.**
+
+Before deleting or replacing a suspicious timer, grace period, retry, cache, generation, fallback, signal, capability check, or workaround, determine what scenario it protects and check relevant tests, history, architecture, and official GNOME/GJS/MPRIS/D-Bus documentation.
+
+Examples of invariants that require deliberate treatment include MPRIS owner handoff, empty-metadata/browser grace, initial polling, stale asynchronous rejection, Position projection, `Seeked`, TrackId-safe `SetPosition`, artwork cancellation/cache bounds, incremental surface updates, Popup deferred rendering, session-mode generation guards, private Shell fallback, and complete teardown.
+
+If current behavior is demonstrably wrong relative to the protocol/platform, change it deliberately and document the reason instead of silently losing it during cleanup.
 
 ## Change requirements
 
-- Keep `src/shared/`, `src/shell/`, and `src/prefs/` within the boundaries defined by the architecture.
-- Preserve settings keys and values, D-Bus interfaces, resource paths, GtkBuilder IDs, CSS classes, `GTypeName` values, action IDs, and other persisted or external contracts unless the change intentionally includes migration or compatibility work.
-- Keep resource creation, signal connections, asynchronous work, and cleanup under the same owner. Results from a replaced owner or lifecycle must not mutate current state.
-- Share implementation only when inputs, outputs, side effects, ownership, teardown, and expected evolution are the same. Similar Popup and Top Bar components are intentionally independent when those conditions differ.
-- Keep constants pure and immutable. Runtime toolkit objects, caches, mutable state, and trivial one-use values remain with their owner.
-- Update tests, declarative resources, translations, comments, and documentation only when the behavior or contract they represent changes.
-- Test observable behavior and stable contracts. Do not add source-shape heuristics, style checks disguised as correctness checks, or tests that merely duplicate implementation details.
-- Do not increase the test count for an organization-only refactor unless an important behavior or compatibility contract would otherwise be unprotected.
-- Keep functional changes and unrelated cleanup separate.
+- Keep `src/shared/`, `src/shell/`, and `src/prefs/` within the dependency boundaries documented in the architecture.
+- Keep D-Bus/MPRIS as endpoint lifecycle authority; DesktopApp/PWA resolution is presentation identity.
+- Route reusable Shell media behavior through the existing MediaRuntime capabilities instead of adding surface-local protocol/services.
+- Keep private GNOME Shell contracts inside the private compatibility/adaptation tree. Core MediaShell code must not depend on private implementation details.
+- Keep resource creation, signal connections, GLib sources, cancellables, asynchronous generations, actor ownership, sessions, and cleanup under the same owner.
+- Reject results produced for a replaced owner, track, request, actor, window, profile, or extension lifecycle.
+- Preserve GSettings keys/values, D-Bus contracts, resource paths, GtkBuilder IDs, CSS classes, `GTypeName`s, action IDs, and other persisted/external contracts unless the change intentionally includes the required migration/break.
+- Share implementation only when inputs, outputs, side effects, ownership, teardown, and expected evolution are genuinely the same. Similar Popup and Top Bar code is not sufficient reason for inheritance or a generic surface.
+- Put constants/helpers with the domain that owns their meaning. Do not introduce catch-all `constants`, `utils`, or `services` directories for convenience.
+- Update tests, declarative resources, translations, comments, and documentation when the behavior/contract they represent changes.
+- Test observable behavior and stable contracts; avoid source-shape tests that merely duplicate implementation details.
+- Keep functional changes and unrelated cleanup separate when doing so improves review and rollback.
+
+## Vocabulary
+
+Use the canonical terms consistently:
+
+- **MprisPlayer**: one owned `org.mpris.MediaPlayer2.*` endpoint;
+- **Track**: normalized MPRIS Metadata snapshot;
+- **MediaRuntime**: Shell media capability composition;
+- **DesktopApp** / **Shell.App**: GNOME application identity, distinct from an MPRIS endpoint;
+- **Artwork**: technical MediaShell artwork acquisition/cache/presentation vocabulary; protocol/user-facing “album art” remains valid where appropriate;
+- **Surface**: independent presentation root such as Popup or Top Bar;
+- **Private adapter**: GNOME Shell-version-specific implementation consuming MediaShell capabilities.
+
+Protocol names keep the spelling defined by MPRIS/D-Bus at the protocol boundary.
 
 ## Translations
 
 JavaScript strings shown to users use the project gettext helpers. GtkBuilder strings use `translatable="yes"`. Identifiers, protocol values, settings keys, and other code contracts are not translated.
 
-After changing translatable text, regenerate the template and merge every locale catalog:
+After changing translatable text:
 
 ```bash
 pnpm run translations
 pnpm check
 ```
 
-Review the resulting `.pot` and `.po` changes. Preserve existing translations, placeholders, plural forms, source references, translator comments, and valid catalog headers. Do not replace reviewed translations with generated placeholders.
-
-`pnpm check` verifies source/catalog consistency without requiring the complete native toolchain. When gettext is available, `pnpm run check:native` also extracts and compiles the catalogs with the native tools.
+Review the resulting `.pot` and `.po` changes. Preserve reviewed translations, placeholders, plural forms, source references, translator comments, and valid headers.
 
 ## Validation
 
-Install the locked dependencies once, then run the project gate for every contribution:
+Install the locked dependencies and run:
 
 ```bash
 pnpm install
 pnpm check
 ```
 
-Run `pnpm build` when the change affects runtime source, schemas, resources, translations, packaging, or compatibility. Run `pnpm verify` for a release candidate or EGO submission. The generated extension must still be installed and exercised in GNOME; automated checks cannot validate Shell actor behavior, real MPRIS endpoints, visual output, or private Shell API compatibility.
+Run `pnpm build` when runtime source, schemas, resources, translations, packaging, or platform compatibility change. Run `pnpm verify` for a release candidate or EGO submission.
 
-Choose live scenarios from the changed contract. Record the GNOME version and, when relevant, the media app or MPRIS endpoint, settings involved, reproduction steps, and useful log output.
+The generated extension must still be installed and exercised in GNOME. Automated checks cannot prove Shell actor behavior, private API compatibility, visual output, or the quirks of real MPRIS endpoints.
+
+For live testing, record the GNOME version and, when relevant, player/browser, settings, reproduction steps, and useful journal output.
 
 ## Commits and pull requests
 
-Keep each commit coherent and reviewable. Separate a prerequisite refactor, functional change, generated translation update, test adjustment, or broad documentation revision when that separation makes review and rollback safer.
+Keep commits coherent and reviewable. A pull request should state:
 
-A pull request must state:
-
-- the behavior or contract changed and why;
-- the affected Shell, Preferences, MPRIS, or packaging path;
-- compatibility or migration consequences;
+- behavior or contract changed and why;
+- affected Shell, Preferences, MPRIS, settings, private integration, or package path;
+- compatibility/migration consequences;
 - automated commands run;
-- live scenarios tested and GNOME versions used.
+- live scenarios and GNOME versions tested.
 
-Include only diagnostic output that helps reproduce or explain a failure.
+Include only diagnostics that help reproduce or explain a failure.
 
 ## Documentation changes
 
-Update documentation when ownership, process boundaries, stable contracts, contributor obligations, supported workflows, or non-obvious compatibility constraints change. Do not duplicate widget instructions, visual dimensions, animation phases, defaults, or other implementation details that are already clear in source and expected to evolve.
+Update documentation when ownership, process boundaries, stable contracts, contributor obligations, supported workflows, or non-obvious compatibility constraints change. Avoid duplicating transient widget dimensions, animation internals, or other implementation details already obvious from source and likely to evolve.

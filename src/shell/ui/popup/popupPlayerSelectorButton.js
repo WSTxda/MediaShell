@@ -9,7 +9,11 @@
  * selection and pinning remain owned by the selector list.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
+import {
+  MediaShellStyleClasses,
+  NativeStyleClasses,
+  styleClassNames,
+} from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -70,9 +74,9 @@ export default class PopupPlayerSelectorButton {
 
     const identity = this.player.identity;
     const desktopEntry = this.player.desktopEntry;
-    const coloredClass = this.settings.mediaAppIconUseColor
-      ? NativeStyleClasses.COLORED_ICON
-      : NativeStyleClasses.SYMBOLIC_ICON;
+    const coloredClass = this.settings.appIconUseColor
+      ? MediaShellStyleClasses.COLORED_ICON
+      : MediaShellStyleClasses.SYMBOLIC_ICON;
     const renderKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;
     if (renderKey !== this.renderKey) {
       const desktopApp = this.desktopAppResolver.resolveDesktopApp(
@@ -129,7 +133,7 @@ export default class PopupPlayerSelectorButton {
       styleClass: styleClassNames(
         NativeStyleClasses.POPUP_MENU_ICON,
         MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON_ICON,
-        NativeStyleClasses.SYMBOLIC_ICON,
+        MediaShellStyleClasses.SYMBOLIC_ICON,
       ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
@@ -158,7 +162,9 @@ export default class PopupPlayerSelectorButton {
     this.disconnectButtonClickAction = installPrimaryClickAction(
       this.button,
       () => this.onActivate?.(),
-      () => (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length > 1,
+      () =>
+        (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length >
+        1,
     );
   }
 

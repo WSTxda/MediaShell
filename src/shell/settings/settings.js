@@ -111,7 +111,10 @@ const POPUP_DEFINITIONS = Object.freeze({
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SPEED_SHOW,
     "get_boolean",
   ),
-  volumeControlShow: define(SettingsKeys.POPUP_VOLUME_CONTROL_SHOW, "get_boolean"),
+  volumeControlShow: define(
+    SettingsKeys.POPUP_VOLUME_CONTROL_SHOW,
+    "get_boolean",
+  ),
   trackInformationScrollEnabled: define(
     SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED,
     "get_boolean",
@@ -128,10 +131,7 @@ const POPUP_DEFINITIONS = Object.freeze({
       TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
     ),
   ),
-  mediaAppIconUseColor: define(
-    SettingsKeys.POPUP_MEDIA_APP_ICON_USE_COLOR,
-    "get_boolean",
-  ),
+  appIconUseColor: define(SettingsKeys.POPUP_APP_ICON_USE_COLOR, "get_boolean"),
 });
 
 const TOP_BAR_DEFINITIONS = Object.freeze({
@@ -173,9 +173,9 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
         TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
       ),
   ),
-  mediaAppIconShow: define(SettingsKeys.TOP_BAR_MEDIA_APP_ICON_SHOW, "get_boolean"),
-  mediaAppIconUseColor: define(
-    SettingsKeys.TOP_BAR_MEDIA_APP_ICON_USE_COLOR,
+  appIconShow: define(SettingsKeys.TOP_BAR_APP_ICON_SHOW, "get_boolean"),
+  appIconUseColor: define(
+    SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
     "get_boolean",
   ),
   artworkShow: define(SettingsKeys.TOP_BAR_ARTWORK_SHOW, "get_boolean"),
@@ -242,16 +242,20 @@ const PANEL_DEFINITIONS = Object.freeze({
 });
 
 const INTERACTION_DEFINITIONS = Object.freeze({
-  mouseActionLeft: define(SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT, "get_enum", (value) =>
-    normalizeInputAction(value, InputActions.NONE),
+  mouseActionLeft: define(
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT,
+    "get_enum",
+    (value) => normalizeInputAction(value, InputActions.NONE),
   ),
   mouseActionMiddle: define(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionRight: define(SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT, "get_enum", (value) =>
-    normalizeInputAction(value, InputActions.NONE),
+  mouseActionRight: define(
+    SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT,
+    "get_enum",
+    (value) => normalizeInputAction(value, InputActions.NONE),
   ),
   mouseActionDouble: define(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE,
@@ -279,7 +283,10 @@ const INTEGRATION_DEFINITIONS = Object.freeze({
 });
 
 const MEDIA_DEFINITIONS = Object.freeze({
-  artworkCacheEnabled: define(SettingsKeys.ARTWORK_CACHE_ENABLED, "get_boolean"),
+  artworkCacheEnabled: define(
+    SettingsKeys.ARTWORK_CACHE_ENABLED,
+    "get_boolean",
+  ),
   blockedAppIds: define(
     SettingsKeys.BLOCKED_APPS,
     "get_strv",

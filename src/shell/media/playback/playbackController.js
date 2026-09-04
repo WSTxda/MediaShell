@@ -75,12 +75,29 @@ export function resolveSeekOffsetMicroseconds(action) {
 }
 
 /**
- * Executes one canonical playback action against a specific MprisPlayer-like
- * target. Kept exported for protocol/domain unit tests and narrow adapters.
+ * Executes one absolute-position request without reimplementing MPRIS policy.
+ *
+ * The controller owns MediaShell command routing; MprisPlayer owns capability,
+ * TrackId, stale-track, argument, and D-Bus validation. Keeping the raw
+ * SetPosition contract at the endpoint boundary preserves one protocol owner.
  */
+export async function executeSetPosition(
+  player,
+  positionMicroseconds,
+  expectedTrackId = player?.trackId ?? null,
+) {
+  return executePlayerMethod(
+    player,
+    "setPosition",
+    expectedTrackId,
+    positionMicroseconds,
+  );
+}
+
 export async function executePlaybackControlAction(player, action) {
   const seekOffset = resolveSeekOffsetMicroseconds(action);
-  if (seekOffset !== null) return executePlayerMethod(player, "seek", seekOffset);
+  if (seekOffset !== null)
+    return executePlayerMethod(player, "seek", seekOffset);
 
   if (action === PlaybackControlActions.CYCLE_SPEED) {
     const nextRate = resolveNextPlaybackRate(
@@ -122,14 +139,9 @@ export default class PlaybackController {
   setPosition(
     positionMicroseconds,
     player = this.activePlayer,
-    trackId = player?.trackId,
+    expectedTrackId = player?.trackId ?? null,
   ) {
-    return executePlayerMethod(
-      player,
-      "setPosition",
-      trackId,
-      positionMicroseconds,
-    );
+    return executeSetPosition(player, positionMicroseconds, expectedTrackId);
   }
 
   setVolume(volume, player = this.activePlayer) {
@@ -139,21 +151,29 @@ export default class PlaybackController {
   increaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    return player.setVolume(Math.min(player.volume + step, 1));
+    return executePlayerMethod(
+      player,
+      "setVolume",
+      Math.min(player.volume + step, 1),
+    );
   }
 
   decreaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    return player.setVolume(Math.max(player.volume - step, 0));
+    return executePlayerMethod(
+      player,
+      "setVolume",
+      Math.max(player.volume - step, 0),
+    );
   }
 
   raise(player = this.activePlayer) {
-    return player?.raise() ?? mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
+    return executePlayerMethod(player, "raise");
   }
 
   quit(player = this.activePlayer) {
-    return player?.quit() ?? mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
+    return executePlayerMethod(player, "quit");
   }
 
   destroy() {

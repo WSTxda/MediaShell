@@ -53,7 +53,7 @@ export const SettingsKeys = Object.freeze({
   POPUP_TRACK_INFORMATION_SCROLL_SPEED: "popup-track-information-scroll-speed",
   POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
     "popup-track-information-scroll-pause-time",
-  POPUP_MEDIA_APP_ICON_USE_COLOR: "popup-media-app-icon-use-color",
+  POPUP_APP_ICON_USE_COLOR: "popup-app-icon-use-color",
 
   // Historical schema IDs remain the persisted track-information width contract.
   TOP_BAR_TRACK_INFORMATION_WIDTH: "top-bar-track-information-width",
@@ -66,8 +66,8 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
     "top-bar-track-information-scroll-pause-time",
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
-  TOP_BAR_MEDIA_APP_ICON_SHOW: "top-bar-media-app-icon-show",
-  TOP_BAR_MEDIA_APP_ICON_USE_COLOR: "top-bar-media-app-icon-use-color",
+  TOP_BAR_APP_ICON_SHOW: "top-bar-app-icon-show",
+  TOP_BAR_APP_ICON_USE_COLOR: "top-bar-app-icon-use-color",
   TOP_BAR_ARTWORK_SHOW: "top-bar-artwork-show",
   TOP_BAR_ARTWORK_CORNER_RADIUS: "top-bar-artwork-corner-radius",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
@@ -133,7 +133,7 @@ export const TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
 /**
  * Default order for top bar elements when the order setting is unset or repaired.
  *
- * The order mirrors the initial user experience: app identity and album art first,
+ * The order mirrors the initial user experience: app identity and artwork first,
  * followed by track information, optional activity feedback, and compact controls.
  */
 export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([

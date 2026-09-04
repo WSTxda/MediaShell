@@ -9,7 +9,7 @@ A GNOME extension that adds configurable MPRIS media controls to the top bar.
 
 ![Banner](https://raw.githubusercontent.com/WSTxda/MediaShell/main/assets/images/banner.svg)
 
-MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active media apps. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.
+MediaShell is a GNOME Shell extension that adds configurable MPRIS media controls to the top bar. Its customizable popup displays album art, track information, playback controls, and a selector for switching between active MPRIS players. The top bar and popup can be configured independently, while GTK4 and Libadwaita preferences provide a consistent GNOME experience.
 
 <details>
   <summary><h3>Screenshots</h3></summary>
@@ -19,12 +19,12 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 <table>
   <tr>
     <td align="center"><strong>Popup</strong></td>
-    <td align="center"><strong>Popup media app selector</strong></td>
+    <td align="center"><strong>Popup player selector</strong></td>
     <td align="center"><strong>Popup theming</strong></td>
   </tr>
   <tr>
     <td><img src="assets/images/screenshots/screen_popup.png" alt="MediaShell popup" width="100%"></td>
-    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup media app selector" width="100%"></td>
+    <td><img src="assets/images/screenshots/screen_popup_app_selector.png" alt="MediaShell popup player selector" width="100%"></td>
     <td><img src="assets/images/screenshots/screen_popup_theming.png" alt="MediaShell popup theming" width="100%"></td>
   </tr>
 </table>
@@ -65,49 +65,49 @@ MediaShell is a GNOME Shell extension that adds configurable MPRIS media control
 
 - The top bar and popup use GNOME Shell widgets and follow the desktop's visual language.
 - Preferences are built with GTK4 and Libadwaita.
-- Optionally **Hide GNOME media controls** or **Enhance GNOME media controls** with richer notifications and player grouping, plus lock-screen enhancement on Shell 49–51.
+- Choose how MediaShell integrates with GNOME native media controls: keep them **Default**, **Hidden**, or **Enhanced** with richer notifications/player grouping and supported lock-screen integration.
 
 #### Independent top bar and popup
 
 - Configure the contents of the popup and top bar independently.
-- Choose the panel position and reorder the app icon, album art, track information, visualizer, and playback controls.
+- Choose the panel position and reorder the app icon, artwork, track information, visualizer, and playback controls.
 - Build track information from MPRIS fields and custom text, with independent scrolling behavior for each surface.
 
 #### Playback and seeking
 
 - Use previous, play/pause, next, seek, shuffle, and repeat controls in the popup or top bar.
 - The popup can add a seekable progress bar, playback-speed control, and volume control.
-- Controls follow the app's playback state and reported MPRIS capabilities.
+- Controls follow the player's playback state and reported MPRIS capabilities.
 
-#### Media app selector
+#### Player selector
 
-- Switch between media apps currently available through MPRIS.
-- Pin the selected media app for the current Shell session.
-- Open or quit an app when its MPRIS implementation supports the action.
-- Block apps you do not want MediaShell to display without changing their MPRIS service.
+- Switch between players currently available through MPRIS.
+- Pin the selected player for the current Shell session.
+- Raise or quit the player's desktop app when the MPRIS/DesktopEntry relationship supports the action.
+- Block desktop apps you do not want MediaShell to display without modifying their MPRIS service.
 
-#### Album art
+#### Artwork
 
-- Display local or remote album art in the popup and top bar with configurable presentation.
+- Display local or remote MPRIS artwork in the popup and top bar with configurable presentation.
 - An optional persistent cache improves repeated loads and can be inspected or cleared from Preferences.
 
 #### Visualizer
 
 - Add an optional decorative top bar visualizer with Beats, Pulse, Classic, Spectrum, and Vinyl styles.
-- Adjust the animation speed; motion follows the active media app's playback state.
+- Adjust the animation speed; motion follows the active player's playback state.
 
 #### Mouse and keyboard
 
 - Map left, middle, right, and double clicks plus scroll directions to actions; touch activation follows the primary action.
-- Use global shortcuts for playback, seeking, volume, media app actions, opening the popup, and Preferences.
+- Use global shortcuts for playback, seeking, volume, player/app actions, opening the popup, and Preferences.
 
 ## Requirements
 
 - **GNOME Shell** 48–51
-- A media app or browser session that exposes an **MPRIS** service
+- A media player or browser session that exposes an **MPRIS** service
 
 > [!IMPORTANT]
-> MediaShell follows the capabilities reported by the active MPRIS app. Seeking, shuffle, repeat, playback speed, volume, and app actions are available only when supported. Track metadata and album art depend on what the app provides for the current media.
+> MediaShell follows the capabilities reported by the active MPRIS player. Seeking, shuffle, repeat, playback speed, volume, and app actions are available only when supported. Track metadata and artwork depend on what the player provides for the current media.
 
 > [!NOTE]
 > Browser MPRIS sessions are controlled by the browser and active website. They may appear, change identity, or disappear as tabs, pages, and playback ownership change.

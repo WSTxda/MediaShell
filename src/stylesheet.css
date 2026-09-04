@@ -2,7 +2,7 @@
  * MediaShell Shell stylesheet.
  *
  * Sections mirror the runtime UI tree: shared utilities, top bar, popup root,
- * media app selector, album art, track information, progress bar, and playback controls.
+ * player selector, artwork, track information, progress bar, and playback controls.
  * Keep horizontal alignment rules centralized in component roots; JS computes
  * dimensions from canonical shared and Shell constants.
  */
@@ -61,7 +61,7 @@
   margin: 0;
 }
 
-.mediashell-top-bar-album-art {
+.mediashell-top-bar-artwork {
   margin-left: 6px;
   margin-right: 6px;
 }
@@ -156,7 +156,7 @@
   margin-bottom: 0;
 }
 
-/* Popup — Media app selector button --------------------------------------
+/* Popup — Player selector button --------------------------------------
  * The pill keeps its stock Quick Settings shape. It is centered and does not
  * participate in the full-width parent-padding grid.
  */
@@ -196,7 +196,7 @@
   font-size: 100%;
 }
 
-/* Popup — Media app selector list -----------------------------------------
+/* Popup — Player selector list -----------------------------------------
  * Full-width component: the card starts and ends at the parent padding, exactly
  * like the slider and labels. The card owns only internal organization padding.
  *
@@ -288,25 +288,25 @@
   icon-size: 14px;
 }
 
-/* Album art ----------------------------------------------------------
+/* Artwork ------------------------------------------------------------
  * Shared visual treatment; each surface owns its layout and geometry.
  */
-.mediashell-album-art-frame {
+.mediashell-artwork-frame {
   background-color: rgba(128, 128, 128, 0.38);
 }
 
-.mediashell-album-art-image {
+.mediashell-artwork-image {
   margin: 0;
   padding: 0;
 }
 
 /* Popup and top-bar fallbacks use the native .button surface. */
-.mediashell-album-art-fallback {
+.mediashell-artwork-fallback {
   padding: 0;
 }
 
 /* GNOME media controls enhancement ----------------------------------- */
-.mediashell-enhanced-media-album-art {
+.mediashell-enhanced-media-artwork {
   margin-right: 8px;
 }
 

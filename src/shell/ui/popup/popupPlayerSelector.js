@@ -5,7 +5,7 @@
  * Owns the popup player selector button/list composition and interaction.
  *
  * PopupContent delegates selector state to this component so its list can be
- * reconciled independently from album art, progress, and playback controls.
+ * reconciled independently from artwork, progress, and playback controls.
  */
 
 import PopupPlayerSelectorButton from "./popupPlayerSelectorButton.js";
@@ -35,8 +35,9 @@ export default class PopupPlayerSelector {
 
   render() {
     this.playerSelectorButton.render();
-    const availablePlayerCount =
-      (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length;
+    const availablePlayerCount = (
+      this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []
+    ).length;
     if (availablePlayerCount <= 1) this.playerSelectorList.close();
     else if (this.playerSelectorList.isOpen)
       this.playerSelectorList.refreshPlayers();

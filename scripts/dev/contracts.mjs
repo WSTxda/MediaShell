@@ -32,7 +32,6 @@ import {
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
-  LEGACY_INPUT_ACTION_SCHEMA_NICKS,
 } from "../../src/shared/input/actions.js";
 import {
   NativeMediaControlsModes,
@@ -332,10 +331,7 @@ export async function checkSettingsContracts() {
     errors,
     `${schemaPrefix}.input-actions`,
     schema.enums[`${schemaPrefix}.input-actions`],
-    Object.entries(InputActions).map(([nick, value]) => ({
-      nick: LEGACY_INPUT_ACTION_SCHEMA_NICKS[value] ?? nick,
-      value,
-    })),
+    Object.entries(InputActions).map(([nick, value]) => ({ nick, value })),
   );
   compareEnum(
     errors,
@@ -356,7 +352,10 @@ export async function checkSettingsContracts() {
     errors,
     `${schemaPrefix}.native-media-controls-modes`,
     schema.enums[`${schemaPrefix}.native-media-controls-modes`],
-    Object.keys(NativeMediaControlsModes).map((nick, value) => ({ nick, value })),
+    Object.keys(NativeMediaControlsModes).map((nick, value) => ({
+      nick,
+      value,
+    })),
   );
 
   fail("Settings and UI contract validation", errors);

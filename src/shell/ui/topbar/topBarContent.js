@@ -18,7 +18,7 @@ import { TopBarElementIds } from "../../../shared/ui/topBar.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
 import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
-import TopBarAlbumArt from "./topBarAlbumArt.js";
+import TopBarArtwork from "./topBarArtwork.js";
 import TopBarAppIcon from "./topBarAppIcon.js";
 import TopBarPlaybackControls from "./topBarPlaybackControls.js";
 import TopBarTrackInformation from "./topBarTrackInformation.js";
@@ -49,11 +49,14 @@ export default class TopBarContent {
         ),
     );
     this.appIcon = new TopBarAppIcon(this, desktopAppResolver);
-    this.albumArt = new TopBarAlbumArt(this, artworkService);
+    this.artwork = new TopBarArtwork(this, artworkService);
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
-    this.playbackControls = new TopBarPlaybackControls(this, playbackController);
+    this.playbackControls = new TopBarPlaybackControls(
+      this,
+      playbackController,
+    );
     this.installSettingsSubscriptions();
   }
 
@@ -61,27 +64,41 @@ export default class TopBarContent {
     return this.indicator.player;
   }
 
-
   installSettingsSubscriptions() {
     const subscriptions = [
-      [["trackInformationWidth", "trackInformationWidthLock"], TopBarRegions.LAYOUT],
-      [[
-        "trackInformationShow",
-        "trackInformationContent",
-        "trackInformationScrollEnabled",
-        "trackInformationScrollSpeed",
-        "trackInformationScrollPauseMilliseconds",
-      ], TopBarRegions.TRACK_INFORMATION],
-      [["mediaAppIconShow", "mediaAppIconUseColor"], TopBarRegions.APP_ICON],
+      [
+        ["trackInformationWidth", "trackInformationWidthLock"],
+        TopBarRegions.LAYOUT,
+      ],
+      [
+        [
+          "trackInformationShow",
+          "trackInformationContent",
+          "trackInformationScrollEnabled",
+          "trackInformationScrollSpeed",
+          "trackInformationScrollPauseMilliseconds",
+        ],
+        TopBarRegions.TRACK_INFORMATION,
+      ],
+      [["appIconShow", "appIconUseColor"], TopBarRegions.APP_ICON],
       [["artworkShow", "artworkCornerRadius"], TopBarRegions.ARTWORK],
-      [["visualizerShow", "visualizerStyle", "visualizerSpeed"], TopBarRegions.VISUALIZER],
+      [
+        ["visualizerShow", "visualizerStyle", "visualizerSpeed"],
+        TopBarRegions.VISUALIZER,
+      ],
       [["playbackControlsShow"], TopBarRegions.PLAYBACK_CONTROLS],
       [["playbackControlsShuffleShow"], TopBarRegions.PLAYBACK_SHUFFLE],
-      [["playbackControlsSeekBackwardShow"], TopBarRegions.PLAYBACK_SEEK_BACKWARD],
+      [
+        ["playbackControlsSeekBackwardShow"],
+        TopBarRegions.PLAYBACK_SEEK_BACKWARD,
+      ],
       [["playbackControlsPreviousTrackShow"], TopBarRegions.PLAYBACK_PREVIOUS],
       [["playbackControlsPlayPauseShow"], TopBarRegions.PLAYBACK_PLAY_PAUSE],
       [["playbackControlsNextTrackShow"], TopBarRegions.PLAYBACK_NEXT],
-      [["playbackControlsSeekForwardShow"], TopBarRegions.PLAYBACK_SEEK_FORWARD],
+      [
+        ["playbackControlsSeekForwardShow"],
+        TopBarRegions.PLAYBACK_SEEK_FORWARD,
+      ],
       [["playbackControlsRepeatShow"], TopBarRegions.PLAYBACK_REPEAT],
       [["elementOrder"], TopBarRegions.ELEMENT_ORDER],
     ];
@@ -106,10 +123,9 @@ export default class TopBarContent {
 
     this.ensureLayout();
 
-    const playbackOrderIndex =
-      this.settings.elementOrder.indexOf(
-        TopBarElementIds.PLAYBACK_CONTROLS,
-      );
+    const playbackOrderIndex = this.settings.elementOrder.indexOf(
+      TopBarElementIds.PLAYBACK_CONTROLS,
+    );
     let beforePlaybackIndex = 0;
     let afterPlaybackIndex = 0;
 
@@ -145,9 +161,9 @@ export default class TopBarContent {
         (topBarRegions & TopBarRegions.ARTWORK ||
           topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runComponentUpdate("top bar album art", () => {
-          if (isVisible) this.albumArt.render(targetIndex, targetBox);
-          else this.albumArt.remove();
+        this.runComponentUpdate("top bar artwork", () => {
+          if (isVisible) this.artwork.render(targetIndex, targetBox);
+          else this.artwork.remove();
         });
       }
 
@@ -246,7 +262,7 @@ export default class TopBarContent {
 
   isElementVisible(elementId) {
     if (elementId === TopBarElementIds.APP_ICON)
-      return this.settings.mediaAppIconShow;
+      return this.settings.appIconShow;
     if (elementId === TopBarElementIds.ARTWORK)
       return this.settings.artworkShow;
     if (elementId === TopBarElementIds.TRACK_INFORMATION)
@@ -298,18 +314,18 @@ export default class TopBarContent {
     const visualizer = this.visualizer;
     const trackInformation = this.trackInformation;
     const appIcon = this.appIcon;
-    const albumArt = this.albumArt;
+    const artwork = this.artwork;
     this.playbackControls = null;
     this.visualizer = null;
     this.trackInformation = null;
     this.appIcon = null;
-    this.albumArt = null;
+    this.artwork = null;
 
     playbackControls?.destroy();
     visualizer?.destroy();
     trackInformation?.destroy();
     appIcon?.destroy();
-    albumArt?.destroy();
+    artwork?.destroy();
 
     this.topBarBox?.get_parent()?.remove_child(this.topBarBox);
     this.topBarBox?.destroy();

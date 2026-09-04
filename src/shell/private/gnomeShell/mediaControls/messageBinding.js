@@ -18,6 +18,7 @@ import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { IconNames } from "../../../../shared/icons.js";
 import { MprisPlayerProperties } from "../../../mpris/protocol.js";
+import { MprisOperationStatuses } from "../../../mpris/operationResult.js";
 import { PlaybackControlIds } from "../../../../shared/playback/controls.js";
 import { PlaybackStatus } from "../../../mpris/protocol.js";
 import { normalizeTrackDurationMicroseconds } from "../../../mpris/position.js";
@@ -30,10 +31,7 @@ import {
 } from "../../../media/artwork/presentation.js";
 import { createLogger } from "../../../../shared/logging/logger.js";
 import { resolvePlaybackControlState } from "../../../media/playback/controlState.js";
-import {
-  ACTIVE_OPACITY,
-  INACTIVE_OPACITY,
-} from "../../../ui/actorState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../../../ui/actorState.js";
 import { placeActorAtIndex } from "../../../ui/components/actorOrder.js";
 import { isCancellationError } from "../../../platform/gioErrors.js";
 import { createIcon, setGIcon } from "../../../ui/icons.js";
@@ -47,7 +45,7 @@ const logger = createLogger("EnhancedMediaMessageBinding");
 
 const NATIVE_MEDIA_CONTROL_STYLE_CLASS = "message-media-control";
 const EnhancedStyleClasses = Object.freeze({
-  ALBUM_ART: "mediashell-enhanced-media-album-art",
+  ARTWORK: "mediashell-enhanced-media-artwork",
   TRANSPORT: "mediashell-enhanced-media-transport",
   ACTIONS: "mediashell-enhanced-media-actions",
   CONTROL: "mediashell-enhanced-media-control",
@@ -55,12 +53,12 @@ const EnhancedStyleClasses = Object.freeze({
   PROGRESS: "mediashell-enhanced-media-progress",
 });
 const PROGRESS_TRANSITION_NAME = EnhancedStyleClasses.PROGRESS;
-const ENHANCED_ALBUM_ART_SIZE = 56;
-const ENHANCED_ALBUM_ART_RADIUS = 8;
+const ENHANCED_ARTWORK_SIZE = 56;
+const ENHANCED_ARTWORK_RADIUS = 8;
 const STATE_CONTROL_ACTIVE_BACKGROUND_ALPHA = 0.14;
-const ALBUM_ART_FALLBACK_BACKGROUND_ALPHA = 0.05;
-const ALBUM_ART_FALLBACK_OUTLINE_ALPHA = 0.2;
-const ALBUM_ART_FALLBACK_ICON_ALPHA = 0.5;
+const ARTWORK_FALLBACK_BACKGROUND_ALPHA = 0.05;
+const ARTWORK_FALLBACK_OUTLINE_ALPHA = 0.2;
+const ARTWORK_FALLBACK_ICON_ALPHA = 0.5;
 const STATE_CONTROL_IDS = Object.freeze([
   PlaybackControlIds.SHUFFLE,
   PlaybackControlIds.REPEAT,
@@ -106,11 +104,7 @@ export default class EnhancedMediaMessageBinding {
   constructor(
     messageContext,
     player,
-    {
-      artworkService,
-      playbackController,
-      onDestroyed = null,
-    },
+    { artworkService, playbackController, onDestroyed = null },
   ) {
     this.context = messageContext;
     this.message = messageContext.message;
@@ -141,17 +135,17 @@ export default class EnhancedMediaMessageBinding {
     this.resumeAfterDrag = false;
     this.positionRefreshGeneration = 0;
 
-    this.albumArtFrame = null;
-    this.albumArtImage = null;
-    this.albumArtFallbackActive = false;
-    this.albumArtLoadGeneration = 0;
-    this.albumArtLoadCancellable = null;
-    this.loadingAlbumArtKey = null;
-    this.loadedAlbumArtKey = null;
-    this.loadedAlbumArtPixbuf = null;
+    this.artworkFrame = null;
+    this.artworkImage = null;
+    this.artworkFallbackActive = false;
+    this.artworkLoadGeneration = 0;
+    this.artworkLoadCancellable = null;
+    this.loadingArtworkKey = null;
+    this.loadedArtworkKey = null;
+    this.loadedArtworkPixbuf = null;
     this.loadedFallbackIcon = null;
-    this.preparedAlbumArt = null;
-    this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
+    this.preparedArtwork = null;
+    this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
     ]);
@@ -198,15 +192,15 @@ export default class EnhancedMediaMessageBinding {
   }
 
   createActors() {
-    this.createAlbumArtActors();
+    this.createArtworkActors();
     this.createPlaybackControls();
     this.createProgressTransition();
   }
 
-  createAlbumArtActors() {
-    this.albumArtImage = createIcon(
+  createArtworkActors() {
+    this.artworkImage = createIcon(
       {
-        styleClass: MediaShellStyleClasses.ALBUM_ART_IMAGE,
+        styleClass: MediaShellStyleClasses.ARTWORK_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -214,19 +208,19 @@ export default class EnhancedMediaMessageBinding {
       },
       IconNames.MEDIA,
     );
-    this.albumArtFrame = new St.Bin({
+    this.artworkFrame = new St.Bin({
       styleClass: styleClassNames(
-        MediaShellStyleClasses.ALBUM_ART_FRAME,
-        EnhancedStyleClasses.ALBUM_ART,
+        MediaShellStyleClasses.ARTWORK_FRAME,
+        EnhancedStyleClasses.ARTWORK,
       ),
       xExpand: false,
       yExpand: false,
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.albumArtFrame.set_child(this.albumArtImage);
-    this.syncAlbumArtGeometry();
-    this.setAlbumArtFallback(null);
+    this.artworkFrame.set_child(this.artworkImage);
+    this.syncArtworkGeometry();
+    this.setArtworkFallback(null);
   }
 
   createPlaybackControls() {
@@ -383,7 +377,7 @@ export default class EnhancedMediaMessageBinding {
       this.context.themeSource.connect("style-changed", () => {
         this.syncSeekTheme();
         this.syncStateControlStyles();
-        if (this.albumArtFallbackActive) this.syncAlbumArtGeometry();
+        if (this.artworkFallbackActive) this.syncArtworkGeometry();
       }),
     ]);
   }
@@ -408,7 +402,7 @@ export default class EnhancedMediaMessageBinding {
   }
 
   applyNativePresentation() {
-    this.context.insertBeforeNativeIcon(this.albumArtFrame);
+    this.context.insertBeforeNativeIcon(this.artworkFrame);
     this.context.insertBeforeNativeMediaControls(this.transportBox);
     this.context.setActionArea(this.actionBox);
 
@@ -509,10 +503,7 @@ export default class EnhancedMediaMessageBinding {
       const buttonState = this.controlButtons.get(controlId);
       if (!buttonState) continue;
 
-      const controlState = resolvePlaybackControlState(
-        this.player,
-        controlId,
-      );
+      const controlState = resolvePlaybackControlState(this.player, controlId);
       this.syncStateControlStyle(
         buttonState.button,
         controlState,
@@ -647,25 +638,29 @@ export default class EnhancedMediaMessageBinding {
     const requestedPositionMicroseconds = Math.floor(
       Math.min(1, Math.max(0, this.slider.value)) * durationMicroseconds,
     );
-    void Promise.resolve(
-      this.playbackController.setPosition(
-        requestedPositionMicroseconds,
-        this.player,
-        currentTrackId,
-      ),
-    )
-      .catch((error) =>
-        logger.debugOnce(
-          `seek:${this.player.busName}`,
-          "Enhanced media seek failed",
-          error,
-        ),
-      )
-      .finally(() => {
-        if (this.active) this.requestExactPosition();
-      });
+    void this.commitAbsoluteSeek(requestedPositionMicroseconds, currentTrackId);
 
     if (shouldResume) this.reconcileProgressTransition();
+  }
+
+  async commitAbsoluteSeek(positionMicroseconds, trackId) {
+    const player = this.player;
+    const result = await this.playbackController.setPosition(
+      positionMicroseconds,
+      player,
+      trackId,
+    );
+    if (!this.active || this.player !== player) return;
+
+    if (result.status !== MprisOperationStatuses.SUCCESS) {
+      logger.debugOnce(
+        `seek:${player.busName}:${result.reason}`,
+        "Enhanced media seek was not applied",
+        result.reason,
+        result.errorName ?? "",
+      );
+    }
+    this.requestExactPosition();
   }
 
   requestExactPosition() {
@@ -703,7 +698,7 @@ export default class EnhancedMediaMessageBinding {
     if (!this.active) return;
 
     if (!this.message.mapped) {
-      this.cancelAlbumArtLoad();
+      this.cancelArtworkLoad();
       this.pauseProgressTransition();
       return;
     }
@@ -713,12 +708,12 @@ export default class EnhancedMediaMessageBinding {
     if (this.message.expanded) this.requestExactPosition();
   }
 
-  syncAlbumArtGeometry() {
-    if (!this.albumArtFrame || !this.albumArtImage) return;
+  syncArtworkGeometry() {
+    if (!this.artworkFrame || !this.artworkImage) return;
     const { frameSize, frameRadius, imageSize, imageRadius } =
       getArtworkPresentationGeometry(
-        ENHANCED_ALBUM_ART_SIZE,
-        ENHANCED_ALBUM_ART_RADIUS,
+        ENHANCED_ARTWORK_SIZE,
+        ENHANCED_ARTWORK_RADIUS,
       );
     const frameStyle = [
       `border-radius: ${frameRadius}px;`,
@@ -726,17 +721,17 @@ export default class EnhancedMediaMessageBinding {
     ];
     const imageStyle = [`border-radius: ${imageRadius}px;`];
 
-    if (this.albumArtFallbackActive) {
+    if (this.artworkFallbackActive) {
       const foreground = this.context.getForegroundColor();
       const outlineColor = colorToRgba(
         foreground,
-        ALBUM_ART_FALLBACK_OUTLINE_ALPHA,
+        ARTWORK_FALLBACK_OUTLINE_ALPHA,
       );
       const backgroundColor = colorToRgba(
         foreground,
-        ALBUM_ART_FALLBACK_BACKGROUND_ALPHA,
+        ARTWORK_FALLBACK_BACKGROUND_ALPHA,
       );
-      const iconColor = colorToRgba(foreground, ALBUM_ART_FALLBACK_ICON_ALPHA);
+      const iconColor = colorToRgba(foreground, ARTWORK_FALLBACK_ICON_ALPHA);
       if (outlineColor && backgroundColor && iconColor) {
         frameStyle.push(`background-color: ${outlineColor};`);
         imageStyle.push(
@@ -746,147 +741,145 @@ export default class EnhancedMediaMessageBinding {
       }
     }
 
-    this.albumArtFrame.style = frameStyle.join(" ");
-    this.albumArtFrame.set_size(frameSize, frameSize);
-    this.albumArtImage.style = imageStyle.join(" ");
-    this.albumArtImage.set_size(imageSize, imageSize);
+    this.artworkFrame.style = frameStyle.join(" ");
+    this.artworkFrame.set_size(frameSize, frameSize);
+    this.artworkImage.style = imageStyle.join(" ");
+    this.artworkImage.set_size(imageSize, imageSize);
   }
 
   syncArtwork() {
-    if (!this.message?.mapped || !this.albumArtFrame) return;
+    if (!this.message?.mapped || !this.artworkFrame) return;
 
     const request = createArtworkRequest({
       busName: this.player.busName,
       track: this.player.track,
-      width: ENHANCED_ALBUM_ART_SIZE,
-      radius: ENHANCED_ALBUM_ART_RADIUS,
+      width: ENHANCED_ARTWORK_SIZE,
+      radius: ENHANCED_ARTWORK_RADIUS,
     });
 
-    if (this.loadedAlbumArtKey === request.key) {
-      this.syncLoadedAlbumArt();
+    if (this.loadedArtworkKey === request.key) {
+      this.syncLoadedArtwork();
       return;
     }
-    if (this.loadingAlbumArtKey === request.key) return;
+    if (this.loadingArtworkKey === request.key) return;
 
-    this.cancelAlbumArtLoad();
-    this.loadAlbumArt(request);
+    this.cancelArtworkLoad();
+    this.loadArtwork(request);
   }
 
-  async loadAlbumArt(request) {
-    const loadGeneration = ++this.albumArtLoadGeneration;
+  async loadArtwork(request) {
+    const loadGeneration = ++this.artworkLoadGeneration;
     const loadCancellable = new Gio.Cancellable();
-    this.albumArtLoadCancellable = loadCancellable;
-    this.loadingAlbumArtKey = request.key;
+    this.artworkLoadCancellable = loadCancellable;
+    this.loadingArtworkKey = request.key;
 
     try {
       const { pixbuf, fallbackIcon } = await this.artworkService.load(
         request,
         loadCancellable,
       );
-      if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
+      if (!this.isCurrentArtworkLoad(loadGeneration, loadCancellable, request))
         return;
 
-      this.loadedAlbumArtKey = request.key;
-      this.loadedAlbumArtPixbuf = pixbuf ?? null;
+      this.loadedArtworkKey = request.key;
+      this.loadedArtworkPixbuf = pixbuf ?? null;
       this.loadedFallbackIcon = pixbuf ? null : (fallbackIcon ?? null);
-      this.preparedAlbumArt = null;
-      this.syncLoadedAlbumArt();
+      this.preparedArtwork = null;
+      this.syncLoadedArtwork();
     } catch (error) {
       if (
         !isCancellationError(error) &&
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
+        this.isCurrentArtworkLoad(loadGeneration, loadCancellable, request)
       ) {
         logger.warnOnce(
-          `album-art:${request.busName}`,
+          `artwork:${request.busName}`,
           "Enhanced media artwork could not be processed; using the fallback icon",
           error,
         );
-        this.loadedAlbumArtKey = request.key;
-        this.loadedAlbumArtPixbuf = null;
+        this.loadedArtworkKey = request.key;
+        this.loadedArtworkPixbuf = null;
         this.loadedFallbackIcon = null;
-        this.preparedAlbumArt = null;
-        this.syncLoadedAlbumArt();
+        this.preparedArtwork = null;
+        this.syncLoadedArtwork();
       }
     } finally {
-      if (
-        this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request)
-      ) {
-        this.loadingAlbumArtKey = null;
-        this.albumArtLoadCancellable = null;
+      if (this.isCurrentArtworkLoad(loadGeneration, loadCancellable, request)) {
+        this.loadingArtworkKey = null;
+        this.artworkLoadCancellable = null;
       }
     }
   }
 
-  syncLoadedAlbumArt() {
-    if (!this.albumArtFrame || !this.loadedAlbumArtKey) return;
+  syncLoadedArtwork() {
+    if (!this.artworkFrame || !this.loadedArtworkKey) return;
 
-    if (this.loadedAlbumArtPixbuf)
-      this.setAlbumArtPixbuf(this.loadedAlbumArtPixbuf);
-    else this.setAlbumArtFallback(this.loadedFallbackIcon);
+    if (this.loadedArtworkPixbuf)
+      this.setArtworkPixbuf(this.loadedArtworkPixbuf);
+    else this.setArtworkFallback(this.loadedFallbackIcon);
   }
 
-  setAlbumArtPixbuf(pixbuf) {
+  setArtworkPixbuf(pixbuf) {
     const { imageSize, imageRadius } = getArtworkPresentationGeometry(
-      ENHANCED_ALBUM_ART_SIZE,
-      ENHANCED_ALBUM_ART_RADIUS,
+      ENHANCED_ARTWORK_SIZE,
+      ENHANCED_ARTWORK_RADIUS,
     );
     if (
-      this.preparedAlbumArt?.key !== this.loadedAlbumArtKey ||
-      this.preparedAlbumArt.imageSize !== imageSize ||
-      this.preparedAlbumArt.imageRadius !== imageRadius
+      this.preparedArtwork?.key !== this.loadedArtworkKey ||
+      this.preparedArtwork.imageSize !== imageSize ||
+      this.preparedArtwork.imageRadius !== imageRadius
     ) {
-      this.preparedAlbumArt = {
-        key: this.loadedAlbumArtKey,
+      this.preparedArtwork = {
+        key: this.loadedArtworkKey,
         imageSize,
         imageRadius,
         pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
       };
     }
 
-    this.albumArtFallbackActive = false;
-    this.syncAlbumArtGeometry();
-    this.albumArtImage.content = null;
-    setGIcon(this.albumArtImage, this.preparedAlbumArt.pixbuf, IconNames.MEDIA);
-    this.albumArtImage.set_icon_size(imageSize);
-    this.albumArtFrame.opacity = ACTIVE_OPACITY;
+    this.artworkFallbackActive = false;
+    this.syncArtworkGeometry();
+    this.artworkImage.content = null;
+    setGIcon(this.artworkImage, this.preparedArtwork.pixbuf, IconNames.MEDIA);
+    this.artworkImage.set_icon_size(imageSize);
+    this.artworkFrame.opacity = ACTIVE_OPACITY;
   }
 
-  setAlbumArtFallback(icon) {
-    if (!this.albumArtFrame || !this.albumArtImage) return;
+  setArtworkFallback(icon) {
+    if (!this.artworkFrame || !this.artworkImage) return;
     const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
-      ENHANCED_ALBUM_ART_SIZE,
-      ENHANCED_ALBUM_ART_RADIUS,
+      ENHANCED_ARTWORK_SIZE,
+      ENHANCED_ARTWORK_RADIUS,
     );
-    this.albumArtFallbackActive = true;
-    this.syncAlbumArtGeometry();
-    this.albumArtImage.content = null;
+    this.artworkFallbackActive = true;
+    this.syncArtworkGeometry();
+    this.artworkImage.content = null;
     setGIcon(
-      this.albumArtImage,
-      icon ?? this.fallbackAlbumArtIcon,
+      this.artworkImage,
+      icon ?? this.fallbackArtworkIcon,
       IconNames.MEDIA,
     );
-    this.albumArtImage.set_icon_size(fallbackIconSize);
-    this.albumArtImage.set_size(imageSize, imageSize);
-    this.albumArtFrame.opacity = ACTIVE_OPACITY;
+    this.artworkImage.set_icon_size(fallbackIconSize);
+    this.artworkImage.set_size(imageSize, imageSize);
+    this.artworkFrame.opacity = ACTIVE_OPACITY;
   }
 
-  isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request) {
+  isCurrentArtworkLoad(loadGeneration, loadCancellable, request) {
     return (
       this.active &&
       this.message.mapped &&
-      loadGeneration === this.albumArtLoadGeneration &&
+      loadGeneration === this.artworkLoadGeneration &&
       !loadCancellable.is_cancelled() &&
-      this.loadingAlbumArtKey === request.key &&
+      this.loadingArtworkKey === request.key &&
       this.player?.busName === request.busName
     );
   }
 
-  cancelAlbumArtLoad() {
-    if (!this.albumArtLoadCancellable) return;
-    this.albumArtLoadGeneration++;
-    this.albumArtLoadCancellable.cancel();
-    this.albumArtLoadCancellable = null;
-    this.loadingAlbumArtKey = null;
+  cancelArtworkLoad() {
+    if (!this.artworkLoadCancellable) return;
+    this.artworkLoadGeneration++;
+    this.artworkLoadCancellable.cancel();
+    this.artworkLoadCancellable = null;
+    this.loadingArtworkKey = null;
   }
 
   handleNativeMessageDestroyed() {
@@ -951,7 +944,7 @@ export default class EnhancedMediaMessageBinding {
       GLib.Source.remove(this.updateSourceId);
       this.updateSourceId = null;
     }
-    this.cancelAlbumArtLoad();
+    this.cancelArtworkLoad();
     this.pauseProgressTransition();
     this.disconnectPlayerState();
     this.disconnectNativePresentationSignals();
@@ -969,7 +962,7 @@ export default class EnhancedMediaMessageBinding {
     for (const actor of [
       this.actionBox,
       this.transportBox,
-      this.albumArtFrame,
+      this.artworkFrame,
     ]) {
       if (!actor) continue;
       actor.get_parent()?.remove_child(actor);
@@ -989,12 +982,12 @@ export default class EnhancedMediaMessageBinding {
     this.actionBox = null;
     this.slider = null;
     this.playbackTransition = null;
-    this.albumArtFrame = null;
-    this.albumArtImage = null;
-    this.albumArtFallbackActive = false;
-    this.loadedAlbumArtPixbuf = null;
+    this.artworkFrame = null;
+    this.artworkImage = null;
+    this.artworkFallbackActive = false;
+    this.loadedArtworkPixbuf = null;
     this.loadedFallbackIcon = null;
-    this.preparedAlbumArt = null;
-    this.fallbackAlbumArtIcon = null;
+    this.preparedArtwork = null;
+    this.fallbackArtworkIcon = null;
   }
 }

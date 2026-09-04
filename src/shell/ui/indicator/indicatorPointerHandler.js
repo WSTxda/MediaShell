@@ -59,14 +59,12 @@ export default class IndicatorPointerHandler {
         this.#handlePrimaryActivation(),
       );
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_MIDDLE, () => {
-        const mouseAction =
-          this.interactions.mouseActionMiddle;
+        const mouseAction = this.interactions.mouseActionMiddle;
         if (mouseAction !== InputActions.NONE)
           this.#executeInputAction(mouseAction);
       });
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_SECONDARY, () => {
-        const mouseAction =
-          this.interactions.mouseActionRight;
+        const mouseAction = this.interactions.mouseActionRight;
         if (mouseAction !== InputActions.NONE)
           this.#executeInputAction(mouseAction);
       });
@@ -110,8 +108,7 @@ export default class IndicatorPointerHandler {
       if (direction === Clutter.ScrollDirection.UP) {
         mouseAction = this.interactions.mouseActionScrollUp;
       } else if (direction === Clutter.ScrollDirection.DOWN) {
-        mouseAction =
-          this.interactions.mouseActionScrollDown;
+        mouseAction = this.interactions.mouseActionScrollDown;
       }
 
       if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
@@ -141,13 +138,8 @@ export default class IndicatorPointerHandler {
   #handlePrimaryActivation() {
     // Primary activation delays the single-click/tap action only when a
     // double-click/double-tap action is configured.
-    if (
-      this.interactions.mouseActionDouble ===
-      InputActions.NONE
-    ) {
-      this.#executeInputAction(
-        this.interactions.mouseActionLeft,
-      );
+    if (this.interactions.mouseActionDouble === InputActions.NONE) {
+      this.#executeInputAction(this.interactions.mouseActionLeft);
       return;
     }
 
@@ -157,18 +149,14 @@ export default class IndicatorPointerHandler {
         250,
         () => {
           this.primaryActivationTimeoutId = null;
-          this.#executeInputAction(
-            this.interactions.mouseActionLeft,
-          );
+          this.#executeInputAction(this.interactions.mouseActionLeft);
           return GLib.SOURCE_REMOVE;
         },
       );
     } else {
       GLib.Source.remove(this.primaryActivationTimeoutId);
       this.primaryActivationTimeoutId = null;
-      this.#executeInputAction(
-        this.interactions.mouseActionDouble,
-      );
+      this.#executeInputAction(this.interactions.mouseActionDouble);
     }
   }
 

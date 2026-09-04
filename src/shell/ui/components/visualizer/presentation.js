@@ -14,10 +14,7 @@ import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
 } from "./definitions.js";
-import {
-  VisualizerAnimationKinds,
-  VisualizerStyles,
-} from "./types.js";
+import { VisualizerAnimationKinds, VisualizerStyles } from "./types.js";
 
 /** Default visualizer actor height used in the compact top bar indicator. */
 export const VISUALIZER_HEIGHT = 16;

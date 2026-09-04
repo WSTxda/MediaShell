@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 20:18-0300\n"
+"POT-Creation-Date: 2026-09-04 03:50-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -31,80 +31,80 @@ msgid "Developed by"
 msgstr "Sviluppato da"
 
 #: src/prefs/controllers/interactionsPageController.js:49
-#: src/shared/utils/playbackControlAccessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:960
+#: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:31
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:962
 msgid "Shuffle"
 msgstr "Casuale"
 
 #: src/prefs/controllers/interactionsPageController.js:53
-#: src/shared/utils/playbackControlAccessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:961
+#: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:963
 msgid "Seek backward"
 msgstr "Riavvolgi"
 
 #: src/prefs/controllers/interactionsPageController.js:57
-#: src/shared/utils/playbackControlAccessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:962
+#: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:964
 msgid "Previous track"
 msgstr "Brano precedente"
 
 #: src/prefs/controllers/interactionsPageController.js:61
-#: src/shared/utils/playbackControlAccessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:963
+#: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:965
 msgid "Play / pause"
 msgstr "Riproduci / Pausa"
 
 #: src/prefs/controllers/interactionsPageController.js:65
-#: src/shared/utils/playbackControlAccessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:964
+#: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:966
 msgid "Next track"
 msgstr "Brano successivo"
 
 #: src/prefs/controllers/interactionsPageController.js:69
-#: src/shared/utils/playbackControlAccessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:965
+#: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:967
 msgid "Seek forward"
 msgstr "Avanza"
 
 #: src/prefs/controllers/interactionsPageController.js:72
-#: src/shared/utils/playbackControlAccessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:966
+#: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:91
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:968
 msgid "Repeat"
 msgstr "Ripetizione"
 
 #: src/prefs/controllers/interactionsPageController.js:73
-#: src/shell/ui/popup/popupVolumeControl.js:141 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:967
+#: src/shell/ui/popup/popupVolumeControl.js:142 assets/ui/prefs.ui:710
+#: assets/ui/prefs.ui:969
 msgid "Volume up"
 msgstr "Aumenta volume"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:968
+#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:970
 msgid "Volume down"
 msgstr "Diminuisci volume"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:969
+#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:971
 msgid "Popup"
 msgstr "Popup"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:970
+#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:972
 msgid "Preferences"
 msgstr "Preferenze"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:971
+#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:973
 msgid "Open app"
 msgstr "Apri app"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:972
+#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:974
 msgid "Quit app"
 msgstr "Chiudi applicazione"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:973
+#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:975
 msgid "Switch app"
 msgstr "Cambia applicazione"
 
@@ -202,7 +202,7 @@ msgstr "Svuotare la cache?"
 msgid "Cached content will be downloaded again when needed."
 msgstr "Il contenuto nella cache verrà scaricato di nuovo quando necessario."
 
-#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:928
+#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:923
 msgid "Clear cache"
 msgstr "Svuota cache"
 
@@ -284,7 +284,7 @@ msgid "Disc"
 msgstr "Disco"
 
 #: src/prefs/widgets/trackInformationContentRow.js:34
-#: src/shared/utils/playbackControlAccessibility.js:58
+#: src/shell/media/playback/accessibility.js:58
 msgid "Track"
 msgstr "Brano"
 
@@ -296,49 +296,49 @@ msgstr "Nessun campo delle informazioni del brano aggiunto"
 msgid "Custom text"
 msgstr "Testo personalizzato"
 
-#: src/shared/utils/playbackControlAccessibility.js:47
+#: src/shell/media/playback/accessibility.js:47
 msgid "Play"
 msgstr "Riproduci"
 
-#: src/shared/utils/playbackControlAccessibility.js:48
+#: src/shell/media/playback/accessibility.js:48
 msgid "Pause"
 msgstr "Pausa"
 
-#: src/shared/utils/playbackControlAccessibility.js:49
+#: src/shell/media/playback/accessibility.js:49
 msgid "Stop"
 msgstr "Interrompi"
 
-#: src/shared/utils/playbackControlAccessibility.js:60
+#: src/shell/media/playback/accessibility.js:60
 msgid "Playlist"
 msgstr "Playlist"
 
-#: src/shared/utils/playbackControlAccessibility.js:61 assets/ui/prefs.ui:959
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:961
 msgid "None"
 msgstr "Nessuna"
 
-#: src/shared/utils/playbackControlAccessibility.js:65 assets/ui/prefs.ui:101
+#: src/shell/media/playback/accessibility.js:65 assets/ui/prefs.ui:101
 msgid "Playback speed"
 msgstr "Velocità di riproduzione"
 
-#: src/shell/ui/notifications/enhancedMediaMessageGroup.js:195
-#: src/shell/ui/notifications/enhancedMediaMessageGroup.js:208
+#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:197
+#: src/shell/private/gnomeShell/mediaControls/messageGroup.js:210
 msgid "Media"
 msgstr "Multimedia"
 
-#: src/shell/ui/popup/popupMediaAppSelectorButton.js:86
-#: src/shell/ui/popup/popupMediaAppSelectorList.js:234
+#: src/shell/ui/popup/popupPlayerSelectorButton.js:89
+#: src/shell/ui/popup/popupPlayerSelectorList.js:232
 msgid "Unknown app"
 msgstr "Applicazione sconosciuta"
 
-#: src/shell/ui/popup/popupVolumeControl.js:106 assets/ui/prefs.ui:119
+#: src/shell/ui/popup/popupVolumeControl.js:107 assets/ui/prefs.ui:119
 msgid "Volume"
 msgstr "Volume"
 
-#: src/shell/ui/popup/popupVolumeControl.js:170
+#: src/shell/ui/popup/popupVolumeControl.js:171
 msgid "Unmute"
 msgstr "Riattiva audio"
 
-#: src/shell/ui/popup/popupVolumeControl.js:170
+#: src/shell/ui/popup/popupVolumeControl.js:171
 msgid "Mute"
 msgstr "Disattiva audio"
 
@@ -664,45 +664,44 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controlla come MediaShell si integra con GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Hide media controls"
-msgstr "Nascondi i controlli multimediali"
+msgid "Native media controls"
+msgstr ""
 
 #: assets/ui/prefs.ui:906
-msgid "Remove the default GNOME media controls from the notification center"
+msgid "Choose how MediaShell integrates with GNOME media controls"
 msgstr ""
-"Rimuovi i controlli multimediali predefiniti di GNOME dal centro notifiche"
 
-#: assets/ui/prefs.ui:911
-msgid "Enhance media controls"
-msgstr "Migliora i controlli multimediali"
-
-#: assets/ui/prefs.ui:912
-msgid ""
-"Enhance the default GNOME media controls in the notification center and on "
-"the lock screen"
-msgstr ""
-"Migliora i controlli multimediali predefiniti di GNOME nel centro notifiche "
-"e nella schermata di blocco"
-
-#: assets/ui/prefs.ui:919
+#: assets/ui/prefs.ui:914
 msgid "Cache"
 msgstr "Cache"
 
-#: assets/ui/prefs.ui:920
+#: assets/ui/prefs.ui:915
 msgid "Store content on disk to load it faster"
 msgstr "Salva il contenuto su disco per caricarlo più rapidamente"
 
-#: assets/ui/prefs.ui:923
+#: assets/ui/prefs.ui:918
 msgid "Store album art"
 msgstr "Memorizza le copertine degli album"
 
-#: assets/ui/prefs.ui:938
+#: assets/ui/prefs.ui:933
 msgid "Clear"
 msgstr "Svuota"
 
-#: assets/ui/prefs.ui:953
+#: assets/ui/prefs.ui:948
 msgid "Extension settings"
 msgstr "Impostazioni dell'estensione"
+
+#: assets/ui/prefs.ui:954
+msgid "Default"
+msgstr ""
+
+#: assets/ui/prefs.ui:955
+msgid "Hidden"
+msgstr ""
+
+#: assets/ui/prefs.ui:956
+msgid "Enhanced"
+msgstr ""
 
 #: assets/ui/top-bar-element-order.ui:6
 msgid "Element order"

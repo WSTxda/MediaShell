@@ -15,7 +15,10 @@ import {
   PlaybackControlIds,
 } from "../../../shared/playback/controls.js";
 import { LoopStatus, PlaybackStatus } from "../../mpris/protocol.js";
-import { canChangePlaybackRate, formatPlaybackRate } from "../../mpris/playbackRate.js";
+import {
+  canChangePlaybackRate,
+  formatPlaybackRate,
+} from "../../mpris/playbackRate.js";
 
 function createControlState(
   control,

@@ -56,9 +56,7 @@ export default class ExtensionController {
     this.runtimeProfile = null;
     this.sessionModeSignalId = null;
     this.indicator = null;
-    this.resourceRegistry = new ResourceRegistry(
-      this.extensionPath,
-    );
+    this.resourceRegistry = new ResourceRegistry(this.extensionPath);
     this.nativeMediaControlsIntegration = new NativeMediaControlsIntegration();
     this.settingsSubscriptions = [];
   }
@@ -68,7 +66,9 @@ export default class ExtensionController {
 
     try {
       this.resourceRegistry.register();
-      this.settings = new MediaShellSettings(this.extensionInstance.getSettings());
+      this.settings = new MediaShellSettings(
+        this.extensionInstance.getSettings(),
+      );
       this.installSettingsSubscriptions();
       this.sessionModeSignalId = Main.sessionMode.connect("updated", () =>
         this.handleSessionModeChanged(),
@@ -76,6 +76,7 @@ export default class ExtensionController {
 
       await this.scheduleRuntimeProfileReconcile();
       if (!this.isCurrentLifecycleGeneration(lifecycleGeneration)) return;
+      logger.debug("Extension lifecycle enabled");
     } catch (error) {
       logger.error("Failed to enable the extension", error);
       this.destroy();
@@ -138,8 +139,15 @@ export default class ExtensionController {
 
   async reconcileRuntimeProfile(profile, runtimeReconcileGeneration) {
     if (this.runtimeProfile !== profile) {
+      const previousProfile = this.runtimeProfile;
       this.destroyRuntimeComponents();
       this.runtimeProfile = profile;
+      logger.debug(
+        "Runtime profile changed",
+        previousProfile ?? "none",
+        "→",
+        profile ?? "none",
+      );
     }
 
     if (profile === RuntimeProfiles.USER) {
@@ -175,11 +183,16 @@ export default class ExtensionController {
   }
 
   async startMediaRuntime(runtimeReconcileGeneration, { includeUserServices }) {
+    logger.debug(
+      "Starting media runtime",
+      includeUserServices ? "user services enabled" : "minimal profile",
+    );
     this.mediaRuntime = new MediaRuntime({
       mediaSettings: this.settings.media,
       callbacks: {
         onAvailablePlayersChanged: () => this.handleAvailablePlayersChanged(),
-        onActivePlayerChanged: (player) => this.handleActivePlayerChanged(player),
+        onActivePlayerChanged: (player) =>
+          this.handleActivePlayerChanged(player),
       },
     });
 
@@ -242,7 +255,10 @@ export default class ExtensionController {
       if (this.runtimeProfile === RuntimeProfiles.USER) this.rebuildIndicator();
     };
     this.settingsSubscriptions.push(
-      this.settings.panel.subscribe(["position", "index"], rebuildPanelPlacement),
+      this.settings.panel.subscribe(
+        ["position", "index"],
+        rebuildPanelPlacement,
+      ),
       this.settings.integration.subscribe("nativeMediaControlsMode", () => {
         if (this.runtimeProfile === RuntimeProfiles.UNLOCK_DIALOG)
           void this.scheduleRuntimeProfileReconcile();
@@ -338,6 +354,7 @@ export default class ExtensionController {
     this.inputActionDispatcher?.destroy();
     this.inputActionDispatcher = null;
 
+    if (this.mediaRuntime) logger.debug("Stopping media runtime");
     this.mediaRuntime?.destroy();
     this.mediaRuntime = null;
     clearIconCache();
@@ -346,6 +363,7 @@ export default class ExtensionController {
   destroy() {
     if (!this.extensionInstance) return;
 
+    logger.debug("Destroying extension lifecycle");
     this.extensionInstance = null;
     this.lifecycleGeneration++;
     this.runtimeReconcileGeneration++;

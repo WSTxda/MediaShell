@@ -11,7 +11,6 @@
 import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "./protocol.js";
 import { PlaybackStatus } from "./protocol.js";
 
-
 /** Maximum age of a local projection before an exact Position refresh is requested. */
 export const POSITION_ESTIMATE_MAX_AGE_MICROSECONDS = 30 * 1000 * 1000;
 

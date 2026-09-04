@@ -12,7 +12,7 @@
         </style>
         <property name="selection-mode">3</property>
         <child>
-          <object class="AdwActionRow" id="row-media-app-icon">
+          <object class="AdwActionRow" id="row-app-icon">
             <property name="title" translatable="yes">App icon</property>
             <property name="activatable">true</property>
             <child type="suffix">
@@ -23,7 +23,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="row-album-art">
+          <object class="AdwActionRow" id="row-artwork">
             <property name="title" translatable="yes">Album art</property>
             <property name="activatable">true</property>
             <child type="suffix">

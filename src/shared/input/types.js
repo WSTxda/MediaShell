@@ -4,8 +4,8 @@
  *
  * Enum values for mouse, scroll, and keyboard actions supported by MediaShell.
  *
- * Values are persisted by GSettings. Existing executable values are stable, and
- * deprecated values 15–17 remain reserved so old settings are never repurposed.
+ * Values are persisted by the 3.x GSettings schema and map only to executable
+ * actions. Obsolete playback-rate compatibility slots are intentionally not part of the 3.0 action contract.
  */
 
 export const InputActions = Object.freeze({
@@ -24,7 +24,4 @@ export const InputActions = Object.freeze({
   SWITCH_APP: 12,
   SEEK_BACKWARD: 13,
   SEEK_FORWARD: 14,
-  RESERVED_15: 15,
-  RESERVED_16: 16,
-  RESERVED_17: 17,
 });

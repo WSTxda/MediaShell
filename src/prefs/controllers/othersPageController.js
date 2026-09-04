@@ -214,10 +214,7 @@ export default class OthersPageController {
         );
     } catch (error) {
       if (artworkCacheViewGeneration === this.artworkCacheViewGeneration)
-        logger.warn(
-          "Failed to calculate the artwork cache statistics",
-          error,
-        );
+        logger.warn("Failed to calculate the artwork cache statistics", error);
     }
   }
 

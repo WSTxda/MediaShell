@@ -54,10 +54,7 @@ export default class EnhancedMediaControls {
   }
 
   static createNotificationList(options) {
-    return new EnhancedMediaControls(
-      options,
-      NOTIFICATION_LIST_CONFIG,
-    );
+    return new EnhancedMediaControls(options, NOTIFICATION_LIST_CONFIG);
   }
 
   static createLockScreen(options) {
@@ -65,11 +62,7 @@ export default class EnhancedMediaControls {
   }
 
   constructor(
-    {
-      artworkService,
-      playbackController,
-      getAvailablePlayers,
-    },
+    { artworkService, playbackController, getAvailablePlayers },
     config,
   ) {
     this.artworkService = artworkService;
@@ -181,8 +174,7 @@ export default class EnhancedMediaControls {
       try {
         const existingBinding = this.bindings.get(message);
         if (existingBinding?.active) {
-          const player =
-            playersByBusName.get(existingBinding.busName) ?? null;
+          const player = playersByBusName.get(existingBinding.busName) ?? null;
           if (existingBinding.player === player) {
             existingBinding.schedulePresentationSync();
             continue;

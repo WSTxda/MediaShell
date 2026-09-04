@@ -6,7 +6,7 @@
  *
  * PopupContent delegates elapsed/duration labels, slider visibility, and seek
  * requests to this component. The class keeps progress-specific UI updates away
- * from album art, track information, and playback control rendering.
+ * from artwork, track information, and playback control rendering.
  */
 
 import { PlaybackStatus } from "../../mpris/protocol.js";

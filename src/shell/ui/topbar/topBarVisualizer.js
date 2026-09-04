@@ -245,7 +245,9 @@ export default class TopBarVisualizer {
     setClassicColumnsVisible(this.classicColumns, classicVisible);
     this.spectrumArea.visible = spectrumVisible;
     this.vinylArea.visible = vinylVisible;
-    this.actor.height = vinylVisible ? VISUALIZER_VINYL_SIZE : VISUALIZER_HEIGHT;
+    this.actor.height = vinylVisible
+      ? VISUALIZER_VINYL_SIZE
+      : VISUALIZER_HEIGHT;
     if (!vinylVisible) this.vinylRotationDegreesPerSecond = 0;
 
     this.syncVisualizerColor();
@@ -295,9 +297,9 @@ export default class TopBarVisualizer {
 
     const shouldAnimate = Boolean(
       this.actor &&
-        this.timeline &&
-        this.actor.mapped &&
-        (this.playing || this.isVinylDecelerating()),
+      this.timeline &&
+      this.actor.mapped &&
+      (this.playing || this.isVinylDecelerating()),
     );
     if (shouldAnimate) {
       if (!this.timeline.is_playing()) this.timeline.start();

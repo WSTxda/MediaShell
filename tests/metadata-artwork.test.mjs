@@ -96,8 +96,8 @@ test("metadata normalization produces one stable and display-safe domain shape",
         assert.equal(
           buildTrackInformationText(
             {
-              [MprisMetadataKeys.TITLE]: { title: "bad" },
-              [MprisMetadataKeys.ARTIST]: ["Artist", {}, null],
+              title: { title: "bad" },
+              artists: ["Artist", {}, null],
             },
             ["TITLE", "ARTIST"],
           ),
@@ -180,7 +180,7 @@ test("artwork requests snapshot ownership and reject stale-equivalent ambiguity"
   assert.equal(Object.isFrozen(first), true);
 });
 
-test("album-art cache and payload limits remain deterministic and bounded", async () => {
+test("artwork cache and payload limits remain deterministic and bounded", async () => {
   await runCases([
     [
       "byte-only eviction",

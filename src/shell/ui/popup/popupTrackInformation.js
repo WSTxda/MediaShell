@@ -4,10 +4,9 @@
  *
  * Renders configurable track information inside the popup.
  *
- * PopupContent delegates popup-specific metadata labels to this component so it
+ * PopupContent delegates popup-specific track labels to this component so it
  * can keep title and artist styling while using the shared ordered metadata
- * model also used by the top bar. Missing MPRIS fields are hidden by the shared
- * metadata helpers before labels are created.
+ * model also used by the top bar. Missing fields are omitted before labels are created.
  */
 
 import { MediaShellStyleClasses } from "../style.js";
@@ -56,7 +55,7 @@ export default class PopupTrackInformation {
   }
 
   render() {
-    const metadata = this.player.metadata;
+    const metadata = this.player.track;
     const width = this.getTrackInformationWidth();
     const items = buildTrackInformationItems(
       metadata,

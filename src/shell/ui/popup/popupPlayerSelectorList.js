@@ -10,7 +10,11 @@
  * intent without changing MprisPlayerRegistry directly.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
+import {
+  MediaShellStyleClasses,
+  NativeStyleClasses,
+  styleClassNames,
+} from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -180,7 +184,7 @@ export default class PopupPlayerSelectorList {
     if (resolvedDesktopAppKeys.some((desktopAppKey) => desktopAppKey === null))
       return null;
 
-    const coloredIcons = this.settings.mediaAppIconUseColor;
+    const coloredIcons = this.settings.appIconUseColor;
     const activeBusName = this.popupContent.player.busName;
     return JSON.stringify([
       coloredIcons,
@@ -208,20 +212,15 @@ export default class PopupPlayerSelectorList {
       orientation: Clutter.Orientation.VERTICAL,
       styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_LIST,
     });
-    const coloredClass = this.settings.mediaAppIconUseColor
-      ? NativeStyleClasses.COLORED_ICON
-      : NativeStyleClasses.SYMBOLIC_ICON;
+    const coloredClass = this.settings.appIconUseColor
+      ? MediaShellStyleClasses.COLORED_ICON
+      : MediaShellStyleClasses.SYMBOLIC_ICON;
     const pinnedPlayer =
-      resolvedPlayerRows.find(({ player }) => player.isPinned)
-        ?.player ?? null;
+      resolvedPlayerRows.find(({ player }) => player.isPinned)?.player ?? null;
 
     for (const resolvedPlayerRow of resolvedPlayerRows) {
       playerList.add_child(
-        this.createPlayerRow(
-          resolvedPlayerRow,
-          pinnedPlayer,
-          coloredClass,
-        ),
+        this.createPlayerRow(resolvedPlayerRow, pinnedPlayer, coloredClass),
       );
     }
     return playerList;
@@ -251,9 +250,7 @@ export default class PopupPlayerSelectorList {
         canSelect,
       }),
     );
-    rowItem.add_child(
-      this.createPlayerPinButton(player, isPinned, canSelect),
-    );
+    rowItem.add_child(this.createPlayerPinButton(player, isPinned, canSelect));
     return rowItem;
   }
 
@@ -381,10 +378,7 @@ export default class PopupPlayerSelectorList {
         source,
       ) ||
       actorContainsEventPoint(this.revealer, event) ||
-      actorContainsEventPoint(
-        this.playerSelectorButton.interactiveActor,
-        event,
-      )
+      actorContainsEventPoint(this.playerSelectorButton.interactiveActor, event)
     ) {
       return Clutter.EVENT_PROPAGATE;
     }

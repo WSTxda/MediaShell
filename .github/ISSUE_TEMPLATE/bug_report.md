@@ -8,7 +8,7 @@ assignees: ""
 
 ## Summary
 
-Describe the problem and the result you expected.
+Describe what happened and what you expected instead. Mention whether this is a regression and, if known, the last MediaShell version or commit where it worked.
 
 ## Reproduction
 
@@ -16,45 +16,54 @@ Describe the problem and the result you expected.
 2.
 3.
 
+Keep the steps minimal. If the failure depends on opening the popup, changing a setting, switching players, seeking, locking the screen, or starting a second MPRIS player, include that transition explicitly.
+
 ## Environment
 
-- GNOME:
+- MediaShell release or commit:
+- GNOME Shell version:
 - Distribution:
 - Session: Wayland / X11
-- Media app or browser:
-- MediaShell release or commit:
+- Player, browser, or PWA:
+- Player version, when relevant:
 
-## Affected component
+## Affected area
 
-- [ ] Top bar
-- [ ] Popup
-- [ ] Media app selector
+- [ ] MPRIS player discovery / lifecycle
+- [ ] Player selector / pinning
+- [ ] Desktop app identity / AppIcon
+- [ ] Artwork / artwork cache
 - [ ] Track information
 - [ ] Playback controls
-- [ ] Progress bar
-- [ ] Volume actions
-- [ ] Album art
+- [ ] Progress / seeking
+- [ ] Volume
+- [ ] Top bar
+- [ ] Popup
 - [ ] Visualizer
 - [ ] Mouse actions
 - [ ] Keyboard shortcuts
 - [ ] Blocked apps
-- [ ] Hide GNOME media controls
-- [ ] Enhance GNOME media controls
-- [ ] Preferences
+- [ ] Native media controls: Default
+- [ ] Native media controls: Hidden
+- [ ] Native media controls: Enhanced
+- [ ] Lock screen
+- [ ] Preferences / settings
 - [ ] Other
 
 ## MPRIS context
 
-When relevant, include the `org.mpris.MediaPlayer2.*` bus name, `Identity`, `DesktopEntry`, playback state, and whether more than one media app was active.
+When relevant, include the `org.mpris.MediaPlayer2.*` bus name, `Identity`, `DesktopEntry`, playback state, and whether more than one player was active. For seeking problems, note whether the player normally exposes seek support.
 
 ## Logs
 
-Provide a narrow log window around the failure. Remove unrelated or sensitive information.
+Include a narrow log window around the failure. MediaShell logs use the `[MediaShell]` prefix. Remove unrelated or sensitive information before posting.
 
 ```text
-journalctl --user -o cat /usr/bin/gnome-shell
+journalctl --user -b -o cat /usr/bin/gnome-shell | grep MediaShell
 ```
+
+If the filtered output omits useful surrounding errors, attach the relevant unfiltered journal excerpt as well.
 
 ## Additional material
 
-Add screenshots, screen recordings, or configuration details that help reproduce the problem.
+Add screenshots, a short screen recording, or configuration details when they make the problem easier to reproduce. Do not attach a full system journal unless it is necessary.

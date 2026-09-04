@@ -11,16 +11,17 @@
  * a fixed popup-local step.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
+import {
+  MediaShellStyleClasses,
+  NativeStyleClasses,
+  styleClassNames,
+} from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
-import {
-  ACTIVE_OPACITY,
-  INACTIVE_OPACITY,
-} from "../actorState.js";
+import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../actorState.js";
 import { POPUP_VOLUME_CONTROL_HORIZONTAL_INSET } from "./presentation.js";
 
 const UNMUTE_DEFAULT_VOLUME = 0.25;

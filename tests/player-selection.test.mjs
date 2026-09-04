@@ -18,7 +18,7 @@ import {
 } from "../src/shell/mpris/selection.js";
 import { runCases } from "./helpers.mjs";
 
-function mediaApp(
+function player(
   busName,
   playbackStatus,
   { pinned = false, invalid = false } = {},
@@ -33,29 +33,26 @@ function mediaApp(
   };
 }
 
-test("active media-app selection remains deterministic across priority, cycling, and owner handoff", async () => {
-  const stopped = mediaApp(
+test("active player selection remains deterministic across priority, cycling, and owner handoff", async () => {
+  const stopped = player(
     "org.mpris.MediaPlayer2.stopped",
     PlaybackStatus.STOPPED,
   );
-  const current = mediaApp(
+  const current = player(
     "org.mpris.MediaPlayer2.current",
     PlaybackStatus.STOPPED,
   );
-  const paused = mediaApp(
-    "org.mpris.MediaPlayer2.paused",
-    PlaybackStatus.PAUSED,
-  );
-  const playing = mediaApp(
+  const paused = player("org.mpris.MediaPlayer2.paused", PlaybackStatus.PAUSED);
+  const playing = player(
     "org.mpris.MediaPlayer2.playing",
     PlaybackStatus.PLAYING,
   );
-  const pinned = mediaApp(
+  const pinned = player(
     "org.mpris.MediaPlayer2.pinned",
     PlaybackStatus.PAUSED,
     { pinned: true },
   );
-  const invalid = mediaApp(
+  const invalid = player(
     "org.mpris.MediaPlayer2.invalid",
     PlaybackStatus.PLAYING,
     { pinned: true, invalid: true },
@@ -91,15 +88,15 @@ test("active media-app selection remains deterministic across priority, cycling,
     [
       "equal priority",
       () => {
-        const alpha = mediaApp(
+        const alpha = player(
           "org.mpris.MediaPlayer2.alpha",
           PlaybackStatus.PLAYING,
         );
-        const beta = mediaApp(
+        const beta = player(
           "org.mpris.MediaPlayer2.beta",
           PlaybackStatus.PLAYING,
         );
-        const gamma = mediaApp(
+        const gamma = player(
           "org.mpris.MediaPlayer2.gamma",
           PlaybackStatus.PLAYING,
         );
@@ -116,22 +113,23 @@ test("active media-app selection remains deterministic across priority, cycling,
     [
       "stable ordering and cycling",
       () => {
-        const alpha = mediaApp(
+        const alpha = player(
           "org.mpris.MediaPlayer2.alpha",
           PlaybackStatus.STOPPED,
         );
-        const beta = mediaApp(
+        const beta = player(
           "org.mpris.MediaPlayer2.beta",
           PlaybackStatus.STOPPED,
         );
-        const gamma = mediaApp(
+        const gamma = player(
           "org.mpris.MediaPlayer2.gamma",
           PlaybackStatus.STOPPED,
         );
-        assert.deepEqual(
-          orderPlayersDeterministically([gamma, alpha, beta]),
-          [alpha, beta, gamma],
-        );
+        assert.deepEqual(orderPlayersDeterministically([gamma, alpha, beta]), [
+          alpha,
+          beta,
+          gamma,
+        ]);
         assert.equal(chooseNextPlayer([alpha]), null);
         assert.equal(
           chooseNextPlayer([gamma, invalid, alpha, beta], alpha),
@@ -144,11 +142,11 @@ test("active media-app selection remains deterministic across priority, cycling,
     [
       "owner loss",
       () => {
-        const pending = mediaApp(
+        const pending = player(
           "org.mpris.MediaPlayer2.pending",
           PlaybackStatus.PAUSED,
         );
-        const pinnedPending = mediaApp(
+        const pinnedPending = player(
           "org.mpris.MediaPlayer2.pinned-pending",
           PlaybackStatus.PAUSED,
           { pinned: true },

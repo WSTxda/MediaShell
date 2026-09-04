@@ -98,13 +98,6 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
   ),
 ]);
 
-/** Legacy schema nicks retained only so stored enum values remain readable. */
-export const LEGACY_INPUT_ACTION_SCHEMA_NICKS = Object.freeze({
-  [InputActions.RESERVED_15]: "RATE_DECREASE",
-  [InputActions.RESERVED_16]: "RATE_INCREASE",
-  [InputActions.RESERVED_17]: "RATE_RESET",
-});
-
 /** Pointer action values in their translated GtkStringList display order. */
 export const MOUSE_ACTION_VALUES = Object.freeze([
   InputActions.NONE,

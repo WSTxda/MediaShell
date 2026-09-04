@@ -16,10 +16,10 @@ export const POPUP_CONTAINER_PADDING = 16;
 export const POPUP_VOLUME_CONTROL_HORIZONTAL_INSET = 4;
 
 /** Artwork scale while playback is paused or stopped. */
-export const POPUP_ALBUM_ART_PAUSED_SCALE = 0.85;
+export const POPUP_ARTWORK_PAUSED_SCALE = 0.85;
 
 /** Duration of artwork playback-state scale transitions, in milliseconds. */
-export const POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS = 350;
+export const POPUP_ARTWORK_PLAYBACK_ANIMATION_DURATION_MS = 350;
 
 /** Duration of the player selector reveal animation, in milliseconds. */
 export const POPUP_PLAYER_SELECTOR_REVEAL_DURATION_MS = 180;

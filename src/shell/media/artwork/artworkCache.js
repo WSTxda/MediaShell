@@ -15,10 +15,7 @@ import GLib from "gi://GLib";
 import { EXTENSION_UUID } from "../../../shared/project.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { isCancellationError } from "../../platform/gioErrors.js";
-import {
-  ARTWORK_CACHE_MAX_BYTES,
-  ARTWORK_MAX_BYTES,
-} from "./constants.js";
+import { ARTWORK_CACHE_MAX_BYTES, ARTWORK_MAX_BYTES } from "./constants.js";
 import { selectArtworkCacheEvictions } from "./cachePolicy.js";
 
 Gio._promisify(Gio.File.prototype, "read_async", "read_finish");
@@ -229,7 +226,11 @@ export default class ArtworkCache {
           continue;
         }
 
-        logger.warnOnce("write", "Failed to persist artwork in the cache", error);
+        logger.warnOnce(
+          "write",
+          "Failed to persist artwork in the cache",
+          error,
+        );
         return;
       }
     }
@@ -268,7 +269,8 @@ export default class ArtworkCache {
 
     const accessGeneration = this.#accessGeneration;
     const pendingAccessUpdates = [...this.#accessPromises.values()];
-    if (pendingAccessUpdates.length > 0) await Promise.all(pendingAccessUpdates);
+    if (pendingAccessUpdates.length > 0)
+      await Promise.all(pendingAccessUpdates);
 
     const cancellable = this.#getCancellable();
     if (!cancellable) return;

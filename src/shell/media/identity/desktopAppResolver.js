@@ -26,11 +26,13 @@ import {
   buildDesktopAppIdCandidates,
   buildNormalizedAppIdentityCandidates,
   normalizeAppIdentity,
+  normalizedIdentityContains,
   stripDesktopFileSuffix,
 } from "./appIdentity.js";
 import {
   getAppInfoSafely,
   readAppStringSafely,
+  readCachedResolvedApp,
   readDesktopAppIcon,
 } from "./appInfo.js";
 import {
@@ -395,7 +397,15 @@ export default class DesktopAppResolver {
       this.resolveShellApp(identity, desktopEntry, busName) ??
       this.#findAppInfo(identity, desktopEntry, busName);
 
-    if (!desktopApp) this.#recordMiss(appCacheKey);
+    if (!desktopApp) {
+      this.#recordMiss(appCacheKey);
+      logger.debugOnce(
+        `unresolved:${appCacheKey}`,
+        "Desktop app identity is not resolved yet",
+        busName || "unknown bus",
+        desktopEntry || identity || "unknown identity",
+      );
+    }
     return desktopApp;
   }
 

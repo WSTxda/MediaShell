@@ -63,6 +63,27 @@ export function normalizeAppIdentity(value) {
     .replace(/\s+/g, " ");
 }
 
+/**
+ * Compares two already-normalized app identity values without substring matches
+ * across token boundaries. Short identifiers stay exact to avoid matching
+ * unrelated applications by a two-character fragment.
+ */
+export function normalizedIdentityContains(
+  normalizedValue,
+  normalizedCandidate,
+) {
+  if (normalizedValue === normalizedCandidate) return true;
+  if (normalizedCandidate.length < 3 || normalizedValue.length < 3)
+    return false;
+
+  const paddedValue = ` ${normalizedValue} `;
+  const paddedCandidate = ` ${normalizedCandidate} `;
+  return (
+    paddedValue.includes(paddedCandidate) ||
+    paddedCandidate.includes(paddedValue)
+  );
+}
+
 function addLookupHint(hints, value) {
   const rawValue = stripDesktopFileSuffix(value);
   if (!rawValue) return;

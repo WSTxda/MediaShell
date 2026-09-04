@@ -200,7 +200,9 @@ function validateSettingOwner(snapshot, errors, surface, item, label) {
     spec.property !== item.property ||
     spec.read !== "get_boolean"
   )
-    errors.push(`${item.settingKey}: surface policy and runtime settings differ`);
+    errors.push(
+      `${item.settingKey}: surface policy and runtime settings differ`,
+    );
 }
 
 function validateSurfaces(snapshot, errors) {
@@ -294,17 +296,24 @@ function validateFlags(snapshot, errors) {
       if (!isSingleBit(value))
         errors.push(`${surface}/${name}: update region must be one bit`);
     }
-    for (const duplicate of duplicateValues(individual.map(([, value]) => value)))
+    for (const duplicate of duplicateValues(
+      individual.map(([, value]) => value),
+    ))
       errors.push(`${surface}: duplicate individual region ${duplicate}`);
 
     const knownRegions = new Set(Object.values(regions));
     const surfaceDefinition = snapshot.surfaces[surface];
     for (const [label, item] of [
       ["show", surfaceDefinition.show],
-      ...surfaceDefinition.controls.map((control) => [control.controlId, control]),
+      ...surfaceDefinition.controls.map((control) => [
+        control.controlId,
+        control,
+      ]),
     ]) {
       if (!knownRegions.has(item.impact))
-        errors.push(`${surface}/${label}: unknown update region ${item.impact}`);
+        errors.push(
+          `${surface}/${label}: unknown update region ${item.impact}`,
+        );
     }
   }
 }

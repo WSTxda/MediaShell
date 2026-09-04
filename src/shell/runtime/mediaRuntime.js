@@ -74,6 +74,11 @@ export default class MediaRuntime {
       this.registry.blockedAppIds = new Set(this.blockedAppIds);
       await this.registry.init();
       this.initialized = true;
+      logger.debug(
+        "Media runtime initialized",
+        this.availablePlayers.length,
+        "player(s)",
+      );
     } catch (error) {
       logger.error("Failed to initialize the media runtime", error);
       this.destroy();
@@ -103,6 +108,7 @@ export default class MediaRuntime {
   }
 
   destroy() {
+    if (this.initialized) logger.debug("Destroying media runtime");
     this.initialized = false;
     this.callbacks = null;
     this.disconnectBlockedAppsSetting?.();
