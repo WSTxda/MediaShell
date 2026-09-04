@@ -71,9 +71,9 @@ const POPUP_BINDINGS = Object.freeze([
     "sr-popup-volume-control-show",
     "active",
   ],
-  [SettingsKeys.POPUP_ALBUM_ART_SHOW, "er-popup-album-art", "enable-expansion"],
+  [SettingsKeys.POPUP_ARTWORK_SHOW, "er-popup-album-art", "enable-expansion"],
   [
-    SettingsKeys.POPUP_ALBUM_ART_CORNER_RADIUS,
+    SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS,
     "sp-popup-album-art-corner-radius",
     "value",
   ],
@@ -163,12 +163,12 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "active",
   ],
   [
-    SettingsKeys.TOP_BAR_ALBUM_ART_SHOW,
+    SettingsKeys.TOP_BAR_ARTWORK_SHOW,
     "er-top-bar-album-art",
     "enable-expansion",
   ],
   [
-    SettingsKeys.TOP_BAR_ALBUM_ART_CORNER_RADIUS,
+    SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS,
     "sp-top-bar-album-art-corner-radius",
     "value",
   ],
@@ -284,17 +284,12 @@ const INTERACTIONS_BINDINGS = Object.freeze([
 
 const OTHERS_BINDINGS = Object.freeze([
   [
-    SettingsKeys.GNOME_SHELL_HIDE_MEDIA_CONTROLS,
-    "sr-gnome-shell-hide-media-controls",
-    "active",
+    SettingsKeys.NATIVE_MEDIA_CONTROLS_MODE,
+    "cr-native-media-controls-mode",
+    "selected",
   ],
   [
-    SettingsKeys.GNOME_SHELL_ENHANCE_MEDIA_CONTROLS,
-    "sr-gnome-shell-enhance-media-controls",
-    "active",
-  ],
-  [
-    SettingsKeys.ALBUM_ART_CACHE_ENABLED,
+    SettingsKeys.ARTWORK_CACHE_ENABLED,
     "sr-album-art-cache-enabled",
     "active",
   ],

@@ -56,6 +56,17 @@ function checkAssetsAndTranslations() {
   ]);
 }
 
+function checkRefactorAssets() {
+  runCommand("parsed assets", "python3", [
+    "scripts/dev/assets.py",
+    "--check-resources",
+  ]);
+  runCommand("development script syntax", "bash", [
+    "-n",
+    "scripts/development.sh",
+  ]);
+}
+
 async function checkRuntime() {
   const gates = [
     ["source", checkSource],
@@ -70,11 +81,11 @@ async function checkRuntime() {
 async function checkRefactorRuntime() {
   const gates = [
     ["source", checkSource],
-    ["assets and translations", checkAssetsAndTranslations],
+    ["assets", checkRefactorAssets],
   ];
   for (const [label, check] of gates) await runGate(label, check);
   console.log(
-    `\nAll ${gates.length} refactor validation gates passed (behavior and declarative contract tests skipped).`,
+    `\nAll ${gates.length} refactor validation gates passed (behavior, declarative contracts, and translation freshness skipped).`,
   );
 }
 

@@ -4,7 +4,7 @@
  *
  * Resolves playback-control visibility from the shared surface settings policy.
  *
- * Functions in this module are pure and accept a SettingsStore target rather
+ * Functions in this module are pure and accept a the scoped settings runtime target rather
  * than a live Gio.Settings object, keeping them usable by Shell and Node tests.
  */
 
@@ -33,7 +33,7 @@ function isPlaybackControlVisible(settingsTarget, show, control) {
 /**
  * Resolves whether a playback-control surface has any visible controls.
  *
- * @param {object} settingsTarget - Runtime object populated by SettingsStore.
+ * @param {object} settingsTarget - Surface settings scope.
  * @param {string} surface - Stable playback-control surface ID.
  * @returns {boolean} Whether the surface should be rendered.
  */
@@ -50,7 +50,7 @@ export function isPlaybackControlSurfaceVisible(settingsTarget, surface) {
  * The media domain owns visibility policy but deliberately does not know popup
  * or top-bar region values. Each surface supplies its own control-to-region map.
  *
- * @param {object} settingsTarget - Runtime object populated by SettingsStore.
+ * @param {object} settingsTarget - Surface settings scope.
  * @param {string} surface - Stable playback-control surface ID.
  * @param {Record<string, number>} controlRegions - Surface-local region map.
  * @param {number} dirtyRegions - Coalesced dirty-region mask.

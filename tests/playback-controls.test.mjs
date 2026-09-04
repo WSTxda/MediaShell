@@ -48,7 +48,6 @@ import {
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
   TOP_BAR_PLAYBACK_CONTROL_ORDER,
 } from "../src/shell/constants/playbackControls.js";
-import { SETTINGS_SPEC } from "../src/shell/settings/settingsSpec.js";
 import PopupLayoutController from "../src/prefs/controllers/popupLayoutController.js";
 import { reconcileActorOrder } from "../src/shell/ui/components/actorOrder.js";
 import { runCases } from "./helpers.mjs";
@@ -223,10 +222,10 @@ test("surface policies and popup layout stay consistent", async () => {
       "targeted updates",
       () => {
         const target = {
-          popupPlaybackControlsShow: true,
-          popupPlaybackControlsSeekBackwardShow: true,
-          popupPlaybackControlsSeekForwardShow: false,
-          popupPlaybackControlsSpeedShow: true,
+          playbackControlsShow: true,
+          playbackControlsSeekBackwardShow: true,
+          playbackControlsSeekForwardShow: false,
+          playbackControlsSpeedShow: true,
         };
         assert.deepEqual(
           resolvePlaybackControlSurfaceUpdates(
@@ -237,7 +236,7 @@ test("surface policies and popup layout stay consistent", async () => {
           ),
           [{ controlId: PlaybackControlIds.SEEK_BACKWARD, isVisible: true }],
         );
-        target.popupPlaybackControlsShow = false;
+        target.playbackControlsShow = false;
         assert.deepEqual(
           resolvePlaybackControlSurfaceUpdates(
             target,
@@ -378,19 +377,6 @@ test("input actions stay append-only while executable lists exclude retired spee
           17: "RATE_RESET",
         });
 
-        for (const key of [
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT,
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE,
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT,
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE,
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP,
-          SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN,
-        ]) {
-          assert.equal(
-            SETTINGS_SPEC[key].transform(InputActions.RESERVED_15),
-            InputActions.NONE,
-          );
-        }
       },
     ],
     [

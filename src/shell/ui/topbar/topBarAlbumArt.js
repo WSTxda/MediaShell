@@ -11,7 +11,7 @@ import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 import { IconNames } from "../../../shared/icons.js";
-import { TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
+import { TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
@@ -51,8 +51,8 @@ export default class TopBarAlbumArt {
     ]);
   }
 
-  get extensionController() {
-    return this.topBarContent.extensionController;
+  get settings() {
+    return this.topBarContent.settings;
   }
 
   get mediaApp() {
@@ -94,10 +94,10 @@ export default class TopBarAlbumArt {
   getAlbumArtGeometry() {
     const width = this.getAlbumArtSize();
     const configuredRadius = Number.isFinite(
-      this.extensionController.topBarAlbumArtCornerRadius,
+      this.settings.artworkCornerRadius,
     )
-      ? this.extensionController.topBarAlbumArtCornerRadius
-      : TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+      ? this.settings.artworkCornerRadius
+      : TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
 
     return {
       width,

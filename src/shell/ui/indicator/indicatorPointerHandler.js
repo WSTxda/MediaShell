@@ -29,8 +29,8 @@ export default class IndicatorPointerHandler {
     this.disabledClickGesture = null;
   }
 
-  get extensionController() {
-    return this.indicator.extensionController;
+  get interactions() {
+    return this.indicator.settings.interactions;
   }
 
   install() {
@@ -62,13 +62,13 @@ export default class IndicatorPointerHandler {
       );
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_MIDDLE, () => {
         const mouseAction =
-          this.extensionController.interactionsMouseActionMiddle;
+          this.interactions.mouseActionMiddle;
         if (mouseAction !== InputActions.NONE)
           this.#executeInputAction(mouseAction);
       });
       this.#addMouseButtonGesture(actor, Clutter.BUTTON_SECONDARY, () => {
         const mouseAction =
-          this.extensionController.interactionsMouseActionRight;
+          this.interactions.mouseActionRight;
         if (mouseAction !== InputActions.NONE)
           this.#executeInputAction(mouseAction);
       });
@@ -86,9 +86,9 @@ export default class IndicatorPointerHandler {
 
         let mouseAction;
         if (mouseButton === Clutter.BUTTON_MIDDLE) {
-          mouseAction = this.extensionController.interactionsMouseActionMiddle;
+          mouseAction = this.interactions.mouseActionMiddle;
         } else if (mouseButton === Clutter.BUTTON_SECONDARY) {
-          mouseAction = this.extensionController.interactionsMouseActionRight;
+          mouseAction = this.interactions.mouseActionRight;
         }
 
         if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
@@ -110,10 +110,10 @@ export default class IndicatorPointerHandler {
       const direction = event.get_scroll_direction();
       let mouseAction = InputActions.NONE;
       if (direction === Clutter.ScrollDirection.UP) {
-        mouseAction = this.extensionController.interactionsMouseActionScrollUp;
+        mouseAction = this.interactions.mouseActionScrollUp;
       } else if (direction === Clutter.ScrollDirection.DOWN) {
         mouseAction =
-          this.extensionController.interactionsMouseActionScrollDown;
+          this.interactions.mouseActionScrollDown;
       }
 
       if (mouseAction === InputActions.NONE) return Clutter.EVENT_PROPAGATE;
@@ -144,11 +144,11 @@ export default class IndicatorPointerHandler {
     // Primary activation delays the single-click/tap action only when a
     // double-click/double-tap action is configured.
     if (
-      this.extensionController.interactionsMouseActionDouble ===
+      this.interactions.mouseActionDouble ===
       InputActions.NONE
     ) {
       this.#executeInputAction(
-        this.extensionController.interactionsMouseActionLeft,
+        this.interactions.mouseActionLeft,
       );
       return;
     }
@@ -160,7 +160,7 @@ export default class IndicatorPointerHandler {
         () => {
           this.primaryActivationTimeoutId = null;
           this.#executeInputAction(
-            this.extensionController.interactionsMouseActionLeft,
+            this.interactions.mouseActionLeft,
           );
           return GLib.SOURCE_REMOVE;
         },
@@ -169,13 +169,13 @@ export default class IndicatorPointerHandler {
       GLib.Source.remove(this.primaryActivationTimeoutId);
       this.primaryActivationTimeoutId = null;
       this.#executeInputAction(
-        this.extensionController.interactionsMouseActionDouble,
+        this.interactions.mouseActionDouble,
       );
     }
   }
 
   #executeInputAction(inputAction) {
-    this.extensionController.executeInputAction(inputAction);
+    this.indicator.extensionController.executeInputAction(inputAction);
   }
 
   destroy() {

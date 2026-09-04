@@ -37,6 +37,12 @@
     <value nick="VINYL"    value="4" />
   </enum>
 
+  <enum id="org.gnome.shell.extensions.mediashell.native-media-controls-modes">
+    <value nick="DEFAULT"  value="0" />
+    <value nick="HIDDEN"   value="1" />
+    <value nick="ENHANCED" value="2" />
+  </enum>
+
   <schema id="org.gnome.shell.extensions.mediashell"
           path="/org/gnome/shell/extensions/mediashell/">
 
@@ -45,10 +51,10 @@
       <range min="250" max="500" />
       <default>250</default>
     </key>
-    <key name="popup-album-art-show" type="b">
+    <key name="popup-artwork-show" type="b">
       <default>true</default>
     </key>
-    <key name="popup-album-art-corner-radius" type="u">
+    <key name="popup-artwork-corner-radius" type="u">
       <range min="0" max="100" />
       <default>20</default>
     </key>
@@ -137,10 +143,10 @@
     <key name="top-bar-media-app-icon-use-color" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-album-art-show" type="b">
+    <key name="top-bar-artwork-show" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-album-art-corner-radius" type="u">
+    <key name="top-bar-artwork-corner-radius" type="u">
       <range min="0" max="100" />
       <default>40</default>
     </key>
@@ -262,13 +268,11 @@
     </key>
 
     <!-- Others -->
-    <key name="gnome-shell-hide-media-controls" type="b">
-      <default>true</default>
+    <key name="native-media-controls-mode"
+         enum="org.gnome.shell.extensions.mediashell.native-media-controls-modes">
+      <default>'HIDDEN'</default>
     </key>
-    <key name="gnome-shell-enhance-media-controls" type="b">
-      <default>false</default>
-    </key>
-    <key name="album-art-cache-enabled" type="b">
+    <key name="artwork-cache-enabled" type="b">
       <default>true</default>
     </key>
     <key name="blocked-apps" type="as">

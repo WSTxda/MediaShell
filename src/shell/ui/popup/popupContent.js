@@ -36,9 +36,11 @@ const logger = createLogger("PopupContent");
 export default class PopupContent {
   constructor(
     indicator,
-    { artworkService, desktopAppResolver, playbackController },
+    { artworkService, desktopAppResolver, playbackController, popupSettings },
   ) {
     this.indicator = indicator;
+    this.settings = popupSettings;
+    this.settingsSubscriptions = [];
     this.pendingClosedRegions = 0;
     this.appliedPopupOuterWidth = null;
     this.updateQueue = new CoalescedUpdateQueue(
@@ -80,11 +82,9 @@ export default class PopupContent {
       "open-state-changed",
       (_menu, isOpen) => this.handleOpenStateChanged(isOpen),
     );
+    this.installSettingsSubscriptions();
   }
 
-  get extensionController() {
-    return this.indicator.extensionController;
-  }
   get mediaRuntime() {
     return this.indicator.mediaRuntime;
   }
@@ -93,6 +93,46 @@ export default class PopupContent {
   }
   get menu() {
     return this.indicator.menu;
+  }
+
+
+  installSettingsSubscriptions() {
+    const subscriptions = [
+      [["width"],
+        PopupRegions.ARTWORK |
+          PopupRegions.TRACK_INFORMATION |
+          PopupRegions.PROGRESS |
+          PopupRegions.VOLUME],
+      [["artworkShow"],
+        PopupRegions.ARTWORK |
+          PopupRegions.TRACK_INFORMATION |
+          PopupRegions.PROGRESS],
+      [["artworkCornerRadius"], PopupRegions.ARTWORK],
+      [[
+        "trackInformationShow",
+        "trackInformationContent",
+        "trackInformationScrollEnabled",
+        "trackInformationScrollSpeed",
+        "trackInformationScrollPauseMilliseconds",
+      ], PopupRegions.TRACK_INFORMATION],
+      [["progressBarShow"], PopupRegions.PROGRESS],
+      [["volumeControlShow"], PopupRegions.VOLUME],
+      [["mediaAppIconUseColor"], PopupRegions.MEDIA_APP_SELECTOR],
+      [["playbackControlsShow"], PopupRegions.PLAYBACK_CONTROLS],
+      [["playbackControlsShuffleShow"], PopupRegions.PLAYBACK_SHUFFLE],
+      [["playbackControlsSeekBackwardShow"], PopupRegions.PLAYBACK_SEEK_BACKWARD],
+      [["playbackControlsPreviousTrackShow"], PopupRegions.PLAYBACK_PREVIOUS],
+      [["playbackControlsPlayPauseShow"], PopupRegions.PLAYBACK_PLAY_PAUSE],
+      [["playbackControlsNextTrackShow"], PopupRegions.PLAYBACK_NEXT],
+      [["playbackControlsSeekForwardShow"], PopupRegions.PLAYBACK_SEEK_FORWARD],
+      [["playbackControlsRepeatShow"], PopupRegions.PLAYBACK_REPEAT],
+      [["playbackControlsSpeedShow"], PopupRegions.PLAYBACK_SPEED],
+    ];
+
+    for (const [properties, regions] of subscriptions)
+      this.settingsSubscriptions.push(
+        this.settings.subscribe(properties, () => this.requestUpdate(regions)),
+      );
   }
 
   requestUpdate(regions) {
@@ -112,9 +152,9 @@ export default class PopupContent {
         PopupRegions.ARTWORK |
         PopupRegions.TRACK_INFORMATION |
         PopupRegions.PLAYBACK_CONTROLS;
-      if (this.extensionController.popupProgressBarShow)
+      if (this.settings.progressBarShow)
         regions |= PopupRegions.PROGRESS;
-      if (this.extensionController.popupVolumeControlShow)
+      if (this.settings.volumeControlShow)
         regions |= PopupRegions.VOLUME;
 
       // Opening is already a synchronous Shell transition. Cancel any queued
@@ -165,7 +205,7 @@ export default class PopupContent {
 
     if (popupRegions & PopupRegions.ARTWORK) {
       this.runComponentUpdate("album art", () => {
-        if (this.extensionController.popupAlbumArtShow)
+        if (this.settings.artworkShow)
           return this.albumArt.render();
         this.albumArt.remove();
         return null;
@@ -174,7 +214,7 @@ export default class PopupContent {
 
     if (popupRegions & PopupRegions.TRACK_INFORMATION) {
       this.runComponentUpdate("track information", () => {
-        if (this.extensionController.popupTrackInformationShow)
+        if (this.settings.trackInformationShow)
           return this.trackInformation.render();
         this.trackInformation.remove();
         return null;
@@ -183,7 +223,7 @@ export default class PopupContent {
 
     if (popupRegions & PopupRegions.PROGRESS) {
       this.runComponentUpdate("progress bar", () => {
-        if (this.extensionController.popupProgressBarShow)
+        if (this.settings.progressBarShow)
           return this.progressBar.render();
         this.progressBar.remove();
         return null;
@@ -194,7 +234,7 @@ export default class PopupContent {
       this.runComponentUpdate("playback controls", () => {
         if (
           isPlaybackControlSurfaceVisible(
-            this.extensionController,
+            this.settings,
             PlaybackControlSurfaces.POPUP,
           )
         )
@@ -206,14 +246,14 @@ export default class PopupContent {
 
     if (popupRegions & PopupRegions.VOLUME) {
       this.runComponentUpdate("volume control", () => {
-        if (this.extensionController.popupVolumeControlShow)
+        if (this.settings.volumeControlShow)
           return this.volumeControl.render();
         this.volumeControl.remove();
         return null;
       });
     }
 
-    if (this.extensionController.popupVolumeControlShow)
+    if (this.settings.volumeControlShow)
       this.volumeControl.reconcilePosition();
   }
 
@@ -258,7 +298,7 @@ export default class PopupContent {
   }
 
   syncAlbumArtPlaybackState() {
-    if (!this.menu.isOpen || !this.extensionController.popupAlbumArtShow)
+    if (!this.menu.isOpen || !this.settings.artworkShow)
       return;
     this.albumArt.syncPlaybackState(this.mediaApp.playbackStatus);
   }
@@ -277,17 +317,17 @@ export default class PopupContent {
 
   getPopupOuterWidth() {
     const showTransportControls =
-      this.extensionController.popupPlaybackControlsShow;
+      this.settings.playbackControlsShow;
     return resolvePopupWidth(
-      this.extensionController.popupWidth,
+      this.settings.width,
       showTransportControls &&
-        this.extensionController.popupPlaybackControlsSeekBackwardShow,
+        this.settings.playbackControlsSeekBackwardShow,
       showTransportControls &&
-        this.extensionController.popupPlaybackControlsSeekForwardShow,
+        this.settings.playbackControlsSeekForwardShow,
       showTransportControls &&
-        this.extensionController.popupPlaybackControlsPreviousTrackShow,
+        this.settings.playbackControlsPreviousTrackShow,
       showTransportControls &&
-        this.extensionController.popupPlaybackControlsNextTrackShow,
+        this.settings.playbackControlsNextTrackShow,
     );
   }
 
@@ -315,6 +355,9 @@ export default class PopupContent {
 
     this.updateQueue?.destroy();
     this.updateQueue = null;
+    for (const unsubscribe of this.settingsSubscriptions.splice(0).reverse())
+      unsubscribe();
+    this.settings = null;
     this.indicator = null;
 
     const menu = indicator.menu;

@@ -17,14 +17,14 @@ import {
 } from "../shared/input/actions.js";
 import { InputActions } from "../shared/input/types.js";
 import { PopupRegions } from "./ui/popup/regions.js";
+import { NativeMediaControlsModes } from "../shared/settings/contract.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
 import GnomeShellEnhanceMediaControls from "./services/gnomeShellEnhanceMediaControls.js";
 import GnomeShellHideMediaControls from "./services/gnomeShellHideMediaControls.js";
 import ExtensionResourceRegistry from "./services/extensionResourceRegistry.js";
-import { SettingsAction } from "./settings/settingsSpec.js";
-import SettingsStore from "./settings/settingsStore.js";
+import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
 import { clearIconCache } from "./utils/icons.js";
 
@@ -66,6 +66,7 @@ export default class ExtensionController {
     );
     this.gnomeShellHideMediaControlsService = null;
     this.gnomeShellEnhanceMediaControlsService = null;
+    this.settingsSubscriptions = [];
   }
 
   async enable() {
@@ -73,13 +74,8 @@ export default class ExtensionController {
 
     try {
       this.extensionResourceRegistry.register();
-      this.settings = this.extensionInstance.getSettings();
-      this.settingsStore = new SettingsStore(
-        this.settings,
-        this,
-        (settingKey, settingValue, settingSpec) =>
-          this.handleSettingChange(settingKey, settingValue, settingSpec),
-      );
+      this.settings = new MediaShellSettings(this.extensionInstance.getSettings());
+      this.installSettingsSubscriptions();
       this.sessionModeSignalId = Main.sessionMode.connect("updated", () =>
         this.handleSessionModeChanged(),
       );
@@ -164,7 +160,8 @@ export default class ExtensionController {
 
     if (profile === RuntimeProfiles.UNLOCK_DIALOG) {
       if (
-        !this.gnomeShellEnhanceMediaControls ||
+        this.settings.integration.nativeMediaControlsMode !==
+          NativeMediaControlsModes.ENHANCED ||
         !GnomeShellEnhanceMediaControls.supportsLockScreen()
       ) {
         this.destroyRuntimeComponents();
@@ -185,8 +182,7 @@ export default class ExtensionController {
 
   async startMediaRuntime(runtimeReconcileGeneration, { includeUserServices }) {
     this.mediaRuntime = new MediaRuntime({
-      blockedAppIds: this.blockedAppIds,
-      getArtworkCacheEnabled: () => this.albumArtCacheEnabled,
+      mediaSettings: this.settings.media,
       callbacks: {
         onAvailablePlayersChanged: () => this.handleAvailablePlayersChanged(),
         onActivePlayerChanged: (player) => this.handleActivePlayerChanged(player),
@@ -197,7 +193,7 @@ export default class ExtensionController {
       // Hide can be applied before the MediaShell MPRIS runtime exists.
       this.reconcileGnomeShellMediaControls();
       this.globalShortcutsService = new GlobalShortcutsService(
-        this.settings,
+        this.settings.keybindings,
         (inputAction) => this.executeInputAction(inputAction),
       );
       this.globalShortcutsService.enable();
@@ -242,34 +238,24 @@ export default class ExtensionController {
     }
   }
 
-  handleSettingChange(_settingKey, settingValue, settingSpec) {
-    if (settingSpec.impact)
-      this.indicator?.requestSurfaceUpdate(settingSpec.impact);
-
-    switch (settingSpec.action) {
-      case SettingsAction.REBUILD_INDICATOR:
-        if (this.runtimeProfile === RuntimeProfiles.USER)
-          this.rebuildIndicator();
-        break;
-      case SettingsAction.UPDATE_BLOCKED_APPS:
-        this.mediaRuntime
-          ?.setBlockedAppIds(settingValue)
-          .catch((error) =>
-            logger.warn("Failed to apply the blocked-app list", error),
-          );
-        break;
-      case SettingsAction.UPDATE_GNOME_SHELL_HIDE_MEDIA_CONTROLS:
-        if (this.runtimeProfile === RuntimeProfiles.USER)
-          this.reconcileGnomeShellMediaControls();
-        break;
-      case SettingsAction.UPDATE_GNOME_SHELL_ENHANCE_MEDIA_CONTROLS:
+  installSettingsSubscriptions() {
+    const rebuildPanelPlacement = () => {
+      if (this.runtimeProfile === RuntimeProfiles.USER) this.rebuildIndicator();
+    };
+    this.settingsSubscriptions.push(
+      this.settings.panel.subscribe(["position", "index"], rebuildPanelPlacement),
+      this.settings.integration.subscribe("nativeMediaControlsMode", () => {
         if (this.runtimeProfile === RuntimeProfiles.UNLOCK_DIALOG)
           void this.scheduleRuntimeProfileReconcile();
-        else this.reconcileGnomeShellMediaControls();
-        break;
-      default:
-        break;
-    }
+        else if (this.runtimeProfile === RuntimeProfiles.USER)
+          this.reconcileGnomeShellMediaControls();
+      }),
+    );
+  }
+
+  clearSettingsSubscriptions() {
+    for (const unsubscribe of this.settingsSubscriptions.splice(0).reverse())
+      unsubscribe();
   }
 
   handleAvailablePlayersChanged() {
@@ -289,8 +275,10 @@ export default class ExtensionController {
   }
 
   reconcileGnomeShellMediaControls() {
+    const mode = this.settings?.integration.nativeMediaControlsMode;
+
     if (this.runtimeProfile === RuntimeProfiles.USER) {
-      if (this.gnomeShellHideMediaControls) {
+      if (mode === NativeMediaControlsModes.HIDDEN) {
         this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
         if (!this.gnomeShellHideMediaControlsService)
           this.gnomeShellHideMediaControlsService =
@@ -300,7 +288,10 @@ export default class ExtensionController {
       }
 
       this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
-      if (!this.gnomeShellEnhanceMediaControls || !this.hasMediaRuntime()) {
+      if (
+        mode !== NativeMediaControlsModes.ENHANCED ||
+        !this.hasMediaRuntime()
+      ) {
         this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
         return;
       }
@@ -317,7 +308,7 @@ export default class ExtensionController {
     this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
     if (
       this.runtimeProfile !== RuntimeProfiles.UNLOCK_DIALOG ||
-      !this.gnomeShellEnhanceMediaControls ||
+      mode !== NativeMediaControlsModes.ENHANCED ||
       !this.hasMediaRuntime()
     ) {
       this.destroyOwnedComponent("gnomeShellEnhanceMediaControlsService");
@@ -361,13 +352,14 @@ export default class ExtensionController {
 
     this.indicator = new MediaShellIndicator(mediaApp, this, {
       mediaRuntime: this.mediaRuntime,
+      settings: this.settings,
     });
     // Panel slot name — must match the extension's registered status area identifier.
     Main.panel.addToStatusArea(
       "MediaShell",
       this.indicator,
-      this.panelIndex,
-      this.panelPosition,
+      this.settings.panel.index,
+      this.settings.panel.position,
     );
   }
 
@@ -447,8 +439,9 @@ export default class ExtensionController {
       this.sessionModeSignalId = null;
     }
 
-    this.destroyOwnedComponent("settingsStore");
+    this.clearSettingsSubscriptions();
     this.destroyRuntimeComponents();
+    this.settings?.destroy();
     this.settings = null;
     this.runtimeProfile = null;
     this.destroyOwnedComponent("extensionResourceRegistry");

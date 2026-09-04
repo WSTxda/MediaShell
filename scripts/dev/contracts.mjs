@@ -35,6 +35,7 @@ import {
   LEGACY_INPUT_ACTION_SCHEMA_NICKS,
 } from "../../src/shared/input/actions.js";
 import {
+  NativeMediaControlsModes,
   NUMERIC_SETTING_CONSTRAINTS,
   ORDERED_SETTING_DEFAULTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
@@ -43,7 +44,7 @@ import { InputActions } from "../../src/shared/input/types.js";
 import { PanelPositions } from "../../src/shell/ui/indicator/panelPosition.js";
 import { TopBarElementIds } from "../../src/shared/ui/topBar.js";
 import { VisualizerStyles } from "../../src/shell/ui/components/visualizer/types.js";
-import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
+import { RUNTIME_SETTING_CONTRACT } from "../../src/shell/settings/settings.js";
 import { collectBuilderObjectReferences } from "./javascript.mjs";
 import { fail, read, readAssetManifest } from "./files.mjs";
 import { validateExtensionMetadata } from "./metadata.mjs";
@@ -179,14 +180,14 @@ export async function checkExtensionContracts() {
  */
 export function validateSettingContractTables({
   schema,
-  settingsSpec,
+  runtimeSettings,
   preferenceBindings,
   shortcutKeys,
   numericConstraints,
   orderedDefaults,
 }) {
   const schemaKeys = new Set(Object.keys(schema.keys));
-  const runtimeKeys = Object.keys(settingsSpec);
+  const runtimeKeys = Object.keys(runtimeSettings);
   const preferenceKeys = preferenceBindings.map(([key]) => key);
   const shortcutKeySet = new Set(shortcutKeys);
   const errors = [];
@@ -210,14 +211,14 @@ export function validateSettingContractTables({
   }
 
   const runtimeProperties = new Map();
-  for (const [key, spec] of Object.entries(settingsSpec)) {
+  for (const [key, spec] of Object.entries(runtimeSettings)) {
     const schemaKey = schema.keys[key];
     if (!schemaKey) continue;
     const schemaType = schemaKey.enum ? "enum" : schemaKey.type;
     const expectedRead = EXPECTED_READ_METHODS[schemaType];
     if (spec.read !== expectedRead)
       errors.push(
-        `${key}: SETTINGS_SPEC read method ${spec.read} must be ${expectedRead}`,
+        `${key}: runtime settings read method ${spec.read} must be ${expectedRead}`,
       );
     const previousKey = runtimeProperties.get(spec.property);
     if (previousKey)
@@ -263,7 +264,7 @@ export async function checkSettingsContracts() {
   errors.push(
     ...validateSettingContractTables({
       schema,
-      settingsSpec: SETTINGS_SPEC,
+      runtimeSettings: RUNTIME_SETTING_CONTRACT,
       preferenceBindings: PREFERENCE_WIDGET_BINDINGS,
       shortcutKeys: KEYBOARD_SHORTCUT_KEYS,
       numericConstraints: NUMERIC_SETTING_CONSTRAINTS,
@@ -350,6 +351,12 @@ export async function checkSettingsContracts() {
       nick: `${key[0]}${key.slice(1).toLowerCase()}`,
       value,
     })),
+  );
+  compareEnum(
+    errors,
+    `${schemaPrefix}.native-media-controls-modes`,
+    schema.enums[`${schemaPrefix}.native-media-controls-modes`],
+    Object.keys(NativeMediaControlsModes).map((nick, value) => ({ nick, value })),
   );
 
   fail("Settings and UI contract validation", errors);

@@ -10,7 +10,7 @@ import Gio from "gi://Gio";
 import St from "gi://St";
 
 import { IconNames } from "../../../shared/icons.js";
-import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
+import { POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
@@ -51,8 +51,8 @@ export default class PopupAlbumArt {
     ]);
   }
 
-  get extensionController() {
-    return this.popupContent.extensionController;
+  get settings() {
+    return this.popupContent.settings;
   }
 
   get mediaApp() {
@@ -78,10 +78,10 @@ export default class PopupAlbumArt {
   getAlbumArtGeometry() {
     const width = this.getAlbumArtWidth();
     const configuredRadius = Number.isFinite(
-      this.extensionController.popupAlbumArtCornerRadius,
+      this.settings.artworkCornerRadius,
     )
-      ? this.extensionController.popupAlbumArtCornerRadius
-      : POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+      ? this.settings.artworkCornerRadius
+      : POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
 
     return {
       width,

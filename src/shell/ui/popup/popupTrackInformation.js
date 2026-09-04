@@ -28,8 +28,8 @@ export default class PopupTrackInformation {
     this.trackInformationLabels = [];
   }
 
-  get extensionController() {
-    return this.popupContent.extensionController;
+  get settings() {
+    return this.popupContent.settings;
   }
   get mediaApp() {
     return this.popupContent.mediaApp;
@@ -60,14 +60,14 @@ export default class PopupTrackInformation {
     const width = this.getTrackInformationWidth();
     const items = buildTrackInformationItems(
       metadata,
-      this.extensionController.popupTrackInformationContent,
+      this.settings.trackInformationContent,
     );
     const renderKey = [
       ...items.map((item) => `${item.field ?? "TEXT"}:${item.text}`),
       width,
-      this.extensionController.popupTrackInformationScrollEnabled,
-      this.extensionController.popupTrackInformationScrollSpeed,
-      this.extensionController.popupTrackInformationScrollPauseMilliseconds,
+      this.settings.trackInformationScrollEnabled,
+      this.settings.trackInformationScrollSpeed,
+      this.settings.trackInformationScrollPauseMilliseconds,
     ].join("\u0001");
 
     if (renderKey === this.renderKey) {
@@ -114,11 +114,11 @@ export default class PopupTrackInformation {
   createLabel(text, styleClass, width) {
     const label = new ScrollingLabel({
       text,
-      isScrolling: this.extensionController.popupTrackInformationScrollEnabled,
+      isScrolling: this.settings.trackInformationScrollEnabled,
       width,
-      scrollSpeed: this.extensionController.popupTrackInformationScrollSpeed,
+      scrollSpeed: this.settings.trackInformationScrollSpeed,
       scrollPauseMilliseconds:
-        this.extensionController.popupTrackInformationScrollPauseMilliseconds,
+        this.settings.trackInformationScrollPauseMilliseconds,
     });
     label.label.add_style_class_name(styleClass);
     const widthStyle = this.buildFixedWidthStyle(width);

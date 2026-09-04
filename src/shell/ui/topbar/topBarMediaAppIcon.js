@@ -27,8 +27,8 @@ export default class TopBarMediaAppIcon {
     this.desktopAppResolver = desktopAppResolver;
   }
 
-  get extensionController() {
-    return this.topBarContent.extensionController;
+  get settings() {
+    return this.topBarContent.settings;
   }
 
   get mediaApp() {
@@ -38,7 +38,7 @@ export default class TopBarMediaAppIcon {
   render(index, parentBox) {
     const identity = this.mediaApp.identity;
     const desktopEntry = this.mediaApp.desktopEntry;
-    const useColoredIcon = this.extensionController.topBarMediaAppIconUseColor;
+    const useColoredIcon = this.settings.mediaAppIconUseColor;
     const iconKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
 
     // St can retain the previously resolved symbolic/regular texture when

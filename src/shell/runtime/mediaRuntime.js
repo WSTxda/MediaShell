@@ -21,20 +21,28 @@ const logger = createLogger("MediaRuntime");
 
 /** Owns the protocol and media capabilities shared by every Shell surface. */
 export default class MediaRuntime {
-  constructor({
-    blockedAppIds = [],
-    getArtworkCacheEnabled = () => false,
-    callbacks = {},
-  } = {}) {
-    this.blockedAppIds = new Set(blockedAppIds ?? []);
+  constructor({ mediaSettings, callbacks = {} } = {}) {
+    if (!mediaSettings)
+      throw new TypeError("MediaRuntime requires the media settings scope");
+
+    this.mediaSettings = mediaSettings;
+    this.blockedAppIds = new Set(mediaSettings.blockedAppIds ?? []);
     this.callbacks = callbacks;
     this.artwork = new ArtworkService({
-      getCacheEnabled: getArtworkCacheEnabled,
+      getCacheEnabled: () => this.mediaSettings?.artworkCacheEnabled ?? false,
     });
     this.identity = new DesktopAppResolver();
     this.proxyFactory = null;
     this.registry = null;
     this.playback = new PlaybackController(() => this.activePlayer);
+    this.disconnectBlockedAppsSetting = mediaSettings.subscribe(
+      "blockedAppIds",
+      (blockedAppIds) => {
+        this.setBlockedAppIds(blockedAppIds).catch((error) =>
+          logger.warn("Failed to apply the blocked-app list", error),
+        );
+      },
+    );
     this.initialized = false;
   }
 
@@ -97,6 +105,8 @@ export default class MediaRuntime {
   destroy() {
     this.initialized = false;
     this.callbacks = null;
+    this.disconnectBlockedAppsSetting?.();
+    this.disconnectBlockedAppsSetting = null;
 
     this.registry?.destroy();
     this.registry = null;
@@ -113,5 +123,6 @@ export default class MediaRuntime {
     this.identity?.destroy();
     this.identity = null;
     this.blockedAppIds.clear();
+    this.mediaSettings = null;
   }
 }
