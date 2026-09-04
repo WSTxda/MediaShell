@@ -19,13 +19,6 @@ import { TrackInformationFields } from "../ui/trackInformation.js";
  * persisted by the XML schema and must never be repurposed.
  */
 
-/** Exclusive GNOME Shell native-media integration modes. */
-export const NativeMediaControlsModes = Object.freeze({
-  DEFAULT: "default",
-  HIDDEN: "hidden",
-  ENHANCED: "enhanced",
-});
-
 export const SettingsKeys = Object.freeze({
   POPUP_WIDTH: "popup-width",
   POPUP_ARTWORK_SHOW: "popup-artwork-show",
@@ -116,7 +109,8 @@ export const SettingsKeys = Object.freeze({
   INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN:
     "interactions-mouse-action-scroll-down",
 
-  NATIVE_MEDIA_CONTROLS_MODE: "native-media-controls-mode",
+  NATIVE_MEDIA_CONTROLS_HIDDEN: "native-media-controls-hidden",
+  NATIVE_MEDIA_CONTROLS_ENHANCED: "native-media-controls-enhanced",
   ARTWORK_CACHE_ENABLED: "artwork-cache-enabled",
   BLOCKED_APPS: "blocked-apps",
 });

@@ -33,12 +33,6 @@
     <value nick="VINYL"    value="4" />
   </enum>
 
-  <enum id="org.gnome.shell.extensions.mediashell.native-media-controls-modes">
-    <value nick="DEFAULT"  value="0" />
-    <value nick="HIDDEN"   value="1" />
-    <value nick="ENHANCED" value="2" />
-  </enum>
-
   <schema id="org.gnome.shell.extensions.mediashell"
           path="/org/gnome/shell/extensions/mediashell/">
 
@@ -264,9 +258,11 @@
     </key>
 
     <!-- Others -->
-    <key name="native-media-controls-mode"
-         enum="org.gnome.shell.extensions.mediashell.native-media-controls-modes">
-      <default>'HIDDEN'</default>
+    <key name="native-media-controls-hidden" type="b">
+      <default>true</default>
+    </key>
+    <key name="native-media-controls-enhanced" type="b">
+      <default>false</default>
     </key>
     <key name="artwork-cache-enabled" type="b">
       <default>true</default>

@@ -37,79 +37,79 @@ msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:962
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:998
 msgid "Shuffle"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:963
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:999
 msgid "Seek backward"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:964
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:1000
 msgid "Previous track"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:965
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:1001
 msgid "Play / pause"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:966
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:1002
 msgid "Next track"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:967
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:1003
 msgid "Seek forward"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:968
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:1004
 msgid "Repeat"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:73
 #: src/shell/ui/popup/popupVolumeControl.js:142 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:969
+#: assets/ui/prefs.ui:1005
 msgid "Volume up"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:970
+#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:1006
 msgid "Volume down"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:971
+#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1007
 msgid "Popup"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:972
+#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1008
 msgid "Preferences"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:973
+#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1009
 msgid "Open app"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:974
+#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1010
 msgid "Quit app"
 msgstr ""
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:975
+#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1011
 msgid "Switch app"
 msgstr ""
 
@@ -207,7 +207,7 @@ msgstr ""
 msgid "Cached content will be downloaded again when needed."
 msgstr ""
 
-#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:923
+#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:959
 msgid "Clear cache"
 msgstr ""
 
@@ -317,7 +317,7 @@ msgstr ""
 msgid "Playlist"
 msgstr ""
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:961
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:997
 msgid "None"
 msgstr ""
 
@@ -668,39 +668,51 @@ msgid "Native media controls"
 msgstr ""
 
 #: assets/ui/prefs.ui:906
-msgid "Choose how MediaShell integrates with GNOME media controls"
+msgid "Configure GNOME's built-in media controls"
 msgstr ""
 
-#: assets/ui/prefs.ui:914
-msgid "Cache"
-msgstr ""
-
-#: assets/ui/prefs.ui:915
-msgid "Store content on disk to load it faster"
+#: assets/ui/prefs.ui:911
+msgid "Private GNOME Shell integration"
 msgstr ""
 
 #: assets/ui/prefs.ui:918
-msgid "Store album art"
+msgid "These options use private GNOME Shell APIs and may require a MediaShell update after Shell changes. Lock-screen media controls are available on GNOME Shell 49 and later."
 msgstr ""
 
-#: assets/ui/prefs.ui:933
-msgid "Clear"
+#: assets/ui/prefs.ui:934
+msgid "Enhance media controls"
 msgstr ""
 
-#: assets/ui/prefs.ui:948
-msgid "Extension settings"
+#: assets/ui/prefs.ui:935
+msgid "Use MediaShell styling for visible native controls and the lock screen on GNOME 49+"
+msgstr ""
+
+#: assets/ui/prefs.ui:940
+msgid "Hide media controls"
+msgstr ""
+
+#: assets/ui/prefs.ui:941
+msgid "Hide native media controls from the notification center only"
+msgstr ""
+
+#: assets/ui/prefs.ui:950
+msgid "Cache"
+msgstr ""
+
+#: assets/ui/prefs.ui:951
+msgid "Store content on disk to load it faster"
 msgstr ""
 
 #: assets/ui/prefs.ui:954
-msgid "Default"
+msgid "Store album art"
 msgstr ""
 
-#: assets/ui/prefs.ui:955
-msgid "Hidden"
+#: assets/ui/prefs.ui:969
+msgid "Clear"
 msgstr ""
 
-#: assets/ui/prefs.ui:956
-msgid "Enhanced"
+#: assets/ui/prefs.ui:984
+msgid "Extension settings"
 msgstr ""
 
 #: assets/ui/top-bar-element-order.ui:6

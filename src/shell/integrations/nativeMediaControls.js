@@ -18,8 +18,8 @@ export default class NativeMediaControlsIntegration {
     this.adapter = new GnomeShellMediaControlsAdapter();
   }
 
-  reconcile({ profile, mode, mediaRuntime }) {
-    this.adapter?.reconcile({ profile, mode, mediaRuntime });
+  reconcile({ profile, hide, enhance, mediaRuntime }) {
+    this.adapter?.reconcile({ profile, hide, enhance, mediaRuntime });
   }
 
   reset() {

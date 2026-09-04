@@ -2,7 +2,7 @@
  * @file mediaRuntime.js
  * @module shell.runtime.mediaRuntime
  *
- * Composes the MediaShell media domain for one Shell runtime profile.
+ * Composes the MediaShell media domain for one enabled Shell lifecycle.
  *
  * The runtime owns MPRIS discovery/lifecycle, desktop-identity resolution, and
  * canonical playback execution, artwork acquisition/cache, and desktop identity.
