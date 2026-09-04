@@ -22,7 +22,6 @@ import MediaRuntime from "./runtime/mediaRuntime.js";
 import GlobalShortcutsService from "./services/globalShortcutsService.js";
 import GnomeShellEnhanceMediaControls from "./services/gnomeShellEnhanceMediaControls.js";
 import GnomeShellHideMediaControls from "./services/gnomeShellHideMediaControls.js";
-import AlbumArtLoader from "./services/albumArtLoader.js";
 import ExtensionResourceRegistry from "./services/extensionResourceRegistry.js";
 import { SettingsAction } from "./settings/settingsSpec.js";
 import SettingsStore from "./settings/settingsStore.js";
@@ -185,12 +184,9 @@ export default class ExtensionController {
   }
 
   async startMediaRuntime(runtimeReconcileGeneration, { includeUserServices }) {
-    // Artwork remains a separate owned service until the dedicated artwork
-    // refactor. Protocol, playback, and desktop identity now live together in
-    // MediaRuntime so every consumer sees one coherent media capability graph.
-    this.albumArtLoader = new AlbumArtLoader();
     this.mediaRuntime = new MediaRuntime({
       blockedAppIds: this.blockedAppIds,
+      getArtworkCacheEnabled: () => this.albumArtCacheEnabled,
       callbacks: {
         onAvailablePlayersChanged: () => this.handleAvailablePlayersChanged(),
         onActivePlayerChanged: (player) => this.handleActivePlayerChanged(player),
@@ -224,8 +220,7 @@ export default class ExtensionController {
       this.gnomeShellEnhanceMediaControlsService ||
       this.gnomeShellHideMediaControlsService ||
       this.indicator ||
-      this.mediaRuntime ||
-      this.albumArtLoader,
+      this.mediaRuntime,
     );
   }
 
@@ -285,10 +280,9 @@ export default class ExtensionController {
 
   getEnhanceMediaControlsOptions() {
     return {
-      albumArtLoader: this.albumArtLoader,
+      artworkService: this.mediaRuntime?.artwork ?? null,
       playbackController: this.mediaRuntime?.playback ?? null,
       getAvailableMediaApps: () => this.mediaRuntime?.getAvailablePlayers() ?? [],
-      getAlbumArtCacheEnabled: () => this.albumArtCacheEnabled,
     };
   }
 
@@ -364,7 +358,6 @@ export default class ExtensionController {
     }
 
     this.indicator = new MediaShellIndicator(mediaApp, this, {
-      albumArtLoader: this.albumArtLoader,
       mediaRuntime: this.mediaRuntime,
     });
     // Panel slot name — must match the extension's registered status area identifier.
@@ -437,7 +430,6 @@ export default class ExtensionController {
     this.destroyOwnedComponent("gnomeShellHideMediaControlsService");
     this.destroyIndicator();
     this.destroyOwnedComponent("mediaRuntime");
-    this.destroyOwnedComponent("albumArtLoader");
     clearIconCache();
   }
 

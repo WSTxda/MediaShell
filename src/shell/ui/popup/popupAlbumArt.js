@@ -12,20 +12,19 @@ import St from "gi://St";
 import { IconNames } from "../../../shared/icons.js";
 import { POPUP_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
+import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
-  calculateAlbumArtCornerRadius,
-  createAlbumArtRequest,
-} from "../../media/artwork/policy.js";
+  ARTWORK_OUTLINE_WIDTH,
+  calculateArtworkCornerRadius,
+  getArtworkPresentationGeometry,
+  prepareArtworkPixbuf,
+} from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/albumArt.js";
 import {
   POPUP_ALBUM_ART_PAUSED_SCALE,
   POPUP_ALBUM_ART_PLAYBACK_ANIMATION_DURATION_MS,
 } from "../../constants/popup.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { loadAlbumArtResult } from "../../utils/albumArtLoading.js";
-import { prepareAlbumArtPixbuf } from "../../utils/albumArtPixbuf.js";
-import { getAlbumArtPresentationGeometry } from "../../utils/albumArtPresentation.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 
@@ -33,7 +32,7 @@ const logger = createLogger("PopupAlbumArt");
 
 /** Owns popup album-art actors, async request state, and playback animation. */
 export default class PopupAlbumArt {
-  constructor(popupContent, albumArtLoader) {
+  constructor(popupContent, artworkService) {
     this.popupContent = popupContent;
     this.albumArtFrame = null;
     this.albumArtImage = null;
@@ -45,7 +44,7 @@ export default class PopupAlbumArt {
     this.preparedAlbumArt = null;
     this.loadedFallbackIcon = null;
     this.playbackScaleTarget = null;
-    this.albumArtLoader = albumArtLoader;
+    this.artworkService = artworkService;
     this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
@@ -86,17 +85,16 @@ export default class PopupAlbumArt {
 
     return {
       width,
-      radius: calculateAlbumArtCornerRadius(width, configuredRadius),
+      radius: calculateArtworkCornerRadius(width, configuredRadius),
     };
   }
 
   render() {
     const geometry = this.getAlbumArtGeometry();
-    const request = createAlbumArtRequest({
+    const request = createArtworkRequest({
       busName: this.mediaApp.busName,
-      metadata: this.mediaApp.metadata,
+      track: this.mediaApp.track,
       ...geometry,
-      cacheEnabled: this.extensionController.albumArtCacheEnabled,
     });
 
     this.ensureActor();
@@ -125,11 +123,10 @@ export default class PopupAlbumArt {
     this.loadingAlbumArtKey = request.key;
 
     try {
-      const { pixbuf, fallbackIcon } = await loadAlbumArtResult({
-        albumArtLoader: this.albumArtLoader,
+      const { pixbuf, fallbackIcon } = await this.artworkService.load(
         request,
         loadCancellable,
-      });
+      );
       if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
 
       this.commitAlbumArtResult(request, pixbuf, fallbackIcon);
@@ -171,7 +168,7 @@ export default class PopupAlbumArt {
   }
 
   setAlbumArtPixbuf(width, radius, pixbuf) {
-    const { imageSize, imageRadius } = getAlbumArtPresentationGeometry(
+    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
       width,
       radius,
     );
@@ -184,7 +181,7 @@ export default class PopupAlbumArt {
         key: this.loadedAlbumArtKey,
         imageSize,
         imageRadius,
-        pixbuf: prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius),
+        pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
       };
     }
     const renderPixbuf = this.preparedAlbumArt.pixbuf;
@@ -253,16 +250,16 @@ export default class PopupAlbumArt {
 
   syncAlbumArtGeometry(width, radius) {
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getAlbumArtPresentationGeometry(width, radius);
+      getArtworkPresentationGeometry(width, radius);
 
-    this.albumArtFrame.style = `border-radius: ${frameRadius}px; padding: ${ALBUM_ART_OUTLINE_WIDTH}px;`;
+    this.albumArtFrame.style = `border-radius: ${frameRadius}px; padding: ${ARTWORK_OUTLINE_WIDTH}px;`;
     this.albumArtFrame.set_size(frameSize, frameSize);
     this.albumArtImage.style = `border-radius: ${imageRadius}px;`;
     this.albumArtImage.set_size(imageSize, imageSize);
   }
 
   setAlbumArtFallback(width, radius, icon) {
-    const { imageSize, fallbackIconSize } = getAlbumArtPresentationGeometry(
+    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
       width,
       radius,
     );
@@ -326,7 +323,7 @@ export default class PopupAlbumArt {
 
   destroy() {
     this.remove();
-    this.albumArtLoader = null;
+    this.artworkService = null;
     this.fallbackAlbumArtIcon = null;
     this.popupContent = null;
   }

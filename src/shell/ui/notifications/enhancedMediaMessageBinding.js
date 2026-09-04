@@ -20,18 +20,19 @@ import {
 } from "../../mpris/protocol.js";
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
-import { createAlbumArtRequest } from "../../media/artwork/policy.js";
+import { createArtworkRequest } from "../../media/artwork/request.js";
+import {
+  ARTWORK_OUTLINE_WIDTH,
+  getArtworkPresentationGeometry,
+  prepareArtworkPixbuf,
+} from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/albumArt.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { loadAlbumArtResult } from "../../utils/albumArtLoading.js";
-import { prepareAlbumArtPixbuf } from "../../utils/albumArtPixbuf.js";
-import { getAlbumArtPresentationGeometry } from "../../utils/albumArtPresentation.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
@@ -116,18 +117,16 @@ export default class EnhancedMediaMessageBinding {
     messageContext,
     mediaApp,
     {
-      albumArtLoader,
+      artworkService,
       playbackController,
-      getAlbumArtCacheEnabled,
       onDestroyed = null,
     },
   ) {
     this.context = messageContext;
     this.message = messageContext.message;
     this.mediaApp = mediaApp;
-    this.albumArtLoader = albumArtLoader;
+    this.artworkService = artworkService;
     this.playbackController = playbackController;
-    this.getAlbumArtCacheEnabled = getAlbumArtCacheEnabled;
     this.onDestroyed = onDestroyed;
 
     this.updateSourceId = null;
@@ -748,13 +747,13 @@ export default class EnhancedMediaMessageBinding {
   syncAlbumArtGeometry() {
     if (!this.albumArtFrame || !this.albumArtImage) return;
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getAlbumArtPresentationGeometry(
+      getArtworkPresentationGeometry(
         ENHANCED_ALBUM_ART_SIZE,
         ENHANCED_ALBUM_ART_RADIUS,
       );
     const frameStyle = [
       `border-radius: ${frameRadius}px;`,
-      `padding: ${ALBUM_ART_OUTLINE_WIDTH}px;`,
+      `padding: ${ARTWORK_OUTLINE_WIDTH}px;`,
     ];
     const imageStyle = [`border-radius: ${imageRadius}px;`];
 
@@ -787,12 +786,11 @@ export default class EnhancedMediaMessageBinding {
   syncArtwork() {
     if (!this.message?.mapped || !this.albumArtFrame) return;
 
-    const request = createAlbumArtRequest({
+    const request = createArtworkRequest({
       busName: this.mediaApp.busName,
-      metadata: this.mediaApp.metadata,
+      track: this.mediaApp.track,
       width: ENHANCED_ALBUM_ART_SIZE,
       radius: ENHANCED_ALBUM_ART_RADIUS,
-      cacheEnabled: Boolean(this.getAlbumArtCacheEnabled()),
     });
 
     if (this.loadedAlbumArtKey === request.key) {
@@ -812,11 +810,10 @@ export default class EnhancedMediaMessageBinding {
     this.loadingAlbumArtKey = request.key;
 
     try {
-      const { pixbuf, fallbackIcon } = await loadAlbumArtResult({
-        albumArtLoader: this.albumArtLoader,
+      const { pixbuf, fallbackIcon } = await this.artworkService.load(
         request,
         loadCancellable,
-      });
+      );
       if (!this.isCurrentAlbumArtLoad(loadGeneration, loadCancellable, request))
         return;
 
@@ -860,7 +857,7 @@ export default class EnhancedMediaMessageBinding {
   }
 
   setAlbumArtPixbuf(pixbuf) {
-    const { imageSize, imageRadius } = getAlbumArtPresentationGeometry(
+    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
       ENHANCED_ALBUM_ART_SIZE,
       ENHANCED_ALBUM_ART_RADIUS,
     );
@@ -873,7 +870,7 @@ export default class EnhancedMediaMessageBinding {
         key: this.loadedAlbumArtKey,
         imageSize,
         imageRadius,
-        pixbuf: prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius),
+        pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
       };
     }
 
@@ -887,7 +884,7 @@ export default class EnhancedMediaMessageBinding {
 
   setAlbumArtFallback(icon) {
     if (!this.albumArtFrame || !this.albumArtImage) return;
-    const { imageSize, fallbackIconSize } = getAlbumArtPresentationGeometry(
+    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
       ENHANCED_ALBUM_ART_SIZE,
       ENHANCED_ALBUM_ART_RADIUS,
     );
@@ -1013,9 +1010,8 @@ export default class EnhancedMediaMessageBinding {
     this.context = null;
     this.message = null;
     this.mediaApp = null;
-    this.albumArtLoader = null;
+    this.artworkService = null;
     this.playbackController = null;
-    this.getAlbumArtCacheEnabled = null;
     this.onDestroyed = null;
     this.transportBox = null;
     this.previousButton = null;

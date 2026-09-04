@@ -38,7 +38,7 @@ const logger = createLogger("PopupContent");
 export default class PopupContent {
   constructor(
     indicator,
-    { albumArtLoader, desktopAppResolver, playbackController },
+    { artworkService, desktopAppResolver, playbackController },
   ) {
     this.indicator = indicator;
     this.pendingWidgetFlags = 0;
@@ -57,7 +57,7 @@ export default class PopupContent {
       this,
       desktopAppResolver,
     );
-    this.albumArt = new PopupAlbumArt(this, albumArtLoader);
+    this.albumArt = new PopupAlbumArt(this, artworkService);
     this.trackInformation = new PopupTrackInformation(this);
     this.progressBar = new PopupProgressBar(this);
     this.playbackControls = new PopupPlaybackControls(this, playbackController);

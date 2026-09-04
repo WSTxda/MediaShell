@@ -12,16 +12,15 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 import { IconNames } from "../../../shared/icons.js";
 import { TOP_BAR_ALBUM_ART_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
+import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
-  calculateAlbumArtCornerRadius,
-  createAlbumArtRequest,
-} from "../../media/artwork/policy.js";
+  ARTWORK_OUTLINE_WIDTH,
+  calculateArtworkCornerRadius,
+  getArtworkPresentationGeometry,
+  prepareArtworkPixbuf,
+} from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import { ALBUM_ART_OUTLINE_WIDTH } from "../../constants/albumArt.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { loadAlbumArtResult } from "../../utils/albumArtLoading.js";
-import { prepareAlbumArtPixbuf } from "../../utils/albumArtPixbuf.js";
-import { getAlbumArtPresentationGeometry } from "../../utils/albumArtPresentation.js";
 import { placeActorAtIndex } from "../../utils/actors.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
@@ -33,7 +32,7 @@ const logger = createLogger("TopBarAlbumArt");
 
 /** Displays configurable album art in the GNOME top bar. */
 export default class TopBarAlbumArt {
-  constructor(topBarContent, albumArtLoader) {
+  constructor(topBarContent, artworkService) {
     this.topBarContent = topBarContent;
     this.albumArtFrame = null;
     this.albumArtImage = null;
@@ -45,7 +44,7 @@ export default class TopBarAlbumArt {
     this.albumArtLoadGeneration = 0;
     this.albumArtLoadCancellable = null;
     this.panelHeightSignalId = null;
-    this.albumArtLoader = albumArtLoader;
+    this.artworkService = artworkService;
     this.fallbackAlbumArtIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
@@ -69,11 +68,10 @@ export default class TopBarAlbumArt {
     this.ensurePanelHeightSignal();
 
     const geometry = this.getAlbumArtGeometry();
-    const request = createAlbumArtRequest({
+    const request = createArtworkRequest({
       busName: this.mediaApp.busName,
-      metadata: this.mediaApp.metadata,
+      track: this.mediaApp.track,
       ...geometry,
-      cacheEnabled: this.extensionController.albumArtCacheEnabled,
     });
 
     this.syncAlbumArtGeometry(geometry.width, geometry.radius);
@@ -103,7 +101,7 @@ export default class TopBarAlbumArt {
 
     return {
       width,
-      radius: calculateAlbumArtCornerRadius(width, configuredRadius),
+      radius: calculateArtworkCornerRadius(width, configuredRadius),
     };
   }
 
@@ -166,9 +164,9 @@ export default class TopBarAlbumArt {
 
   syncAlbumArtGeometry(width, radius) {
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getAlbumArtPresentationGeometry(width, radius);
+      getArtworkPresentationGeometry(width, radius);
 
-    this.albumArtFrame.style = `border-radius: ${frameRadius}px; padding: ${ALBUM_ART_OUTLINE_WIDTH}px;`;
+    this.albumArtFrame.style = `border-radius: ${frameRadius}px; padding: ${ARTWORK_OUTLINE_WIDTH}px;`;
     this.albumArtFrame.set_size(frameSize, frameSize);
     this.albumArtImage.style = `border-radius: ${imageRadius}px;`;
     this.albumArtImage.set_size(imageSize, imageSize);
@@ -181,11 +179,10 @@ export default class TopBarAlbumArt {
     this.loadingAlbumArtKey = request.key;
 
     try {
-      const { pixbuf, fallbackIcon } = await loadAlbumArtResult({
-        albumArtLoader: this.albumArtLoader,
+      const { pixbuf, fallbackIcon } = await this.artworkService.load(
         request,
         loadCancellable,
-      });
+      );
       if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
 
       this.commitAlbumArtResult(request, pixbuf, fallbackIcon);
@@ -226,7 +223,7 @@ export default class TopBarAlbumArt {
   }
 
   setAlbumArtPixbuf(width, radius, pixbuf) {
-    const { imageSize, imageRadius } = getAlbumArtPresentationGeometry(
+    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
       width,
       radius,
     );
@@ -239,7 +236,7 @@ export default class TopBarAlbumArt {
         key: this.loadedAlbumArtKey,
         imageSize,
         imageRadius,
-        pixbuf: prepareAlbumArtPixbuf(pixbuf, imageSize, imageRadius),
+        pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
       };
     }
     const renderPixbuf = this.preparedAlbumArt.pixbuf;
@@ -253,7 +250,7 @@ export default class TopBarAlbumArt {
   }
 
   setAlbumArtFallback(width, radius, icon) {
-    const { imageSize, fallbackIconSize } = getAlbumArtPresentationGeometry(
+    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
       width,
       radius,
     );
@@ -306,7 +303,7 @@ export default class TopBarAlbumArt {
 
   destroy() {
     this.remove();
-    this.albumArtLoader = null;
+    this.artworkService = null;
     this.fallbackAlbumArtIcon = null;
     this.topBarContent = null;
   }

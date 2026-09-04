@@ -5,12 +5,13 @@
  * Composes the MediaShell media domain for one Shell runtime profile.
  *
  * The runtime owns MPRIS discovery/lifecycle, desktop-identity resolution, and
- * canonical playback execution. UI surfaces consume these capabilities instead
- * of constructing protocol services or reaching through ExtensionController.
- * Artwork remains externally owned until the dedicated artwork refactor.
+ * canonical playback execution, artwork acquisition/cache, and desktop identity.
+ * UI surfaces consume these capabilities instead of constructing protocol services
+ * or reaching through ExtensionController.
  */
 
 import { createLogger } from "../../shared/logging/logger.js";
+import ArtworkService from "../media/artwork/artworkService.js";
 import DesktopAppResolver from "../media/identity/desktopAppResolver.js";
 import PlaybackController from "../media/playback/playbackController.js";
 import MprisProxyFactory from "../mpris/proxyFactory.js";
@@ -20,9 +21,16 @@ const logger = createLogger("MediaRuntime");
 
 /** Owns the protocol and media capabilities shared by every Shell surface. */
 export default class MediaRuntime {
-  constructor({ blockedAppIds = [], callbacks = {} } = {}) {
+  constructor({
+    blockedAppIds = [],
+    getArtworkCacheEnabled = () => false,
+    callbacks = {},
+  } = {}) {
     this.blockedAppIds = new Set(blockedAppIds ?? []);
     this.callbacks = callbacks;
+    this.artwork = new ArtworkService({
+      getCacheEnabled: getArtworkCacheEnabled,
+    });
     this.identity = new DesktopAppResolver();
     this.proxyFactory = null;
     this.registry = null;
@@ -98,6 +106,9 @@ export default class MediaRuntime {
 
     this.playback?.destroy();
     this.playback = null;
+
+    this.artwork?.destroy();
+    this.artwork = null;
 
     this.identity?.destroy();
     this.identity = null;

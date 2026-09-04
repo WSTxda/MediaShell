@@ -64,17 +64,15 @@ export default class GnomeShellEnhanceMediaControls {
 
   constructor(
     {
-      albumArtLoader,
+      artworkService,
       playbackController,
       getAvailableMediaApps,
-      getAlbumArtCacheEnabled,
     },
     config,
   ) {
-    this.albumArtLoader = albumArtLoader;
+    this.artworkService = artworkService;
     this.playbackController = playbackController;
     this.getAvailableMediaApps = getAvailableMediaApps;
-    this.getAlbumArtCacheEnabled = getAlbumArtCacheEnabled;
     this.config = config;
 
     this.context = null;
@@ -280,9 +278,8 @@ export default class GnomeShellEnhanceMediaControls {
 
   createBinding(message, messageContext, mediaApp) {
     const binding = new EnhancedMediaMessageBinding(messageContext, mediaApp, {
-      albumArtLoader: this.albumArtLoader,
+      artworkService: this.artworkService,
       playbackController: this.playbackController,
-      getAlbumArtCacheEnabled: () => Boolean(this.getAlbumArtCacheEnabled()),
       onDestroyed: (destroyedBinding) => {
         if (this.bindings.get(message) === destroyedBinding) {
           this.bindings.delete(message);
@@ -342,9 +339,8 @@ export default class GnomeShellEnhanceMediaControls {
 
     this.detachContext();
     this.config = null;
-    this.albumArtLoader = null;
+    this.artworkService = null;
     this.playbackController = null;
     this.getAvailableMediaApps = null;
-    this.getAlbumArtCacheEnabled = null;
   }
 }

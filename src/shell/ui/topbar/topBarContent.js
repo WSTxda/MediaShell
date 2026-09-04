@@ -29,14 +29,14 @@ const logger = createLogger("TopBarContent");
 export default class TopBarContent {
   constructor(
     indicator,
-    { albumArtLoader, desktopAppResolver, playbackController },
+    { artworkService, desktopAppResolver, playbackController },
   ) {
     this.indicator = indicator;
     this.topBarBox = null;
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
     this.mediaAppIcon = new TopBarMediaAppIcon(this, desktopAppResolver);
-    this.albumArt = new TopBarAlbumArt(this, albumArtLoader);
+    this.albumArt = new TopBarAlbumArt(this, artworkService);
     this.trackInformation = new TopBarTrackInformation(this);
     // The visualizer is created lazily so the disabled default owns no actor or timer.
     this.visualizer = null;
