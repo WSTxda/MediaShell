@@ -11,14 +11,12 @@ import test from "node:test";
 
 import { MprisMetadataKeys } from "../src/shell/mpris/protocol.js";
 import {
-  ALBUM_ART_CACHE_MAX_BYTES,
-  ALBUM_ART_MAX_BYTES,
-} from "../src/shell/constants/albumArt.js";
+  ARTWORK_CACHE_MAX_BYTES,
+  ARTWORK_MAX_BYTES,
+} from "../src/shell/media/artwork/constants.js";
 import { normalizeAppIdentityHint } from "../src/shell/media/identity/appIdentity.js";
-import {
-  createAlbumArtRequest,
-  selectAlbumArtCacheEvictions,
-} from "../src/shell/media/artwork/policy.js";
+import { createArtworkRequest } from "../src/shell/media/artwork/request.js";
+import { selectArtworkCacheEvictions } from "../src/shell/media/artwork/cachePolicy.js";
 import {
   createMprisMetadataRevision,
   createMprisTrack,
@@ -136,41 +134,43 @@ test("metadata normalization produces one stable and display-safe domain shape",
   ]);
 });
 
-test("album-art requests snapshot ownership and reject stale-equivalent ambiguity", () => {
-  const first = createAlbumArtRequest({
+test("artwork requests snapshot ownership and reject stale-equivalent ambiguity", () => {
+  const firstTrack = createMprisTrack({
+    [MprisMetadataKeys.ART_URL]: " https://example.test/cover.jpg ",
+    [MprisMetadataKeys.URL]: "file:///music/track.ogg",
+  });
+  const first = createArtworkRequest({
     busName: "org.mpris.MediaPlayer2.first",
-    metadata: {
-      [MprisMetadataKeys.ART_URL]: " https://example.test/cover.jpg ",
-      [MprisMetadataKeys.URL]: "file:///music/track.ogg",
-    },
+    track: firstTrack,
     width: 250.4,
     radius: 400,
-    cacheEnabled: true,
   });
-  const equivalent = createAlbumArtRequest({
+  const equivalent = createArtworkRequest({
     busName: "org.mpris.MediaPlayer2.first",
-    metadata: {
+    track: createMprisTrack({
       [MprisMetadataKeys.ART_URL]: "https://example.test/cover.jpg",
       [MprisMetadataKeys.URL]: "file:///music/track.ogg",
-    },
+    }),
     width: 250,
     radius: 125,
-    cacheEnabled: true,
   });
-  const nextTrack = createAlbumArtRequest({
-    ...first,
-    metadata: {
-      [MprisMetadataKeys.ART_URL]: first.albumArtUri,
+  const nextTrack = createArtworkRequest({
+    busName: first.busName,
+    track: createMprisTrack({
+      [MprisMetadataKeys.ART_URL]: first.artUrl,
       [MprisMetadataKeys.URL]: "file:///music/next.ogg",
-    },
+    }),
+    width: first.width,
+    radius: first.radius,
   });
-  const otherApp = createAlbumArtRequest({
-    ...first,
+  const otherApp = createArtworkRequest({
     busName: "org.mpris.MediaPlayer2.second",
-    metadata: {
-      [MprisMetadataKeys.ART_URL]: first.albumArtUri,
-      [MprisMetadataKeys.URL]: first.trackUri,
-    },
+    track: createMprisTrack({
+      [MprisMetadataKeys.ART_URL]: first.artUrl,
+      [MprisMetadataKeys.URL]: first.trackUrl,
+    }),
+    width: first.width,
+    radius: first.radius,
   });
 
   assert.equal(first.key, equivalent.key);
@@ -190,9 +190,9 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
           { name: "oldest", sizeBytes: 40, modifiedSeconds: 10 },
           { name: "middle", sizeBytes: 40, accessedSeconds: 20 },
         ];
-        assert.deepEqual(selectAlbumArtCacheEvictions(entries, 120), []);
-        assert.deepEqual(selectAlbumArtCacheEvictions(entries, 80), ["oldest"]);
-        assert.deepEqual(selectAlbumArtCacheEvictions(entries, 50), [
+        assert.deepEqual(selectArtworkCacheEvictions(entries, 120), []);
+        assert.deepEqual(selectArtworkCacheEvictions(entries, 80), ["oldest"]);
+        assert.deepEqual(selectArtworkCacheEvictions(entries, 50), [
           "oldest",
           "middle",
         ]);
@@ -202,7 +202,7 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       "microsecond LRU recency",
       () => {
         assert.deepEqual(
-          selectAlbumArtCacheEvictions(
+          selectArtworkCacheEvictions(
             [
               {
                 name: "recent",
@@ -227,7 +227,7 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       "invalid access recency falls back to modification time",
       () => {
         assert.deepEqual(
-          selectAlbumArtCacheEvictions(
+          selectArtworkCacheEvictions(
             [
               {
                 name: "invalid",
@@ -248,7 +248,7 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       "stable tie break",
       () => {
         assert.deepEqual(
-          selectAlbumArtCacheEvictions(
+          selectArtworkCacheEvictions(
             [
               { name: "b", sizeBytes: 1, accessedSeconds: 1 },
               { name: "a", sizeBytes: 1, accessedSeconds: 1 },
@@ -262,8 +262,8 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
     [
       "global limits",
       () => {
-        assert.equal(ALBUM_ART_MAX_BYTES, 16 * 1024 * 1024);
-        assert.equal(ALBUM_ART_CACHE_MAX_BYTES, 128 * 1024 * 1024);
+        assert.equal(ARTWORK_MAX_BYTES, 16 * 1024 * 1024);
+        assert.equal(ARTWORK_CACHE_MAX_BYTES, 128 * 1024 * 1024);
       },
     ],
   ]);

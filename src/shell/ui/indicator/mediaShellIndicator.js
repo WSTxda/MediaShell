@@ -38,7 +38,7 @@ const logger = createLogger("MediaShellIndicator");
  * surfaces.
  */
 class MediaShellIndicator extends PanelMenu.Button {
-  constructor(mediaApp, extensionController, { albumArtLoader, mediaRuntime }) {
+  constructor(mediaApp, extensionController, { mediaRuntime }) {
     super(0.5, "MediaShell", false);
     this.mediaApp = mediaApp;
     this.extensionController = extensionController;
@@ -50,7 +50,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
     const surfaceDependencies = {
-      albumArtLoader,
+      artworkService: mediaRuntime.artwork,
       desktopAppResolver: mediaRuntime.identity,
       playbackController: mediaRuntime.playback,
     };
