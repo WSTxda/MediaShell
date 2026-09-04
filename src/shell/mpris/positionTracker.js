@@ -26,7 +26,7 @@ import {
   normalizeTrackDurationMicroseconds,
   resolvePlaybackPositionEstimate,
 } from "./position.js";
-import { isCancellationError } from "../utils/errors.js";
+import { isCancellationError } from "../platform/gioErrors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 

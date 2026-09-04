@@ -47,7 +47,7 @@ import {
   POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
   TOP_BAR_PLAYBACK_CONTROL_ORDER,
-} from "../src/shell/constants/playbackControls.js";
+} from "../src/shell/ui/components/playback/order.js";
 import PopupLayoutController from "../src/prefs/controllers/popupLayoutController.js";
 import { reconcileActorOrder } from "../src/shell/ui/components/actorOrder.js";
 import { runCases } from "./helpers.mjs";

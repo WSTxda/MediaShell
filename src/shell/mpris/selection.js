@@ -2,142 +2,142 @@
  * @file selection.js
  * @module shell.mpris.selection
  *
- * Chooses active and next media apps from registered MPRIS proxies.
+ * Chooses active and next players from registered MPRIS proxies.
  *
  * The pure policy prioritizes pinned, playing, previously active, paused, then
- * stable fallback apps. Equal-priority candidates are ordered by their MPRIS
+ * stable fallback players. Equal-priority candidates are ordered by their MPRIS
  * bus name while preserving the previous active endpoint inside the same tier.
  */
 
 import { PlaybackStatus } from "./protocol.js";
 
-function getMediaAppOrderKey(mediaApp) {
-  return String(mediaApp?.busName ?? "");
+function getPlayerOrderKey(player) {
+  return String(player?.busName ?? "");
 }
 
-function compareMediaApps(firstMediaApp, secondMediaApp) {
-  const firstKey = getMediaAppOrderKey(firstMediaApp);
-  const secondKey = getMediaAppOrderKey(secondMediaApp);
+function comparePlayers(firstPlayer, secondPlayer) {
+  const firstKey = getPlayerOrderKey(firstPlayer);
+  const secondKey = getPlayerOrderKey(secondPlayer);
   if (firstKey < secondKey) return -1;
   if (firstKey > secondKey) return 1;
   return 0;
 }
 
-function choosePreferredTierMediaApp(mediaApps, previousActiveBusName) {
+function choosePreferredTierPlayer(players, previousActiveBusName) {
   return (
-    mediaApps.find((mediaApp) => mediaApp.busName === previousActiveBusName) ??
-    mediaApps[0] ??
+    players.find((player) => player.busName === previousActiveBusName) ??
+    players[0] ??
     null
   );
 }
 
 /**
- * Returns a stable copy of media apps ordered by their MPRIS endpoint key.
+ * Returns a stable copy of players ordered by their MPRIS endpoint key.
  *
  * Bus names are the registry's lifecycle identity, so ordering does not depend
  * on discovery timing, localized display names, metadata, or Shell app lookup.
  *
- * @param {object[]} mediaApps - Media app proxies to order.
+ * @param {object[]} players - Player proxies to order.
  * @returns {object[]} New deterministically ordered array.
  */
-export function orderMediaAppsDeterministically(mediaApps = []) {
-  return [...mediaApps].sort(compareMediaApps);
+export function orderPlayersDeterministically(players = []) {
+  return [...players].sort(comparePlayers);
 }
 
 /**
- * Chooses the active media app from registered valid endpoints.
+ * Chooses the active player from registered valid endpoints.
  *
- * Priority order is pinned media app, currently playing media app, previous
- * active media app, paused media app, then the first valid media app. Within a
+ * Priority order is pinned player, currently playing player, previous
+ * active player, paused player, then the first valid player. Within a
  * shared priority tier, the previous active endpoint is preserved; otherwise
  * the stable bus-name order wins.
  *
- * @param {object[]} mediaApps - Registered media app proxies.
+ * @param {object[]} players - Registered player proxies.
  * @param {string|null} previousActiveBusName - Last active MPRIS bus name.
- * @returns {object|null} Chosen media app, or null when none are available.
+ * @returns {object|null} Chosen player, or null when none are available.
  */
-export function chooseActiveMediaApp(
-  mediaApps = [],
+export function chooseActivePlayer(
+  players = [],
   previousActiveBusName = null,
 ) {
-  const validMediaApps = orderMediaAppsDeterministically(
-    mediaApps.filter((mediaApp) => !mediaApp.isInvalid),
+  const validPlayers = orderPlayersDeterministically(
+    players.filter((player) => !player.isInvalid),
   );
-  if (validMediaApps.length === 0) return null;
+  if (validPlayers.length === 0) return null;
 
-  const pinnedMediaApps = validMediaApps.filter(
-    (mediaApp) => mediaApp.isPinned,
+  const pinnedPlayers = validPlayers.filter(
+    (player) => player.isPinned,
   );
-  if (pinnedMediaApps.length > 0)
-    return choosePreferredTierMediaApp(pinnedMediaApps, previousActiveBusName);
+  if (pinnedPlayers.length > 0)
+    return choosePreferredTierPlayer(pinnedPlayers, previousActiveBusName);
 
-  const playingMediaApps = validMediaApps.filter(
-    (mediaApp) => mediaApp.playbackStatus === PlaybackStatus.PLAYING,
+  const playingPlayers = validPlayers.filter(
+    (player) => player.playbackStatus === PlaybackStatus.PLAYING,
   );
-  if (playingMediaApps.length > 0)
-    return choosePreferredTierMediaApp(playingMediaApps, previousActiveBusName);
+  if (playingPlayers.length > 0)
+    return choosePreferredTierPlayer(playingPlayers, previousActiveBusName);
 
-  const previousActiveMediaApp = validMediaApps.find(
-    (mediaApp) => mediaApp.busName === previousActiveBusName,
+  const previousActivePlayer = validPlayers.find(
+    (player) => player.busName === previousActiveBusName,
   );
-  if (previousActiveMediaApp) return previousActiveMediaApp;
+  if (previousActivePlayer) return previousActivePlayer;
 
-  const pausedMediaApps = validMediaApps.filter(
-    (mediaApp) => mediaApp.playbackStatus === PlaybackStatus.PAUSED,
+  const pausedPlayers = validPlayers.filter(
+    (player) => player.playbackStatus === PlaybackStatus.PAUSED,
   );
-  return pausedMediaApps[0] ?? validMediaApps[0];
+  return pausedPlayers[0] ?? validPlayers[0];
 }
 
 /**
- * Chooses the visible active app while an endpoint is awaiting owner recovery.
+ * Chooses the visible active player while an endpoint is awaiting owner recovery.
  *
  * Ownerless endpoints leave the UI immediately. A replacement may take over
  * during the grace period only when it is pinned or playing and the pending
  * endpoint itself is not pinned. Otherwise the UI remains empty until owner
  * recovery or permanent removal resolves the hand-off.
  *
- * @param {object[]} mediaApps - Visible registered media app proxies.
+ * @param {object[]} players - Visible registered player proxies.
  * @param {string|null} previousActiveBusName - Last active MPRIS bus name.
- * @param {object|null} pendingActiveMediaApp - Ownerless active proxy, if any.
- * @returns {object|null} Chosen visible app or null during a protected hand-off.
+ * @param {object|null} pendingActivePlayer - Ownerless active proxy, if any.
+ * @returns {object|null} Chosen visible player or null during a protected hand-off.
  */
-export function chooseReconciledMediaApp(
-  mediaApps = [],
+export function chooseReconciledPlayer(
+  players = [],
   previousActiveBusName = null,
-  pendingActiveMediaApp = null,
+  pendingActivePlayer = null,
 ) {
-  const nextActiveMediaApp = chooseActiveMediaApp(
-    mediaApps,
+  const nextActivePlayer = chooseActivePlayer(
+    players,
     previousActiveBusName,
   );
-  if (!pendingActiveMediaApp) return nextActiveMediaApp;
+  if (!pendingActivePlayer) return nextActivePlayer;
 
   const replacementShouldTakeOver = Boolean(
-    nextActiveMediaApp &&
-    !pendingActiveMediaApp.isPinned &&
-    (nextActiveMediaApp.isPinned ||
-      nextActiveMediaApp.playbackStatus === PlaybackStatus.PLAYING),
+    nextActivePlayer &&
+    !pendingActivePlayer.isPinned &&
+    (nextActivePlayer.isPinned ||
+      nextActivePlayer.playbackStatus === PlaybackStatus.PLAYING),
   );
-  return replacementShouldTakeOver ? nextActiveMediaApp : null;
+  return replacementShouldTakeOver ? nextActivePlayer : null;
 }
 
 /**
- * Chooses the next media app for media app selector and shortcut cycling.
+ * Chooses the next player for player selector and shortcut cycling.
  *
- * @param {object[]} mediaApps - Available media app proxies.
- * @param {object|null} activeMediaApp - Active media app proxy.
- * @returns {object|null} Next media app, or null when cycling is not possible.
+ * @param {object[]} players - Available player proxies.
+ * @param {object|null} activePlayer - Active player proxy.
+ * @returns {object|null} Next player, or null when cycling is not possible.
  */
-export function chooseNextMediaApp(mediaApps = [], activeMediaApp = null) {
-  const orderedMediaApps = orderMediaAppsDeterministically(
-    mediaApps.filter((mediaApp) => !mediaApp.isInvalid),
+export function chooseNextPlayer(players = [], activePlayer = null) {
+  const orderedPlayers = orderPlayersDeterministically(
+    players.filter((player) => !player.isInvalid),
   );
-  if (orderedMediaApps.length <= 1) return null;
+  if (orderedPlayers.length <= 1) return null;
 
-  const activeIndex = orderedMediaApps.findIndex(
-    (mediaApp) => mediaApp.busName === activeMediaApp?.busName,
+  const activeIndex = orderedPlayers.findIndex(
+    (player) => player.busName === activePlayer?.busName,
   );
-  return orderedMediaApps[
-    activeIndex >= 0 ? (activeIndex + 1) % orderedMediaApps.length : 0
+  return orderedPlayers[
+    activeIndex >= 0 ? (activeIndex + 1) % orderedPlayers.length : 0
   ];
 }

@@ -11,7 +11,7 @@
 import St from "gi://St";
 
 import { PlaybackControlContentKinds } from "../../../../shared/playback/controls.js";
-import { createIcon, setIconName } from "../../../utils/icons.js";
+import { createIcon, setIconName } from "../../icons.js";
 
 export function createPlaybackControlContent(
   controlDefinition,

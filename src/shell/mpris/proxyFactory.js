@@ -22,7 +22,7 @@ import {
   MPRIS_PLAYER_IFACE_NAME,
 } from "./protocol.js";
 import { ResourceUris } from "../../shared/resources.js";
-import { isCancellationError } from "../utils/errors.js";
+import { isCancellationError } from "../platform/gioErrors.js";
 
 Gio._promisify(
   Gio.File.prototype,

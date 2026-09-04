@@ -290,7 +290,7 @@ const OTHERS_BINDINGS = Object.freeze([
   ],
   [
     SettingsKeys.ARTWORK_CACHE_ENABLED,
-    "sr-album-art-cache-enabled",
+    "sr-artwork-cache-enabled",
     "active",
   ],
 ]);

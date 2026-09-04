@@ -16,7 +16,7 @@ import { IconNames } from "../../shared/icons.js";
 import { buildBrowserIdentityAliases } from "../../shared/identity/browser.js";
 import { createLogger } from "../../shared/logging/logger.js";
 
-const logger = createLogger("installedAppCatalog");
+const logger = createLogger("InstalledAppCatalog");
 
 /** Creates the themed fallback owned by one catalog consumer. */
 export function createFallbackAppIcon() {

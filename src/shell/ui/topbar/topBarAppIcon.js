@@ -1,24 +1,23 @@
 /**
- * @file topBarMediaAppIcon.js
- * @module shell.ui.topbar.topBarMediaAppIcon
+ * @file topBarAppIcon.js
+ * @module shell.ui.topbar.topBarAppIcon
  *
- * Displays the active media app's icon in the GNOME top bar.
+ * Displays the desktop-app icon resolved for the active MPRIS player.
  *
  * TopBarContent owns this component and injects the lifecycle-scoped desktop-app
  * resolver. The component keeps icon actor creation and updates separate from
  * track text, visualizer, and playback control layout.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import { IconNames } from "../../../shared/icons.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
-import { createIcon, setGIcon } from "../../utils/icons.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+import { createIcon, setGIcon } from "../icons.js";
 
 /**
- * Displays the active media app's icon in the GNOME top bar.
+ * Displays the desktop-app icon resolved for the active MPRIS player.
  */
-export default class TopBarMediaAppIcon {
+export default class TopBarAppIcon {
   constructor(topBarContent, desktopAppResolver) {
     this.topBarContent = topBarContent;
     this.actor = null;
@@ -31,15 +30,15 @@ export default class TopBarMediaAppIcon {
     return this.topBarContent.settings;
   }
 
-  get mediaApp() {
-    return this.topBarContent.mediaApp;
+  get player() {
+    return this.topBarContent.player;
   }
 
   render(index, parentBox) {
-    const identity = this.mediaApp.identity;
-    const desktopEntry = this.mediaApp.desktopEntry;
+    const identity = this.player.identity;
+    const desktopEntry = this.player.desktopEntry;
     const useColoredIcon = this.settings.mediaAppIconUseColor;
-    const iconKey = `${this.mediaApp.busName}\u0001${identity}\u0001${desktopEntry}`;
+    const iconKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}`;
 
     // St can retain the previously resolved symbolic/regular texture when
     // only the CSS icon style changes. Replacing this tiny actor on a mode
@@ -52,7 +51,7 @@ export default class TopBarMediaAppIcon {
       const desktopApp = this.desktopAppResolver.resolveDesktopApp(
         identity,
         desktopEntry,
-        this.mediaApp.busName,
+        this.player.busName,
       );
       setGIcon(
         this.actor,
@@ -79,12 +78,12 @@ export default class TopBarMediaAppIcon {
     this.actor = createIcon(
       {
         styleClass: styleClassNames(
-          StyleClasses.SYSTEM_STATUS_ICON,
-          StyleClasses.TOP_BAR_MEDIA_APP_ICON,
-          StyleClasses.NO_MARGIN,
+          NativeStyleClasses.SYSTEM_STATUS_ICON,
+          MediaShellStyleClasses.TOP_BAR_APP_ICON,
+          NativeStyleClasses.NO_MARGIN,
           useColoredIcon
-            ? StyleClasses.COLORED_ICON
-            : StyleClasses.SYMBOLIC_ICON,
+            ? NativeStyleClasses.COLORED_ICON
+            : NativeStyleClasses.SYMBOLIC_ICON,
         ),
       },
       IconNames.MEDIA,

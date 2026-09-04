@@ -7,6 +7,7 @@
  * consumed from MediaShell; this class owns only native-message presentation.
  */
 
+import { MediaShellStyleClasses, styleClassNames } from "../../../ui/style.js";
 import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
@@ -32,17 +33,15 @@ import { resolvePlaybackControlState } from "../../../media/playback/controlStat
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../../constants/actorState.js";
-import { StyleClasses } from "../../../constants/styleClasses.js";
+} from "../../../ui/actorState.js";
 import { placeActorAtIndex } from "../../../ui/components/actorOrder.js";
-import { isCancellationError } from "../../../utils/errors.js";
-import { createIcon, setGIcon } from "../../../utils/icons.js";
+import { isCancellationError } from "../../../platform/gioErrors.js";
+import { createIcon, setGIcon } from "../../../ui/icons.js";
 import { updatePlaybackControlButton } from "../../../ui/components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
 } from "../../../ui/components/playback/content.js";
-import { styleClassNames } from "../../../utils/styleClasses.js";
 
 const logger = createLogger("EnhancedMediaMessageBinding");
 
@@ -181,7 +180,7 @@ export default class EnhancedMediaMessageBinding {
     try {
       this.createActors();
       this.connectMessageSignals();
-      this.connectMediaAppState();
+      this.connectPlayerState();
       this.applyNativePresentation();
       this.syncPresentation();
       if (this.message.mapped) this.syncArtwork();
@@ -207,7 +206,7 @@ export default class EnhancedMediaMessageBinding {
   createAlbumArtActors() {
     this.albumArtImage = createIcon(
       {
-        styleClass: StyleClasses.ALBUM_ART_IMAGE,
+        styleClass: MediaShellStyleClasses.ALBUM_ART_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -217,7 +216,7 @@ export default class EnhancedMediaMessageBinding {
     );
     this.albumArtFrame = new St.Bin({
       styleClass: styleClassNames(
-        StyleClasses.ALBUM_ART_FRAME,
+        MediaShellStyleClasses.ALBUM_ART_FRAME,
         EnhancedStyleClasses.ALBUM_ART,
       ),
       xExpand: false,
@@ -389,7 +388,7 @@ export default class EnhancedMediaMessageBinding {
     ]);
   }
 
-  connectMediaAppState() {
+  connectPlayerState() {
     for (const property of OBSERVED_PLAYER_PROPERTIES) {
       const listenerId = this.player.onPropertyChanged(property, () => {
         if (property === MprisPlayerProperties.METADATA)
@@ -909,7 +908,7 @@ export default class EnhancedMediaMessageBinding {
       object.disconnect(signalId);
   }
 
-  disconnectMediaAppState() {
+  disconnectPlayerState() {
     for (const { property, listenerId } of this.playerPropertyListeners)
       this.player.removePropertyChangeListener(property, listenerId);
     this.playerPropertyListeners = [];
@@ -954,7 +953,7 @@ export default class EnhancedMediaMessageBinding {
     }
     this.cancelAlbumArtLoad();
     this.pauseProgressTransition();
-    this.disconnectMediaAppState();
+    this.disconnectPlayerState();
     this.disconnectNativePresentationSignals();
     this.disconnectMessageSignals();
 

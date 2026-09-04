@@ -1,6 +1,6 @@
 /**
  * @file reducedMotion.js
- * @module shell.utils.reducedMotion
+ * @module shell.ui.accessibility.reducedMotion
  *
  * Detects and observes the user's reduced-motion accessibility preference.
  *

@@ -1,15 +1,16 @@
 /**
- * @file popupMediaAppSelectorList.js
- * @module shell.ui.popup.popupMediaAppSelectorList
+ * @file popupPlayerSelectorList.js
+ * @module shell.ui.popup.popupPlayerSelectorList
  *
- * Builds the popup list of available MPRIS media apps.
+ * Builds the popup list of available MPRIS players.
  *
  * The list owns row creation, active-row styling, pin controls, and reveal
- * animation for the media app selector. It receives MediaApp state and the
- * lifecycle-scoped desktop-app resolver from the controller, then emits user
+ * animation for the player selector. It receives MprisPlayer state and the
+ * injected lifecycle-scoped desktop-app resolver, then emits user
  * intent without changing MprisPlayerRegistry directly.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -19,14 +20,12 @@ import {
   ACTIVE_OPACITY,
   HIDDEN_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
+} from "../actorState.js";
 import {
-  POPUP_MEDIA_APP_SELECTOR_REVEAL_DURATION_MS,
-  POPUP_MEDIA_APP_SELECTOR_ROW_ANIMATION_MS,
-} from "../../constants/popup.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
-import { createIcon } from "../../utils/icons.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+  POPUP_PLAYER_SELECTOR_REVEAL_DURATION_MS,
+  POPUP_PLAYER_SELECTOR_ROW_ANIMATION_MS,
+} from "./presentation.js";
+import { createIcon } from "../icons.js";
 
 function actorContainsDescendant(actor, candidateDescendant) {
   return (
@@ -49,31 +48,31 @@ function actorContainsEventPoint(actor, event) {
   );
 }
 
-function resolveMediaAppRows(mediaApps, desktopAppResolver) {
-  return mediaApps.map((mediaApp) => {
+function resolvePlayerRows(players, desktopAppResolver) {
+  return players.map((player) => {
     const desktopApp = desktopAppResolver.resolveDesktopApp(
-      mediaApp.identity,
-      mediaApp.desktopEntry,
-      mediaApp.busName,
+      player.identity,
+      player.desktopEntry,
+      player.busName,
     );
     return {
-      mediaApp,
+      player,
       desktopApp,
       resolvedDesktopAppKey:
         desktopApp && desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
-          ? mediaApp.busName
+          ? player.busName
           : null,
     };
   });
 }
 
 /**
- * Builds the popup list of available MPRIS media apps.
+ * Builds the popup list of available MPRIS players.
  */
-export default class PopupMediaAppSelectorList {
-  constructor(popupContent, mediaAppSelectorButton, desktopAppResolver) {
+export default class PopupPlayerSelectorList {
+  constructor(popupContent, playerSelectorButton, desktopAppResolver) {
     this.popupContent = popupContent;
-    this.mediaAppSelectorButton = mediaAppSelectorButton;
+    this.playerSelectorButton = playerSelectorButton;
     this.revealer = null;
     this.card = null;
     this.renderSignature = null;
@@ -96,30 +95,30 @@ export default class PopupMediaAppSelectorList {
   }
 
   open() {
-    const mediaApps = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
-    if (mediaApps.length <= 1) return;
+    const players = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
+    if (players.length <= 1) return;
 
     this.revealer = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_REVEALER,
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_REVEALER,
       clipToAllocation: true,
     });
     this.card = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_CARD,
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_CARD,
     });
-    this.syncMediaAppSelectorListWidth();
-    const resolvedMediaAppRows = resolveMediaAppRows(
-      mediaApps,
+    this.syncPlayerSelectorListWidth();
+    const resolvedPlayerRows = resolvePlayerRows(
+      players,
       this.desktopAppResolver,
     );
-    this.card.add_child(this.buildMediaAppList(resolvedMediaAppRows));
-    this.renderSignature = this.getRenderSignature(resolvedMediaAppRows);
+    this.card.add_child(this.buildPlayerList(resolvedPlayerRows));
+    this.renderSignature = this.getRenderSignature(resolvedPlayerRows);
     this.revealer.add_child(this.card);
 
     const children = this.popupItem.get_children();
     const selectorButtonIndex = children.indexOf(
-      this.mediaAppSelectorButton.actor,
+      this.playerSelectorButton.actor,
     );
     this.popupItem.insert_child_at_index(
       this.revealer,
@@ -136,7 +135,7 @@ export default class PopupMediaAppSelectorList {
     this.revealer.ease({
       height: naturalHeight,
       translation_y: 0,
-      duration: POPUP_MEDIA_APP_SELECTOR_REVEAL_DURATION_MS,
+      duration: POPUP_PLAYER_SELECTOR_REVEAL_DURATION_MS,
       mode: Clutter.AnimationMode.EASE_OUT_QUAD,
       onComplete: () => {
         if (this.revealer) this.revealer.clipToAllocation = false;
@@ -144,26 +143,26 @@ export default class PopupMediaAppSelectorList {
     });
   }
 
-  refreshMediaApps() {
+  refreshPlayers() {
     if (!this.revealer) return;
-    const mediaApps = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
-    if (mediaApps.length <= 1) {
+    const players = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
+    if (players.length <= 1) {
       this.close();
       return;
     }
     if (!this.card) return;
 
-    this.syncMediaAppSelectorListWidth();
-    const resolvedMediaAppRows = resolveMediaAppRows(
-      mediaApps,
+    this.syncPlayerSelectorListWidth();
+    const resolvedPlayerRows = resolvePlayerRows(
+      players,
       this.desktopAppResolver,
     );
-    const renderSignature = this.getRenderSignature(resolvedMediaAppRows);
+    const renderSignature = this.getRenderSignature(resolvedPlayerRows);
     if (renderSignature !== null && renderSignature === this.renderSignature)
       return;
 
     this.card.remove_all_children();
-    this.card.add_child(this.buildMediaAppList(resolvedMediaAppRows));
+    this.card.add_child(this.buildPlayerList(resolvedPlayerRows));
     this.renderSignature = renderSignature;
     const [, naturalHeight] = this.revealer.get_preferred_height(-1);
     this.revealer.height = naturalHeight;
@@ -171,8 +170,8 @@ export default class PopupMediaAppSelectorList {
     this.revealer.clipToAllocation = false;
   }
 
-  getRenderSignature(resolvedMediaAppRows) {
-    const resolvedDesktopAppKeys = resolvedMediaAppRows.map(
+  getRenderSignature(resolvedPlayerRows) {
+    const resolvedDesktopAppKeys = resolvedPlayerRows.map(
       ({ resolvedDesktopAppKey }) => resolvedDesktopAppKey,
     );
     // A resolver miss can be a startup race, especially for browser MPRIS
@@ -182,21 +181,21 @@ export default class PopupMediaAppSelectorList {
       return null;
 
     const coloredIcons = this.settings.mediaAppIconUseColor;
-    const activeBusName = this.popupContent.mediaApp.busName;
+    const activeBusName = this.popupContent.player.busName;
     return JSON.stringify([
       coloredIcons,
       activeBusName,
-      ...resolvedMediaAppRows.map(({ mediaApp }, index) => [
-        mediaApp.busName,
-        mediaApp.identity,
-        mediaApp.desktopEntry,
-        mediaApp.isPinned,
+      ...resolvedPlayerRows.map(({ player }, index) => [
+        player.busName,
+        player.identity,
+        player.desktopEntry,
+        player.isPinned,
         resolvedDesktopAppKeys[index],
       ]),
     ]);
   }
 
-  syncMediaAppSelectorListWidth() {
+  syncPlayerSelectorListWidth() {
     const style = this.popupContent.buildFixedWidthStyle(
       this.popupContent.getPopupContentWidth(),
     );
@@ -204,47 +203,47 @@ export default class PopupMediaAppSelectorList {
     if (this.card) this.card.style = style;
   }
 
-  buildMediaAppList(resolvedMediaAppRows) {
-    const mediaAppList = new St.BoxLayout({
+  buildPlayerList(resolvedPlayerRows) {
+    const playerList = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_LIST,
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_LIST,
     });
     const coloredClass = this.settings.mediaAppIconUseColor
-      ? StyleClasses.COLORED_ICON
-      : StyleClasses.SYMBOLIC_ICON;
-    const pinnedMediaApp =
-      resolvedMediaAppRows.find(({ mediaApp }) => mediaApp.isPinned)
-        ?.mediaApp ?? null;
+      ? NativeStyleClasses.COLORED_ICON
+      : NativeStyleClasses.SYMBOLIC_ICON;
+    const pinnedPlayer =
+      resolvedPlayerRows.find(({ player }) => player.isPinned)
+        ?.player ?? null;
 
-    for (const resolvedMediaAppRow of resolvedMediaAppRows) {
-      mediaAppList.add_child(
-        this.createMediaAppRow(
-          resolvedMediaAppRow,
-          pinnedMediaApp,
+    for (const resolvedPlayerRow of resolvedPlayerRows) {
+      playerList.add_child(
+        this.createPlayerRow(
+          resolvedPlayerRow,
+          pinnedPlayer,
           coloredClass,
         ),
       );
     }
-    return mediaAppList;
+    return playerList;
   }
 
-  createMediaAppRow({ mediaApp, desktopApp }, pinnedMediaApp, coloredClass) {
+  createPlayerRow({ player, desktopApp }, pinnedPlayer, coloredClass) {
     const displayName = this.desktopAppResolver.getDesktopAppName(
       desktopApp,
-      mediaApp.identity || _("Unknown app"),
+      player.identity || _("Unknown app"),
     );
     const displayIcon = this.desktopAppResolver.getDesktopAppIcon(desktopApp);
-    const isActive = this.popupContent.isActiveMediaApp(mediaApp);
-    const isPinned = mediaApp.isPinned;
-    const canSelect = pinnedMediaApp == null || isPinned;
+    const isActive = this.popupContent.isActivePlayer(player);
+    const isPinned = player.isPinned;
+    const canSelect = pinnedPlayer == null || isPinned;
     const rowItem = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_ITEM,
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_ITEM,
       xExpand: true,
     });
 
     rowItem.add_child(
-      this.createMediaAppButton({
-        mediaApp,
+      this.createPlayerButton({
+        player,
         displayName,
         displayIcon,
         coloredClass,
@@ -253,23 +252,23 @@ export default class PopupMediaAppSelectorList {
       }),
     );
     rowItem.add_child(
-      this.createMediaAppPinButton(mediaApp, isPinned, canSelect),
+      this.createPlayerPinButton(player, isPinned, canSelect),
     );
     return rowItem;
   }
 
-  createMediaAppButton({
-    mediaApp,
+  createPlayerButton({
+    player,
     displayName,
     displayIcon,
     coloredClass,
     isActive,
     canSelect,
   }) {
-    const mediaAppButton = new St.Button({
+    const playerButton = new St.Button({
       styleClass: styleClassNames(
-        StyleClasses.POPUP_MENU_ITEM,
-        StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW,
+        NativeStyleClasses.POPUP_MENU_ITEM,
+        MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW,
       ),
       opacity: canSelect ? ACTIVE_OPACITY : INACTIVE_OPACITY,
       reactive: canSelect,
@@ -277,38 +276,38 @@ export default class PopupMediaAppSelectorList {
       canFocus: canSelect,
       xExpand: true,
     });
-    mediaAppButton.set_child(
-      this.createMediaAppIdentityContent(
+    playerButton.set_child(
+      this.createPlayerIdentityContent(
         displayName,
         displayIcon,
         coloredClass,
         isActive,
       ),
     );
-    mediaAppButton.connect("clicked", () => {
+    playerButton.connect("clicked", () => {
       if (!canSelect) return;
-      if (isActive || this.popupContent.selectMediaApp(mediaApp)) this.close();
+      if (isActive || this.popupContent.selectPlayer(player)) this.close();
     });
-    return mediaAppButton;
+    return playerButton;
   }
 
-  createMediaAppIdentityContent(
+  createPlayerIdentityContent(
     displayName,
     displayIcon,
     coloredClass,
     isActive,
   ) {
-    const mediaAppContent = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_BOX,
+    const playerContent = new St.BoxLayout({
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_BOX,
       xExpand: true,
     });
-    mediaAppContent.add_child(
+    playerContent.add_child(
       createIcon(
         {
           gicon: displayIcon,
           styleClass: styleClassNames(
-            StyleClasses.POPUP_MENU_ICON,
-            StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_MEDIA_APP_ICON,
+            NativeStyleClasses.POPUP_MENU_ICON,
+            MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_APP_ICON,
             coloredClass,
           ),
           yAlign: Clutter.ActorAlign.CENTER,
@@ -316,33 +315,33 @@ export default class PopupMediaAppSelectorList {
         IconNames.MEDIA,
       ),
     );
-    mediaAppContent.add_child(
+    playerContent.add_child(
       new St.Label({
         text: displayName,
-        styleClass: StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_LABEL,
+        styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_LABEL,
         yAlign: Clutter.ActorAlign.CENTER,
         xExpand: true,
       }),
     );
-    mediaAppContent.add_child(
+    playerContent.add_child(
       createIcon({
         iconName: "object-select-symbolic",
         styleClass: styleClassNames(
-          StyleClasses.POPUP_MENU_ICON,
-          StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_CHECK_ICON,
+          NativeStyleClasses.POPUP_MENU_ICON,
+          MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_CHECK_ICON,
         ),
         opacity: isActive ? ACTIVE_OPACITY : HIDDEN_OPACITY,
         yAlign: Clutter.ActorAlign.CENTER,
       }),
     );
-    return mediaAppContent;
+    return playerContent;
   }
 
-  createMediaAppPinButton(mediaApp, isPinned, canSelect) {
+  createPlayerPinButton(player, isPinned, canSelect) {
     const pinButton = new St.Button({
       styleClass: styleClassNames(
-        StyleClasses.BUTTON,
-        StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_PIN_BUTTON,
+        NativeStyleClasses.BUTTON,
+        MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_PIN_BUTTON,
       ),
       opacity: canSelect ? ACTIVE_OPACITY : INACTIVE_OPACITY,
       reactive: canSelect,
@@ -357,15 +356,15 @@ export default class PopupMediaAppSelectorList {
       createIcon({
         iconName: "view-pin-symbolic",
         styleClass: styleClassNames(
-          StyleClasses.POPUP_MENU_ICON,
-          StyleClasses.POPUP_MEDIA_APP_SELECTOR_ROW_PIN_ICON,
+          NativeStyleClasses.POPUP_MENU_ICON,
+          MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_PIN_ICON,
         ),
       }),
     );
     pinButton.connect("clicked", () => {
-      const pinStateChanged = this.popupContent.toggleMediaAppPin(mediaApp);
+      const pinStateChanged = this.popupContent.togglePlayerPin(player);
       if (!pinStateChanged) pinButton.checked = isPinned;
-      this.refreshMediaApps();
+      this.refreshPlayers();
     });
     return pinButton;
   }
@@ -378,12 +377,12 @@ export default class PopupMediaAppSelectorList {
     if (
       actorContainsDescendant(this.revealer, source) ||
       actorContainsDescendant(
-        this.mediaAppSelectorButton.interactiveActor,
+        this.playerSelectorButton.interactiveActor,
         source,
       ) ||
       actorContainsEventPoint(this.revealer, event) ||
       actorContainsEventPoint(
-        this.mediaAppSelectorButton.interactiveActor,
+        this.playerSelectorButton.interactiveActor,
         event,
       )
     ) {
@@ -409,7 +408,7 @@ export default class PopupMediaAppSelectorList {
     revealer.ease({
       height: 0,
       translation_y: -6,
-      duration: POPUP_MEDIA_APP_SELECTOR_ROW_ANIMATION_MS,
+      duration: POPUP_PLAYER_SELECTOR_ROW_ANIMATION_MS,
       mode: Clutter.AnimationMode.EASE_OUT_QUAD,
       onComplete: () => revealer.destroy(),
     });
@@ -418,7 +417,7 @@ export default class PopupMediaAppSelectorList {
   destroy() {
     this.close(false);
     this.desktopAppResolver = null;
-    this.mediaAppSelectorButton = null;
+    this.playerSelectorButton = null;
     this.popupContent = null;
   }
 }

@@ -27,8 +27,8 @@ export default class PopupProgressBar {
     this.positionRenderGeneration = 0;
   }
 
-  get mediaApp() {
-    return this.popupContent.mediaApp;
+  get player() {
+    return this.popupContent.player;
   }
   get popupItem() {
     return this.popupContent.popupItem;
@@ -57,37 +57,37 @@ export default class PopupProgressBar {
 
   async render() {
     const renderGeneration = ++this.positionRenderGeneration;
-    const mediaApp = this.mediaApp;
-    const trackDurationMicroseconds = mediaApp.track.lengthMicroseconds;
-    const playbackRate = mediaApp.rate;
+    const player = this.player;
+    const trackDurationMicroseconds = player.track.lengthMicroseconds;
+    const playbackRate = player.rate;
     const width = this.getPopupContentWidth();
 
     if (this.view == null) {
       this.view = new PopupProgressBarView();
       this.view.connect("seek-requested", (_, positionMicroseconds) => {
-        const activeMediaApp = this.mediaApp;
-        if (!activeMediaApp.canSetPosition) return;
+        const activePlayer = this.player;
+        if (!activePlayer.canSetPosition) return;
         void this.playbackController.setPosition(
           positionMicroseconds,
-          activeMediaApp,
-          activeMediaApp.trackId,
+          activePlayer,
+          activePlayer.trackId,
         );
       });
     }
 
     this.view.setLayoutWidth(width);
     this.renderPlaybackPosition(
-      mediaApp.estimatedPositionMicroseconds,
+      player.estimatedPositionMicroseconds,
       trackDurationMicroseconds,
       playbackRate,
-      mediaApp.playbackStatus,
+      player.playbackStatus,
     );
     this.attach();
 
-    const positionMicroseconds = await mediaApp.positionMicroseconds.catch(
+    const positionMicroseconds = await player.positionMicroseconds.catch(
       (error) => {
         logger.debugOnce(
-          `exact-position:${mediaApp.busName}`,
+          `exact-position:${player.busName}`,
           "Could not read exact track position; keeping the estimate",
           error,
         );
@@ -97,7 +97,7 @@ export default class PopupProgressBar {
     if (
       !this.popupContent ||
       renderGeneration !== this.positionRenderGeneration ||
-      this.mediaApp !== mediaApp ||
+      this.player !== player ||
       positionMicroseconds == null
     )
       return;
@@ -105,8 +105,8 @@ export default class PopupProgressBar {
     this.renderPlaybackPosition(
       positionMicroseconds,
       trackDurationMicroseconds,
-      mediaApp.rate,
-      mediaApp.playbackStatus,
+      player.rate,
+      player.playbackStatus,
     );
   }
 
@@ -127,7 +127,7 @@ export default class PopupProgressBar {
     }
 
     this.view.setProgressAvailable(true);
-    this.view.setSeekEnabled(this.mediaApp.canSetPosition);
+    this.view.setSeekEnabled(this.player.canSetPosition);
     this.view.updateProgress(
       progress.positionMicroseconds,
       progress.durationMicroseconds,

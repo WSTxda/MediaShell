@@ -10,12 +10,12 @@
  * metadata helpers before labels are created.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
 import { TrackInformationFields } from "../../../shared/ui/trackInformation.js";
 import { buildTrackInformationItems } from "../../media/track/presentation.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import ScrollingLabel from "../components/scrollingLabel.js";
 
 /**
@@ -31,8 +31,8 @@ export default class PopupTrackInformation {
   get settings() {
     return this.popupContent.settings;
   }
-  get mediaApp() {
-    return this.popupContent.mediaApp;
+  get player() {
+    return this.popupContent.player;
   }
   get popupItem() {
     return this.popupContent.popupItem;
@@ -56,7 +56,7 @@ export default class PopupTrackInformation {
   }
 
   render() {
-    const metadata = this.mediaApp.metadata;
+    const metadata = this.player.metadata;
     const width = this.getTrackInformationWidth();
     const items = buildTrackInformationItems(
       metadata,
@@ -101,7 +101,7 @@ export default class PopupTrackInformation {
     if (!this.trackInformationBox) {
       this.trackInformationBox = new St.BoxLayout({
         orientation: Clutter.Orientation.VERTICAL,
-        styleClass: StyleClasses.POPUP_TRACK_INFORMATION,
+        styleClass: MediaShellStyleClasses.POPUP_TRACK_INFORMATION,
       });
     }
     const widthStyle = this.buildFixedWidthStyle(width);
@@ -135,10 +135,10 @@ export default class PopupTrackInformation {
 
   resolveFieldStyleClass(field) {
     if (field === TrackInformationFields.TITLE)
-      return StyleClasses.POPUP_TRACK_INFORMATION_TITLE;
+      return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_TITLE;
     if (field === TrackInformationFields.ARTIST)
-      return StyleClasses.POPUP_TRACK_INFORMATION_ARTIST;
-    return StyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
+      return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_ARTIST;
+    return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 
   clearLabels() {

@@ -4,11 +4,12 @@
  *
  * Renders the popup progress view, including seek interaction and time labels.
  *
- * PopupProgressBar owns this view and passes active media-app state into it.
+ * PopupProgressBar owns this view and passes active player state into it.
  * The view owns slider interaction, elapsed/duration labels, drag state, and the
  * Clutter interval used to animate progress while playback continues.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import St from "gi://St";
@@ -20,8 +21,7 @@ import { formatDurationMilliseconds } from "../../../shared/format.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
+} from "../actorState.js";
 import { normalizePositionPlaybackRate } from "../../mpris/position.js";
 
 /**
@@ -31,7 +31,7 @@ class PopupProgressBarView extends St.BoxLayout {
   constructor() {
     super({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_PROGRESS_BAR,
+      styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR,
     });
     this.playbackRate = 1;
     this.shouldResumeAfterDrag = false;
@@ -41,16 +41,16 @@ class PopupProgressBarView extends St.BoxLayout {
 
     this.slider = new Slider.Slider(0);
     this.timeLabelsBox = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME,
+      styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR_TIME,
     });
     this.elapsedLabel = new St.Label({
-      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
+      styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.START,
     });
     this.trackDurationLabel = new St.Label({
-      styleClass: StyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
+      styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",
       xExpand: true,
       xAlign: Clutter.ActorAlign.END,

@@ -57,7 +57,7 @@
   -st-hfade-offset: 12px;
 }
 
-.mediashell-top-bar-media-app-icon {
+.mediashell-top-bar-app-icon {
   margin: 0;
 }
 
@@ -160,11 +160,11 @@
  * The pill keeps its stock Quick Settings shape. It is centered and does not
  * participate in the full-width parent-padding grid.
  */
-.mediashell-popup-media-app-selector {
+.mediashell-popup-player-selector {
   spacing: 6px;
 }
 
-.mediashell-popup-media-app-selector-button {
+.mediashell-popup-player-selector-button {
   border-radius: 999px;
   padding: 4px 8px;
   spacing: 6px;
@@ -172,7 +172,7 @@
   max-height: 28px;
 }
 
-.mediashell-popup-media-app-selector-button-icon {
+.mediashell-popup-player-selector-button-icon {
   icon-size: 20px;
   width: 20px;
   height: 20px;
@@ -181,17 +181,17 @@
   padding: 0;
 }
 
-.mediashell-popup-media-app-selector-button-icon.symbolic-icon {
+.mediashell-popup-player-selector-button-icon.symbolic-icon {
   icon-size: 18px;
 }
 
-.mediashell-popup-media-app-selector-button-expand-icon {
+.mediashell-popup-player-selector-button-expand-icon {
   icon-size: 14px;
   opacity: 160;
   transition-duration: 140ms;
 }
 
-.mediashell-popup-media-app-selector-button-label {
+.mediashell-popup-player-selector-button-label {
   font-weight: bold;
   font-size: 100%;
 }
@@ -204,12 +204,12 @@
  * black/white: it gets slightly lighter on dark themes and slightly darker on
  * light themes while preserving custom user colors behind it.
  */
-.mediashell-popup-media-app-selector-revealer {
+.mediashell-popup-player-selector-revealer {
   padding: 0;
   min-width: 0;
 }
 
-.mediashell-popup-media-app-selector-card {
+.mediashell-popup-player-selector-card {
   background-color: rgba(128, 128, 128, 0.12);
   border-radius: 20px;
   border-width: 0;
@@ -219,25 +219,25 @@
   min-width: 0;
 }
 
-.mediashell-popup-media-app-selector-list {
+.mediashell-popup-player-selector-list {
   spacing: 4px;
 }
 
-.mediashell-popup-media-app-selector-row-item {
+.mediashell-popup-player-selector-row-item {
   spacing: 6px;
 }
 
-.mediashell-popup-media-app-selector-row {
+.mediashell-popup-player-selector-row {
   border-radius: 10px;
   padding: 4px 8px;
   min-height: 32px;
 }
 
-.mediashell-popup-media-app-selector-row-box {
+.mediashell-popup-player-selector-row-box {
   spacing: 8px;
 }
 
-.mediashell-popup-media-app-selector-row-media-app-icon {
+.mediashell-popup-player-selector-row-app-icon {
   icon-size: 20px;
   width: 20px;
   height: 20px;
@@ -246,19 +246,19 @@
   padding: 0;
 }
 
-.mediashell-popup-media-app-selector-row-media-app-icon.symbolic-icon {
+.mediashell-popup-player-selector-row-app-icon.symbolic-icon {
   icon-size: 18px;
 }
 
-.mediashell-popup-media-app-selector-row-label {
+.mediashell-popup-player-selector-row-label {
   font-size: 100%;
 }
 
-.mediashell-popup-media-app-selector-row-check-icon {
+.mediashell-popup-player-selector-row-check-icon {
   icon-size: 16px;
 }
 
-.mediashell-popup-media-app-selector-row-pin-button {
+.mediashell-popup-player-selector-row-pin-button {
   border-radius: 999px;
   min-width: 30px;
   min-height: 30px;
@@ -267,24 +267,24 @@
   padding: 0;
 }
 
-.mediashell-popup-media-app-selector-row-pin-button:checked {
+.mediashell-popup-player-selector-row-pin-button:checked {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
 }
 
-.mediashell-popup-media-app-selector-row-pin-button:checked:hover {
+.mediashell-popup-player-selector-row-pin-button:checked:hover {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
   box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
 }
 
-.mediashell-popup-media-app-selector-row-pin-button:checked:active {
+.mediashell-popup-player-selector-row-pin-button:checked:active {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
   box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
-.mediashell-popup-media-app-selector-row-pin-icon {
+.mediashell-popup-player-selector-row-pin-icon {
   icon-size: 14px;
 }
 

@@ -5,7 +5,7 @@
  * Coordinates the preferences page for system integration and blocked apps.
  *
  * The controller owns rows that cannot be represented by a simple settings
- * binding, including the album-art cache action and the blocked-app list. The
+ * binding, including the artwork cache action and the blocked-app list. The
  * GNOME media-control switches remain declarative bindings; page-specific
  * maintenance and confirmation flows stay out of PreferencesController.
  */
@@ -18,7 +18,7 @@ import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _, ngettext } from "../translations.js";
 import { TOAST_TIMEOUT_SECONDS } from "../constants/preferencesUi.js";
 import { PreferencesStyleClasses } from "../constants/styleClasses.js";
-import AlbumArtCacheService from "../services/albumArtCacheService.js";
+import ArtworkCacheService from "../services/artworkCacheService.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
@@ -34,19 +34,19 @@ export default class OthersPageController {
     this.settings = settings;
     this.builder = builder;
     this.preferencesWindow = preferencesWindow;
-    this.albumArtCacheService = new AlbumArtCacheService();
+    this.artworkCacheService = new ArtworkCacheService();
     this.ownedSignalConnections = [];
-    this.albumArtCacheViewGeneration = 0;
-    this.clearAlbumArtCachePromise = null;
+    this.artworkCacheViewGeneration = 0;
+    this.clearArtworkCachePromise = null;
     this.openDialogs = new Set();
   }
 
   init() {
-    this.clearAlbumArtCacheRow = this.builder.get_object(
-      "ar-album-art-cache-clear",
+    this.clearArtworkCacheRow = this.builder.get_object(
+      "ar-artwork-cache-clear",
     );
-    this.clearAlbumArtCacheButton = this.builder.get_object(
-      "btn-album-art-cache-clear",
+    this.clearArtworkCacheButton = this.builder.get_object(
+      "btn-artwork-cache-clear",
     );
     this.blockedAppsGroup = this.builder.get_object("gp-blocked-apps");
     this.resetGroup = this.builder.get_object("gp-reset-settings");
@@ -65,8 +65,8 @@ export default class OthersPageController {
         );
       },
     );
-    this.connectOwnedSignal(this.clearAlbumArtCacheButton, "clicked", () =>
-      this.presentClearAlbumArtCacheConfirmation(),
+    this.connectOwnedSignal(this.clearArtworkCacheButton, "clicked", () =>
+      this.presentClearArtworkCacheConfirmation(),
     );
     this.connectOwnedSignal(
       this.settings,
@@ -80,7 +80,7 @@ export default class OthersPageController {
           this.blockedAppsGroup.setBlockedAppIds(blockedAppIds);
       },
     );
-    this.updateAlbumArtCacheStatsSubtitle();
+    this.updateArtworkCacheStatsSubtitle();
   }
 
   createResetSettingsRow() {
@@ -119,12 +119,12 @@ export default class OthersPageController {
     );
   }
 
-  presentClearAlbumArtCacheConfirmation() {
+  presentClearArtworkCacheConfirmation() {
     this.presentDestructiveConfirmation(
       _("Clear the cache?"),
       _("Cached content will be downloaded again when needed."),
       _("Clear cache"),
-      () => this.clearAlbumArtCache(),
+      () => this.clearArtworkCache(),
     );
   }
 
@@ -148,31 +148,31 @@ export default class OthersPageController {
     dialog.present(this.preferencesWindow);
   }
 
-  clearAlbumArtCache() {
-    if (this.clearAlbumArtCachePromise) return this.clearAlbumArtCachePromise;
-    if (!this.clearAlbumArtCacheButton) return null;
+  clearArtworkCache() {
+    if (this.clearArtworkCachePromise) return this.clearArtworkCachePromise;
+    if (!this.clearArtworkCacheButton) return null;
 
-    const albumArtCacheViewGeneration = ++this.albumArtCacheViewGeneration;
-    const clearAlbumArtCacheButton = this.clearAlbumArtCacheButton;
-    clearAlbumArtCacheButton.sensitive = false;
-    const clearPromise = this.performAlbumArtCacheClear(
-      albumArtCacheViewGeneration,
+    const artworkCacheViewGeneration = ++this.artworkCacheViewGeneration;
+    const clearArtworkCacheButton = this.clearArtworkCacheButton;
+    clearArtworkCacheButton.sensitive = false;
+    const clearPromise = this.performArtworkCacheClear(
+      artworkCacheViewGeneration,
     ).finally(() => {
-      if (this.clearAlbumArtCachePromise === clearPromise)
-        this.clearAlbumArtCachePromise = null;
-      if (this.clearAlbumArtCacheButton === clearAlbumArtCacheButton)
-        clearAlbumArtCacheButton.sensitive = true;
+      if (this.clearArtworkCachePromise === clearPromise)
+        this.clearArtworkCachePromise = null;
+      if (this.clearArtworkCacheButton === clearArtworkCacheButton)
+        clearArtworkCacheButton.sensitive = true;
     });
-    this.clearAlbumArtCachePromise = clearPromise;
+    this.clearArtworkCachePromise = clearPromise;
     return clearPromise;
   }
 
-  async performAlbumArtCacheClear(albumArtCacheViewGeneration) {
+  async performArtworkCacheClear(artworkCacheViewGeneration) {
     try {
-      await this.albumArtCacheService.clearAlbumArtCache();
-      if (albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration)
+      await this.artworkCacheService.clearArtworkCache();
+      if (artworkCacheViewGeneration !== this.artworkCacheViewGeneration)
         return;
-      this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(0, 0);
+      this.clearArtworkCacheRow.subtitle = this.formatArtworkCacheStats(0, 0);
       this.preferencesWindow.add_toast(
         new Adw.Toast({
           title: _("Cache cleared"),
@@ -180,20 +180,20 @@ export default class OthersPageController {
         }),
       );
     } catch (error) {
-      if (albumArtCacheViewGeneration !== this.albumArtCacheViewGeneration)
+      if (artworkCacheViewGeneration !== this.artworkCacheViewGeneration)
         return;
-      logger.warn("Failed to clear the album-art cache", error);
+      logger.warn("Failed to clear the artwork cache", error);
       this.preferencesWindow.add_toast(
         new Adw.Toast({
           title: _("Could not clear the cache"),
           timeout: TOAST_TIMEOUT_SECONDS,
         }),
       );
-      this.updateAlbumArtCacheStatsSubtitle();
+      this.updateArtworkCacheStatsSubtitle();
     }
   }
 
-  formatAlbumArtCacheStats(cachedImageCount, totalBytes) {
+  formatArtworkCacheStats(cachedImageCount, totalBytes) {
     const format = ngettext(
       "%d cached image — %s",
       "%d cached images — %s",
@@ -202,20 +202,20 @@ export default class OthersPageController {
     return format.format(cachedImageCount, GLib.format_size(totalBytes));
   }
 
-  async updateAlbumArtCacheStatsSubtitle() {
-    const albumArtCacheViewGeneration = ++this.albumArtCacheViewGeneration;
+  async updateArtworkCacheStatsSubtitle() {
+    const artworkCacheViewGeneration = ++this.artworkCacheViewGeneration;
     try {
       const { cachedImageCount, totalBytes } =
-        await this.albumArtCacheService.getAlbumArtCacheStats();
-      if (albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
-        this.clearAlbumArtCacheRow.subtitle = this.formatAlbumArtCacheStats(
+        await this.artworkCacheService.getArtworkCacheStats();
+      if (artworkCacheViewGeneration === this.artworkCacheViewGeneration)
+        this.clearArtworkCacheRow.subtitle = this.formatArtworkCacheStats(
           cachedImageCount,
           totalBytes,
         );
     } catch (error) {
-      if (albumArtCacheViewGeneration === this.albumArtCacheViewGeneration)
+      if (artworkCacheViewGeneration === this.artworkCacheViewGeneration)
         logger.warn(
-          "Failed to calculate the album-art cache statistics",
+          "Failed to calculate the artwork cache statistics",
           error,
         );
     }
@@ -228,7 +228,7 @@ export default class OthersPageController {
   destroy() {
     if (!this.preferencesWindow) return;
     this.preferencesWindow = null;
-    this.albumArtCacheViewGeneration++;
+    this.artworkCacheViewGeneration++;
 
     const openDialogs = [...this.openDialogs];
     this.openDialogs.clear();
@@ -236,13 +236,13 @@ export default class OthersPageController {
 
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.blockedAppsGroup?.destroy();
-    this.albumArtCacheService.destroy();
-    this.albumArtCacheService = null;
-    this.clearAlbumArtCachePromise = null;
+    this.artworkCacheService.destroy();
+    this.artworkCacheService = null;
+    this.clearArtworkCachePromise = null;
     this.settings = null;
     this.builder = null;
-    this.clearAlbumArtCacheRow = null;
-    this.clearAlbumArtCacheButton = null;
+    this.clearArtworkCacheRow = null;
+    this.clearArtworkCacheButton = null;
     this.blockedAppsGroup = null;
     this.resetGroup = null;
     this.resetSettingsRow = null;

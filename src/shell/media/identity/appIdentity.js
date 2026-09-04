@@ -104,7 +104,7 @@ function addBusNameHints(hints, busName) {
 }
 
 /**
- * Builds all lookup hints MediaShell can derive for one media app.
+ * Builds all lookup hints MediaShell can derive for one MPRIS player.
  *
  * The result combines desktop-entry, identity, and bus-name candidates. Browser
  * sessions often append tab/window/process suffixes to the MPRIS bus; those are
@@ -126,7 +126,7 @@ export function buildAppLookupHints(identity, desktopEntry, busName = "") {
 }
 
 /**
- * Builds desktop-app ID candidates from media-app identity metadata.
+ * Builds desktop-app ID candidates from MPRIS player identity metadata.
  *
  * @param {unknown} identity - MPRIS Identity value.
  * @param {unknown} desktopEntry - MPRIS DesktopEntry value.

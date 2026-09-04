@@ -1,11 +1,11 @@
 /**
- * @file errors.js
- * @module shell.utils.errors
+ * @file gioErrors.js
+ * @module shell.platform.gioErrors
  *
  * Classifies expected Shell-side async errors.
  *
- * Gio.Cancellable aborts are normal during disable, media-app changes, and stale
- * album-art loads. These helpers let services ignore expected cancellation while
+ * Gio.Cancellable aborts are normal during disable, player changes, and stale
+ * artwork loads. These helpers let async owners ignore expected cancellation while
  * still logging genuine failures.
  */
 

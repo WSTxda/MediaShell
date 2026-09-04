@@ -12,8 +12,8 @@ import GObject from "gi://GObject";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { installPrimaryClickAction } from "../../../utils/pointerActions.js";
-import { prefersReducedMotion } from "../../../utils/reducedMotion.js";
+import { installPrimaryClickAction } from "../../../ui/input/pointerActions.js";
+import { prefersReducedMotion } from "../../../ui/accessibility/reducedMotion.js";
 
 const GROUP_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroup";
 const GROUP_LAYOUT_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroupLayout";

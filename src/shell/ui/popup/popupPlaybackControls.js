@@ -8,6 +8,7 @@
  * delegates state and execution to the shared playback-control domain.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
@@ -23,19 +24,17 @@ import { PopupPlaybackControlRegions } from "./regions.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
-} from "../../constants/actorState.js";
+} from "../actorState.js";
 import {
   POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
-} from "../../constants/playbackControls.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
+} from "../components/playback/order.js";
 import { reconcileActorOrder } from "../components/actorOrder.js";
 import { updatePlaybackControlButton } from "../components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
 } from "../components/playback/content.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
 
 /** Renders configurable playback controls inside the popup. */
 export default class PopupPlaybackControls {
@@ -52,8 +51,8 @@ export default class PopupPlaybackControls {
     return this.popupContent.settings;
   }
 
-  get mediaApp() {
-    return this.popupContent.mediaApp;
+  get player() {
+    return this.popupContent.player;
   }
 
   render(dirtyRegions) {
@@ -82,15 +81,15 @@ export default class PopupPlaybackControls {
 
     this.actor = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: StyleClasses.POPUP_PLAYBACK_CONTROLS,
+      styleClass: MediaShellStyleClasses.POPUP_PLAYBACK_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.primaryControlsBox = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_PRIMARY_CONTROLS,
+      styleClass: MediaShellStyleClasses.POPUP_PRIMARY_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.secondaryControlsBox = new St.BoxLayout({
-      styleClass: StyleClasses.POPUP_SECONDARY_CONTROLS,
+      styleClass: MediaShellStyleClasses.POPUP_SECONDARY_CONTROLS,
       xAlign: Clutter.ActorAlign.CENTER,
     });
     this.actor.add_child(this.primaryControlsBox);
@@ -103,7 +102,7 @@ export default class PopupPlaybackControls {
       return;
     }
 
-    const controlState = resolvePlaybackControlState(this.mediaApp, controlId);
+    const controlState = resolvePlaybackControlState(this.player, controlId);
     const buttonState = this.ensurePlaybackControl(controlState.control);
     this.syncPlaybackControl(buttonState, controlState);
   }
@@ -117,17 +116,17 @@ export default class PopupPlaybackControls {
     const button = new St.Button({
       name: controlDefinition.actorName,
       styleClass: styleClassNames(
-        StyleClasses.BUTTON,
-        StyleClasses.POPUP_CONTROL_BUTTON,
+        NativeStyleClasses.BUTTON,
+        MediaShellStyleClasses.POPUP_CONTROL_BUTTON,
         controlDefinition.isPrimary
-          ? StyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
+          ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
           : controlDefinition.isAdjacent
-            ? StyleClasses.POPUP_CONTROL_BUTTON_ADJACENT
+            ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_ADJACENT
             : isLabelControl
-              ? StyleClasses.POPUP_CONTROL_BUTTON_TEXT
-              : StyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
+              ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_TEXT
+              : MediaShellStyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
         controlDefinition.isStateControl
-          ? StyleClasses.POPUP_CONTROL_BUTTON_STATE
+          ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_STATE
           : null,
       ),
       xAlign: Clutter.ActorAlign.CENTER,
@@ -136,15 +135,15 @@ export default class PopupPlaybackControls {
     });
     const content = createPlaybackControlContent(controlDefinition, {
       iconStyleClass: styleClassNames(
-        StyleClasses.POPUP_MENU_ICON,
-        StyleClasses.POPUP_CONTROL_ICON,
+        NativeStyleClasses.POPUP_MENU_ICON,
+        MediaShellStyleClasses.POPUP_CONTROL_ICON,
       ),
-      labelStyleClass: StyleClasses.POPUP_CONTROL_LABEL,
+      labelStyleClass: MediaShellStyleClasses.POPUP_CONTROL_LABEL,
     });
     buttonState = { button, content, signalId: 0, action: null };
     buttonState.signalId = button.connect("clicked", () => {
       if (!buttonState.button.reactive) return;
-      void this.playbackController.execute(buttonState.action, this.mediaApp);
+      void this.playbackController.execute(buttonState.action, this.player);
     });
     button.set_child(content.actor);
     this.controlButtons.set(controlDefinition.id, buttonState);
@@ -168,7 +167,7 @@ export default class PopupPlaybackControls {
     updatePlaybackControlContent(buttonState.content, { iconName, labelText });
     updatePlaybackControlButton(
       buttonState.button,
-      this.mediaApp,
+      this.player,
       controlState,
       _,
     );

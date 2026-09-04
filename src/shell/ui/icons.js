@@ -1,6 +1,6 @@
 /**
  * @file icons.js
- * @module shell.utils.icons
+ * @module shell.ui.icons
  *
  * Creates and updates Shell icons using MediaShell's common St.Icon conventions.
  *

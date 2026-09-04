@@ -11,7 +11,7 @@
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";
 
 export const PopupRegions = Object.freeze({
-  MEDIA_APP_SELECTOR: 1 << 0,
+  PLAYER_SELECTOR: 1 << 0,
   ARTWORK: 1 << 1,
   TRACK_INFORMATION: 1 << 2,
   PROGRESS: 1 << 3,

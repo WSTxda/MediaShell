@@ -10,8 +10,8 @@
  * component preserves the original metadata width and Lock width contract.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import { buildTrackInformationText } from "../../media/track/presentation.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import ScrollingLabel from "../components/scrollingLabel.js";
 
@@ -35,13 +35,13 @@ export default class TopBarTrackInformation {
     return this.topBarContent.settings;
   }
 
-  get mediaApp() {
-    return this.topBarContent.mediaApp;
+  get player() {
+    return this.topBarContent.player;
   }
 
   render(index, parentBox) {
     const text = buildTrackInformationText(
-      this.mediaApp.metadata,
+      this.player.metadata,
       this.settings.trackInformationContent,
     );
     const renderKey = [
@@ -68,7 +68,7 @@ export default class TopBarTrackInformation {
         this.settings.trackInformationScrollPauseMilliseconds,
     });
 
-    label.add_style_class_name(StyleClasses.TOP_BAR_TRACK_INFORMATION);
+    label.add_style_class_name(MediaShellStyleClasses.TOP_BAR_TRACK_INFORMATION);
 
     const oldLabel = this.actor;
     this.actor = label;

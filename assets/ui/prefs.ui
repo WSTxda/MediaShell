@@ -914,15 +914,15 @@
         <property name="title" translatable="yes">Cache</property>
         <property name="description" translatable="yes">Store content on disk to load it faster</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-album-art-cache-enabled">
+          <object class="AdwSwitchRow" id="sr-artwork-cache-enabled">
             <property name="title" translatable="yes">Store album art</property>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="ar-album-art-cache-clear">
+          <object class="AdwActionRow" id="ar-artwork-cache-clear">
             <property name="title" translatable="yes">Clear cache</property>
             <child>
-              <object class="GtkButton" id="btn-album-art-cache-clear">
+              <object class="GtkButton" id="btn-artwork-cache-clear">
                 <property name="halign">2</property>
                 <property name="valign">3</property>
                 <style>

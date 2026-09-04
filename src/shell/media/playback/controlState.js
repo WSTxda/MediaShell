@@ -35,19 +35,19 @@ function createControlState(
   };
 }
 
-function resolvePlayPauseState(mediaApp) {
+function resolvePlayPauseState(player) {
   const control = PlaybackControlDefinitions.PLAY_PAUSE;
 
-  if (mediaApp.playbackStatus !== PlaybackStatus.PLAYING) {
+  if (player.playbackStatus !== PlaybackStatus.PLAYING) {
     return createControlState(
       control,
       control.icons.PLAY,
-      mediaApp.canPlay && mediaApp.canControl,
+      player.canPlay && player.canControl,
       PlaybackControlActions.PLAY,
     );
   }
 
-  if (mediaApp.canControl && !mediaApp.canPause) {
+  if (player.canControl && !player.canPause) {
     return createControlState(
       control,
       control.icons.STOP,
@@ -59,15 +59,15 @@ function resolvePlayPauseState(mediaApp) {
   return createControlState(
     control,
     control.icons.PAUSE,
-    mediaApp.canPause && mediaApp.canControl,
+    player.canPause && player.canControl,
     PlaybackControlActions.PAUSE,
   );
 }
 
-function resolveRepeatState(mediaApp) {
+function resolveRepeatState(player) {
   const control = PlaybackControlDefinitions.REPEAT;
-  const isTrack = mediaApp.loopStatus === LoopStatus.TRACK;
-  const isPlaylist = mediaApp.loopStatus === LoopStatus.PLAYLIST;
+  const isTrack = player.loopStatus === LoopStatus.TRACK;
+  const isPlaylist = player.loopStatus === LoopStatus.PLAYLIST;
   const iconName = isTrack
     ? control.icons.TRACK
     : isPlaylist
@@ -77,58 +77,58 @@ function resolveRepeatState(mediaApp) {
   return createControlState(
     control,
     iconName,
-    mediaApp.canControl && mediaApp.canSetLoopStatus,
+    player.canControl && player.canSetLoopStatus,
     PlaybackControlActions.TOGGLE_REPEAT,
     isTrack || isPlaylist,
   );
 }
 
-function resolveShuffleState(mediaApp) {
+function resolveShuffleState(player) {
   const control = PlaybackControlDefinitions.SHUFFLE;
-  const isActive = Boolean(mediaApp.shuffle);
+  const isActive = Boolean(player.shuffle);
 
   return createControlState(
     control,
     isActive ? control.icons.ON : control.icons.OFF,
-    mediaApp.canControl && mediaApp.canSetShuffle,
+    player.canControl && player.canSetShuffle,
     PlaybackControlActions.TOGGLE_SHUFFLE,
     isActive,
   );
 }
 
-function resolveSpeedState(mediaApp) {
+function resolveSpeedState(player) {
   const control = PlaybackControlDefinitions.SPEED;
   return createControlState(
     control,
     null,
-    mediaApp.canControl &&
-      mediaApp.canSetPlaybackRate &&
-      canChangePlaybackRate(mediaApp.minimumRate, mediaApp.maximumRate),
+    player.canControl &&
+      player.canSetPlaybackRate &&
+      canChangePlaybackRate(player.minimumRate, player.maximumRate),
     PlaybackControlActions.CYCLE_SPEED,
     false,
-    formatPlaybackRate(mediaApp.rate),
+    formatPlaybackRate(player.rate),
   );
 }
 
 /**
- * Resolves one logical playback control for a normalized media-app state.
+ * Resolves one logical playback control for a normalized player state.
  *
- * @param {object} mediaApp - Normalized media-app state.
+ * @param {object} player - Normalized player state.
  * @param {string} controlId - One value from PlaybackControlIds.
  * @returns {{control: object, iconName: string|null, labelText: string,
  *   isReactive: boolean, isActive: boolean, action: string}} Pure control state.
  * @throws {TypeError} When an unknown logical control ID is supplied.
  */
-export function resolvePlaybackControlState(mediaApp, controlId) {
+export function resolvePlaybackControlState(player, controlId) {
   switch (controlId) {
     case PlaybackControlIds.SHUFFLE:
-      return resolveShuffleState(mediaApp);
+      return resolveShuffleState(player);
     case PlaybackControlIds.SEEK_BACKWARD: {
       const control = PlaybackControlDefinitions.SEEK_BACKWARD;
       return createControlState(
         control,
         control.icons.DEFAULT,
-        mediaApp.canSeek && mediaApp.canControl,
+        player.canSeek && player.canControl,
         PlaybackControlActions.SEEK_BACKWARD,
       );
     }
@@ -137,18 +137,18 @@ export function resolvePlaybackControlState(mediaApp, controlId) {
       return createControlState(
         control,
         control.icons.DEFAULT,
-        mediaApp.canGoPrevious && mediaApp.canControl,
+        player.canGoPrevious && player.canControl,
         PlaybackControlActions.PREVIOUS,
       );
     }
     case PlaybackControlIds.PLAY_PAUSE:
-      return resolvePlayPauseState(mediaApp);
+      return resolvePlayPauseState(player);
     case PlaybackControlIds.NEXT: {
       const control = PlaybackControlDefinitions.NEXT;
       return createControlState(
         control,
         control.icons.DEFAULT,
-        mediaApp.canGoNext && mediaApp.canControl,
+        player.canGoNext && player.canControl,
         PlaybackControlActions.NEXT,
       );
     }
@@ -157,14 +157,14 @@ export function resolvePlaybackControlState(mediaApp, controlId) {
       return createControlState(
         control,
         control.icons.DEFAULT,
-        mediaApp.canSeek && mediaApp.canControl,
+        player.canSeek && player.canControl,
         PlaybackControlActions.SEEK_FORWARD,
       );
     }
     case PlaybackControlIds.REPEAT:
-      return resolveRepeatState(mediaApp);
+      return resolveRepeatState(player);
     case PlaybackControlIds.SPEED:
-      return resolveSpeedState(mediaApp);
+      return resolveSpeedState(player);
     default:
       throw new TypeError(`Unknown playback control: ${String(controlId)}`);
   }

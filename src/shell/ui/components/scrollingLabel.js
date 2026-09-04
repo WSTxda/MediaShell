@@ -9,6 +9,7 @@
  * lifecycle so callers only provide text and scrolling settings.
  */
 
+import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import Pango from "gi://Pango";
@@ -16,12 +17,11 @@ import GLib from "gi://GLib";
 import St from "gi://St";
 
 import { GTypeNames } from "../../../shared/gobject.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import {
   connectReducedMotionChanged,
   disconnectReducedMotionChanged,
   prefersReducedMotion,
-} from "../../utils/reducedMotion.js";
+} from "../accessibility/reducedMotion.js";
 
 const SCROLL_CYCLE_GAP = "  ".repeat(5);
 const SCROLL_CYCLE_COPIES = 3;
@@ -58,7 +58,7 @@ class ScrollingLabel extends St.ScrollView {
     super({
       hscrollbarPolicy: St.PolicyType.NEVER,
       vscrollbarPolicy: St.PolicyType.NEVER,
-      styleClass: StyleClasses.SCROLLING_LABEL,
+      styleClass: MediaShellStyleClasses.SCROLLING_LABEL,
     });
     const defaultParams = {
       isFixedWidth: true,

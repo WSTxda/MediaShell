@@ -137,8 +137,8 @@ export const TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
  * followed by track information, optional activity feedback, and compact controls.
  */
 export const TOP_BAR_ELEMENT_ORDER_DEFAULT = Object.freeze([
-  TopBarElementIds.MEDIA_APP_ICON,
-  TopBarElementIds.ALBUM_ART,
+  TopBarElementIds.APP_ICON,
+  TopBarElementIds.ARTWORK,
   TopBarElementIds.TRACK_INFORMATION,
   TopBarElementIds.VISUALIZER,
   TopBarElementIds.PLAYBACK_CONTROLS,

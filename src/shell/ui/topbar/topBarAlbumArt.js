@@ -5,6 +5,7 @@
  * Displays MPRIS album art as an independent top-bar metadata element.
  */
 
+import { MediaShellStyleClasses, NativeStyleClasses, styleClassNames } from "../style.js";
 import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import St from "gi://St";
@@ -20,11 +21,9 @@ import {
   prepareArtworkPixbuf,
 } from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import { StyleClasses } from "../../constants/styleClasses.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
-import { isCancellationError } from "../../utils/errors.js";
-import { createIcon, setGIcon } from "../../utils/icons.js";
-import { styleClassNames } from "../../utils/styleClasses.js";
+import { isCancellationError } from "../../platform/gioErrors.js";
+import { createIcon, setGIcon } from "../icons.js";
 
 const DEFAULT_PANEL_HEIGHT = 32;
 const PANEL_HEIGHT_RATIO = 0.65;
@@ -55,8 +54,8 @@ export default class TopBarAlbumArt {
     return this.topBarContent.settings;
   }
 
-  get mediaApp() {
-    return this.topBarContent.mediaApp;
+  get player() {
+    return this.topBarContent.player;
   }
 
   get actor() {
@@ -69,8 +68,8 @@ export default class TopBarAlbumArt {
 
     const geometry = this.getAlbumArtGeometry();
     const request = createArtworkRequest({
-      busName: this.mediaApp.busName,
-      track: this.mediaApp.track,
+      busName: this.player.busName,
+      track: this.player.track,
       ...geometry,
     });
 
@@ -120,7 +119,7 @@ export default class TopBarAlbumArt {
 
     this.albumArtImage = createIcon(
       {
-        styleClass: StyleClasses.ALBUM_ART_IMAGE,
+        styleClass: MediaShellStyleClasses.ALBUM_ART_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,
@@ -130,8 +129,8 @@ export default class TopBarAlbumArt {
     );
     this.albumArtFrame = new St.Bin({
       styleClass: styleClassNames(
-        StyleClasses.ALBUM_ART_FRAME,
-        StyleClasses.TOP_BAR_ALBUM_ART,
+        MediaShellStyleClasses.ALBUM_ART_FRAME,
+        MediaShellStyleClasses.TOP_BAR_ALBUM_ART,
       ),
       xExpand: false,
       yExpand: false,
@@ -242,8 +241,8 @@ export default class TopBarAlbumArt {
     const renderPixbuf = this.preparedAlbumArt.pixbuf;
 
     this.albumArtImage.content = null;
-    this.albumArtImage.remove_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.remove_style_class_name(StyleClasses.ALBUM_ART_FALLBACK);
+    this.albumArtImage.remove_style_class_name(NativeStyleClasses.BUTTON);
+    this.albumArtImage.remove_style_class_name(MediaShellStyleClasses.ALBUM_ART_FALLBACK);
     setGIcon(this.albumArtImage, renderPixbuf, IconNames.MEDIA);
     this.albumArtImage.set_icon_size(imageSize);
     this.albumArtFrame.opacity = 255;
@@ -256,8 +255,8 @@ export default class TopBarAlbumArt {
     );
     this.syncAlbumArtGeometry(width, radius);
     this.albumArtImage.content = null;
-    this.albumArtImage.add_style_class_name(StyleClasses.BUTTON);
-    this.albumArtImage.add_style_class_name(StyleClasses.ALBUM_ART_FALLBACK);
+    this.albumArtImage.add_style_class_name(NativeStyleClasses.BUTTON);
+    this.albumArtImage.add_style_class_name(MediaShellStyleClasses.ALBUM_ART_FALLBACK);
     setGIcon(
       this.albumArtImage,
       icon ?? this.fallbackAlbumArtIcon,
@@ -274,7 +273,7 @@ export default class TopBarAlbumArt {
       loadGeneration === this.albumArtLoadGeneration &&
       !loadCancellable.is_cancelled() &&
       this.loadingAlbumArtKey === request.key &&
-      this.mediaApp?.busName === request.busName
+      this.player?.busName === request.busName
     );
   }
 

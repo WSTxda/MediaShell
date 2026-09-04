@@ -1,15 +1,16 @@
 /**
- * @file styleClasses.js
- * @module shell.constants.styleClasses
+ * @file style.js
+ * @module shell.ui.style
  *
- * Defines CSS class names applied by MediaShell Shell actors.
+ * Defines the two CSS vocabularies used by MediaShell Shell actors.
  *
- * The stylesheet remains the visual source of truth. Renderers import this
- * vocabulary so class renames cannot leave stale string literals scattered
- * across popup and top bar components.
+ * NativeStyleClasses contains classes owned by GNOME Shell/St and therefore
+ * subject to platform compatibility. MediaShellStyleClasses contains classes
+ * owned by this extension and backed by src/stylesheet.css. Keeping the two
+ * vocabularies separate makes private/native styling explicit at call sites.
  */
 
-export const StyleClasses = Object.freeze({
+export const NativeStyleClasses = Object.freeze({
   BUTTON: "button",
   FLAT: "flat",
   ICON_BUTTON: "icon-button",
@@ -21,39 +22,41 @@ export const StyleClasses = Object.freeze({
   QUICK_MENU_TOGGLE: "quick-menu-toggle",
   SYMBOLIC_ICON: "symbolic-icon",
   SYSTEM_STATUS_ICON: "system-status-icon",
+});
 
+export const MediaShellStyleClasses = Object.freeze({
   SCROLLING_LABEL: "mediashell-scrolling-label",
 
   ALBUM_ART_FRAME: "mediashell-album-art-frame",
   ALBUM_ART_IMAGE: "mediashell-album-art-image",
   ALBUM_ART_FALLBACK: "mediashell-album-art-fallback",
-  POPUP_MEDIA_APP_SELECTOR: "mediashell-popup-media-app-selector",
-  POPUP_MEDIA_APP_SELECTOR_BUTTON: "mediashell-popup-media-app-selector-button",
-  POPUP_MEDIA_APP_SELECTOR_BUTTON_EXPAND_ICON:
-    "mediashell-popup-media-app-selector-button-expand-icon",
-  POPUP_MEDIA_APP_SELECTOR_BUTTON_ICON:
-    "mediashell-popup-media-app-selector-button-icon",
-  POPUP_MEDIA_APP_SELECTOR_BUTTON_LABEL:
-    "mediashell-popup-media-app-selector-button-label",
-  POPUP_MEDIA_APP_SELECTOR_CARD: "mediashell-popup-media-app-selector-card",
-  POPUP_MEDIA_APP_SELECTOR_LIST: "mediashell-popup-media-app-selector-list",
-  POPUP_MEDIA_APP_SELECTOR_REVEALER:
-    "mediashell-popup-media-app-selector-revealer",
-  POPUP_MEDIA_APP_SELECTOR_ROW: "mediashell-popup-media-app-selector-row",
-  POPUP_MEDIA_APP_SELECTOR_ROW_BOX:
-    "mediashell-popup-media-app-selector-row-box",
-  POPUP_MEDIA_APP_SELECTOR_ROW_CHECK_ICON:
-    "mediashell-popup-media-app-selector-row-check-icon",
-  POPUP_MEDIA_APP_SELECTOR_ROW_ITEM:
-    "mediashell-popup-media-app-selector-row-item",
-  POPUP_MEDIA_APP_SELECTOR_ROW_LABEL:
-    "mediashell-popup-media-app-selector-row-label",
-  POPUP_MEDIA_APP_SELECTOR_ROW_MEDIA_APP_ICON:
-    "mediashell-popup-media-app-selector-row-media-app-icon",
-  POPUP_MEDIA_APP_SELECTOR_ROW_PIN_BUTTON:
-    "mediashell-popup-media-app-selector-row-pin-button",
-  POPUP_MEDIA_APP_SELECTOR_ROW_PIN_ICON:
-    "mediashell-popup-media-app-selector-row-pin-icon",
+  POPUP_PLAYER_SELECTOR: "mediashell-popup-player-selector",
+  POPUP_PLAYER_SELECTOR_BUTTON: "mediashell-popup-player-selector-button",
+  POPUP_PLAYER_SELECTOR_BUTTON_EXPAND_ICON:
+    "mediashell-popup-player-selector-button-expand-icon",
+  POPUP_PLAYER_SELECTOR_BUTTON_ICON:
+    "mediashell-popup-player-selector-button-icon",
+  POPUP_PLAYER_SELECTOR_BUTTON_LABEL:
+    "mediashell-popup-player-selector-button-label",
+  POPUP_PLAYER_SELECTOR_CARD: "mediashell-popup-player-selector-card",
+  POPUP_PLAYER_SELECTOR_LIST: "mediashell-popup-player-selector-list",
+  POPUP_PLAYER_SELECTOR_REVEALER:
+    "mediashell-popup-player-selector-revealer",
+  POPUP_PLAYER_SELECTOR_ROW: "mediashell-popup-player-selector-row",
+  POPUP_PLAYER_SELECTOR_ROW_BOX:
+    "mediashell-popup-player-selector-row-box",
+  POPUP_PLAYER_SELECTOR_ROW_CHECK_ICON:
+    "mediashell-popup-player-selector-row-check-icon",
+  POPUP_PLAYER_SELECTOR_ROW_ITEM:
+    "mediashell-popup-player-selector-row-item",
+  POPUP_PLAYER_SELECTOR_ROW_LABEL:
+    "mediashell-popup-player-selector-row-label",
+  POPUP_PLAYER_SELECTOR_ROW_APP_ICON:
+    "mediashell-popup-player-selector-row-app-icon",
+  POPUP_PLAYER_SELECTOR_ROW_PIN_BUTTON:
+    "mediashell-popup-player-selector-row-pin-button",
+  POPUP_PLAYER_SELECTOR_ROW_PIN_ICON:
+    "mediashell-popup-player-selector-row-pin-icon",
   POPUP_BOX: "mediashell-popup-box",
   POPUP_CONTAINER: "mediashell-popup-container",
   POPUP_CONTROL_BUTTON: "mediashell-popup-control-button",
@@ -79,7 +82,7 @@ export const StyleClasses = Object.freeze({
 
   TOP_BAR_ACTION_BOX: "mediashell-top-bar-action-box",
   TOP_BAR_ALBUM_ART: "mediashell-top-bar-album-art",
-  TOP_BAR_MEDIA_APP_ICON: "mediashell-top-bar-media-app-icon",
+  TOP_BAR_APP_ICON: "mediashell-top-bar-app-icon",
   TOP_BAR_BOX: "mediashell-top-bar-box",
   TOP_BAR_CONTROL_BUTTON: "mediashell-top-bar-control-button",
   TOP_BAR_CONTROL_ICON: "mediashell-top-bar-control-icon",
@@ -96,5 +99,9 @@ export const StyleClasses = Object.freeze({
     "mediashell-top-bar-visualizer-classic-column",
   TOP_BAR_VISUALIZER_CLASSIC_BLOCK:
     "mediashell-top-bar-visualizer-classic-block",
-  TOP_BAR_VISUALIZER_SPECTRUM: "mediashell-top-bar-visualizer-spectrum",
 });
+
+/** Returns a normalized space-separated CSS class list. */
+export function styleClassNames(...classNames) {
+  return classNames.filter(Boolean).join(" ");
+}
