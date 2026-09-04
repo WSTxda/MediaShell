@@ -64,7 +64,7 @@ export default class PopupAlbumArt {
   }
 
   get mediaAppSelectorActor() {
-    return this.popupContent.mediaAppSelectorController.actor;
+    return this.popupContent.mediaAppSelector.actor;
   }
 
   get actor() {

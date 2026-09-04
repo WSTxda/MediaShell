@@ -2,11 +2,11 @@
  * @file mediaShellIndicator.js
  * @module shell.ui.indicator.mediaShellIndicator
  *
- * Owns the MediaShell panel indicator, popup, and surface orchestration.
+ * Owns the MediaShell panel indicator and routes player state to its surfaces.
  *
- * ExtensionController mounts this actor into Main.panel and supplies active
- * media-app state from MediaRuntime. The class coalesces WidgetFlags into
- * idle updates and delegates pointer gestures to IndicatorPointerHandler.
+ * PopupContent and TopBarContent own their actor trees, dirty-region masks, and
+ * idle coalescing. The indicator only translates MPRIS changes into independent
+ * surface updates and owns listeners tied to the currently active player.
  */
 
 import Clutter from "gi://Clutter";
@@ -24,19 +24,19 @@ import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../media/identity/constants.js";
-import { WidgetFlags } from "../widgetFlags.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import PopupContent from "../popup/popupContent.js";
 import TopBarContent from "../topbar/topBarContent.js";
 import IndicatorPointerHandler from "./indicatorPointerHandler.js";
+import {
+  PlayerSurfaceUpdates,
+  createMetadataSurfaceUpdate,
+} from "./surfaceUpdates.js";
 
 const logger = createLogger("MediaShellIndicator");
 
-/**
- * Owns the MediaShell panel indicator and coordinates its top bar and popup
- * surfaces.
- */
+/** Owns the panel indicator and the active-player listener lifecycle. */
 class MediaShellIndicator extends PanelMenu.Button {
   constructor(mediaApp, extensionController, { mediaRuntime }) {
     super(0.5, "MediaShell", false);
@@ -46,8 +46,6 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.mediaAppPropertyListenerIds = new Map();
     this.desktopAppResolutionRetrySourceId = null;
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
-    this.widgetUpdateSourceId = null;
-    this.pendingWidgetFlags = 0;
     this.disconnectPositionChangeListener = null;
     const surfaceDependencies = {
       artworkService: mediaRuntime.artwork,
@@ -58,7 +56,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.popupContent = new PopupContent(this, surfaceDependencies);
     this.pointerHandler = new IndicatorPointerHandler(this);
     this.addMediaAppPropertyListeners();
-    this.updateWidgets(WidgetFlags.ALL);
+    this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
     this.scheduleDesktopAppResolutionRetry();
     this.pointerHandler.install();
     this.menu.box.add_style_class_name(StyleClasses.POPUP_CONTAINER);
@@ -75,15 +73,15 @@ class MediaShellIndicator extends PanelMenu.Button {
       this.isActiveMediaApp(mediaApp)
     )
       return;
+
     this.removeMediaAppPropertyListeners();
-    this.cancelPendingWidgetUpdate();
+    this.resetPendingSurfaceUpdates();
     this.cancelDesktopAppResolutionRetry();
     this.mediaApp = mediaApp;
     this.addMediaAppPropertyListeners();
-    // The configured element order has not changed. Reconcile the new
-    // app in place so feed hand-offs do not unparent and reinsert every
-    // top bar actor.
-    this.updateWidgets(WidgetFlags.ALL);
+    // Preserve existing actors during feed/player hand-offs. Each surface
+    // reconciles the new player into its current actor tree instead of remounting.
+    this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
     this.scheduleDesktopAppResolutionRetry();
   }
 
@@ -93,79 +91,29 @@ class MediaShellIndicator extends PanelMenu.Button {
     );
   }
 
-  // Update coalescing:
-  // MPRIS endpoints emit related properties in bursts (e.g. Metadata +
-  // PlaybackStatus on track change). Accumulate WidgetFlags and schedule one
-  // GLib.idle_add callback so the UI renders once after the main-loop turn.
-  requestWidgetUpdate(widgetFlags) {
-    if (!this.extensionController || !widgetFlags) return;
-    this.pendingWidgetFlags |= widgetFlags;
-    if (this.widgetUpdateSourceId !== null) return;
-
-    this.widgetUpdateSourceId = GLib.idle_add(
-      GLib.PRIORITY_DEFAULT_IDLE,
-      () => {
-        this.widgetUpdateSourceId = null;
-        const pendingWidgetFlags = this.pendingWidgetFlags;
-        this.pendingWidgetFlags = 0;
-        if (this.extensionController && pendingWidgetFlags) {
-          try {
-            this.updateWidgets(pendingWidgetFlags);
-          } catch (error) {
-            logger.errorOnce(
-              "deferred-widget-update",
-              "Deferred widget update failed",
-              error,
-            );
-          }
-        }
-        return GLib.SOURCE_REMOVE;
-      },
-    );
-  }
-
-  cancelPendingWidgetUpdate() {
-    if (this.widgetUpdateSourceId !== null) {
-      GLib.Source.remove(this.widgetUpdateSourceId);
-      this.widgetUpdateSourceId = null;
-    }
-    this.pendingWidgetFlags = 0;
-  }
-
-  updateWidgets(widgetFlags) {
+  requestSurfaceUpdate({ popup = 0, topBar = 0 } = {}) {
     if (!this.extensionController) return;
-
-    this.runWidgetUpdate("top bar", () =>
-      this.topBarContent.updateWidgets(widgetFlags),
-    );
-    this.runWidgetUpdate("popup", () =>
-      this.popupContent.updateWidgets(widgetFlags),
-    );
+    if (topBar) this.topBarContent?.requestUpdate(topBar);
+    if (popup) this.popupContent?.requestUpdate(popup);
   }
 
-  runWidgetUpdate(componentName, update) {
-    try {
-      update();
-    } catch (error) {
-      // Keep later components and MPRIS listeners alive even when a
-      // single actor fails to render.
-      logger.errorOnce(
-        `component-update:${componentName}`,
-        `${componentName} update failed`,
-        error,
-      );
-    }
+  reconcileSurfacesNow({ popup = 0, topBar = 0 } = {}) {
+    if (!this.extensionController) return;
+    if (topBar) this.topBarContent?.reconcile(topBar);
+    if (popup) this.popupContent?.reconcile(popup);
+  }
+
+  resetPendingSurfaceUpdates() {
+    this.topBarContent?.resetPendingUpdates();
+    this.popupContent?.resetPendingUpdates();
   }
 
   addMediaAppPropertyListeners() {
     this.addMediaAppPropertyListener(MprisPlayerProperties.METADATA, () => {
-      this.requestMetadataWidgetUpdate();
+      this.requestMetadataSurfaceUpdate();
     });
     const updateMediaAppIdentity = () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
-          WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
       this.scheduleDesktopAppResolutionRetry();
     };
     this.addMediaAppPropertyListener(
@@ -179,78 +127,46 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.addMediaAppPropertyListener(
       MprisPlayerProperties.PLAYBACK_STATUS,
       () => {
-        this.requestWidgetUpdate(
-          WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
-            WidgetFlags.TOP_BAR_VISUALIZER |
-            WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE |
-            WidgetFlags.POPUP_PROGRESS_BAR,
-        );
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAYBACK_STATUS);
         this.popupContent.syncAlbumArtPlaybackState();
         this.popupContent.syncProgressBarPlaybackState();
       },
     );
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
-          WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_PLAY_PAUSE |
-          WidgetFlags.POPUP_PLAYBACK_PLAY_PAUSE,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.POPUP_PROGRESS_BAR |
-          WidgetFlags.TOP_BAR_PLAYBACK_SEEK_BACKWARD |
-          WidgetFlags.TOP_BAR_PLAYBACK_SEEK_FORWARD |
-          WidgetFlags.POPUP_PLAYBACK_SEEK_BACKWARD |
-          WidgetFlags.POPUP_PLAYBACK_SEEK_FORWARD,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.SEEK_CAPABILITY);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_NEXT | WidgetFlags.POPUP_PLAYBACK_NEXT,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.NEXT_CAPABILITY);
     });
     this.addMediaAppPropertyListener(
       MprisPlayerProperties.CAN_GO_PREVIOUS,
       () => {
-        this.requestWidgetUpdate(
-          WidgetFlags.TOP_BAR_PLAYBACK_PREVIOUS |
-            WidgetFlags.POPUP_PLAYBACK_PREVIOUS,
-        );
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.PREVIOUS_CAPABILITY);
       },
     );
     this.addMediaAppPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_CONTROLS |
-          WidgetFlags.POPUP_PLAYBACK_CONTROLS |
-          WidgetFlags.POPUP_PROGRESS_BAR |
-          WidgetFlags.POPUP_VOLUME_CONTROL,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.CONTROL_CAPABILITY);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_SHUFFLE |
-          WidgetFlags.POPUP_PLAYBACK_SHUFFLE,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.SHUFFLE);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
-      this.requestWidgetUpdate(
-        WidgetFlags.TOP_BAR_PLAYBACK_REPEAT | WidgetFlags.POPUP_PLAYBACK_REPEAT,
-      );
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.LOOP_STATUS);
     });
     this.addMediaAppPropertyListener(MprisPlayerProperties.VOLUME, () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_VOLUME_CONTROL);
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.VOLUME);
     });
     this.addMediaAppPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
-      this.requestWidgetUpdate(WidgetFlags.POPUP_MEDIA_APP_SELECTOR);
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.PIN);
     });
     const updatePlaybackSpeedControl = () =>
-      this.requestWidgetUpdate(WidgetFlags.POPUP_PLAYBACK_SPEED);
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.RATE);
     this.addMediaAppPropertyListener(MprisPlayerProperties.RATE, () => {
       this.popupContent.setPlaybackRate(this.mediaApp.rate);
       updatePlaybackSpeedControl();
@@ -272,19 +188,14 @@ class MediaShellIndicator extends PanelMenu.Button {
     );
   }
 
-  requestMetadataWidgetUpdate() {
-    let widgetFlags =
-      WidgetFlags.TOP_BAR_ALBUM_ART | WidgetFlags.TOP_BAR_TRACK_INFORMATION;
-    if (this.menu?.isOpen) {
-      widgetFlags |=
-        WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.POPUP_TRACK_INFORMATION;
-      if (this.extensionController.popupProgressBarShow)
-        widgetFlags |= WidgetFlags.POPUP_PROGRESS_BAR;
-    }
-    // requestWidgetUpdate() already coalesces the MPRIS burst at the next idle
-    // turn. A second 100 ms timer only delayed visible metadata and retained
-    // this indicator longer without reducing same-turn work.
-    this.requestWidgetUpdate(widgetFlags);
+  requestMetadataSurfaceUpdate() {
+    this.requestSurfaceUpdate(
+      createMetadataSurfaceUpdate(
+        Boolean(
+          this.menu?.isOpen && this.extensionController.popupProgressBarShow,
+        ),
+      ),
+    );
   }
 
   scheduleDesktopAppResolutionRetry() {
@@ -303,19 +214,15 @@ class MediaShellIndicator extends PanelMenu.Button {
           return GLib.SOURCE_REMOVE;
         }
 
-        // A resolved top bar icon proves that Shell has associated the
-        // MPRIS endpoint with a desktop app. Stop polling early;
-        // otherwise retry only a small, bounded number of times.
+        // A resolved top-bar icon proves Shell has associated the endpoint with
+        // a desktop app. Otherwise retry only a small, bounded number of times.
         if (this.topBarContent.mediaAppIcon.iconKey !== null) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
         }
 
-        this.requestWidgetUpdate(
-          WidgetFlags.TOP_BAR_MEDIA_APP_ICON |
-            WidgetFlags.POPUP_MEDIA_APP_SELECTOR,
-        );
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
         this.desktopAppResolutionRetryAttemptsRemaining--;
         if (this.desktopAppResolutionRetryAttemptsRemaining <= 0) {
           this.desktopAppResolutionRetrySourceId = null;
@@ -374,7 +281,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     if (!this.extensionController) return;
 
     this.removeMediaAppPropertyListeners();
-    this.cancelPendingWidgetUpdate();
+    this.resetPendingSurfaceUpdates();
     this.cancelDesktopAppResolutionRetry();
 
     const pointerHandler = this.pointerHandler;
@@ -395,10 +302,8 @@ class MediaShellIndicator extends PanelMenu.Button {
   destroy() {
     if (!this.extensionController) return;
 
-    // PanelMenu.Button destroys its PopupMenu children as part of the actor
-    // teardown. Clean MediaShell-owned menu items and signals first, while
-    // the Shell objects are still valid, so teardown does not attempt to
-    // disconnect a disposed PopupBaseMenuItem.
+    // PanelMenu.Button destroys its PopupMenu children as part of actor teardown.
+    // Clean MediaShell-owned menu state first while Shell objects are still valid.
     this.destroyOwnedResources();
     super.destroy();
   }

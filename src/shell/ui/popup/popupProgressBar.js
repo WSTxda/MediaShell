@@ -9,9 +9,9 @@
  * from album art, track information, and playback control rendering.
  */
 
-import { MprisMetadataKeys } from "../../mpris/protocol.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
+import { resolvePlaybackProgress } from "../../media/playback/progress.js";
 import PopupProgressBarView from "./popupProgressBarView.js";
 
 const logger = createLogger("PopupProgressBar");
@@ -20,8 +20,9 @@ const logger = createLogger("PopupProgressBar");
  * Owns the popup progress bar section.
  */
 export default class PopupProgressBar {
-  constructor(popupContent) {
+  constructor(popupContent, playbackController) {
     this.popupContent = popupContent;
+    this.playbackController = playbackController;
     this.view = null;
     this.positionRenderGeneration = 0;
   }
@@ -57,8 +58,7 @@ export default class PopupProgressBar {
   async render() {
     const renderGeneration = ++this.positionRenderGeneration;
     const mediaApp = this.mediaApp;
-    const metadata = mediaApp.metadata;
-    const trackDurationMicroseconds = metadata[MprisMetadataKeys.LENGTH];
+    const trackDurationMicroseconds = mediaApp.track.lengthMicroseconds;
     const playbackRate = mediaApp.rate;
     const width = this.getPopupContentWidth();
 
@@ -67,9 +67,10 @@ export default class PopupProgressBar {
       this.view.connect("seek-requested", (_, positionMicroseconds) => {
         const activeMediaApp = this.mediaApp;
         if (!activeMediaApp.canSetPosition) return;
-        activeMediaApp.setPosition(
-          activeMediaApp.trackId,
+        void this.playbackController.setPosition(
           positionMicroseconds,
+          activeMediaApp,
+          activeMediaApp.trackId,
         );
       });
     }
@@ -115,13 +116,12 @@ export default class PopupProgressBar {
     playbackRate,
     playbackStatus,
   ) {
-    const hasValidLength =
-      Number.isFinite(trackDurationMicroseconds) &&
-      trackDurationMicroseconds > 0 &&
-      trackDurationMicroseconds <= Number.MAX_SAFE_INTEGER;
-    const hasValidPosition =
-      Number.isFinite(positionMicroseconds) && positionMicroseconds >= 0;
-    if (!hasValidLength || !hasValidPosition) {
+    const progress = resolvePlaybackProgress(
+      positionMicroseconds,
+      trackDurationMicroseconds,
+      playbackRate,
+    );
+    if (!progress) {
       this.view.setProgressAvailable(false);
       return;
     }
@@ -129,9 +129,9 @@ export default class PopupProgressBar {
     this.view.setProgressAvailable(true);
     this.view.setSeekEnabled(this.mediaApp.canSetPosition);
     this.view.updateProgress(
-      Math.min(positionMicroseconds, trackDurationMicroseconds),
-      trackDurationMicroseconds,
-      playbackRate,
+      progress.positionMicroseconds,
+      progress.durationMicroseconds,
+      progress.playbackRate,
     );
     if (playbackStatus === PlaybackStatus.PLAYING)
       this.view.resumePlaybackTransition();
@@ -168,6 +168,7 @@ export default class PopupProgressBar {
 
   destroy() {
     this.remove();
+    this.playbackController = null;
     this.popupContent = null;
   }
 }

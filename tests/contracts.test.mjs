@@ -78,14 +78,14 @@ test("playback contracts reject broken cross-file references", async () => {
       },
     ],
     [
-      "widget flag collision",
+      "surface region collision",
       () => {
         const snapshot = structuredClone(BASE_SNAPSHOT);
-        snapshot.widgetFlags.POPUP_PLAYBACK_PREVIOUS =
-          snapshot.widgetFlags.POPUP_PLAYBACK_PLAY_PAUSE;
+        snapshot.surfaceRegions.popup.PLAYBACK_PREVIOUS =
+          snapshot.surfaceRegions.popup.PLAYBACK_PLAY_PAUSE;
         expectDiagnostic(
           validatePlaybackContractSnapshot(snapshot),
-          "duplicate individual bit",
+          "duplicate individual region",
         );
       },
     ],

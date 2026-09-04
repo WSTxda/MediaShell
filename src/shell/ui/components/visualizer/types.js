@@ -1,6 +1,6 @@
 /**
  * @file types.js
- * @module shell.ui.topbar.visualizer.types
+ * @module shell.ui.components.visualizer.types
  *
  * Defines stable visualizer style IDs and reusable animation identities.
  *

@@ -1,6 +1,6 @@
 /**
- * @file topBarVisualizerDrawing.js
- * @module shell.ui.topbar.topBarVisualizerDrawing
+ * @file drawing.js
+ * @module shell.ui.components.visualizer.drawing
  *
  * Draws the Cairo-backed top-bar visualizer styles without owning runtime state.
  *
@@ -15,7 +15,7 @@ import {
   VISUALIZER_SPECTRUM_AMPLITUDE,
   VISUALIZER_SPECTRUM_HORIZONTAL_PADDING,
   VISUALIZER_SPECTRUM_STROKE_WIDTH,
-} from "../../constants/visualizer.js";
+} from "../../../constants/visualizer.js";
 
 function setDrawingColor(context, color, opacity = 1) {
   context.setSourceRGBA(

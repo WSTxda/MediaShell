@@ -42,7 +42,7 @@ const SEEK_DIRECTION_BY_ACTION = Object.freeze({
 const MICROSECONDS_PER_SECOND = 1_000_000;
 const logger = createLogger("PlaybackController");
 
-async function executePlayerMethod(player, methodName, argument = undefined) {
+async function executePlayerMethod(player, methodName, ...arguments_) {
   if (!player)
     return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
 
@@ -51,10 +51,7 @@ async function executePlayerMethod(player, methodName, argument = undefined) {
     return mprisOperationUnsupported(MprisOperationReasons.MISSING_METHOD);
 
   try {
-    const value =
-      argument === undefined
-        ? await method.call(player)
-        : await method.call(player, argument);
+    const value = await method.call(player, ...arguments_);
     return normalizeMprisOperationResult(value);
   } catch (error) {
     logger.errorOnce(
@@ -122,10 +119,21 @@ export default class PlaybackController {
     return executePlaybackControlAction(player, action);
   }
 
+  setPosition(
+    positionMicroseconds,
+    player = this.activePlayer,
+    trackId = player?.trackId,
+  ) {
+    return executePlayerMethod(
+      player,
+      "setPosition",
+      trackId,
+      positionMicroseconds,
+    );
+  }
+
   setVolume(volume, player = this.activePlayer) {
-    return player
-      ? player.setVolume(volume)
-      : mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
+    return executePlayerMethod(player, "setVolume", volume);
   }
 
   increaseVolume(step, player = this.activePlayer) {

@@ -4,7 +4,7 @@
  *
  * Defines Shell geometry, renderer identities, and style presentation policy.
  *
- * Pure animation tuning remains in shared constants. This module owns only
+ * Pure animation tuning remains in UI component definitions. This module owns only
  * pixel dimensions and the mapping from a persisted style to its Shell renderer,
  * CSS classes, pivot, and optional shared animation identity.
  */
@@ -12,11 +12,11 @@
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
-} from "../ui/topbar/visualizer/definitions.js";
+} from "../ui/components/visualizer/definitions.js";
 import {
   VisualizerAnimationKinds,
   VisualizerStyles,
-} from "../ui/topbar/visualizer/types.js";
+} from "../ui/components/visualizer/types.js";
 import { StyleClasses } from "./styleClasses.js";
 
 /** Default visualizer actor height used in the compact top bar indicator. */

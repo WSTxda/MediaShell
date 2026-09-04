@@ -8,7 +8,7 @@
  * names. Shell and Preferences consume the same definitions
  * while retaining separate actors and GtkBuilder layouts. Keeping each control's
  * settings ownership beside each control avoids duplicated cross-process policy;
- * Shell-specific invalidation mapping lives in shell/media/playback.
+ * Shell-specific dirty-region mapping lives with each UI surface.
  */
 
 import { PlaybackControlIds } from "./controls.js";
@@ -35,7 +35,7 @@ function createSurfaceDefinition(show, controls) {
  * Canonical settings ownership for each playback-control surface.
  *
  * Each surface declares cross-process visibility ownership once. Layout modules
- * retain their own row/order policy, while Shell-specific invalidation remains
+ * retain their own row/order policy, while Shell-specific reconciliation remains
  * outside this shared contract.
  */
 export const PlaybackControlSurfaceDefinitions = Object.freeze({

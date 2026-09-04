@@ -15,18 +15,19 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../../media/playback/surfaceState.js";
+import { TopBarPlaybackControlRegions } from "./regions.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
 import { TOP_BAR_PLAYBACK_CONTROL_ORDER } from "../../constants/playbackControls.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { reconcileActorOrder } from "../../utils/actors.js";
-import { updatePlaybackControlButton } from "../../utils/playbackControlButton.js";
+import { reconcileActorOrder } from "../components/actorOrder.js";
+import { updatePlaybackControlButton } from "../components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
-} from "../../utils/playbackControlContent.js";
+} from "../components/playback/content.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
 /** Renders configurable playback controls inside the top bar. */
@@ -46,12 +47,13 @@ export default class TopBarPlaybackControls {
     return this.topBarContent.mediaApp;
   }
 
-  render(widgetFlags) {
+  render(dirtyRegions) {
     this.ensureActor();
     const updates = resolvePlaybackControlSurfaceUpdates(
       this.extensionController,
       PlaybackControlSurfaces.TOP_BAR,
-      widgetFlags,
+      TopBarPlaybackControlRegions,
+      dirtyRegions,
     );
     for (const { controlId, isVisible } of updates)
       this.reconcilePlaybackControl(controlId, isVisible);

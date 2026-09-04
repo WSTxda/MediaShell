@@ -1,6 +1,6 @@
 /**
- * @file actors.js
- * @module shell.utils.actors
+ * @file actorOrder.js
+ * @module shell.ui.components.actorOrder
  *
  * Provides focused actor-parenting operations shared by Shell UI components.
  *

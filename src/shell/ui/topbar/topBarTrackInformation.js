@@ -12,8 +12,8 @@
 
 import { buildTrackInformationText } from "../../media/track/presentation.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { placeActorAtIndex } from "../../utils/actors.js";
-import ScrollingLabel from "../scrollingLabel.js";
+import { placeActorAtIndex } from "../components/actorOrder.js";
+import ScrollingLabel from "../components/scrollingLabel.js";
 
 /**
  * Renders configurable track metadata inside the GNOME top bar.

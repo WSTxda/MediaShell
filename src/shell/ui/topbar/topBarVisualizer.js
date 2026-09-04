@@ -17,19 +17,19 @@ import St from "gi://St";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
-} from "./visualizer/definitions.js";
+} from "../components/visualizer/definitions.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import {
   VisualizerSpectrumLayers,
   VisualizerStyles,
-} from "./visualizer/types.js";
+} from "../components/visualizer/types.js";
 import {
   getVisualizerLevels,
   getVisualizerSpectrumOffsets,
   getVisualizerSpeedMultiplier,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
-} from "./visualizer/animation.js";
+} from "../components/visualizer/animation.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,
@@ -53,14 +53,14 @@ import {
   VISUALIZER_VINYL_STOP_DURATION_SECONDS,
   VisualizerRendererKinds,
 } from "../../constants/visualizer.js";
-import { placeActorAtIndex } from "../../utils/actors.js";
+import { placeActorAtIndex } from "../components/actorOrder.js";
 import {
   connectReducedMotionChanged,
   disconnectReducedMotionChanged,
   prefersReducedMotion,
 } from "../../utils/reducedMotion.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
-import { drawSpectrumLayer, drawVinyl } from "./topBarVisualizerDrawing.js";
+import { drawSpectrumLayer, drawVinyl } from "../components/visualizer/drawing.js";
 
 const BEATS_STYLE_DEFINITION =
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.BEATS];

@@ -1,6 +1,6 @@
 /**
- * @file playbackControlButton.js
- * @module shell.utils.playbackControlButton
+ * @file button.js
+ * @module shell.ui.components.playback.button
  *
  * Applies shared interaction and accessibility state to playback buttons.
  *
@@ -9,7 +9,7 @@
  * identical for the same canonical control state.
  */
 
-import { resolvePlaybackControlAccessibleName } from "../media/playback/accessibility.js";
+import { resolvePlaybackControlAccessibleName } from "../../../media/playback/accessibility.js";
 
 /**
  * Applies canonical interaction and accessibility state to a Shell button.

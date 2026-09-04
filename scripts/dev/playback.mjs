@@ -22,6 +22,6 @@ export async function checkPlaybackContracts() {
   const errors = validatePlaybackContractSnapshot(snapshot);
   fail("Playback contract validation", errors);
   console.log(
-    "Playback IDs, settings ownership, flags, inputs, and MPRIS signatures passed.",
+    "Playback IDs, settings ownership, surface regions, inputs, and MPRIS signatures passed.",
   );
 }

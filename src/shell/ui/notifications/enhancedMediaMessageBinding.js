@@ -14,12 +14,11 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { IconNames } from "../../../shared/icons.js";
-import {
-  MprisMetadataKeys,
-  MprisPlayerProperties,
-} from "../../mpris/protocol.js";
+import { MprisPlayerProperties } from "../../mpris/protocol.js";
 import { PlaybackControlIds } from "../../../shared/playback/controls.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
+import { normalizeTrackDurationMicroseconds } from "../../mpris/position.js";
+import { resolvePlaybackProgress } from "../../media/playback/progress.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
@@ -33,14 +32,14 @@ import {
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { placeActorAtIndex } from "../../utils/actors.js";
+import { placeActorAtIndex } from "../components/actorOrder.js";
 import { isCancellationError } from "../../utils/errors.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
-import { updatePlaybackControlButton } from "../../utils/playbackControlButton.js";
+import { updatePlaybackControlButton } from "../components/playback/button.js";
 import {
   createPlaybackControlContent,
   updatePlaybackControlContent,
-} from "../../utils/playbackControlContent.js";
+} from "../components/playback/content.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 
 const logger = createLogger("EnhancedMediaMessageBinding");
@@ -85,16 +84,6 @@ const OBSERVED_PLAYER_PROPERTIES = Object.freeze([
   MprisPlayerProperties.LOOP_STATUS,
   MprisPlayerProperties.SHUFFLE,
 ]);
-
-function normalizePlaybackRate(value) {
-  return Number.isFinite(value) && value > 0 ? value : 1;
-}
-
-function normalizeTrackDurationMicroseconds(value) {
-  return Number.isFinite(value) && value > 0 && value <= Number.MAX_SAFE_INTEGER
-    ? value
-    : null;
-}
 
 function colorToRgba(color, alphaScale = 1) {
   if (!color) return null;
@@ -564,17 +553,19 @@ export default class EnhancedMediaMessageBinding {
 
   getCurrentTrackDurationMicroseconds() {
     return normalizeTrackDurationMicroseconds(
-      this.mediaApp.metadata[MprisMetadataKeys.LENGTH],
+      this.mediaApp.track.lengthMicroseconds,
     );
   }
 
   syncProgress(positionMicroseconds) {
     if (!this.active) return;
 
-    const durationMicroseconds = this.getCurrentTrackDurationMicroseconds();
-    const hasValidPosition =
-      Number.isFinite(positionMicroseconds) && positionMicroseconds >= 0;
-    this.progressAvailable = Boolean(durationMicroseconds && hasValidPosition);
+    const progress = resolvePlaybackProgress(
+      positionMicroseconds,
+      this.getCurrentTrackDurationMicroseconds(),
+      this.mediaApp.rate,
+    );
+    this.progressAvailable = progress !== null;
     this.seekEnabled = Boolean(
       this.progressAvailable && this.mediaApp.canSetPosition,
     );
@@ -592,43 +583,16 @@ export default class EnhancedMediaMessageBinding {
       return;
     }
 
-    if (!this.dragging)
-      this.setProgressPosition(
-        Math.min(positionMicroseconds, durationMicroseconds),
-        durationMicroseconds,
-        this.mediaApp.rate,
-      );
+    if (!this.dragging) this.setProgressPosition(progress);
 
     this.reconcileProgressTransition();
   }
 
-  setProgressPosition(
-    positionMicroseconds,
-    durationMicroseconds,
-    playbackRate,
-  ) {
-    const rate = normalizePlaybackRate(playbackRate);
-    const durationMilliseconds = Math.max(1, durationMicroseconds / 1000);
-    const timelineDurationMilliseconds = Math.max(
-      1,
-      Math.round(durationMilliseconds / rate),
-    );
-    const positionMilliseconds = Math.min(
-      durationMilliseconds,
-      Math.max(0, positionMicroseconds / 1000),
-    );
-    const timelinePositionMilliseconds = Math.min(
-      timelineDurationMilliseconds,
-      positionMilliseconds / rate,
-    );
-
+  setProgressPosition(progress) {
     this.ensureProgressTransitionAttached();
-    this.playbackTransition.set_duration(timelineDurationMilliseconds);
-    this.slider.value = Math.min(
-      1,
-      positionMilliseconds / durationMilliseconds,
-    );
-    this.playbackTransition.advance(timelinePositionMilliseconds);
+    this.playbackTransition.set_duration(progress.timelineDurationMilliseconds);
+    this.slider.value = progress.fraction;
+    this.playbackTransition.advance(progress.timelinePositionMilliseconds);
   }
 
   ensureProgressTransitionAttached() {
@@ -683,7 +647,11 @@ export default class EnhancedMediaMessageBinding {
       Math.min(1, Math.max(0, this.slider.value)) * durationMicroseconds,
     );
     void Promise.resolve(
-      this.mediaApp.setPosition(currentTrackId, requestedPositionMicroseconds),
+      this.playbackController.setPosition(
+        requestedPositionMicroseconds,
+        this.mediaApp,
+        currentTrackId,
+      ),
     )
       .catch((error) =>
         logger.debugOnce(

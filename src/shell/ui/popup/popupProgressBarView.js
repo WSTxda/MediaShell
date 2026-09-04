@@ -22,6 +22,7 @@ import {
   INACTIVE_OPACITY,
 } from "../../constants/actorState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
+import { normalizePositionPlaybackRate } from "../../mpris/position.js";
 
 /**
  * Renders the popup progress view and owns its local interaction state.
@@ -147,13 +148,13 @@ class PopupProgressBarView extends St.BoxLayout {
   }
 
   updateProgress(positionMicroseconds, durationMicroseconds, playbackRate) {
-    this.playbackRate = this.normalizePlaybackRate(playbackRate);
+    this.playbackRate = normalizePositionPlaybackRate(playbackRate);
     this.setTrackDuration(durationMicroseconds);
     this.setPlaybackPosition(positionMicroseconds);
   }
 
   setPlaybackRate(playbackRate) {
-    const normalizedPlaybackRate = this.normalizePlaybackRate(playbackRate);
+    const normalizedPlaybackRate = normalizePositionPlaybackRate(playbackRate);
     if (!this.isProgressAvailable) {
       this.playbackRate = normalizedPlaybackRate;
       return;
@@ -167,10 +168,6 @@ class PopupProgressBarView extends St.BoxLayout {
     this.playbackRate = normalizedPlaybackRate;
     this.setTrackDuration(durationMicroseconds);
     this.setPlaybackPosition(positionMicroseconds);
-  }
-
-  normalizePlaybackRate(playbackRate) {
-    return Number.isFinite(playbackRate) && playbackRate > 0 ? playbackRate : 1;
   }
 
   setPlaybackPosition(positionMicroseconds) {

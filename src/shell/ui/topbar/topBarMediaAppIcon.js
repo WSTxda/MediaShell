@@ -11,7 +11,7 @@
 
 import { IconNames } from "../../../shared/icons.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
-import { placeActorAtIndex } from "../../utils/actors.js";
+import { placeActorAtIndex } from "../components/actorOrder.js";
 import { createIcon, setGIcon } from "../../utils/icons.js";
 import { styleClassNames } from "../../utils/styleClasses.js";
 

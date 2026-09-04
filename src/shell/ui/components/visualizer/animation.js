@@ -1,6 +1,6 @@
 /**
  * @file animation.js
- * @module shell.ui.topbar.visualizer.animation
+ * @module shell.ui.components.visualizer.animation
  *
  * Produces deterministic visualizer frames from pure animation definitions.
  *
