@@ -12,9 +12,9 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
-import { resolvePlaybackControlState } from "../../../shared/utils/playbackControlState.js";
-import { resolvePlaybackControlSurfaceUpdates } from "../../../shared/utils/playbackControlSurfaceState.js";
+import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
+import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
+import { resolvePlaybackControlSurfaceUpdates } from "../../media/playback/surfaceState.js";
 import {
   ACTIVE_OPACITY,
   INACTIVE_OPACITY,

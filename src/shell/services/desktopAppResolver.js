@@ -9,7 +9,7 @@
  * retried when desktop metadata appears later. Teardown releases cached
  * Shell.App and Gio.AppInfo references.
  *
- * @see src/shared/utils/appIdentity.js
+ * @see src/shell/media/identity/appIdentity.js
  */
 
 import Gio from "gi://Gio";
@@ -19,8 +19,8 @@ import Shell from "gi://Shell";
 import {
   resolveBrowserIdentityCandidate,
   resolveChromiumPwaAppId,
-} from "../../shared/utils/browserIdentity.js";
-import { IconNames } from "../../shared/constants/icons.js";
+} from "../../shared/identity/browser.js";
+import { IconNames } from "../../shared/icons.js";
 import {
   DESKTOP_APP_RESOLVER_CACHE_LIMIT,
   DESKTOP_APP_RESOLVER_MISS_CACHE_TTL_MS,
@@ -31,8 +31,8 @@ import {
   buildNormalizedAppIdentityCandidates,
   normalizeAppIdentity,
   stripDesktopFileSuffix,
-} from "../../shared/utils/appIdentity.js";
-import { createLogger } from "../../shared/utils/log.js";
+} from "../media/identity/appIdentity.js";
+import { createLogger } from "../../shared/logging/logger.js";
 
 const logger = createLogger("DesktopAppResolver");
 

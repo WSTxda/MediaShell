@@ -9,7 +9,7 @@
  * bus name while preserving the previous active endpoint inside the same tier.
  */
 
-import { PlaybackStatus } from "../../shared/enums/playback.js";
+import { PlaybackStatus } from "./playbackState.js";
 
 function getMediaAppOrderKey(mediaApp) {
   return String(mediaApp?.busName ?? "");

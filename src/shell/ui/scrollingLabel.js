@@ -15,7 +15,7 @@ import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
-import { GTypeNames } from "../../shared/constants/gtypes.js";
+import { GTypeNames } from "../../shared/gobject.js";
 import { StyleClasses } from "../constants/styleClasses.js";
 import {
   connectReducedMotionChanged,

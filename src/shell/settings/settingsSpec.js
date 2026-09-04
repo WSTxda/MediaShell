@@ -23,21 +23,22 @@ import {
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
-} from "../../shared/constants/settings.js";
+} from "../../shared/settings/contract.js";
 import {
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
-} from "../../shared/constants/playbackControlSurfaces.js";
-import { normalizeInputAction } from "../../shared/utils/inputActions.js";
-import { InputActions } from "../../shared/enums/input.js";
-import { PanelPositions } from "../../shared/enums/panel.js";
-import { WidgetFlags } from "../../shared/enums/widgetFlags.js";
-import { normalizeTrackInformationContent } from "../../shared/utils/trackInformation.js";
+} from "../../shared/playback/surfaces.js";
+import { normalizeInputAction } from "../../shared/input/normalization.js";
+import { InputActions } from "../../shared/input/types.js";
+import { PanelPositions } from "../ui/indicator/panelPosition.js";
+import { WidgetFlags } from "../ui/widgetFlags.js";
+import { getPlaybackControlSurfaceUpdates } from "../media/playback/surfaceUpdates.js";
+import { normalizeTrackInformationContent } from "../../shared/ui/trackInformationContent.js";
 import {
   enumValueByIndex,
   normalizeOrderedValues,
   normalizeUniqueStrings,
-} from "../../shared/utils/format.js";
+} from "../../shared/format.js";
 
 export const SettingsAction = Object.freeze({
   REBUILD_INDICATOR: "rebuild-indicator",
@@ -76,14 +77,15 @@ function createSecondsToMillisecondsTransform(bounds) {
 
 function createPlaybackControlSettingsSpec(surface) {
   const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
+  const updates = getPlaybackControlSurfaceUpdates(surface);
   return Object.fromEntries([
     [
       show.settingKey,
-      { property: show.property, read: "get_boolean", impact: show.impact },
+      { property: show.property, read: "get_boolean", impact: updates.show },
     ],
-    ...controls.map(({ settingKey, property, impact }) => [
+    ...controls.map(({ controlId, settingKey, property }) => [
       settingKey,
-      { property, read: "get_boolean", impact },
+      { property, read: "get_boolean", impact: updates.controls[controlId] },
     ]),
   ]);
 }

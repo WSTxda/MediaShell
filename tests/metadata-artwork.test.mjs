@@ -9,23 +9,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MprisMetadataKeys } from "../src/shared/constants/mpris.js";
+import { MprisMetadataKeys } from "../src/shell/mpris/protocol.js";
 import {
   ALBUM_ART_CACHE_MAX_BYTES,
   ALBUM_ART_MAX_BYTES,
 } from "../src/shell/constants/albumArt.js";
-import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
+import { normalizeAppIdentityHint } from "../src/shell/media/identity/appIdentity.js";
 import {
   createAlbumArtRequest,
   selectAlbumArtCacheEvictions,
-} from "../src/shared/utils/albumArt.js";
+} from "../src/shell/media/artwork/policy.js";
 import {
   buildTrackInformationText,
   createMprisMetadataRevision,
   formatArtistNames,
   normalizeMetadataDisplayText,
   normalizeMprisMetadata,
-} from "../src/shared/utils/metadata.js";
+} from "../src/shell/media/track/metadata.js";
 import { runCases } from "./helpers.mjs";
 
 test("metadata normalization produces one stable and display-safe domain shape", async () => {

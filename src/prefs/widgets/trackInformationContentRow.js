@@ -15,10 +15,10 @@ import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 import { gettext as _ } from "../translations.js";
 
-import { GTypeNames } from "../../shared/constants/gtypes.js";
-import { ResourceUris } from "../../shared/constants/resources.js";
-import { TrackInformationFields } from "../../shared/enums/trackInformation.js";
-import { moveArrayItem } from "../../shared/utils/collections.js";
+import { GTypeNames } from "../../shared/gobject.js";
+import { ResourceUris } from "../../shared/resources.js";
+import { TrackInformationFields } from "../../shared/ui/trackInformation.js";
+import { moveArrayItem } from "../../shared/collections.js";
 import { createDragTexture } from "../utils/dragAndDrop.js";
 
 function createTranslatedFields() {

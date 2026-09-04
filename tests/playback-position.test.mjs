@@ -12,19 +12,19 @@ import test from "node:test";
 import {
   MPRIS_NO_TRACK_PATH,
   MprisMetadataKeys,
-} from "../src/shared/constants/mpris.js";
+} from "../src/shell/mpris/protocol.js";
 import {
   POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS,
   POSITION_ESTIMATE_MAX_AGE_MICROSECONDS,
-} from "../src/shared/constants/playbackPosition.js";
-import { PlaybackStatus } from "../src/shared/enums/playback.js";
+} from "../src/shell/mpris/positionConstants.js";
+import { PlaybackStatus } from "../src/shell/mpris/playbackState.js";
 import {
   normalizePlaybackPositionMicroseconds,
   normalizePositionPlaybackRate,
   normalizeTrackDurationMicroseconds,
   resolvePlaybackPositionEstimate,
   resolvePlaybackPositionTrackContext,
-} from "../src/shared/utils/playbackPosition.js";
+} from "../src/shell/mpris/positionProjection.js";
 import { runCases } from "./helpers.mjs";
 
 function estimate(overrides = {}) {

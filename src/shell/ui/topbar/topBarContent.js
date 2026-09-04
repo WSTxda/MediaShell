@@ -11,11 +11,11 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { PlaybackControlSurfaces } from "../../../shared/constants/playbackControlSurfaces.js";
-import { TopBarElementIds } from "../../../shared/enums/topBar.js";
-import { WidgetFlags } from "../../../shared/enums/widgetFlags.js";
-import { createLogger } from "../../../shared/utils/log.js";
-import { isPlaybackControlSurfaceVisible } from "../../../shared/utils/playbackControlSurfaceState.js";
+import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
+import { TopBarElementIds } from "../../../shared/ui/topBar.js";
+import { WidgetFlags } from "../widgetFlags.js";
+import { createLogger } from "../../../shared/logging/logger.js";
+import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import TopBarAlbumArt from "./topBarAlbumArt.js";
 import TopBarMediaAppIcon from "./topBarMediaAppIcon.js";

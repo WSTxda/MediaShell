@@ -12,8 +12,8 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { COMPILED_RESOURCE_FILENAME } from "../../shared/constants/resources.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { COMPILED_RESOURCE_FILENAME } from "../../shared/resources.js";
+import { createLogger } from "../../shared/logging/logger.js";
 
 const logger = createLogger("ExtensionResourceRegistry");
 

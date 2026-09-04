@@ -9,8 +9,8 @@
  * Preferences never rewrites the user's configuration.
  */
 
-import { SettingsKeys } from "../../shared/constants/settings.js";
-import { resolvePopupWidth } from "../../shared/utils/popupLayout.js";
+import { SettingsKeys } from "../../shared/settings/contract.js";
+import { resolvePopupWidth } from "../../shared/ui/popupLayout.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,

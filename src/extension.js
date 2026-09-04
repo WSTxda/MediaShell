@@ -14,7 +14,7 @@
 
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { createLogger } from "./shared/utils/log.js";
+import { createLogger } from "./shared/logging/logger.js";
 import ExtensionController from "./shell/extensionController.js";
 
 const logger = createLogger("MediaShellExtension");

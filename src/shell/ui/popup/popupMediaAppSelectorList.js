@@ -14,7 +14,7 @@ import Clutter from "gi://Clutter";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { IconNames } from "../../../shared/constants/icons.js";
+import { IconNames } from "../../../shared/icons.js";
 import {
   ACTIVE_OPACITY,
   HIDDEN_OPACITY,

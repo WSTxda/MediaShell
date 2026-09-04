@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { PlaybackStatus } from "../src/shared/enums/playback.js";
+import { PlaybackStatus } from "../src/shell/mpris/playbackState.js";
 import {
   chooseActiveMediaApp,
   chooseNextMediaApp,

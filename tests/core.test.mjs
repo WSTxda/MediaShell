@@ -12,24 +12,24 @@ import test from "node:test";
 import {
   MINIMUM_LIBADWAITA_VERSION,
   SUPPORTED_GNOME_SHELL_VERSIONS,
-} from "../src/shared/constants/platform.js";
-import { isVersionAtLeast } from "../src/shared/utils/version.js";
+} from "../src/shared/platform/constants.js";
+import { isVersionAtLeast } from "../src/shared/platform/version.js";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
   TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
-} from "../src/shared/constants/visualizer.js";
+} from "../src/shell/ui/topbar/visualizer/definitions.js";
 import {
   VisualizerAnimationKinds,
   VisualizerSpectrumLayers,
   VisualizerStyles,
-} from "../src/shared/enums/visualizer.js";
+} from "../src/shell/ui/topbar/visualizer/types.js";
 import {
   buildAppLookupHints,
   buildDesktopAppIdCandidates,
   normalizeAppIdentity,
   stripDesktopFileSuffix,
-} from "../src/shared/utils/appIdentity.js";
+} from "../src/shell/media/identity/appIdentity.js";
 import {
   buildBrowserIdentityAliases,
   extractChromiumPwaAppIds,
@@ -38,29 +38,29 @@ import {
   resolveBrowserIdentityCandidate,
   resolveChromiumPwaAppId,
   scoreBrowserIdentityCandidate,
-} from "../src/shared/utils/browserIdentity.js";
-import { arraysEqual, moveArrayItem } from "../src/shared/utils/collections.js";
+} from "../src/shared/identity/browser.js";
+import { arraysEqual, moveArrayItem } from "../src/shared/collections.js";
 import {
   enumValueByIndex,
   formatDurationMilliseconds,
   normalizeOrderedValues,
   normalizeUniqueStrings,
-} from "../src/shared/utils/format.js";
-import { createLogger } from "../src/shared/utils/log.js";
-import { normalizeTrackInformationContent } from "../src/shared/utils/trackInformation.js";
+} from "../src/shared/format.js";
+import { createLogger } from "../src/shared/logging/logger.js";
+import { normalizeTrackInformationContent } from "../src/shared/ui/trackInformationContent.js";
 import {
   buildSearchIndex,
   matchesSearchText,
   matchesSearchTokens,
   normalizeSearchText,
   tokenizeSearchQuery,
-} from "../src/shared/utils/search.js";
+} from "../src/prefs/search.js";
 import {
   getVisualizerLevels,
   getVisualizerSpectrumOffsets,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
-} from "../src/shared/utils/visualizer.js";
+} from "../src/shell/ui/topbar/visualizer/animation.js";
 import {
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS,
   VisualizerRendererKinds,

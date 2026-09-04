@@ -12,7 +12,7 @@
 
 import Gtk from "gi://Gtk";
 
-import { ResourcePaths } from "../shared/constants/resources.js";
+import { ResourcePaths } from "../shared/resources.js";
 import PreferenceBinder from "./bindings/preferenceBinder.js";
 import { PREFERENCE_PAGE_IDS } from "./constants/preferencesUi.js";
 import AboutDialogController from "./controllers/aboutDialogController.js";

@@ -13,8 +13,8 @@
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { TrackInformationFields } from "../../../shared/enums/trackInformation.js";
-import { buildTrackInformationItems } from "../../../shared/utils/metadata.js";
+import { TrackInformationFields } from "../../../shared/ui/trackInformation.js";
+import { buildTrackInformationItems } from "../../media/track/metadata.js";
 import { StyleClasses } from "../../constants/styleClasses.js";
 import ScrollingLabel from "../scrollingLabel.js";
 

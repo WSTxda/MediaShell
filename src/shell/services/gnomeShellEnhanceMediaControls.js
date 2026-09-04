@@ -7,7 +7,7 @@
 
 import GLib from "gi://GLib";
 
-import { createLogger } from "../../shared/utils/log.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import EnhancedMediaMessageBinding from "../ui/notifications/enhancedMediaMessageBinding.js";
 import {
   connectLockScreenShown,

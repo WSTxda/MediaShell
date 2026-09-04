@@ -12,20 +12,20 @@ import test from "node:test";
 import {
   MPRIS_NO_TRACK_PATH,
   MprisMetadataKeys,
-} from "../src/shared/constants/mpris.js";
+} from "../src/shell/mpris/protocol.js";
 import {
   PlaybackControlActions,
   RELATIVE_SEEK_SECONDS,
-} from "../src/shared/constants/playbackControls.js";
-import { MediaAppValidity } from "../src/shared/enums/mediaAppValidity.js";
-import { LoopStatus, PlaybackStatus } from "../src/shared/enums/playback.js";
+} from "../src/shared/playback/controls.js";
+import { MediaAppValidity } from "../src/shell/mpris/playerValidity.js";
+import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/playbackState.js";
 import {
   metadataContainsTrack,
   normalizeMprisTrackId,
   normalizeLoopStatus,
   normalizePlaybackStatus,
   resolveMediaAppValidity,
-} from "../src/shared/utils/mpris.js";
+} from "../src/shell/mpris/normalization.js";
 import {
   MprisOperationReasons,
   MprisOperationStatuses,
@@ -36,11 +36,11 @@ import {
   mprisOperationSucceeded,
   mprisOperationUnsupported,
   normalizeMprisOperationResult,
-} from "../src/shared/utils/mprisOperationResult.js";
+} from "../src/shell/mpris/operationResult.js";
 import {
   matchesMprisOwnerSnapshot,
   resolveMprisOwnerTransition,
-} from "../src/shared/utils/mprisOwner.js";
+} from "../src/shell/mpris/owner.js";
 import {
   executePlaybackControlAction,
   resolveSeekOffsetMicroseconds,

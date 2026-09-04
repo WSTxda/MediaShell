@@ -14,35 +14,35 @@ import {
   LEGACY_INPUT_ACTION_SCHEMA_NICKS,
   MOUSE_ACTION_VALUES,
   PLAYBACK_ACTION_BY_INPUT_ACTION,
-} from "../src/shared/constants/inputActions.js";
-import { normalizeInputAction } from "../src/shared/utils/inputActions.js";
+} from "../src/shared/input/actions.js";
+import { normalizeInputAction } from "../src/shared/input/normalization.js";
 import {
   PLAYBACK_CONTROL_DEFINITIONS,
   PlaybackControlActions,
   PlaybackControlIds,
-} from "../src/shared/constants/playbackControls.js";
+} from "../src/shared/playback/controls.js";
 import {
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
-} from "../src/shared/constants/playbackControlSurfaces.js";
-import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../src/shared/constants/popup.js";
+} from "../src/shared/playback/surfaces.js";
+import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../src/shared/ui/popup.js";
 import {
   POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
-} from "../src/shared/constants/settings.js";
-import { InputActions } from "../src/shared/enums/input.js";
-import { LoopStatus, PlaybackStatus } from "../src/shared/enums/playback.js";
-import { WidgetFlags } from "../src/shared/enums/widgetFlags.js";
-import { resolvePlaybackControlAccessibleName } from "../src/shared/utils/playbackControlAccessibility.js";
-import { resolvePlaybackControlState } from "../src/shared/utils/playbackControlState.js";
-import { resolvePlaybackControlSurfaceUpdates } from "../src/shared/utils/playbackControlSurfaceState.js";
-import { resolvePopupWidth } from "../src/shared/utils/popupLayout.js";
+} from "../src/shared/settings/contract.js";
+import { InputActions } from "../src/shared/input/types.js";
+import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/playbackState.js";
+import { WidgetFlags } from "../src/shell/ui/widgetFlags.js";
+import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
+import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";
+import { resolvePlaybackControlSurfaceUpdates } from "../src/shell/media/playback/surfaceState.js";
+import { resolvePopupWidth } from "../src/shared/ui/popupLayout.js";
 import {
   canChangePlaybackRate,
   formatPlaybackRate,
   getAvailablePlaybackRates,
   resolveNextPlaybackRate,
-} from "../src/shared/utils/playbackRate.js";
+} from "../src/shell/mpris/playbackRate.js";
 import {
   POPUP_PRIMARY_PLAYBACK_CONTROL_ORDER,
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,

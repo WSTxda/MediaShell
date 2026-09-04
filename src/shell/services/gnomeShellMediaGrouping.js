@@ -5,7 +5,7 @@
  * Owns notification-list grouping while Enhance replaces native media messages.
  */
 
-import { createLogger } from "../../shared/utils/log.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import EnhancedMediaMessageGroup from "../ui/notifications/enhancedMediaMessageGroup.js";
 
 const logger = createLogger("GnomeShellMediaGrouping");

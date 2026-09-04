@@ -31,7 +31,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { DbusPropertiesMethods } from "../../shared/constants/dbus.js";
+import { DbusPropertiesMethods } from "./dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
@@ -43,45 +43,45 @@ import {
   MprisRootProperties,
   MPRIS_PLAYER_PROPERTY_NAMES,
   MPRIS_ROOT_PROPERTY_NAMES,
-} from "../../shared/constants/mpris.js";
+} from "./protocol.js";
 import {
   MEDIA_APP_EMPTY_STOPPED_GRACE_MS,
   MediaAppStateProperties,
 } from "../constants/mediaApp.js";
-import { MediaAppValidity } from "../../shared/enums/mediaAppValidity.js";
-import { LoopStatus, PlaybackStatus } from "../../shared/enums/playback.js";
+import { MediaAppValidity } from "./playerValidity.js";
+import { LoopStatus, PlaybackStatus } from "./playbackState.js";
 import {
   DBUS_CALL_TIMEOUT_MS,
   MPRIS_INIT_POLL_INTERVAL_MS,
   MPRIS_INIT_TIMEOUT_MS,
 } from "../constants/mpris.js";
-import { finiteNumberOr } from "../../shared/utils/format.js";
-import { normalizeAppIdentityHint } from "../../shared/utils/appIdentity.js";
+import { finiteNumberOr } from "../../shared/format.js";
+import { normalizeAppIdentityHint } from "../media/identity/appIdentity.js";
 import {
   createMprisMetadataRevision,
   normalizeMprisMetadata,
-} from "../../shared/utils/metadata.js";
-import { createLogger } from "../../shared/utils/log.js";
+} from "../media/track/metadata.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import {
   metadataContainsTrack,
   normalizeMprisTrackId,
   normalizeLoopStatus,
   normalizePlaybackStatus,
   resolveMediaAppValidity,
-} from "../../shared/utils/mpris.js";
-import { normalizePlaybackRateRange } from "../../shared/utils/playbackRate.js";
+} from "./normalization.js";
+import { normalizePlaybackRateRange } from "./playbackRate.js";
 import {
   matchesMprisOwnerSnapshot,
   resolveMprisOwnerTransition,
-} from "../../shared/utils/mprisOwner.js";
-import { resolvePlaybackPositionTrackContext } from "../../shared/utils/playbackPosition.js";
+} from "./owner.js";
+import { resolvePlaybackPositionTrackContext } from "./positionProjection.js";
 import {
   MprisOperationReasons,
   mprisOperationCancelled,
   mprisOperationFailed,
   mprisOperationSucceeded,
   mprisOperationUnsupported,
-} from "../../shared/utils/mprisOperationResult.js";
+} from "./operationResult.js";
 import { getOperationErrorName, isCancellationError } from "../utils/errors.js";
 import PlaybackPositionTracker from "./playbackPositionTracker.js";
 

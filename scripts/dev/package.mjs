@@ -16,7 +16,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join, posix, relative, resolve } from "node:path";
 
-import { EXTENSION_UUID } from "../../src/shared/constants/project.js";
+import { EXTENSION_UUID } from "../../src/shared/project.js";
 import { ROOT, collect, fail, pathExists, read, rootPath } from "./files.mjs";
 import {
   collectModuleSpecifiers,

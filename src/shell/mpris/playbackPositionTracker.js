@@ -12,20 +12,20 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { DbusPropertiesMethods } from "../../shared/constants/dbus.js";
+import { DbusPropertiesMethods } from "./dbus.js";
 import {
   MPRIS_PLAYER_IFACE_NAME,
   MprisPlayerProperties,
-} from "../../shared/constants/mpris.js";
+} from "./protocol.js";
 import { DBUS_CALL_TIMEOUT_MS } from "../constants/mpris.js";
-import { PlaybackStatus } from "../../shared/enums/playback.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { PlaybackStatus } from "./playbackState.js";
+import { createLogger } from "../../shared/logging/logger.js";
 import {
   normalizePlaybackPositionMicroseconds,
   normalizePositionPlaybackRate,
   normalizeTrackDurationMicroseconds,
   resolvePlaybackPositionEstimate,
-} from "../../shared/utils/playbackPosition.js";
+} from "./positionProjection.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");

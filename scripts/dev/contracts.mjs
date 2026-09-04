@@ -11,14 +11,14 @@
 
 import { PREFERENCE_WIDGET_BINDINGS } from "../../src/prefs/bindings/preferenceBindings.js";
 import { PREFERENCE_PAGE_IDS } from "../../src/prefs/constants/preferencesUi.js";
-import { GTypeNames } from "../../src/shared/constants/gtypes.js";
+import { GTypeNames } from "../../src/shared/gobject.js";
 import {
   DBUS_DAEMON_IFACE_NAME,
   DBUS_PROPERTIES_IFACE_NAME,
   DbusDaemonMethods,
   DbusPropertiesMethods,
   DbusDaemonSignals,
-} from "../../src/shared/constants/dbus.js";
+} from "../../src/shell/mpris/dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
@@ -28,21 +28,21 @@ import {
   MprisRootMethods,
   MPRIS_PLAYER_PROPERTY_NAMES,
   MPRIS_ROOT_PROPERTY_NAMES,
-} from "../../src/shared/constants/mpris.js";
+} from "../../src/shell/mpris/protocol.js";
 import {
   INPUT_ACTION_DEFINITIONS,
   KEYBOARD_SHORTCUT_KEYS,
   LEGACY_INPUT_ACTION_SCHEMA_NICKS,
-} from "../../src/shared/constants/inputActions.js";
+} from "../../src/shared/input/actions.js";
 import {
   NUMERIC_SETTING_CONSTRAINTS,
   ORDERED_SETTING_DEFAULTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
-} from "../../src/shared/constants/settings.js";
-import { InputActions } from "../../src/shared/enums/input.js";
-import { PanelPositions } from "../../src/shared/enums/panel.js";
-import { TopBarElementIds } from "../../src/shared/enums/topBar.js";
-import { VisualizerStyles } from "../../src/shared/enums/visualizer.js";
+} from "../../src/shared/settings/contract.js";
+import { InputActions } from "../../src/shared/input/types.js";
+import { PanelPositions } from "../../src/shell/ui/indicator/panelPosition.js";
+import { TopBarElementIds } from "../../src/shared/ui/topBar.js";
+import { VisualizerStyles } from "../../src/shell/ui/topbar/visualizer/types.js";
 import { SETTINGS_SPEC } from "../../src/shell/settings/settingsSpec.js";
 import { collectBuilderObjectReferences } from "./javascript.mjs";
 import { fail, read, readAssetManifest } from "./files.mjs";

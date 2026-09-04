@@ -11,6 +11,7 @@
   "scripts": {
     "check": "node scripts/dev.mjs check",
     "check:runtime": "node scripts/dev.mjs runtime",
+    "check:refactor": "node scripts/dev.mjs refactor",
     "check:native": "node scripts/dev.mjs native",
     "check:package": "node scripts/dev.mjs package",
     "check:shexli": "shexli dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
@@ -28,6 +29,7 @@
     "build:stage": "pnpm run build:clean && pnpm run build:dirs && pnpm run build:copy && pnpm run build:resources",
     "build:package": "pnpm run build:stage && pnpm run build:pack && pnpm run check:package",
     "build": "pnpm run check:runtime && pnpm run check:native && pnpm run build:package",
+    "build:refactor": "pnpm run check:refactor && pnpm run check:native && pnpm run build:package",
     "ext:install": "gnome-extensions install --force dist/builds/mediashell@wstxda.github.com.shell-extension.zip",
     "ext:uninstall": "gnome-extensions uninstall mediashell@wstxda.github.com",
     "ext:enable": "gnome-extensions enable mediashell@wstxda.github.com",

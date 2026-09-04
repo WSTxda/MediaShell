@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { COMPILED_RESOURCE_FILENAME } from "../shared/constants/resources.js";
+import { COMPILED_RESOURCE_FILENAME } from "../shared/resources.js";
 
 let registeredResource = null;
 

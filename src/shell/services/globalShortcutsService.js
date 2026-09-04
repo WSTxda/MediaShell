@@ -13,9 +13,9 @@ import Meta from "gi://Meta";
 import Shell from "gi://Shell";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import { INPUT_ACTION_DEFINITIONS } from "../../shared/constants/inputActions.js";
-import { InputActions } from "../../shared/enums/input.js";
-import { createLogger } from "../../shared/utils/log.js";
+import { INPUT_ACTION_DEFINITIONS } from "../../shared/input/actions.js";
+import { InputActions } from "../../shared/input/types.js";
+import { createLogger } from "../../shared/logging/logger.js";
 
 const logger = createLogger("GlobalShortcutsService");
 
