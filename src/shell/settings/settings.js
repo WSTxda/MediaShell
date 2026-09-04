@@ -23,7 +23,6 @@ import {
   PANEL_INDEX_CONSTRAINTS,
   TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
   TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
-  NativeMediaControlsModes,
 } from "../../shared/settings/contract.js";
 import { normalizeInputAction } from "../../shared/input/normalization.js";
 import { InputActions } from "../../shared/input/types.js";
@@ -275,10 +274,13 @@ const INTERACTION_DEFINITIONS = Object.freeze({
 });
 
 const INTEGRATION_DEFINITIONS = Object.freeze({
-  nativeMediaControlsMode: define(
-    SettingsKeys.NATIVE_MEDIA_CONTROLS_MODE,
-    "get_enum",
-    (value) => enumValueByIndex(NativeMediaControlsModes, value),
+  hideNativeMediaControls: define(
+    SettingsKeys.NATIVE_MEDIA_CONTROLS_HIDDEN,
+    "get_boolean",
+  ),
+  enhanceNativeMediaControls: define(
+    SettingsKeys.NATIVE_MEDIA_CONTROLS_ENHANCED,
+    "get_boolean",
   ),
 });
 

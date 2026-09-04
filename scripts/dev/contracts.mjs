@@ -34,7 +34,6 @@ import {
   KEYBOARD_SHORTCUT_KEYS,
 } from "../../src/shared/input/actions.js";
 import {
-  NativeMediaControlsModes,
   NUMERIC_SETTING_CONSTRAINTS,
   ORDERED_SETTING_DEFAULTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
@@ -348,16 +347,6 @@ export async function checkSettingsContracts() {
       value,
     })),
   );
-  compareEnum(
-    errors,
-    `${schemaPrefix}.native-media-controls-modes`,
-    schema.enums[`${schemaPrefix}.native-media-controls-modes`],
-    Object.keys(NativeMediaControlsModes).map((nick, value) => ({
-      nick,
-      value,
-    })),
-  );
-
   fail("Settings and UI contract validation", errors);
   console.log(
     "Schema types, defaults, bounds, enums, bindings, and UI references passed.",

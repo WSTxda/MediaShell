@@ -3,18 +3,18 @@
  * @module shell.private.gnomeShell.mediaControls.adapter
  *
  * Selects and owns the private GNOME Shell media-controls implementation for
- * the active session profile. The adapter is the only composition point that
- * knows about Hidden/Enhanced implementation details; MediaShell injects runtime capabilities.
+ * the active session profile. Hide and Enhance are independent user choices:
+ * Hide owns the notification-list visibility policy, while Enhance can project
+ * MediaShell presentation onto any supported native media surface.
  */
 
-import { NativeMediaControlsModes } from "../../../../shared/settings/contract.js";
 import { createLogger } from "../../../../shared/logging/logger.js";
 import EnhancedMediaControls from "./enhance.js";
 import HiddenMediaControls from "./hide.js";
 
 const logger = createLogger("NativeMediaControlsAdapter");
 
-const RuntimeProfiles = Object.freeze({
+const SessionProfiles = Object.freeze({
   USER: "user",
   UNLOCK_DIALOG: "unlock-dialog",
 });
@@ -25,21 +25,20 @@ const Implementations = Object.freeze({
   ENHANCED_LOCK_SCREEN: "enhanced-lock-screen",
 });
 
-function resolveImplementation(profile, mode, mediaRuntime) {
-  if (
-    profile === RuntimeProfiles.USER &&
-    mode === NativeMediaControlsModes.HIDDEN
-  )
-    return Implementations.HIDDEN_NOTIFICATION_LIST;
-
-  if (mode !== NativeMediaControlsModes.ENHANCED || !mediaRuntime?.initialized)
+function resolveImplementation(profile, hide, enhance, mediaRuntime) {
+  if (profile === SessionProfiles.USER) {
+    // Hiding the notification-list surface takes precedence there, but does not
+    // disable lock-screen enhancement in another session profile.
+    if (hide) return Implementations.HIDDEN_NOTIFICATION_LIST;
+    if (enhance && mediaRuntime?.initialized)
+      return Implementations.ENHANCED_NOTIFICATION_LIST;
     return null;
-
-  if (profile === RuntimeProfiles.USER)
-    return Implementations.ENHANCED_NOTIFICATION_LIST;
+  }
 
   if (
-    profile === RuntimeProfiles.UNLOCK_DIALOG &&
+    profile === SessionProfiles.UNLOCK_DIALOG &&
+    enhance &&
+    mediaRuntime?.initialized &&
     EnhancedMediaControls.supportsLockScreen()
   )
     return Implementations.ENHANCED_LOCK_SCREEN;
@@ -58,10 +57,11 @@ export default class GnomeShellMediaControlsAdapter {
     this.implementationKind = null;
   }
 
-  reconcile({ profile, mode, mediaRuntime }) {
+  reconcile({ profile, hide, enhance, mediaRuntime }) {
     const implementationKind = resolveImplementation(
       profile,
-      mode,
+      hide,
+      enhance,
       mediaRuntime,
     );
 

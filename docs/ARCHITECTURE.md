@@ -44,7 +44,7 @@ shared
 
 Forbidden examples include `shared → shell`, `shared → prefs`, `shell → prefs`, `prefs → shell`, `mpris → ui`, `components → popup/topbar`, and `core → private`. The development validator enforces the important process/private boundaries.
 
-## Extension lifecycle and runtime profiles
+## Extension lifecycle and session profiles
 
 `extension.js` is deliberately small. `ExtensionController` is the Shell composition root for one enabled extension lifecycle.
 
@@ -53,36 +53,38 @@ It owns extension-lifetime resources:
 - `ResourceRegistry`;
 - `MediaShellSettings`;
 - session-mode subscription;
+- one `MediaRuntime`;
 - one `NativeMediaControlsIntegration` boundary.
 
-It reconciles one runtime profile at a time:
+Session modes gate presentation and input without rebuilding the canonical media runtime:
 
 ```text
 GNOME session mode
       ↓
 ExtensionController
       ├── user
-      │    ├── MediaRuntime
+      │    ├── persistent MediaRuntime
       │    ├── InputActionDispatcher
       │    ├── GlobalShortcuts
       │    ├── MediaShellIndicator
-      │    └── native integration
+      │    └── notification-list native integration
       │
       ├── unlock-dialog
-      │    ├── MediaRuntime only when Enhanced mode is supported and enabled
-      │    └── native lock-screen enhancement
+      │    ├── keep an existing MediaRuntime alive
+      │    ├── no Top Bar or global shortcuts
+      │    └── optional enhanced lock-screen adapter on Shell 49+
       │
-      └── other modes
-           └── no MediaShell runtime
+      └── unsupported mode
+           └── tear down MediaShell runtime state
 ```
 
-Profile changes are serialized and generation-guarded. A stale asynchronous startup cannot mutate a replacement profile. Teardown runs before a different profile is mounted.
+Session changes are serialized and generation-guarded. User-only actors and keyboard shortcuts are removed immediately when leaving the user session, while MPRIS, artwork, selection, and playback capabilities survive the normal `user ↔ unlock-dialog` transition. If GNOME Shell itself calls `disable()`, the extension still performs a complete lifecycle teardown.
 
 `ExtensionController` does **not** implement MPRIS, artwork, player selection, playback operations, private Shell integration, or per-surface rendering. Those responsibilities belong to the domains below.
 
 ## MediaRuntime: the Shell media capability boundary
 
-`src/shell/runtime/mediaRuntime.js` composes the reusable media runtime for one profile:
+`src/shell/runtime/mediaRuntime.js` composes the reusable media runtime for one enabled extension lifecycle:
 
 ```text
 MediaRuntime
@@ -230,14 +232,14 @@ MediaShellSettings
 ├── topBar       → TopBarContent
 ├── panel        → ExtensionController / panel placement
 ├── interactions → pointer/input behavior
-├── integration  → native media controls mode
+├── integration  → native media controls visibility/enhancement
 ├── media        → MediaRuntime blocklist/artwork cache
 └── keybindings  → GNOME global shortcut registration
 ```
 
 There is no global settings-to-widget action table and no property injection onto `ExtensionController`. Each owner observes only the settings it understands and converts a relevant change into its own local reconciliation.
 
-Native GNOME media controls use one exclusive mode (`default`, `hidden`, or `enhanced`) rather than conflicting Hide/Enhance booleans.
+Native GNOME media controls expose independent Hide and Enhance settings because they govern different surfaces: Hide controls notification-list visibility, while Enhance styles visible native controls and can also project onto the supported lock-screen surface. When both are enabled, the notification-list surface stays hidden and lock-screen enhancement remains available on GNOME Shell 49+.
 
 ## UI surfaces and incremental reconciliation
 
@@ -290,7 +292,7 @@ private/gnomeShell/panelMenu/compatibility.js
 
 All direct notification-media internals are confined to the media-controls compatibility module. PanelMenu `_clickGesture` compatibility is confined to its own adapter. The validator rejects direct imports of the private tree from other normal modules.
 
-Hidden and Enhanced integrations are consumers of MediaShell capabilities. Enhanced notification/lock-screen presentation receives injected player, playback, and artwork capabilities; it does not become a second MPRIS implementation. Unsupported private structures fail open by preserving/restoring native GNOME behavior.
+Hidden and Enhanced integrations are consumers of MediaShell capabilities. Their settings are independent: Hide owns notification-list visibility, while Enhance can style the notification list and the supported lock-screen surface. This allows the notification-list controls to stay hidden while lock-screen controls remain enhanced. Enhanced presentation receives injected player, playback, and artwork capabilities; it does not become a second MPRIS implementation. Unsupported private structures fail open by preserving/restoring native GNOME behavior.
 
 ## Preferences process
 

@@ -2,17 +2,16 @@
  * @file extensionController.js
  * @module shell.extensionController
  *
- * Composes extension lifecycle around the MediaShell runtime inside GNOME Shell.
+ * Composes extension lifecycle around one MediaShell media runtime inside GNOME Shell.
  *
- * Settings and resources live for the extension lifecycle. Runtime profiles keep
- * the user session separate from the optional lock-screen enhancement, while
- * generation guards reject stale asynchronous startup.
+ * Settings, resources, and MediaRuntime belong to the enabled extension lifecycle.
+ * Session profiles only gate user-facing Shell services and private native-media
+ * adapters; locking the session must not rebuild the canonical media runtime.
  */
 
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 import { PopupRegions } from "./ui/popup/regions.js";
-import { NativeMediaControlsModes } from "../shared/settings/contract.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
 import InputActionDispatcher from "./input/actionDispatcher.js";
@@ -25,35 +24,35 @@ import { clearIconCache } from "./ui/icons.js";
 
 const logger = createLogger("ExtensionController");
 
-const RuntimeProfiles = Object.freeze({
+const SessionProfiles = Object.freeze({
   USER: "user",
   UNLOCK_DIALOG: "unlock-dialog",
 });
 
-function resolveRuntimeProfile() {
-  if (Main.sessionMode.currentMode === RuntimeProfiles.UNLOCK_DIALOG)
-    return RuntimeProfiles.UNLOCK_DIALOG;
+function resolveSessionProfile() {
+  if (Main.sessionMode.currentMode === SessionProfiles.UNLOCK_DIALOG)
+    return SessionProfiles.UNLOCK_DIALOG;
 
   if (
-    Main.sessionMode.currentMode === RuntimeProfiles.USER ||
-    Main.sessionMode.parentMode === RuntimeProfiles.USER
+    Main.sessionMode.currentMode === SessionProfiles.USER ||
+    Main.sessionMode.parentMode === SessionProfiles.USER
   )
-    return RuntimeProfiles.USER;
+    return SessionProfiles.USER;
 
   return null;
 }
 
 /**
- * Coordinates the full MediaShell runtime lifecycle inside GNOME Shell.
+ * Coordinates the full MediaShell lifecycle inside GNOME Shell.
  */
 export default class ExtensionController {
   constructor(extensionInstance) {
     this.extensionInstance = extensionInstance;
     this.extensionPath = extensionInstance.path;
     this.lifecycleGeneration = 0;
-    this.runtimeReconcileGeneration = 0;
-    this.runtimeReconcilePromise = Promise.resolve();
-    this.runtimeProfile = null;
+    this.sessionReconcileGeneration = 0;
+    this.sessionReconcilePromise = Promise.resolve();
+    this.sessionProfile = null;
     this.sessionModeSignalId = null;
     this.indicator = null;
     this.resourceRegistry = new ResourceRegistry(this.extensionPath);
@@ -74,7 +73,7 @@ export default class ExtensionController {
         this.handleSessionModeChanged(),
       );
 
-      await this.scheduleRuntimeProfileReconcile();
+      await this.scheduleSessionProfileReconcile();
       if (!this.isCurrentLifecycleGeneration(lifecycleGeneration)) return;
       logger.debug("Extension lifecycle enabled");
     } catch (error) {
@@ -90,103 +89,106 @@ export default class ExtensionController {
     );
   }
 
-  isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration) {
+  isCurrentSessionReconcileGeneration(sessionReconcileGeneration) {
     return (
       this.extensionInstance !== null &&
-      runtimeReconcileGeneration === this.runtimeReconcileGeneration
+      sessionReconcileGeneration === this.sessionReconcileGeneration
     );
   }
 
   handleSessionModeChanged() {
-    if (resolveRuntimeProfile() !== RuntimeProfiles.USER)
-      this.destroyIndicator();
+    const nextProfile = resolveSessionProfile();
+    if (nextProfile !== this.sessionProfile)
+      this.nativeMediaControlsIntegration?.reset();
+    if (nextProfile !== SessionProfiles.USER)
+      this.destroyUserSessionComponents();
 
-    void this.scheduleRuntimeProfileReconcile();
+    void this.scheduleSessionProfileReconcile();
   }
 
-  scheduleRuntimeProfileReconcile() {
+  scheduleSessionProfileReconcile() {
     if (!this.extensionInstance) return Promise.resolve();
 
-    const runtimeReconcileGeneration = ++this.runtimeReconcileGeneration;
-    this.runtimeReconcilePromise = this.runtimeReconcilePromise
+    const sessionReconcileGeneration = ++this.sessionReconcileGeneration;
+    this.sessionReconcilePromise = this.sessionReconcilePromise
       .catch(() => {})
       .then(async () => {
         if (
-          !this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration)
+          !this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration)
         )
           return;
 
-        const profile = resolveRuntimeProfile();
+        const profile = resolveSessionProfile();
         try {
-          await this.reconcileRuntimeProfile(
+          await this.reconcileSessionProfile(
             profile,
-            runtimeReconcileGeneration,
+            sessionReconcileGeneration,
           );
         } catch (error) {
           if (
-            !this.isCurrentRuntimeReconcileGeneration(
-              runtimeReconcileGeneration,
+            !this.isCurrentSessionReconcileGeneration(
+              sessionReconcileGeneration,
             )
           )
             return;
 
-          this.handleRuntimeProfileFailure(profile, error);
+          this.handleSessionProfileFailure(profile, error);
         }
       });
 
-    return this.runtimeReconcilePromise;
+    return this.sessionReconcilePromise;
   }
 
-  async reconcileRuntimeProfile(profile, runtimeReconcileGeneration) {
-    if (this.runtimeProfile !== profile) {
-      const previousProfile = this.runtimeProfile;
-      this.destroyRuntimeComponents();
-      this.runtimeProfile = profile;
+  async reconcileSessionProfile(profile, sessionReconcileGeneration) {
+    if (this.sessionProfile !== profile) {
+      const previousProfile = this.sessionProfile;
+      this.sessionProfile = profile;
       logger.debug(
-        "Runtime profile changed",
+        "Session profile changed",
         previousProfile ?? "none",
         "→",
         profile ?? "none",
       );
     }
 
-    if (profile === RuntimeProfiles.USER) {
-      if (!this.hasMediaRuntime()) {
-        if (this.hasRuntimeComponents()) this.destroyRuntimeComponents();
-        await this.startMediaRuntime(runtimeReconcileGeneration, {
-          includeUserServices: true,
-        });
-      } else this.reconcileNativeMediaControls();
-      return;
-    }
+    if (profile === SessionProfiles.USER) {
+      if (!this.hasMediaRuntime())
+        await this.startMediaRuntime(sessionReconcileGeneration);
 
-    if (profile === RuntimeProfiles.UNLOCK_DIALOG) {
-      if (
-        this.settings.integration.nativeMediaControlsMode !==
-          NativeMediaControlsModes.ENHANCED ||
-        !NativeMediaControlsIntegration.supportsLockScreen()
-      ) {
-        this.destroyRuntimeComponents();
+      if (!this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration))
         return;
-      }
 
-      if (!this.hasMediaRuntime()) {
-        if (this.hasRuntimeComponents()) this.destroyRuntimeComponents();
-        await this.startMediaRuntime(runtimeReconcileGeneration, {
-          includeUserServices: false,
-        });
-      } else this.reconcileNativeMediaControls();
+      this.ensureUserSessionComponents();
+      this.reconcileNativeMediaControls();
+      this.reconcileIndicator();
       return;
     }
 
-    this.destroyRuntimeComponents();
+    if (profile === SessionProfiles.UNLOCK_DIALOG) {
+      this.destroyUserSessionComponents();
+
+      const needsLockScreenRuntime =
+        this.settings.integration.enhanceNativeMediaControls &&
+        NativeMediaControlsIntegration.supportsLockScreen();
+      if (needsLockScreenRuntime && !this.hasMediaRuntime())
+        await this.startMediaRuntime(sessionReconcileGeneration);
+
+      if (!this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration))
+        return;
+
+      this.reconcileNativeMediaControls();
+      return;
+    }
+
+    this.nativeMediaControlsIntegration?.reset();
+    this.destroyUserSessionComponents();
+    this.destroyMediaRuntime();
   }
 
-  async startMediaRuntime(runtimeReconcileGeneration, { includeUserServices }) {
-    logger.debug(
-      "Starting media runtime",
-      includeUserServices ? "user services enabled" : "minimal profile",
-    );
+  async startMediaRuntime(sessionReconcileGeneration) {
+    if (this.mediaRuntime) this.destroyMediaRuntime();
+
+    logger.debug("Starting media runtime");
     this.mediaRuntime = new MediaRuntime({
       mediaSettings: this.settings.media,
       callbacks: {
@@ -196,24 +198,15 @@ export default class ExtensionController {
       },
     });
 
-    if (includeUserServices) {
-      this.inputActionDispatcher = new InputActionDispatcher({
-        mediaRuntime: this.mediaRuntime,
-        onTogglePopup: () => this.indicator?.menu.toggle(),
-        onOpenPreferences: () => this.openPreferences(),
-      });
-
-      // Hide can be applied before the MediaShell MPRIS runtime exists.
+    // Hide does not depend on the MediaShell MPRIS runtime and can be applied
+    // immediately in the user session while MPRIS discovery initializes.
+    if (this.sessionProfile === SessionProfiles.USER) {
+      this.ensureUserSessionComponents();
       this.reconcileNativeMediaControls();
-      this.globalShortcuts = new GlobalShortcuts(
-        this.settings.keybindings,
-        (inputAction) => this.inputActionDispatcher?.execute(inputAction),
-      );
-      this.globalShortcuts.enable();
     }
 
     await this.mediaRuntime.init();
-    if (!this.isCurrentRuntimeReconcileGeneration(runtimeReconcileGeneration))
+    if (!this.isCurrentSessionReconcileGeneration(sessionReconcileGeneration))
       return;
 
     this.reconcileNativeMediaControls();
@@ -223,19 +216,12 @@ export default class ExtensionController {
     return Boolean(this.mediaRuntime?.initialized);
   }
 
-  hasRuntimeComponents() {
-    return Boolean(
-      this.globalShortcuts ||
-      this.inputActionDispatcher ||
-      this.indicator ||
-      this.mediaRuntime,
-    );
-  }
+  handleSessionProfileFailure(profile, error) {
+    this.nativeMediaControlsIntegration?.reset();
+    this.destroyUserSessionComponents();
+    this.destroyMediaRuntime();
 
-  handleRuntimeProfileFailure(profile, error) {
-    this.destroyRuntimeComponents();
-
-    if (profile === RuntimeProfiles.UNLOCK_DIALOG) {
+    if (profile === SessionProfiles.UNLOCK_DIALOG) {
       logger.warnOnce(
         "unlock-dialog-runtime-failed",
         "Failed to start the lock-screen media enhancement; preserving GNOME Shell native controls",
@@ -244,7 +230,7 @@ export default class ExtensionController {
       return;
     }
 
-    if (profile === RuntimeProfiles.USER) {
+    if (profile === SessionProfiles.USER) {
       logger.error("Failed to start the MediaShell user runtime", error);
       this.destroy();
     }
@@ -252,17 +238,21 @@ export default class ExtensionController {
 
   installSettingsSubscriptions() {
     const rebuildPanelPlacement = () => {
-      if (this.runtimeProfile === RuntimeProfiles.USER) this.rebuildIndicator();
+      if (this.sessionProfile === SessionProfiles.USER) this.rebuildIndicator();
     };
     this.settingsSubscriptions.push(
       this.settings.panel.subscribe(
         ["position", "index"],
         rebuildPanelPlacement,
       ),
-      this.settings.integration.subscribe("nativeMediaControlsMode", () => {
-        if (this.runtimeProfile === RuntimeProfiles.UNLOCK_DIALOG)
-          void this.scheduleRuntimeProfileReconcile();
-        else if (this.runtimeProfile === RuntimeProfiles.USER)
+      this.settings.integration.subscribe(["hideNativeMediaControls"], () => {
+        if (this.sessionProfile === SessionProfiles.USER)
+          this.reconcileNativeMediaControls();
+      }),
+      this.settings.integration.subscribe(["enhanceNativeMediaControls"], () => {
+        if (this.sessionProfile === SessionProfiles.UNLOCK_DIALOG)
+          void this.scheduleSessionProfileReconcile();
+        else if (this.sessionProfile === SessionProfiles.USER)
           this.reconcileNativeMediaControls();
       }),
     );
@@ -274,7 +264,7 @@ export default class ExtensionController {
   }
 
   handleAvailablePlayersChanged() {
-    if (this.runtimeProfile === RuntimeProfiles.USER)
+    if (this.sessionProfile === SessionProfiles.USER)
       this.indicator?.requestSurfaceUpdate({
         popup: PopupRegions.PLAYER_SELECTOR,
       });
@@ -283,24 +273,62 @@ export default class ExtensionController {
 
   reconcileNativeMediaControls() {
     this.nativeMediaControlsIntegration?.reconcile({
-      profile: this.runtimeProfile,
-      mode: this.settings?.integration.nativeMediaControlsMode ?? null,
+      profile: this.sessionProfile,
+      hide: this.settings?.integration.hideNativeMediaControls ?? false,
+      enhance: this.settings?.integration.enhanceNativeMediaControls ?? false,
       mediaRuntime: this.mediaRuntime ?? null,
     });
   }
 
-  rebuildIndicator() {
-    if (this.runtimeProfile !== RuntimeProfiles.USER) return;
+  ensureUserSessionComponents() {
+    if (
+      this.sessionProfile !== SessionProfiles.USER ||
+      resolveSessionProfile() !== SessionProfiles.USER ||
+      !this.mediaRuntime
+    )
+      return;
 
-    const player = this.mediaRuntime?.activePlayer ?? null;
+    if (!this.inputActionDispatcher)
+      this.inputActionDispatcher = new InputActionDispatcher({
+        mediaRuntime: this.mediaRuntime,
+        onTogglePopup: () => this.indicator?.menu.toggle(),
+        onOpenPreferences: () => this.openPreferences(),
+      });
+
+    if (!this.globalShortcuts) {
+      this.globalShortcuts = new GlobalShortcuts(
+        this.settings.keybindings,
+        (inputAction) => this.inputActionDispatcher?.execute(inputAction),
+      );
+      this.globalShortcuts.enable();
+    }
+  }
+
+  reconcileIndicator() {
+    if (
+      this.sessionProfile !== SessionProfiles.USER ||
+      resolveSessionProfile() !== SessionProfiles.USER ||
+      !this.inputActionDispatcher
+    ) {
+      this.destroyIndicator();
+      return;
+    }
+
+    this.handleActivePlayerChanged(this.mediaRuntime?.activePlayer ?? null);
+  }
+
+  rebuildIndicator() {
+    if (this.sessionProfile !== SessionProfiles.USER) return;
+
     this.destroyIndicator();
-    if (player) this.handleActivePlayerChanged(player);
+    this.reconcileIndicator();
   }
 
   handleActivePlayerChanged(player) {
     if (
-      this.runtimeProfile !== RuntimeProfiles.USER ||
-      resolveRuntimeProfile() !== RuntimeProfiles.USER
+      this.sessionProfile !== SessionProfiles.USER ||
+      resolveSessionProfile() !== SessionProfiles.USER ||
+      !this.inputActionDispatcher
     ) {
       this.destroyIndicator();
       return;
@@ -331,7 +359,10 @@ export default class ExtensionController {
   }
 
   openPreferences() {
-    if (this.runtimeProfile !== RuntimeProfiles.USER || !this.extensionInstance)
+    if (
+      this.sessionProfile !== SessionProfiles.USER ||
+      !this.extensionInstance
+    )
       return;
     this.extensionInstance.openPreferences();
   }
@@ -344,20 +375,27 @@ export default class ExtensionController {
     indicator.destroy();
   }
 
-  destroyRuntimeComponents() {
+  destroyUserSessionComponents() {
     this.globalShortcuts?.destroy();
     this.globalShortcuts = null;
 
-    this.nativeMediaControlsIntegration?.reset();
     this.destroyIndicator();
 
     this.inputActionDispatcher?.destroy();
     this.inputActionDispatcher = null;
+    clearIconCache();
+  }
 
+  destroyMediaRuntime() {
     if (this.mediaRuntime) logger.debug("Stopping media runtime");
     this.mediaRuntime?.destroy();
     this.mediaRuntime = null;
-    clearIconCache();
+  }
+
+  destroyRuntimeComponents() {
+    this.nativeMediaControlsIntegration?.reset();
+    this.destroyUserSessionComponents();
+    this.destroyMediaRuntime();
   }
 
   destroy() {
@@ -366,7 +404,7 @@ export default class ExtensionController {
     logger.debug("Destroying extension lifecycle");
     this.extensionInstance = null;
     this.lifecycleGeneration++;
-    this.runtimeReconcileGeneration++;
+    this.sessionReconcileGeneration++;
 
     if (this.sessionModeSignalId !== null) {
       Main.sessionMode.disconnect(this.sessionModeSignalId);
@@ -377,7 +415,7 @@ export default class ExtensionController {
     this.destroyRuntimeComponents();
     this.settings?.destroy();
     this.settings = null;
-    this.runtimeProfile = null;
+    this.sessionProfile = null;
 
     this.nativeMediaControlsIntegration?.destroy();
     this.nativeMediaControlsIntegration = null;

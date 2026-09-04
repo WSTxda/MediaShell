@@ -291,7 +291,7 @@ Minimum release-oriented scenarios include:
 - seekable and non-seekable players;
 - controls toggled live from Preferences;
 - artwork cache on/off, local and remote artwork;
-- native mode `default`, `hidden`, `enhanced`;
+- native media Hide/Enhance combinations, including both enabled together;
 - lock/unlock enhancement where supported;
 - reduced-motion enabled/disabled;
 - extension disable while asynchronous artwork/MPRIS work is active.
