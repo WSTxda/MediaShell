@@ -1,16 +1,18 @@
 /**
- * @file gnomeShellHideMediaControls.js
- * @module shell.services.gnomeShellHideMediaControls
+ * @file hide.js
+ * @module shell.private.gnomeShell.mediaControls.hide
  *
- * Reversibly suppresses native media messages in the notification list.
+ * Reversibly suppresses native notification-list media messages through the
+ * compatibility contract. It owns every override and restores native players
+ * when the mode, owner, session profile, or extension lifecycle changes.
  */
 
-import { createLogger } from "../../shared/logging/logger.js";
-import { resolveNotificationListMediaContext } from "./gnomeShellMediaControlsCompatibility.js";
+import { createLogger } from "../../../../shared/logging/logger.js";
+import { resolveNotificationListMediaContext } from "./compatibility.js";
 
-const logger = createLogger("GnomeShellHideMediaControls");
+const logger = createLogger("HiddenNativeMediaControls");
 
-export default class GnomeShellHideMediaControls {
+export default class HiddenMediaControls {
   constructor() {
     this.context = null;
     this.removePlayerOverrides = null;

@@ -1,8 +1,10 @@
 /**
- * @file enhancedMediaMessageGroup.js
- * @module shell.ui.notifications.enhancedMediaMessageGroup
+ * @file messageGroup.js
+ * @module shell.private.gnomeShell.mediaControls.messageGroup
  *
- * Native-style notification group for Enhance-owned media messages.
+ * Native-style notification group used only by the private Enhance adapter.
+ * Its geometry intentionally mirrors GNOME Shell internals and therefore stays
+ * quarantined from reusable MediaShell UI components.
  */
 
 import Clutter from "gi://Clutter";
@@ -10,8 +12,8 @@ import GObject from "gi://GObject";
 import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { installPrimaryClickAction } from "../../utils/pointerActions.js";
-import { prefersReducedMotion } from "../../utils/reducedMotion.js";
+import { installPrimaryClickAction } from "../../../utils/pointerActions.js";
+import { prefersReducedMotion } from "../../../utils/reducedMotion.js";
 
 const GROUP_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroup";
 const GROUP_LAYOUT_GTYPE_NAME = "MediaShellEnhancedMediaMessageGroupLayout";

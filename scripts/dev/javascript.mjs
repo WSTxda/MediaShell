@@ -286,6 +286,17 @@ export async function checkImportsAndBoundaries() {
       for (const error of validateRelativeImport(layer, targetLayer, specifier))
         errors.push(`${record.file}:${item.line}: ${error}: ${target}`);
 
+      const privateRoot = "src/shell/private/";
+      const privateBoundary = "src/shell/integrations/nativeMediaControls.js";
+      if (
+        target.startsWith(privateRoot) &&
+        !record.file.startsWith(privateRoot) &&
+        record.file !== privateBoundary
+      )
+        errors.push(
+          `${record.file}:${item.line}: private Shell implementation may only be imported through ${privateBoundary}: ${target}`,
+        );
+
       dependencyGraph.get(record.file).push(target);
 
       if (item.kind === "import") {
