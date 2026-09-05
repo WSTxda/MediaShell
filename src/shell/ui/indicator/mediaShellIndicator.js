@@ -4,7 +4,7 @@
  *
  * Owns the MediaShell panel indicator and routes player state to its surfaces.
  *
- * PopupContent and TopBarContent own their actor trees, dirty-region masks, and
+ * PopupSurface and TopBarSurface own their actor trees, dirty-region masks, and
  * idle coalescing. The indicator only translates MPRIS changes into independent
  * surface updates and owns listeners tied to the currently active player.
  */
@@ -26,8 +26,8 @@ import {
   DESKTOP_APP_RESOLUTION_RETRY_MAX_ATTEMPTS,
 } from "../../media/identity/constants.js";
 import { createLogger } from "../../../shared/logging/logger.js";
-import PopupContent from "../popup/popupContent.js";
-import TopBarContent from "../topbar/topBarContent.js";
+import PopupSurface from "../popup/popupSurface.js";
+import TopBarSurface from "../topbar/topBarSurface.js";
 import IndicatorPointerHandler from "./indicatorPointerHandler.js";
 import {
   PlayerSurfaceUpdates,
@@ -55,8 +55,8 @@ class MediaShellIndicator extends PanelMenu.Button {
       popupSettings: settings.popup,
       topBarSettings: settings.topBar,
     };
-    this.topBarContent = new TopBarContent(this, surfaceDependencies);
-    this.popupContent = new PopupContent(this, surfaceDependencies);
+    this.topBarSurface = new TopBarSurface(this, surfaceDependencies);
+    this.popupSurface = new PopupSurface(this, surfaceDependencies);
     this.pointerHandler = new IndicatorPointerHandler(this, inputActions);
     this.addPlayerPropertyListeners();
     this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
@@ -90,18 +90,18 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   requestSurfaceUpdate({ popup = 0, topBar = 0 } = {}) {
-    if (topBar) this.topBarContent.requestUpdate(topBar);
-    if (popup) this.popupContent.requestUpdate(popup);
+    if (topBar) this.topBarSurface.requestUpdate(topBar);
+    if (popup) this.popupSurface.requestUpdate(popup);
   }
 
   reconcileSurfacesNow({ popup = 0, topBar = 0 } = {}) {
-    if (topBar) this.topBarContent.reconcile(topBar);
-    if (popup) this.popupContent.reconcile(popup);
+    if (topBar) this.topBarSurface.reconcile(topBar);
+    if (popup) this.popupSurface.reconcile(popup);
   }
 
   resetPendingSurfaceUpdates() {
-    this.topBarContent.resetPendingUpdates();
-    this.popupContent.resetPendingUpdates();
+    this.topBarSurface.resetPendingUpdates();
+    this.popupSurface.resetPendingUpdates();
   }
 
   addPlayerPropertyListeners() {
@@ -124,8 +124,8 @@ class MediaShellIndicator extends PanelMenu.Button {
       MprisPlayerProperties.PLAYBACK_STATUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAYBACK_STATUS);
-        this.popupContent.syncArtworkPlaybackState();
-        this.popupContent.syncProgressBarPlaybackState();
+        this.popupSurface.syncArtworkPlaybackState();
+        this.popupSurface.syncProgressBarPlaybackState();
       },
     );
     this.addPlayerPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
@@ -164,7 +164,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     const updatePlaybackSpeedControl = () =>
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.RATE);
     this.addPlayerPropertyListener(MprisPlayerProperties.RATE, () => {
-      this.popupContent.setPlaybackRate(this.player.rate);
+      this.popupSurface.setPlaybackRate(this.player.rate);
       updatePlaybackSpeedControl();
     });
     this.addPlayerPropertyListener(
@@ -179,7 +179,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.disconnectPositionChangeListener = observedPlayer.onPositionChanged(
       (positionMicroseconds) => {
         if (this.player !== observedPlayer) return;
-        this.popupContent.setPlaybackPosition(positionMicroseconds);
+        this.popupSurface.setPlaybackPosition(positionMicroseconds);
       },
     );
   }
@@ -210,7 +210,7 @@ class MediaShellIndicator extends PanelMenu.Button {
 
         // A resolved top-bar icon proves Shell has associated the endpoint with
         // a desktop app. Otherwise retry only a small, bounded number of times.
-        if (this.topBarContent.appIcon.iconKey !== null) {
+        if (this.topBarSurface.appIcon.iconKey !== null) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
@@ -277,19 +277,19 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.resetPendingSurfaceUpdates();
 
     const pointerHandler = this.pointerHandler;
-    const popupContent = this.popupContent;
-    const topBarContent = this.topBarContent;
+    const popupSurface = this.popupSurface;
+    const topBarSurface = this.topBarSurface;
     this.pointerHandler = null;
-    this.popupContent = null;
-    this.topBarContent = null;
+    this.popupSurface = null;
+    this.topBarSurface = null;
     this.player = null;
     this.mediaRuntime = null;
     this.settings = null;
     this.inputActions = null;
 
     pointerHandler.destroy();
-    popupContent.destroy();
-    topBarContent.destroy();
+    popupSurface.destroy();
+    topBarSurface.destroy();
     super.destroy();
   }
 }

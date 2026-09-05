@@ -9,7 +9,7 @@
  * MprisProxyFactory,
  * applies blocked-app filtering, and schedules grace-period removals when an
  * endpoint disappears. It is the source of truth for the active player shown by
- * MediaShellIndicator and PopupContent.
+ * MediaShellIndicator and PopupSurface.
  */
 
 import Gio from "gi://Gio";

@@ -1,10 +1,10 @@
 /**
- * @file popupContent.js
- * @module shell.ui.popup.popupContent
+ * @file popupSurface.js
+ * @module shell.ui.popup.popupSurface
  *
  * Owns and incrementally reconciles the complete MediaShell popup surface.
  *
- * PopupContent owns every popup actor, its surface-local dirty regions, and the
+ * PopupSurface owns every popup actor, its surface-local dirty regions, and the
  * idle source used to coalesce bursts. When the menu is closed it records dirty
  * regions without rendering, then merges them with the required initial regions
  * on the next open.
@@ -33,10 +33,10 @@ import PopupProgressBar from "./popupProgressBar.js";
 import PopupVolumeControl from "./popupVolumeControl.js";
 import { PopupRegions } from "./regions.js";
 
-const logger = createLogger("PopupContent");
+const logger = createLogger("PopupSurface");
 
 /** Owns and reconciles every widget inside the MediaShell popup menu. */
-export default class PopupContent {
+export default class PopupSurface {
   constructor(
     indicator,
     { artworkService, desktopAppResolver, playbackController, popupSettings },

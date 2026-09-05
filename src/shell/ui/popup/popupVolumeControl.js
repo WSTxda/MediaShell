@@ -34,8 +34,8 @@ const VOLUME_ICON_NAMES = Object.freeze({
 
 /** Owns the popup volume row. */
 export default class PopupVolumeControl {
-  constructor(popupContent, playbackController) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, playbackController) {
+    this.popupSurface = popupSurface;
     this.playbackController = playbackController;
     this.actor = null;
     this.muteButton = null;
@@ -50,15 +50,15 @@ export default class PopupVolumeControl {
   }
 
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
 
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
 
   get playbackControlsActor() {
-    return this.popupContent.playbackControls.actor;
+    return this.popupSurface.playbackControls.actor;
   }
 
   render() {
@@ -68,10 +68,10 @@ export default class PopupVolumeControl {
       this.lastNonZeroVolume = null;
     }
     const width =
-      this.popupContent.getPopupContentWidth() -
+      this.popupSurface.getPopupContentWidth() -
       POPUP_VOLUME_CONTROL_HORIZONTAL_INSET * 2;
     this.actor.width = width;
-    this.actor.style = this.popupContent.buildFixedWidthStyle(width);
+    this.actor.style = this.popupSurface.buildFixedWidthStyle(width);
     this.syncVolume(this.player.volume);
     this.syncControlState();
     this.attach();
@@ -256,6 +256,6 @@ export default class PopupVolumeControl {
   destroy() {
     this.remove();
     this.playbackController = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

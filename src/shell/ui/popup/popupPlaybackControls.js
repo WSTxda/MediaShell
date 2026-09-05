@@ -4,7 +4,7 @@
  *
  * Renders configurable playback controls inside the popup.
  *
- * PopupContent owns surface visibility. This renderer owns popup actors and
+ * PopupSurface owns surface visibility. This renderer owns popup actors and
  * delegates state and execution to the shared playback-control domain.
  */
 
@@ -39,8 +39,8 @@ import {
 
 /** Renders configurable playback controls inside the popup. */
 export default class PopupPlaybackControls {
-  constructor(popupContent, playbackController) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, playbackController) {
+    this.popupSurface = popupSurface;
     this.actor = null;
     this.primaryControlsBox = null;
     this.secondaryControlsBox = null;
@@ -49,11 +49,11 @@ export default class PopupPlaybackControls {
   }
 
   get settings() {
-    return this.popupContent.settings;
+    return this.popupSurface.settings;
   }
 
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
 
   render(dirtyRegions) {
@@ -215,7 +215,7 @@ export default class PopupPlaybackControls {
 
   attach() {
     if (!this.actor.get_parent())
-      this.popupContent.popupItem.add_child(this.actor);
+      this.popupSurface.popupItem.add_child(this.actor);
   }
 
   remove() {
@@ -233,6 +233,6 @@ export default class PopupPlaybackControls {
   destroy() {
     this.remove();
     this.playbackController = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

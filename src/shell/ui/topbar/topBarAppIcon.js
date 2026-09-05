@@ -4,7 +4,7 @@
  *
  * Displays the desktop-app icon resolved for the active MPRIS player.
  *
- * TopBarContent owns this component and injects the lifecycle-scoped desktop-app
+ * TopBarSurface owns this component and injects the lifecycle-scoped desktop-app
  * resolver. The component keeps icon actor creation and updates separate from
  * track text, visualizer, and playback control layout.
  */
@@ -22,8 +22,8 @@ import { createIcon, setGIcon } from "../icons.js";
  * Displays the desktop-app icon resolved for the active MPRIS player.
  */
 export default class TopBarAppIcon {
-  constructor(topBarContent, desktopAppResolver) {
-    this.topBarContent = topBarContent;
+  constructor(topBarSurface, desktopAppResolver) {
+    this.topBarSurface = topBarSurface;
     this.actor = null;
     this.iconKey = null;
     this.usesColoredIcon = null;
@@ -31,11 +31,11 @@ export default class TopBarAppIcon {
   }
 
   get settings() {
-    return this.topBarContent.settings;
+    return this.topBarSurface.settings;
   }
 
   get player() {
-    return this.topBarContent.player;
+    return this.topBarSurface.player;
   }
 
   render(index, parentBox) {
@@ -121,6 +121,6 @@ export default class TopBarAppIcon {
   destroy() {
     this.remove();
     this.desktopAppResolver = null;
-    this.topBarContent = null;
+    this.topBarSurface = null;
   }
 }

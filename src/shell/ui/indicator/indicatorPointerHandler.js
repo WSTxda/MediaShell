@@ -36,15 +36,15 @@ export default class IndicatorPointerHandler {
   }
 
   install() {
-    this.indicator.topBarContent.ensureLayout();
+    this.indicator.topBarSurface.ensureLayout();
 
     this.restoreDefaultPanelActivation = suspendPanelMenuPrimaryActivation(
       this.indicator,
     );
 
     for (const actor of [
-      this.indicator.topBarContent.topBarActionBoxBefore,
-      this.indicator.topBarContent.topBarActionBoxAfter,
+      this.indicator.topBarSurface.topBarActionBoxBefore,
+      this.indicator.topBarSurface.topBarActionBoxAfter,
     ])
       this.#installForActor(actor);
   }

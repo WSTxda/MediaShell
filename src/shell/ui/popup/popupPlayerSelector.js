@@ -4,7 +4,7 @@
  *
  * Owns the popup player selector button/list composition and interaction.
  *
- * PopupContent delegates selector state to this component so its list can be
+ * PopupSurface delegates selector state to this component so its list can be
  * reconciled independently from artwork, progress, and playback controls.
  */
 
@@ -15,15 +15,15 @@ import PopupPlayerSelectorList from "./popupPlayerSelectorList.js";
  * Owns the popup player selector button/list composition and interaction.
  */
 export default class PopupPlayerSelector {
-  constructor(popupContent, desktopAppResolver) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, desktopAppResolver) {
+    this.popupSurface = popupSurface;
     this.playerSelectorButton = new PopupPlayerSelectorButton(
-      popupContent,
+      popupSurface,
       desktopAppResolver,
       () => this.playerSelectorList.toggle(),
     );
     this.playerSelectorList = new PopupPlayerSelectorList(
-      popupContent,
+      popupSurface,
       this.playerSelectorButton,
       desktopAppResolver,
     );
@@ -36,7 +36,7 @@ export default class PopupPlayerSelector {
   render() {
     this.playerSelectorButton.render();
     const availablePlayerCount = (
-      this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []
+      this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? []
     ).length;
     if (availablePlayerCount <= 1) this.playerSelectorList.close();
     else if (this.playerSelectorList.isOpen)
@@ -60,6 +60,6 @@ export default class PopupPlayerSelector {
     this.playerSelectorButton.destroy();
     this.playerSelectorList = null;
     this.playerSelectorButton = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

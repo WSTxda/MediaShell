@@ -4,7 +4,7 @@
  *
  * Owns the optional top-bar visualizer lifecycle and animation clock.
  *
- * TopBarContent owns one instance. Renderer-specific actor construction,
+ * TopBarSurface owns one instance. Renderer-specific actor construction,
  * drawing, and update policy live under ui/components/visualizer/renderers;
  * this class coordinates style selection, playback state, timeline scheduling,
  * reduced-motion policy, theme color, attachment, and teardown.
@@ -73,10 +73,10 @@ const BEATS_STYLE_DEFINITION =
 const CLASSIC_STYLE_DEFINITION =
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.CLASSIC];
 
-/** Owns and animates the visualizer surface rendered by TopBarContent. */
+/** Owns and animates the visualizer surface rendered by TopBarSurface. */
 export default class TopBarVisualizer {
-  constructor(topBarContent) {
-    this.topBarContent = topBarContent;
+  constructor(topBarSurface) {
+    this.topBarSurface = topBarSurface;
     this.actor = null;
     this.continuousBars = [];
     this.classicColumns = [];
@@ -106,11 +106,11 @@ export default class TopBarVisualizer {
   }
 
   get settings() {
-    return this.topBarContent.settings;
+    return this.topBarSurface.settings;
   }
 
   get player() {
-    return this.topBarContent.player;
+    return this.topBarSurface.player;
   }
 
   render(index, parentBox) {
@@ -452,6 +452,6 @@ export default class TopBarVisualizer {
     this.animationLevels = null;
     this.spectrumOffsets = null;
     this.backgroundSpectrumOffsets = null;
-    this.topBarContent = null;
+    this.topBarSurface = null;
   }
 }

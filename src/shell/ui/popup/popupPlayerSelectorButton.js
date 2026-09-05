@@ -26,8 +26,8 @@ import { installPrimaryClickAction } from "../input/pointerActions.js";
  * Renders the popup player selector button for the active player.
  */
 export default class PopupPlayerSelectorButton {
-  constructor(popupContent, desktopAppResolver, onActivate) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, desktopAppResolver, onActivate) {
+    this.popupSurface = popupSurface;
     this.onActivate = onActivate;
     this.container = null;
     this.button = null;
@@ -41,13 +41,13 @@ export default class PopupPlayerSelectorButton {
   }
 
   get settings() {
-    return this.popupContent.settings;
+    return this.popupSurface.settings;
   }
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
   get actor() {
     return this.container;
@@ -60,7 +60,7 @@ export default class PopupPlayerSelectorButton {
     this.ensureActors();
 
     const hasMultiplePlayers =
-      (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length > 1;
+      (this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? []).length > 1;
     if (hasMultiplePlayers !== this.hasMultiplePlayers) {
       this.hasMultiplePlayers = hasMultiplePlayers;
       this.button.reactive = hasMultiplePlayers;
@@ -163,7 +163,7 @@ export default class PopupPlayerSelectorButton {
       this.button,
       () => this.onActivate?.(),
       () =>
-        (this.popupContent.mediaRuntime?.getAvailablePlayers() ?? []).length >
+        (this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? []).length >
         1,
     );
   }
@@ -181,6 +181,6 @@ export default class PopupPlayerSelectorButton {
     this.renderKey = null;
     this.desktopAppResolver = null;
     this.onActivate = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

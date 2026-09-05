@@ -1,10 +1,10 @@
 /**
- * @file topBarContent.js
- * @module shell.ui.topbar.topBarContent
+ * @file topBarSurface.js
+ * @module shell.ui.topbar.topBarSurface
  *
  * Owns and incrementally reconciles the MediaShell top-bar surface.
  *
- * TopBarContent owns its actor tree, surface-local dirty regions, and the idle
+ * TopBarSurface owns its actor tree, surface-local dirty regions, and the idle
  * source used to coalesce MPRIS/settings bursts. Popup state is intentionally
  * absent from this module.
  */
@@ -25,10 +25,10 @@ import TopBarTrackInformation from "./topBarTrackInformation.js";
 import TopBarVisualizer from "./topBarVisualizer.js";
 import { TopBarRegions } from "./regions.js";
 
-const logger = createLogger("TopBarContent");
+const logger = createLogger("TopBarSurface");
 
 /** Owns and reconciles every component rendered in the top bar. */
-export default class TopBarContent {
+export default class TopBarSurface {
   constructor(
     indicator,
     { artworkService, desktopAppResolver, playbackController, topBarSettings },
@@ -150,7 +150,7 @@ export default class TopBarContent {
         (topBarRegions & TopBarRegions.APP_ICON ||
           topBarRegions & TopBarRegions.ELEMENT_ORDER)
       ) {
-        this.runComponentUpdate("top bar player icon", () => {
+        this.runComponentUpdate("top bar app icon", () => {
           if (isVisible) this.appIcon.render(targetIndex, targetBox);
           else this.appIcon.remove();
         });
