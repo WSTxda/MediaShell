@@ -360,10 +360,7 @@ export default class ExtensionController {
   }
 
   openPreferences() {
-    if (
-      this.sessionProfile !== SessionProfiles.USER ||
-      !this.extensionInstance
-    )
+    if (this.sessionProfile !== SessionProfiles.USER || !this.extensionInstance)
       return;
     this.extensionInstance.openPreferences();
   }

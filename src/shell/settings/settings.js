@@ -193,7 +193,10 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
     SettingsKeys.TOP_BAR_VISUALIZER_SHOW,
     "get_boolean",
   ),
-  visualizerStyle: defineSetting(SettingsKeys.TOP_BAR_VISUALIZER_STYLE, "get_enum"),
+  visualizerStyle: defineSetting(
+    SettingsKeys.TOP_BAR_VISUALIZER_STYLE,
+    "get_enum",
+  ),
   visualizerSpeed: defineSetting(
     SettingsKeys.TOP_BAR_VISUALIZER_SPEED,
     "get_uint",
@@ -418,7 +421,10 @@ export default class MediaShellSettings {
       this.popup = new SettingsScope(gsettings, POPUP_DEFINITIONS);
       this.topBar = new SettingsScope(gsettings, TOP_BAR_DEFINITIONS);
       this.panel = new SettingsScope(gsettings, PANEL_DEFINITIONS);
-      this.interactions = new SettingsScope(gsettings, INTERACTIONS_DEFINITIONS);
+      this.interactions = new SettingsScope(
+        gsettings,
+        INTERACTIONS_DEFINITIONS,
+      );
       this.nativeControls = new SettingsScope(
         gsettings,
         NATIVE_CONTROLS_DEFINITIONS,

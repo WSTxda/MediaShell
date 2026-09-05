@@ -137,7 +137,9 @@ export default class NotificationBannerGrouping {
     const banner = this.operations.createNotificationBanner(player);
     if (!this.group.addBanner(banner)) {
       banner.destroy();
-      throw new Error("Could not add an owned notification banner to the group");
+      throw new Error(
+        "Could not add an owned notification banner to the group",
+      );
     }
 
     this.playerBanners.set(player, banner);

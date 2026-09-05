@@ -57,11 +57,7 @@ export function normalizeSetPositionMicroseconds(
   value,
   durationMicroseconds = null,
 ) {
-  if (
-    !Number.isFinite(value) ||
-    value < 0 ||
-    value > Number.MAX_SAFE_INTEGER
-  )
+  if (!Number.isFinite(value) || value < 0 || value > Number.MAX_SAFE_INTEGER)
     return null;
 
   const positionMicroseconds = Math.trunc(value);
@@ -69,10 +65,7 @@ export function normalizeSetPositionMicroseconds(
   if (duration === null) return positionMicroseconds;
   if (positionMicroseconds > duration) return null;
 
-  return Math.min(
-    positionMicroseconds,
-    Math.max(0, Math.ceil(duration) - 1),
-  );
+  return Math.min(positionMicroseconds, Math.max(0, Math.ceil(duration) - 1));
 }
 
 /**

@@ -337,8 +337,7 @@ class EnhanceNotificationBannerGroup extends St.Widget {
 
     const [, second, ...lower] = this._banners;
     second?.add_style_pseudo_class("second-in-stack");
-    for (const banner of lower)
-      banner.add_style_pseudo_class("lower-in-stack");
+    for (const banner of lower) banner.add_style_pseudo_class("lower-in-stack");
   }
 
   vfunc_paint(paintContext) {

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 03:50-0300\n"
+"POT-Creation-Date: 2026-09-04 23:07-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -32,79 +32,79 @@ msgstr "Sviluppato da"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:998
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:991
 msgid "Shuffle"
 msgstr "Casuale"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:999
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:992
 msgid "Seek backward"
 msgstr "Riavvolgi"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:1000
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:993
 msgid "Previous track"
 msgstr "Brano precedente"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:1001
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:994
 msgid "Play / pause"
 msgstr "Riproduci / Pausa"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:1002
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:995
 msgid "Next track"
 msgstr "Brano successivo"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:1003
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:996
 msgid "Seek forward"
 msgstr "Avanza"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:1004
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:997
 msgid "Repeat"
 msgstr "Ripetizione"
 
 #: src/prefs/controllers/interactionsPageController.js:73
-#: src/shell/ui/popup/popupVolumeControl.js:142 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:1005
+#: src/shell/ui/popup/popupVolumeControl.js:143 assets/ui/prefs.ui:710
+#: assets/ui/prefs.ui:998
 msgid "Volume up"
 msgstr "Aumenta volume"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:1006
+#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:999
 msgid "Volume down"
 msgstr "Diminuisci volume"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1007
+#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1000
 msgid "Popup"
 msgstr "Popup"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1008
+#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1001
 msgid "Preferences"
 msgstr "Preferenze"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1009
+#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1002
 msgid "Open app"
 msgstr "Apri app"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1010
+#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1003
 msgid "Quit app"
 msgstr "Chiudi applicazione"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1011
+#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1004
 msgid "Switch app"
 msgstr "Cambia applicazione"
 
@@ -127,14 +127,14 @@ msgstr "Interfaccia"
 
 #: src/prefs/controllers/interactionsPageController.js:136
 #: src/prefs/controllers/interactionsPageController.js:416
-#: src/prefs/controllers/othersPageController.js:106
+#: src/prefs/controllers/othersPageController.js:108
 msgid "Reset"
 msgstr "Ripristina"
 
 #: src/prefs/controllers/interactionsPageController.js:185
 #: src/prefs/controllers/interactionsPageController.js:415
-#: src/prefs/controllers/othersPageController.js:135
-#: src/prefs/widgets/blockedAppChooserDialog.js:70
+#: src/prefs/controllers/othersPageController.js:137
+#: src/prefs/widgets/blockedAppChooserDialog.js:67
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -178,43 +178,43 @@ msgstr "Tutte le scorciatoie da tastiera verranno disattivate."
 msgid "Keyboard shortcuts reset"
 msgstr "Scorciatoie da tastiera ripristinate"
 
-#: src/prefs/controllers/othersPageController.js:90
+#: src/prefs/controllers/othersPageController.js:92
 msgid "Reset all settings"
 msgstr "Ripristina tutte le impostazioni"
 
-#: src/prefs/controllers/othersPageController.js:104
+#: src/prefs/controllers/othersPageController.js:106
 msgid "Reset all settings?"
 msgstr "Ripristinare tutte le impostazioni?"
 
-#: src/prefs/controllers/othersPageController.js:105
+#: src/prefs/controllers/othersPageController.js:107
 msgid "Every MediaShell preference will return to its default value."
 msgstr "Tutte le preferenze di MediaShell torneranno ai valori predefiniti."
 
-#: src/prefs/controllers/othersPageController.js:116
+#: src/prefs/controllers/othersPageController.js:118
 msgid "Settings reset"
 msgstr "Impostazioni ripristinate"
 
-#: src/prefs/controllers/othersPageController.js:124
+#: src/prefs/controllers/othersPageController.js:126
 msgid "Clear the cache?"
 msgstr "Svuotare la cache?"
 
-#: src/prefs/controllers/othersPageController.js:125
+#: src/prefs/controllers/othersPageController.js:127
 msgid "Cached content will be downloaded again when needed."
 msgstr "Il contenuto nella cache verrà scaricato di nuovo quando necessario."
 
-#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:959
+#: src/prefs/controllers/othersPageController.js:128 assets/ui/prefs.ui:959
 msgid "Clear cache"
 msgstr "Svuota cache"
 
-#: src/prefs/controllers/othersPageController.js:178
+#: src/prefs/controllers/othersPageController.js:180
 msgid "Cache cleared"
 msgstr "Cache svuotata"
 
-#: src/prefs/controllers/othersPageController.js:188
+#: src/prefs/controllers/othersPageController.js:190
 msgid "Could not clear the cache"
 msgstr "Impossibile svuotare la cache"
 
-#: src/prefs/controllers/othersPageController.js:198
+#: src/prefs/controllers/othersPageController.js:200
 #, javascript-format
 msgid "%d cached image — %s"
 msgid_plural "%d cached images — %s"
@@ -225,74 +225,74 @@ msgstr[1] "%d immagini nella cache — %s"
 msgid "by"
 msgstr "di"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:47
+#: src/prefs/widgets/blockedAppChooserDialog.js:44
 msgid "Select an app to block"
 msgstr "Seleziona un'applicazione da bloccare"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:73
-#: src/prefs/widgets/blockedAppChooserDialog.js:89
+#: src/prefs/widgets/blockedAppChooserDialog.js:70
+#: src/prefs/widgets/blockedAppChooserDialog.js:86
 msgid "Search apps"
 msgstr "Cerca applicazioni"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:76
+#: src/prefs/widgets/blockedAppChooserDialog.js:73
 msgid "Select"
 msgstr "Seleziona"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:109
+#: src/prefs/widgets/blockedAppChooserDialog.js:106
 msgid "No apps found"
 msgstr "Nessuna applicazione trovata"
 
-#: src/prefs/widgets/blockedAppsGroup.js:107
+#: src/prefs/widgets/blockedAppsGroup.js:106
 msgid "No apps are blocked"
 msgstr "Nessuna applicazione è bloccata"
 
-#: src/prefs/widgets/blockedAppsGroup.js:137
-#: src/prefs/widgets/trackInformationContentRow.js:124
+#: src/prefs/widgets/blockedAppsGroup.js:136
+#: src/prefs/widgets/trackInformationContentRow.js:123
 msgid "Remove"
 msgstr "Rimuovi"
 
-#: src/prefs/widgets/trackInformationContentRow.js:26
+#: src/prefs/widgets/trackInformationContentRow.js:25
 msgid "Title"
 msgstr "Titolo"
 
-#: src/prefs/widgets/trackInformationContentRow.js:27
+#: src/prefs/widgets/trackInformationContentRow.js:26
 msgid "Artist"
 msgstr "Artista"
 
-#: src/prefs/widgets/trackInformationContentRow.js:28
+#: src/prefs/widgets/trackInformationContentRow.js:27
 msgid "Album"
 msgstr "Album"
 
-#: src/prefs/widgets/trackInformationContentRow.js:29
+#: src/prefs/widgets/trackInformationContentRow.js:28
 msgid "Album artist"
 msgstr "Artista album"
 
-#: src/prefs/widgets/trackInformationContentRow.js:30
+#: src/prefs/widgets/trackInformationContentRow.js:29
 msgid "Genre"
 msgstr "Genere"
 
-#: src/prefs/widgets/trackInformationContentRow.js:31
+#: src/prefs/widgets/trackInformationContentRow.js:30
 msgid "Composer"
 msgstr "Compositore"
 
-#: src/prefs/widgets/trackInformationContentRow.js:32
+#: src/prefs/widgets/trackInformationContentRow.js:31
 msgid "Year"
 msgstr "Anno"
 
-#: src/prefs/widgets/trackInformationContentRow.js:33
+#: src/prefs/widgets/trackInformationContentRow.js:32
 msgid "Disc"
 msgstr "Disco"
 
-#: src/prefs/widgets/trackInformationContentRow.js:34
+#: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
 msgid "Track"
 msgstr "Brano"
 
-#: src/prefs/widgets/trackInformationContentRow.js:84
+#: src/prefs/widgets/trackInformationContentRow.js:83
 msgid "No track information fields added"
 msgstr "Nessun campo delle informazioni del brano aggiunto"
 
-#: src/prefs/widgets/trackInformationContentRow.js:104
+#: src/prefs/widgets/trackInformationContentRow.js:103
 msgid "Custom text"
 msgstr "Testo personalizzato"
 
@@ -312,7 +312,7 @@ msgstr "Interrompi"
 msgid "Playlist"
 msgstr "Playlist"
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:997
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:990
 msgid "None"
 msgstr "Nessuna"
 
@@ -320,25 +320,25 @@ msgstr "Nessuna"
 msgid "Playback speed"
 msgstr "Velocità di riproduzione"
 
-#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
-#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
+#: src/shell/private/gnome/nativecontrols/notificationBannerGroup.js:195
+#: src/shell/private/gnome/nativecontrols/notificationBannerGroup.js:208
 msgid "Media"
 msgstr "Multimedia"
 
-#: src/shell/ui/popup/popupPlayerSelectorButton.js:89
-#: src/shell/ui/popup/popupPlayerSelectorList.js:232
+#: src/shell/ui/popup/popupPlayerSelectorButton.js:90
+#: src/shell/ui/popup/popupPlayerSelectorList.js:237
 msgid "Unknown app"
 msgstr "Applicazione sconosciuta"
 
-#: src/shell/ui/popup/popupVolumeControl.js:107 assets/ui/prefs.ui:119
+#: src/shell/ui/popup/popupVolumeControl.js:108 assets/ui/prefs.ui:119
 msgid "Volume"
 msgstr "Volume"
 
-#: src/shell/ui/popup/popupVolumeControl.js:171
+#: src/shell/ui/popup/popupVolumeControl.js:172
 msgid "Unmute"
 msgstr "Riattiva audio"
 
-#: src/shell/ui/popup/popupVolumeControl.js:171
+#: src/shell/ui/popup/popupVolumeControl.js:172
 msgid "Mute"
 msgstr "Disattiva audio"
 
@@ -676,8 +676,12 @@ msgid "Private API integration"
 msgstr "Integrazione tramite API privata"
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
-msgstr "Queste opzioni usano API private per funzionare. La stabilità può variare in base alla versione di GNOME o alle personalizzazioni della distribuzione."
+msgid ""
+"These options use private APIs to function. Stability may vary depending on "
+"the GNOME version or distribution customizations."
+msgstr ""
+"Queste opzioni usano API private per funzionare. La stabilità può variare in "
+"base alla versione di GNOME o alle personalizzazioni della distribuzione."
 
 #: assets/ui/prefs.ui:934
 msgid "Hide native control"
@@ -692,8 +696,12 @@ msgid "Enhanced native control"
 msgstr "Controllo nativo migliorato"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
-msgstr "Applica uno stile moderno e migliorato ai banner dei controlli multimediali nel centro notifiche e nella schermata di blocco"
+msgid ""
+"Apply a modern and enhanced style to media control banners in the "
+"notification center and on the lock screen"
+msgstr ""
+"Applica uno stile moderno e migliorato ai banner dei controlli multimediali "
+"nel centro notifiche e nella schermata di blocco"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

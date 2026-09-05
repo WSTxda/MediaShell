@@ -345,9 +345,7 @@ export default class EnhanceNotificationBannerBinding {
     this.bannerSignalIds.push(
       [
         this.banner,
-        this.banner.connect("notify::mapped", () =>
-          this.handleMappedChanged(),
-        ),
+        this.banner.connect("notify::mapped", () => this.handleMappedChanged()),
       ],
       [
         this.banner,
@@ -924,8 +922,7 @@ export default class EnhanceNotificationBannerBinding {
         this.context.setExpanded(this.nativeExpanded);
 
       this.context.nativeIcon.visible = this.nativeIconWasVisible;
-      this.context.nativeControls.visible =
-        this.nativeControlsWereVisible;
+      this.context.nativeControls.visible = this.nativeControlsWereVisible;
       if (Number.isFinite(this.nativeExpandButtonOpacity))
         this.context.setExpandButtonOpacity(this.nativeExpandButtonOpacity);
       this.context.refreshExpandButton();
