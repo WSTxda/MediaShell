@@ -25,7 +25,7 @@ function createTranslatedFields() {
     [TrackInformationFields.TITLE]: _("Title"),
     [TrackInformationFields.ARTIST]: _("Artist"),
     [TrackInformationFields.ALBUM]: _("Album"),
-    [TrackInformationFields.ALBUM_ARTIST]: _("Album artist"),
+    [TrackInformationFields.ALBUM_ARTIST]: _("Album Artist"),
     [TrackInformationFields.GENRE]: _("Genre"),
     [TrackInformationFields.COMPOSER]: _("Composer"),
     [TrackInformationFields.CONTENT_CREATED]: _("Year"),

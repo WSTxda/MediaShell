@@ -178,7 +178,7 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
         );
         assert.equal(
           resolvePlaybackControlAccessibleName(paused, seek),
-          "Seek backward: 10 s",
+          "Seek Backward: 10 s",
         );
         const repeatPlayer = player({ loopStatus: LoopStatus.TRACK });
         assert.equal(
@@ -196,7 +196,7 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
             paused,
             resolvePlaybackControlState(paused, PlaybackControlIds.SPEED),
           ),
-          "Playback speed: 1×",
+          "Playback Speed: 1×",
         );
       },
     ],

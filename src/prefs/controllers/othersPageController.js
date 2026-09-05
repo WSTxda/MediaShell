@@ -89,7 +89,7 @@ export default class OthersPageController {
     // Adw.ButtonRow requires Libadwaita 1.6 or later; MediaShell's 1.7 floor
     // (enforced by assertSupportedLibadwaita() in prefs.js) already covers it.
     this.resetSettingsRow = new Adw.ButtonRow({
-      title: _("Reset all settings"),
+      title: _("Reset All Settings"),
       start_icon_name: "edit-undo-symbolic",
     });
     this.resetSettingsRow.add_css_class(
@@ -104,7 +104,7 @@ export default class OthersPageController {
   presentResetSettingsConfirmation() {
     this.presentDestructiveConfirmation(
       _("Reset all settings?"),
-      _("Every MediaShell preference will return to its default value."),
+      _("Every MediaShell preference will return to its default value"),
       _("Reset"),
       () => this.resetAllSettings(),
     );
@@ -124,8 +124,8 @@ export default class OthersPageController {
   presentClearArtworkCacheConfirmation() {
     this.presentDestructiveConfirmation(
       _("Clear the cache?"),
-      _("Cached content will be downloaded again when needed."),
-      _("Clear cache"),
+      _("Cached content will be downloaded again when needed"),
+      _("Clear Cache"),
       () => this.clearArtworkCache(),
     );
   }

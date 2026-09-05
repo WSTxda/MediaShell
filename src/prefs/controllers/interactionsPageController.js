@@ -50,39 +50,39 @@ function createActionCopy() {
       section: "playback",
     }),
     "seek-backward": Object.freeze({
-      title: _("Seek backward"),
+      title: _("Seek Backward"),
       section: "playback",
     }),
     "previous-track": Object.freeze({
-      title: _("Previous track"),
+      title: _("Previous Track"),
       section: "playback",
     }),
     "play-pause": Object.freeze({
-      title: _("Play / pause"),
+      title: _("Play / Pause"),
       section: "playback",
     }),
     "next-track": Object.freeze({
-      title: _("Next track"),
+      title: _("Next Track"),
       section: "playback",
     }),
     "seek-forward": Object.freeze({
-      title: _("Seek forward"),
+      title: _("Seek Forward"),
       section: "playback",
     }),
     "toggle-loop": Object.freeze({ title: _("Repeat"), section: "playback" }),
-    "volume-up": Object.freeze({ title: _("Volume up"), section: "audio" }),
-    "volume-down": Object.freeze({ title: _("Volume down"), section: "audio" }),
+    "volume-up": Object.freeze({ title: _("Volume Up"), section: "audio" }),
+    "volume-down": Object.freeze({ title: _("Volume Down"), section: "audio" }),
     "toggle-popup": Object.freeze({ title: _("Popup"), section: "interface" }),
     "open-preferences": Object.freeze({
       title: _("Preferences"),
       section: "interface",
     }),
     "raise-app": Object.freeze({
-      title: _("Open app"),
+      title: _("Open App"),
       section: "apps",
     }),
-    "quit-app": Object.freeze({ title: _("Quit app"), section: "apps" }),
-    "switch-app": Object.freeze({ title: _("Switch app"), section: "apps" }),
+    "quit-app": Object.freeze({ title: _("Quit App"), section: "apps" }),
+    "switch-app": Object.freeze({ title: _("Switch App"), section: "apps" }),
   });
 }
 
@@ -357,7 +357,7 @@ export default class InteractionsPageController {
     this.overviewShortcutLabels.clear();
 
     const dialog = new Adw.Dialog({
-      title: _("Keyboard shortcuts"),
+      title: _("Keyboard Shortcuts"),
       content_width: LARGE_DIALOG_WIDTH,
       content_height: LARGE_DIALOG_HEIGHT,
     });
@@ -409,7 +409,7 @@ export default class InteractionsPageController {
 
     const dialog = new Adw.AlertDialog({
       heading: _("Reset keyboard shortcuts?"),
-      body: _("Every keyboard shortcut will be disabled."),
+      body: _("Every keyboard shortcut will be disabled"),
     });
     this.resetConfirmationDialog = dialog;
     dialog.add_response("cancel", _("Cancel"));

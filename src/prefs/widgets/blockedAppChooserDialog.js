@@ -41,7 +41,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
   _init(params = {}) {
     const { blockedAppIds = [], ...dialogParams } = params;
     super._init({
-      title: _("Select an app to block"),
+      title: _("Select an App to Block"),
       content_width: LARGE_DIALOG_WIDTH,
       content_height: LARGE_DIALOG_HEIGHT,
       ...dialogParams,
@@ -67,7 +67,7 @@ class BlockedAppChooserDialog extends Adw.Dialog {
     this.cancelButton = new Gtk.Button({ label: _("Cancel") });
     this.searchButton = new Gtk.ToggleButton({
       icon_name: "system-search-symbolic",
-      tooltip_text: _("Search apps"),
+      tooltip_text: _("Search Apps"),
     });
     this.selectButton = new Gtk.Button({
       label: _("Select"),

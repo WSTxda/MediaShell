@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 23:07-0300\n"
+"POT-Creation-Date: 2026-09-05 04:43-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -27,7 +27,7 @@ msgid "Donate"
 msgstr "Doar"
 
 #: src/prefs/controllers/aboutDialogController.js:107
-msgid "Developed by"
+msgid "Developed By"
 msgstr "Desenvolvido por"
 
 #: src/prefs/controllers/interactionsPageController.js:49
@@ -39,31 +39,31 @@ msgstr "Aleatório"
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
 #: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:992
-msgid "Seek backward"
+msgid "Seek Backward"
 msgstr "Retroceder"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
 #: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:993
-msgid "Previous track"
+msgid "Previous Track"
 msgstr "Faixa anterior"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
 #: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:994
-msgid "Play / pause"
+msgid "Play / Pause"
 msgstr "Reproduzir / pausar"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
 #: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:995
-msgid "Next track"
+msgid "Next Track"
 msgstr "Próxima faixa"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
 #: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:996
-msgid "Seek forward"
+msgid "Seek Forward"
 msgstr "Avançar"
 
 #: src/prefs/controllers/interactionsPageController.js:72
@@ -75,12 +75,12 @@ msgstr "Repetição"
 #: src/prefs/controllers/interactionsPageController.js:73
 #: src/shell/ui/popup/popupVolumeControl.js:143 assets/ui/prefs.ui:710
 #: assets/ui/prefs.ui:998
-msgid "Volume up"
+msgid "Volume Up"
 msgstr "Aumentar volume"
 
 #: src/prefs/controllers/interactionsPageController.js:74
 #: assets/ui/prefs.ui:727 assets/ui/prefs.ui:999
-msgid "Volume down"
+msgid "Volume Down"
 msgstr "Diminuir volume"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
@@ -95,17 +95,17 @@ msgstr "Preferências"
 
 #: src/prefs/controllers/interactionsPageController.js:81
 #: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1002
-msgid "Open app"
+msgid "Open App"
 msgstr "Abrir aplicativo"
 
 #: src/prefs/controllers/interactionsPageController.js:84
 #: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1003
-msgid "Quit app"
+msgid "Quit App"
 msgstr "Encerrar aplicativo"
 
 #: src/prefs/controllers/interactionsPageController.js:85
 #: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1004
-msgid "Switch app"
+msgid "Switch App"
 msgstr "Alternar aplicativo"
 
 #: src/prefs/controllers/interactionsPageController.js:91
@@ -163,7 +163,7 @@ msgstr "Atalho já usado por %s"
 
 #: src/prefs/controllers/interactionsPageController.js:360
 #: assets/ui/prefs.ui:582
-msgid "Keyboard shortcuts"
+msgid "Keyboard Shortcuts"
 msgstr "Atalhos de teclado"
 
 #: src/prefs/controllers/interactionsPageController.js:411
@@ -171,15 +171,15 @@ msgid "Reset keyboard shortcuts?"
 msgstr "Redefinir atalhos de teclado?"
 
 #: src/prefs/controllers/interactionsPageController.js:412
-msgid "Every keyboard shortcut will be disabled."
-msgstr "Todos os atalhos de teclado serão desativados."
+msgid "Every keyboard shortcut will be disabled"
+msgstr "Todos os atalhos de teclado serão desativados"
 
 #: src/prefs/controllers/interactionsPageController.js:435
 msgid "Keyboard shortcuts reset"
 msgstr "Atalhos de teclado redefinidos"
 
 #: src/prefs/controllers/othersPageController.js:92
-msgid "Reset all settings"
+msgid "Reset All Settings"
 msgstr "Redefinir todas as configurações"
 
 #: src/prefs/controllers/othersPageController.js:106
@@ -187,8 +187,8 @@ msgid "Reset all settings?"
 msgstr "Redefinir todas as configurações?"
 
 #: src/prefs/controllers/othersPageController.js:107
-msgid "Every MediaShell preference will return to its default value."
-msgstr "Todas as preferências do MediaShell voltarão aos valores padrão."
+msgid "Every MediaShell preference will return to its default value"
+msgstr "Todas as preferências do MediaShell voltarão aos valores padrão"
 
 #: src/prefs/controllers/othersPageController.js:118
 msgid "Settings reset"
@@ -199,11 +199,11 @@ msgid "Clear the cache?"
 msgstr "Limpar o cache?"
 
 #: src/prefs/controllers/othersPageController.js:127
-msgid "Cached content will be downloaded again when needed."
-msgstr "O conteúdo em cache será baixado novamente quando necessário."
+msgid "Cached content will be downloaded again when needed"
+msgstr "O conteúdo em cache será baixado novamente quando necessário"
 
 #: src/prefs/controllers/othersPageController.js:128 assets/ui/prefs.ui:959
-msgid "Clear cache"
+msgid "Clear Cache"
 msgstr "Limpar cache"
 
 #: src/prefs/controllers/othersPageController.js:180
@@ -226,17 +226,20 @@ msgid "by"
 msgstr "por"
 
 #: src/prefs/widgets/blockedAppChooserDialog.js:44
-msgid "Select an app to block"
+msgid "Select an App to Block"
 msgstr "Selecionar um aplicativo para bloquear"
 
 #: src/prefs/widgets/blockedAppChooserDialog.js:70
-#: src/prefs/widgets/blockedAppChooserDialog.js:86
-msgid "Search apps"
+msgid "Search Apps"
 msgstr "Pesquisar aplicativos"
 
 #: src/prefs/widgets/blockedAppChooserDialog.js:73
 msgid "Select"
 msgstr "Selecionar"
+
+#: src/prefs/widgets/blockedAppChooserDialog.js:86
+msgid "Search apps"
+msgstr "Pesquisar aplicativos"
 
 #: src/prefs/widgets/blockedAppChooserDialog.js:106
 msgid "No apps found"
@@ -264,7 +267,7 @@ msgid "Album"
 msgstr "Álbum"
 
 #: src/prefs/widgets/trackInformationContentRow.js:28
-msgid "Album artist"
+msgid "Album Artist"
 msgstr "Artista do álbum"
 
 #: src/prefs/widgets/trackInformationContentRow.js:29
@@ -317,7 +320,7 @@ msgid "None"
 msgstr "Nenhum"
 
 #: src/shell/media/playback/accessibility.js:65 assets/ui/prefs.ui:101
-msgid "Playback speed"
+msgid "Playback Speed"
 msgstr "Velocidade de reprodução"
 
 #: src/shell/private/gnome/nativecontrols/notificationBannerGroup.js:195
@@ -343,7 +346,7 @@ msgid "Mute"
 msgstr "Silenciar"
 
 #: assets/ui/blocked-apps.ui:6
-msgid "Blocked apps"
+msgid "Blocked Apps"
 msgstr "Aplicativos bloqueados"
 
 #: assets/ui/blocked-apps.ui:7
@@ -368,7 +371,7 @@ msgstr "Largura total em pixels"
 
 #: assets/ui/prefs.ui:26 assets/ui/prefs.ui:271
 #: assets/ui/top-bar-element-order.ui:60
-msgid "Playback controls"
+msgid "Playback Controls"
 msgstr "Controles de reprodução"
 
 #: assets/ui/prefs.ui:27 assets/ui/prefs.ui:272
@@ -376,7 +379,7 @@ msgid "Show playback controls"
 msgstr "Mostrar controles de reprodução"
 
 #: assets/ui/prefs.ui:113
-msgid "Progress bar"
+msgid "Progress Bar"
 msgstr "Barra de progresso"
 
 #: assets/ui/prefs.ui:114
@@ -393,7 +396,7 @@ msgstr "Metadados"
 
 #: assets/ui/prefs.ui:131 assets/ui/prefs.ui:416
 #: assets/ui/top-bar-element-order.ui:27
-msgid "Album art"
+msgid "Album Art"
 msgstr "Capa do álbum"
 
 #: assets/ui/prefs.ui:132 assets/ui/prefs.ui:417
@@ -410,7 +413,7 @@ msgstr "0 desativa os cantos arredondados"
 
 #: assets/ui/prefs.ui:153 assets/ui/prefs.ui:438
 #: assets/ui/top-bar-element-order.ui:38
-msgid "Track information"
+msgid "Track Information"
 msgstr "Informações da faixa"
 
 #: assets/ui/prefs.ui:154 assets/ui/prefs.ui:439
@@ -418,7 +421,7 @@ msgid "Show track information"
 msgstr "Mostrar informações da faixa"
 
 #: assets/ui/prefs.ui:158 assets/ui/prefs.ui:443
-msgid "Scroll track information"
+msgid "Scroll Track Information"
 msgstr "Rolar informações da faixa"
 
 #: assets/ui/prefs.ui:159 assets/ui/prefs.ui:444
@@ -426,7 +429,7 @@ msgid "Scroll overflowing track information"
 msgstr "Rolar informações da faixa que excederem o espaço"
 
 #: assets/ui/prefs.ui:163 assets/ui/prefs.ui:448
-msgid "Scrolling performance"
+msgid "Scrolling Performance"
 msgstr "Desempenho da rolagem"
 
 #: assets/ui/prefs.ui:170 assets/ui/prefs.ui:455
@@ -451,26 +454,26 @@ msgstr "Pausa da rolagem"
 
 #: assets/ui/prefs.ui:208 assets/ui/prefs.ui:493
 msgid "Seconds before scrolling starts again"
-msgstr "Segundos de espera antes de iniciar ou reiniciar a rolagem"
+msgstr "Segundos antes de a rolagem começar novamente"
 
 #: assets/ui/prefs.ui:223 assets/ui/prefs.ui:508
-msgid "Track information content"
+msgid "Track Information Content"
 msgstr "Conteúdo das informações da faixa"
 
 #: assets/ui/prefs.ui:224 assets/ui/prefs.ui:509
 msgid "Choose and reorder track information"
-msgstr "Escolher e reordenar informações da faixa"
+msgstr "Escolha e reordene as informações da faixa"
 
 #: assets/ui/prefs.ui:235 assets/ui/prefs.ui:526
-msgid "Colored app icon"
+msgid "Colored App Icon"
 msgstr "Ícone colorido do aplicativo"
 
 #: assets/ui/prefs.ui:236 assets/ui/prefs.ui:527
-msgid "Use the media app's full-color icon"
+msgid "Use the media app’s full-color icon"
 msgstr "Usar o ícone colorido do aplicativo de mídia"
 
 #: assets/ui/prefs.ui:243
-msgid "Top bar"
+msgid "Top Bar"
 msgstr "Barra superior"
 
 #: assets/ui/prefs.ui:251
@@ -478,12 +481,12 @@ msgid "Maximum width in pixels; 0 uses available space"
 msgstr "Largura máxima em pixels; 0 usa todo o espaço disponível"
 
 #: assets/ui/prefs.ui:264
-msgid "Lock width"
+msgid "Lock Width"
 msgstr "Fixar largura"
 
 #: assets/ui/prefs.ui:265
 msgid "Keep the configured width for short text"
-msgstr "Manter a largura configurada quando o conteúdo for menor"
+msgstr "Manter a largura configurada para textos curtos"
 
 #: assets/ui/prefs.ui:348 assets/ui/top-bar-element-order.ui:49
 msgid "Visualizer"
@@ -494,7 +497,7 @@ msgid "Show the animated playback indicator"
 msgstr "Mostrar o indicador animado de reprodução"
 
 #: assets/ui/prefs.ui:355
-msgid "Visualizer performance"
+msgid "Visualizer Performance"
 msgstr "Desempenho do visualizador"
 
 #: assets/ui/prefs.ui:362
@@ -540,7 +543,7 @@ msgid "Higher values animate faster"
 msgstr "Valores maiores aceleram a animação"
 
 #: assets/ui/prefs.ui:521 assets/ui/top-bar-element-order.ui:16
-msgid "App icon"
+msgid "App Icon"
 msgstr "Ícone do aplicativo"
 
 #: assets/ui/prefs.ui:522
@@ -552,7 +555,7 @@ msgid "Panel"
 msgstr "Painel"
 
 #: assets/ui/prefs.ui:540
-msgid "Extension placement"
+msgid "Extension Placement"
 msgstr "Posicionamento da extensão"
 
 #: assets/ui/prefs.ui:541
@@ -580,8 +583,8 @@ msgid "Right"
 msgstr "Direita"
 
 #: assets/ui/prefs.ui:559
-msgid "Index"
-msgstr "Índice"
+msgid "Order"
+msgstr "Ordem"
 
 #: assets/ui/prefs.ui:560
 msgid "Order among items in the same top bar section"
@@ -596,7 +599,7 @@ msgid "Assign global keyboard shortcuts to media actions"
 msgstr "Atribua atalhos globais de teclado às ações de mídia"
 
 #: assets/ui/prefs.ui:586
-msgid "Shortcut assignments"
+msgid "Shortcut Assignments"
 msgstr "Atribuições de atalhos"
 
 #: assets/ui/prefs.ui:587
@@ -604,23 +607,23 @@ msgid "Configure each keyboard action"
 msgstr "Configure cada ação do teclado"
 
 #: assets/ui/prefs.ui:830
-msgid "Shortcut overview"
+msgid "Shortcut Overview"
 msgstr "Visão geral dos atalhos"
 
 #: assets/ui/prefs.ui:831
 msgid "View all assigned shortcuts"
-msgstr "Ver todos os atalhos atribuídos"
+msgstr "Veja todos os atalhos atribuídos"
 
 #: assets/ui/prefs.ui:836
 msgid "View"
 msgstr "Ver"
 
 #: assets/ui/prefs.ui:844
-msgid "Reset keyboard shortcuts"
+msgid "Reset Keyboard Shortcuts"
 msgstr "Redefinir atalhos de teclado"
 
 #: assets/ui/prefs.ui:855
-msgid "Mouse actions"
+msgid "Mouse Actions"
 msgstr "Ações do mouse"
 
 #: assets/ui/prefs.ui:856
@@ -664,45 +667,45 @@ msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controle como o MediaShell se integra ao GNOME"
 
 #: assets/ui/prefs.ui:905
-msgid "Native control"
-msgstr "Controle nativo"
+msgid "Media Controls"
+msgstr "Controles de mídia"
 
 #: assets/ui/prefs.ui:906
-msgid "Settings for native media controls in the notification center"
-msgstr ""
-"Configurações dos controles de mídia nativos da central de notificações"
+msgid "Customize system media controls"
+msgstr "Personalize os controles de mídia do sistema"
 
 #: assets/ui/prefs.ui:911
-msgid "Private API integration"
+msgid "Private API Integration"
 msgstr "Integração com API privada"
 
 #: assets/ui/prefs.ui:918
 msgid ""
-"These options use private APIs to function. Stability may vary depending on "
-"the GNOME version or distribution customizations."
+"These options rely on private GNOME Shell APIs. GNOME Shell updates or "
+"distribution customizations may cause them to stop working."
 msgstr ""
-"Estas opções usam APIs privadas para funcionar. A estabilidade pode variar "
-"dependendo da versão do GNOME ou de personalizações da distribuição."
+"Estas opções dependem de APIs privadas do GNOME Shell. Atualizações do GNOME "
+"Shell ou personalizações da distribuição podem fazer com que elas deixem de "
+"funcionar."
 
 #: assets/ui/prefs.ui:934
-msgid "Hide native control"
-msgstr "Ocultar controle nativo"
+msgid "Hide Media Controls"
+msgstr "Ocultar controles de mídia"
 
 #: assets/ui/prefs.ui:935
 msgid "Hide media control banners from the notification center"
 msgstr "Ocultar os banners de controles de mídia da central de notificações"
 
 #: assets/ui/prefs.ui:940
-msgid "Enhanced native control"
-msgstr "Controle nativo aprimorado"
+msgid "Enhance Media Controls"
+msgstr "Aprimorar controles de mídia"
 
 #: assets/ui/prefs.ui:941
 msgid ""
-"Apply a modern and enhanced style to media control banners in the "
-"notification center and on the lock screen"
+"Enhance media control banners in the notification center and on the lock "
+"screen"
 msgstr ""
-"Aplicar um estilo moderno e aprimorado aos banners de controles de mídia na "
-"central de notificações e na tela de bloqueio"
+"Aprimorar os banners de controles de mídia na central de notificações e na "
+"tela de bloqueio"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"
@@ -710,10 +713,10 @@ msgstr "Cache"
 
 #: assets/ui/prefs.ui:951
 msgid "Store content on disk to load it faster"
-msgstr "Armazenar conteúdo em disco para carregá-lo mais rapidamente"
+msgstr "Armazene conteúdo em disco para carregá-lo mais rapidamente"
 
 #: assets/ui/prefs.ui:954
-msgid "Store album art"
+msgid "Store Album Art"
 msgstr "Armazenar capas de álbum"
 
 #: assets/ui/prefs.ui:969
@@ -721,11 +724,11 @@ msgid "Clear"
 msgstr "Limpar"
 
 #: assets/ui/prefs.ui:984
-msgid "Extension settings"
+msgid "Extension Settings"
 msgstr "Configurações da extensão"
 
 #: assets/ui/top-bar-element-order.ui:6
-msgid "Element order"
+msgid "Element Order"
 msgstr "Ordem dos elementos"
 
 #: assets/ui/top-bar-element-order.ui:7
@@ -734,7 +737,7 @@ msgstr ""
 "Arraste para reordenar os elementos dentro do indicador da barra superior"
 
 #: assets/ui/track-information-content-row.ui:10
-msgid "Missing information"
+msgid "Missing Information"
 msgstr "Informações ausentes"
 
 #: assets/ui/track-information-content-row.ui:17
@@ -746,13 +749,13 @@ msgstr ""
 "pelo MPRIS. Campos ausentes são ocultados automaticamente."
 
 #: assets/ui/track-information-content-row.ui:33
-msgid "Add item"
+msgid "Add Item"
 msgstr "Adicionar item"
 
 #: assets/ui/track-information-content-row.ui:42
-msgid "Add field"
+msgid "Add Field"
 msgstr "Adicionar campo"
 
 #: assets/ui/track-information-content-row.ui:48
-msgid "Add text"
+msgid "Add Text"
 msgstr "Adicionar texto"

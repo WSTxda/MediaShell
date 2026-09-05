@@ -140,7 +140,7 @@ export default class PopupVolumeControl {
       xExpand: false,
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.volumeUpButton.set_accessible_name(_("Volume up"));
+    this.volumeUpButton.set_accessible_name(_("Volume Up"));
     this.volumeUpButton.connectObject(
       "clicked",
       () => this.increaseVolume(),

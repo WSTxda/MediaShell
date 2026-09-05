@@ -104,7 +104,7 @@ export default class AboutDialogController {
 
     aboutDialog.add_link("GitHub", PROJECT_URLS.REPOSITORY);
     aboutDialog.add_link(_("Donate"), PROJECT_URLS.DONATIONS);
-    aboutDialog.add_credit_section(_("Developed by"), [
+    aboutDialog.add_credit_section(_("Developed By"), [
       "WSTxda https://github.com/WSTxda",
     ]);
     aboutDialog.add_credit_section("Media Controls", [

@@ -40,18 +40,18 @@ export function resolvePlaybackControlAccessibleName(
     case PlaybackControlIds.SHUFFLE:
       return _("Shuffle");
     case PlaybackControlIds.SEEK_BACKWARD:
-      return withDetail(_("Seek backward"), `${RELATIVE_SEEK_SECONDS} s`);
+      return withDetail(_("Seek Backward"), `${RELATIVE_SEEK_SECONDS} s`);
     case PlaybackControlIds.PREVIOUS:
-      return _("Previous track");
+      return _("Previous Track");
     case PlaybackControlIds.PLAY_PAUSE:
       if (action === PlaybackControlActions.PLAY) return _("Play");
       if (action === PlaybackControlActions.PAUSE) return _("Pause");
       if (action === PlaybackControlActions.STOP) return _("Stop");
-      return _("Play / pause");
+      return _("Play / Pause");
     case PlaybackControlIds.NEXT:
-      return _("Next track");
+      return _("Next Track");
     case PlaybackControlIds.SEEK_FORWARD:
-      return withDetail(_("Seek forward"), `${RELATIVE_SEEK_SECONDS} s`);
+      return withDetail(_("Seek Forward"), `${RELATIVE_SEEK_SECONDS} s`);
     case PlaybackControlIds.REPEAT: {
       const repeatMode =
         player.loopStatus === LoopStatus.TRACK
@@ -62,7 +62,7 @@ export function resolvePlaybackControlAccessibleName(
       return withDetail(_("Repeat"), repeatMode);
     }
     case PlaybackControlIds.SPEED:
-      return withDetail(_("Playback speed"), labelText);
+      return withDetail(_("Playback Speed"), labelText);
     default:
       return String(control.actorName ?? control.id);
   }

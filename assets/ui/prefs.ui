@@ -23,7 +23,7 @@
         <child>
           <object class="AdwExpanderRow" id="er-popup-playback-controls">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Playback controls</property>
+            <property name="title" translatable="yes">Playback Controls</property>
             <property name="subtitle" translatable="yes">Show playback controls</property>
             <property name="expanded">false</property>
             <child>
@@ -38,7 +38,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-seek-backward-show">
-                <property name="title" translatable="yes">Seek backward</property>
+                <property name="title" translatable="yes">Seek Backward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-backward-symbolic</property>
@@ -48,7 +48,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-previous-track-show">
-                <property name="title" translatable="yes">Previous track</property>
+                <property name="title" translatable="yes">Previous Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-backward-symbolic</property>
@@ -58,7 +58,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-play-pause-show">
-                <property name="title" translatable="yes">Play / pause</property>
+                <property name="title" translatable="yes">Play / Pause</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-playback-pause-symbolic</property>
@@ -68,7 +68,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-next-track-show">
-                <property name="title" translatable="yes">Next track</property>
+                <property name="title" translatable="yes">Next Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-forward-symbolic</property>
@@ -78,7 +78,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-seek-forward-show">
-                <property name="title" translatable="yes">Seek forward</property>
+                <property name="title" translatable="yes">Seek Forward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-forward-symbolic</property>
@@ -98,7 +98,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-speed-show">
-                <property name="title" translatable="yes">Playback speed</property>
+                <property name="title" translatable="yes">Playback Speed</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">power-profile-performance-symbolic</property>
@@ -110,7 +110,7 @@
         </child>
         <child>
           <object class="AdwSwitchRow" id="sr-popup-progress-bar-show">
-            <property name="title" translatable="yes">Progress bar</property>
+            <property name="title" translatable="yes">Progress Bar</property>
             <property name="subtitle" translatable="yes">Show the current playback position</property>
           </object>
         </child>
@@ -128,7 +128,7 @@
         <child>
           <object class="AdwExpanderRow" id="er-popup-artwork">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Album art</property>
+            <property name="title" translatable="yes">Album Art</property>
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
@@ -150,17 +150,17 @@
         <child>
           <object class="AdwExpanderRow" id="er-popup-track-information">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Track information</property>
+            <property name="title" translatable="yes">Track Information</property>
             <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwActionRow" id="ar-popup-track-information-scroll-enabled">
-                <property name="title" translatable="yes">Scroll track information</property>
+                <property name="title" translatable="yes">Scroll Track Information</property>
                 <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
                   <object class="GtkMenuButton" id="mb-popup-track-information-scroll-info">
                     <property name="icon-name">info-outline-symbolic</property>
-                    <property name="tooltip-text" translatable="yes">Scrolling performance</property>
+                    <property name="tooltip-text" translatable="yes">Scrolling Performance</property>
                     <property name="has-frame">false</property>
                     <property name="valign">center</property>
                     <property name="popover">
@@ -220,7 +220,7 @@
         </child>
         <child>
           <object class="MediaShellTrackInformationContentRow" id="er-popup-track-information-content">
-            <property name="title" translatable="yes">Track information content</property>
+            <property name="title" translatable="yes">Track Information Content</property>
             <property name="subtitle" translatable="yes">Choose and reorder track information</property>
             <property name="expanded">false</property>
           </object>
@@ -232,15 +232,15 @@
         <property name="title" translatable="yes">Apps</property>
         <child>
           <object class="AdwSwitchRow" id="sr-popup-player-selector-app-icon-use-color">
-            <property name="title" translatable="yes">Colored app icon</property>
-            <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
+            <property name="title" translatable="yes">Colored App Icon</property>
+            <property name="subtitle" translatable="yes">Use the media app’s full-color icon</property>
           </object>
         </child>
       </object>
     </child>
   </object>
   <object class="AdwPreferencesPage" id="page-top-bar">
-    <property name="title" translatable="yes">Top bar</property>
+    <property name="title" translatable="yes">Top Bar</property>
     <property name="icon-name">focus-top-bar-symbolic</property>
     <child>
       <object class="AdwPreferencesGroup">
@@ -261,14 +261,14 @@
         </child>
         <child>
           <object class="AdwSwitchRow" id="sr-top-bar-track-information-fixed-width">
-            <property name="title" translatable="yes">Lock width</property>
+            <property name="title" translatable="yes">Lock Width</property>
             <property name="subtitle" translatable="yes">Keep the configured width for short text</property>
           </object>
         </child>
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-playback-controls">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Playback controls</property>
+            <property name="title" translatable="yes">Playback Controls</property>
             <property name="subtitle" translatable="yes">Show playback controls</property>
             <property name="expanded">false</property>
             <child>
@@ -283,7 +283,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-seek-backward-show">
-                <property name="title" translatable="yes">Seek backward</property>
+                <property name="title" translatable="yes">Seek Backward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-backward-symbolic</property>
@@ -293,7 +293,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-previous-track-show">
-                <property name="title" translatable="yes">Previous track</property>
+                <property name="title" translatable="yes">Previous Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-backward-symbolic</property>
@@ -303,7 +303,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-play-pause-show">
-                <property name="title" translatable="yes">Play / pause</property>
+                <property name="title" translatable="yes">Play / Pause</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-playback-pause-symbolic</property>
@@ -313,7 +313,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-next-track-show">
-                <property name="title" translatable="yes">Next track</property>
+                <property name="title" translatable="yes">Next Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-forward-symbolic</property>
@@ -323,7 +323,7 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-seek-forward-show">
-                <property name="title" translatable="yes">Seek forward</property>
+                <property name="title" translatable="yes">Seek Forward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-forward-symbolic</property>
@@ -352,7 +352,7 @@
             <child type="suffix">
               <object class="GtkMenuButton" id="mb-top-bar-visualizer-info">
                 <property name="icon-name">info-outline-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Visualizer performance</property>
+                <property name="tooltip-text" translatable="yes">Visualizer Performance</property>
                 <property name="has-frame">false</property>
                 <property name="valign">center</property>
                 <property name="popover">
@@ -413,7 +413,7 @@
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-artwork">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Album art</property>
+            <property name="title" translatable="yes">Album Art</property>
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
@@ -435,17 +435,17 @@
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-track-information">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">Track information</property>
+            <property name="title" translatable="yes">Track Information</property>
             <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwActionRow" id="ar-top-bar-track-information-scroll-enabled">
-                <property name="title" translatable="yes">Scroll track information</property>
+                <property name="title" translatable="yes">Scroll Track Information</property>
                 <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
                   <object class="GtkMenuButton" id="mb-top-bar-track-information-scroll-info">
                     <property name="icon-name">info-outline-symbolic</property>
-                    <property name="tooltip-text" translatable="yes">Scrolling performance</property>
+                    <property name="tooltip-text" translatable="yes">Scrolling Performance</property>
                     <property name="has-frame">false</property>
                     <property name="valign">center</property>
                     <property name="popover">
@@ -505,7 +505,7 @@
         </child>
         <child>
           <object class="MediaShellTrackInformationContentRow" id="er-top-bar-track-information-content">
-            <property name="title" translatable="yes">Track information content</property>
+            <property name="title" translatable="yes">Track Information Content</property>
             <property name="subtitle" translatable="yes">Choose and reorder track information</property>
             <property name="expanded">false</property>
           </object>
@@ -518,13 +518,13 @@
         <child>
           <object class="AdwExpanderRow" id="er-top-bar-app-icon">
             <property name="show-enable-switch">true</property>
-            <property name="title" translatable="yes">App icon</property>
+            <property name="title" translatable="yes">App Icon</property>
             <property name="subtitle" translatable="yes">Show the app icon</property>
             <property name="expanded">false</property>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-app-icon-use-color">
-                <property name="title" translatable="yes">Colored app icon</property>
-                <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
+                <property name="title" translatable="yes">Colored App Icon</property>
+                <property name="subtitle" translatable="yes">Use the media app’s full-color icon</property>
               </object>
             </child>
           </object>
@@ -537,7 +537,7 @@
     <property name="icon-name">org.gnome.Settings-display-symbolic</property>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Extension placement</property>
+        <property name="title" translatable="yes">Extension Placement</property>
         <property name="description" translatable="yes">Choose where the extension appears</property>
         <child>
           <object class="AdwComboRow" id="cr-panel-position">
@@ -556,7 +556,7 @@
         </child>
         <child>
           <object class="AdwSpinRow" id="sp-panel-index">
-            <property name="title" translatable="yes">Index</property>
+            <property name="title" translatable="yes">Order</property>
             <property name="subtitle" translatable="yes">Order among items in the same top bar section</property>
             <property name="adjustment">
               <object class="GtkAdjustment">
@@ -579,11 +579,11 @@
     <property name="icon-name">org.gnome.Settings-keyboard-symbolic</property>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Keyboard shortcuts</property>
+        <property name="title" translatable="yes">Keyboard Shortcuts</property>
         <property name="description" translatable="yes">Assign global keyboard shortcuts to media actions</property>
         <child>
           <object class="AdwExpanderRow" id="er-interactions-keyboard-shortcuts">
-            <property name="title" translatable="yes">Shortcut assignments</property>
+            <property name="title" translatable="yes">Shortcut Assignments</property>
             <property name="subtitle" translatable="yes">Configure each keyboard action</property>
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-shuffle">
@@ -605,7 +605,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-seek-backward">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Seek backward</property>
+                <property name="title" translatable="yes">Seek Backward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-backward-symbolic</property>
@@ -622,7 +622,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-previous-track">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Previous track</property>
+                <property name="title" translatable="yes">Previous Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-backward-symbolic</property>
@@ -639,7 +639,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-play-pause">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Play / pause</property>
+                <property name="title" translatable="yes">Play / Pause</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-playback-pause-symbolic</property>
@@ -656,7 +656,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-next-track">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Next track</property>
+                <property name="title" translatable="yes">Next Track</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-skip-forward-symbolic</property>
@@ -673,7 +673,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-seek-forward">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Seek forward</property>
+                <property name="title" translatable="yes">Seek Forward</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">media-seek-forward-symbolic</property>
@@ -707,7 +707,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-volume-up">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Volume up</property>
+                <property name="title" translatable="yes">Volume Up</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">audio-volume-high-symbolic</property>
@@ -724,7 +724,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-volume-down">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Volume down</property>
+                <property name="title" translatable="yes">Volume Down</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">audio-volume-low-symbolic</property>
@@ -775,7 +775,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-raise-app">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Open app</property>
+                <property name="title" translatable="yes">Open App</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">application-x-executable-symbolic</property>
@@ -792,7 +792,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-quit-app">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Quit app</property>
+                <property name="title" translatable="yes">Quit App</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">process-stop-symbolic</property>
@@ -809,7 +809,7 @@
             <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-switch-app">
                 <property name="activatable">true</property>
-                <property name="title" translatable="yes">Switch app</property>
+                <property name="title" translatable="yes">Switch App</property>
                 <child type="prefix">
                   <object class="GtkImage">
                     <property name="icon-name">network-transmit-receive-symbolic</property>
@@ -827,7 +827,7 @@
         </child>
         <child>
           <object class="AdwActionRow" id="ar-interactions-shortcut-overview">
-            <property name="title" translatable="yes">Shortcut overview</property>
+            <property name="title" translatable="yes">Shortcut Overview</property>
             <property name="subtitle" translatable="yes">View all assigned shortcuts</property>
             <property name="activatable">false</property>
             <property name="selectable">false</property>
@@ -841,7 +841,7 @@
         </child>
         <child>
           <object class="AdwButtonRow" id="br-interactions-reset-shortcuts">
-            <property name="title" translatable="yes">Reset keyboard shortcuts</property>
+            <property name="title" translatable="yes">Reset Keyboard Shortcuts</property>
             <property name="start-icon-name">edit-clear-symbolic</property>
             <style>
               <class name="destructive-action"/>
@@ -852,7 +852,7 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup">
-        <property name="title" translatable="yes">Mouse actions</property>
+        <property name="title" translatable="yes">Mouse Actions</property>
         <property name="description" translatable="yes">Assign actions to clicks and scrolling on the top bar indicator</property>
         <child>
           <object class="AdwComboRow" id="cr-interactions-left-click">
@@ -902,20 +902,20 @@
         <property name="description" translatable="yes">Control how MediaShell integrates with GNOME</property>
         <child>
           <object class="AdwExpanderRow" id="er-native-controls">
-            <property name="title" translatable="yes">Native control</property>
-            <property name="subtitle" translatable="yes">Settings for native media controls in the notification center</property>
+            <property name="title" translatable="yes">Media Controls</property>
+            <property name="subtitle" translatable="yes">Customize system media controls</property>
             <property name="expanded">false</property>
             <child type="suffix">
               <object class="GtkMenuButton" id="mb-native-controls-info">
                 <property name="icon-name">info-outline-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Private API integration</property>
+                <property name="tooltip-text" translatable="yes">Private API Integration</property>
                 <property name="has-frame">false</property>
                 <property name="valign">center</property>
                 <property name="popover">
                   <object class="GtkPopover">
                     <property name="child">
                       <object class="GtkLabel">
-                        <property name="label" translatable="yes">These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations.</property>
+                        <property name="label" translatable="yes">These options rely on private GNOME Shell APIs. GNOME Shell updates or distribution customizations may cause them to stop working.</property>
                         <property name="wrap">true</property>
                         <property name="max-width-chars">42</property>
                         <property name="xalign">0</property>
@@ -931,14 +931,14 @@
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-native-controls-hide">
-                <property name="title" translatable="yes">Hide native control</property>
+                <property name="title" translatable="yes">Hide Media Controls</property>
                 <property name="subtitle" translatable="yes">Hide media control banners from the notification center</property>
               </object>
             </child>
             <child>
               <object class="AdwSwitchRow" id="sr-native-controls-enhance">
-                <property name="title" translatable="yes">Enhanced native control</property>
-                <property name="subtitle" translatable="yes">Apply a modern and enhanced style to media control banners in the notification center and on the lock screen</property>
+                <property name="title" translatable="yes">Enhance Media Controls</property>
+                <property name="subtitle" translatable="yes">Enhance media control banners in the notification center and on the lock screen</property>
               </object>
             </child>
           </object>
@@ -951,12 +951,12 @@
         <property name="description" translatable="yes">Store content on disk to load it faster</property>
         <child>
           <object class="AdwSwitchRow" id="sr-media-artwork-cache-enabled">
-            <property name="title" translatable="yes">Store album art</property>
+            <property name="title" translatable="yes">Store Album Art</property>
           </object>
         </child>
         <child>
           <object class="AdwActionRow" id="ar-artwork-cache-clear">
-            <property name="title" translatable="yes">Clear cache</property>
+            <property name="title" translatable="yes">Clear Cache</property>
             <child>
               <object class="GtkButton" id="btn-artwork-cache-clear">
                 <property name="halign">2</property>
@@ -981,7 +981,7 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup" id="gp-reset-settings">
-        <property name="title" translatable="yes">Extension settings</property>
+        <property name="title" translatable="yes">Extension Settings</property>
       </object>
     </child>
   </object>
@@ -989,19 +989,19 @@
     <items>
       <item translatable="yes">None</item>
       <item translatable="yes">Shuffle</item>
-      <item translatable="yes">Seek backward</item>
-      <item translatable="yes">Previous track</item>
-      <item translatable="yes">Play / pause</item>
-      <item translatable="yes">Next track</item>
-      <item translatable="yes">Seek forward</item>
+      <item translatable="yes">Seek Backward</item>
+      <item translatable="yes">Previous Track</item>
+      <item translatable="yes">Play / Pause</item>
+      <item translatable="yes">Next Track</item>
+      <item translatable="yes">Seek Forward</item>
       <item translatable="yes">Repeat</item>
-      <item translatable="yes">Volume up</item>
-      <item translatable="yes">Volume down</item>
+      <item translatable="yes">Volume Up</item>
+      <item translatable="yes">Volume Down</item>
       <item translatable="yes">Popup</item>
       <item translatable="yes">Preferences</item>
-      <item translatable="yes">Open app</item>
-      <item translatable="yes">Quit app</item>
-      <item translatable="yes">Switch app</item>
+      <item translatable="yes">Open App</item>
+      <item translatable="yes">Quit App</item>
+      <item translatable="yes">Switch App</item>
     </items>
   </object>
 </interface>
