@@ -9,15 +9,16 @@
  * selection and pinning remain owned by the selector list.
  */
 
+import Clutter from "gi://Clutter";
+import St from "gi://St";
+
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import St from "gi://St";
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
-
 import { IconNames } from "../../../shared/icons.js";
 import { createIcon, setGIcon } from "../icons.js";
 import { installPrimaryClickAction } from "../input/pointerActions.js";
@@ -84,13 +85,13 @@ export default class PopupPlayerSelectorButton {
         desktopEntry,
         this.player.busName,
       );
-      this.label.text = this.desktopAppResolver.getDesktopAppName(
+      this.label.text = this.desktopAppResolver.resolveDesktopAppName(
         desktopApp,
         identity || _("Unknown app"),
       );
       setGIcon(
         this.icon,
-        this.desktopAppResolver.getDesktopAppIcon(desktopApp),
+        this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),
         IconNames.MEDIA,
       );
       this.icon.set_style_class_name(

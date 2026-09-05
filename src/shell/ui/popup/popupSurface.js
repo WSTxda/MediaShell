@@ -10,14 +10,15 @@
  * on the next open.
  */
 
+import Clutter from "gi://Clutter";
+
+import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
-
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
@@ -43,7 +44,7 @@ export default class PopupSurface {
   ) {
     this.indicator = indicator;
     this.settings = popupSettings;
-    this.settingsSubscriptions = [];
+    this.settingsUnsubscribers = [];
     this.pendingClosedRegions = 0;
     this.appliedPopupOuterWidth = null;
     this.updateQueue = new CoalescedUpdateQueue(
@@ -81,7 +82,7 @@ export default class PopupSurface {
       "open-state-changed",
       (_menu, isOpen) => this.handleOpenStateChanged(isOpen),
     );
-    this.installSettingsSubscriptions();
+    this.subscribeToSettings();
   }
 
   get mediaRuntime() {
@@ -94,7 +95,7 @@ export default class PopupSurface {
     return this.indicator.menu;
   }
 
-  installSettingsSubscriptions() {
+  subscribeToSettings() {
     const subscriptions = [
       [
         ["width"],
@@ -138,9 +139,14 @@ export default class PopupSurface {
     ];
 
     for (const [properties, regions] of subscriptions)
-      this.settingsSubscriptions.push(
+      this.settingsUnsubscribers.push(
         this.settings.subscribe(properties, () => this.requestUpdate(regions)),
       );
+  }
+
+  unsubscribeFromSettings() {
+    for (const unsubscribe of this.settingsUnsubscribers.splice(0).reverse())
+      unsubscribe();
   }
 
   requestUpdate(regions) {
@@ -150,45 +156,6 @@ export default class PopupSurface {
   resetPendingUpdates() {
     this.updateQueue?.cancel();
     this.pendingClosedRegions = 0;
-  }
-
-  handleOpenStateChanged(isOpen) {
-    if (isOpen) {
-      let regions =
-        this.pendingClosedRegions |
-        PopupRegions.PLAYER_SELECTOR |
-        PopupRegions.ARTWORK |
-        PopupRegions.TRACK_INFORMATION |
-        PopupRegions.PLAYBACK_CONTROLS;
-      if (this.settings.progressBarShow) regions |= PopupRegions.PROGRESS;
-      if (this.settings.volumeControlShow) regions |= PopupRegions.VOLUME;
-
-      // Opening is already a synchronous Shell transition. Cancel any queued
-      // idle pass and reconcile the accumulated state once against current data.
-      this.updateQueue.cancel();
-      this.pendingClosedRegions = 0;
-      this.reconcile(regions, true);
-      this.syncProgressBarPlaybackState();
-      return;
-    }
-
-    this.playerSelector.close();
-    this.artwork.cancelArtworkLoad();
-    this.progressBar.pause();
-  }
-
-  isActivePlayer(player) {
-    return this.indicator.isActivePlayer(player);
-  }
-
-  selectPlayer(player) {
-    return this.mediaRuntime?.selectPlayer(player) ?? false;
-  }
-
-  togglePlayerPin(player) {
-    const pinStateChanged = this.mediaRuntime?.togglePlayerPin(player) ?? false;
-    if (pinStateChanged) this.requestUpdate(PopupRegions.PLAYER_SELECTOR);
-    return pinStateChanged;
   }
 
   reconcile(regions, forceRender = false) {
@@ -280,6 +247,45 @@ export default class PopupSurface {
     }
   }
 
+  handleOpenStateChanged(isOpen) {
+    if (isOpen) {
+      let regions =
+        this.pendingClosedRegions |
+        PopupRegions.PLAYER_SELECTOR |
+        PopupRegions.ARTWORK |
+        PopupRegions.TRACK_INFORMATION |
+        PopupRegions.PLAYBACK_CONTROLS;
+      if (this.settings.progressBarShow) regions |= PopupRegions.PROGRESS;
+      if (this.settings.volumeControlShow) regions |= PopupRegions.VOLUME;
+
+      // Opening is already a synchronous Shell transition. Cancel any queued
+      // idle pass and reconcile the accumulated state once against current data.
+      this.updateQueue.cancel();
+      this.pendingClosedRegions = 0;
+      this.reconcile(regions, true);
+      this.syncProgressBarPlaybackState();
+      return;
+    }
+
+    this.playerSelector.close();
+    this.artwork.cancelArtworkLoad();
+    this.progressBar.pause();
+  }
+
+  isActivePlayer(player) {
+    return this.indicator.isActivePlayer(player);
+  }
+
+  selectPlayer(player) {
+    return this.mediaRuntime?.selectPlayer(player) ?? false;
+  }
+
+  togglePlayerPin(player) {
+    const pinStateChanged = this.mediaRuntime?.togglePlayerPin(player) ?? false;
+    if (pinStateChanged) this.requestUpdate(PopupRegions.PLAYER_SELECTOR);
+    return pinStateChanged;
+  }
+
   syncProgressBarPlaybackState() {
     if (
       !this.menu.isOpen ||
@@ -351,8 +357,7 @@ export default class PopupSurface {
 
     this.updateQueue?.destroy();
     this.updateQueue = null;
-    for (const unsubscribe of this.settingsSubscriptions.splice(0).reverse())
-      unsubscribe();
+    this.unsubscribeFromSettings();
     this.settings = null;
     this.indicator = null;
 

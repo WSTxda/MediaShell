@@ -59,7 +59,7 @@ export default class TopBarAppIcon {
       );
       setGIcon(
         this.actor,
-        this.desktopAppResolver.getDesktopAppIcon(desktopApp),
+        this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),
         IconNames.MEDIA,
       );
       // Do not memoize a transient miss: Shell may associate a browser

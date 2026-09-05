@@ -36,7 +36,7 @@ export function calculateArtworkCornerRadius(size, percentage) {
 }
 
 /** Returns presentation geometry shared by popup, top-bar, and native artwork. */
-export function getArtworkPresentationGeometry(size, radius) {
+export function resolveArtworkPresentationGeometry(size, radius) {
   const frameSize = Math.max(1, Math.round(Number(size) || 0));
   const frameRadius = Math.min(
     Math.max(0, Math.round(Number(radius) || 0)),

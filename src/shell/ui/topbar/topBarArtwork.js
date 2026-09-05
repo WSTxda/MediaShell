@@ -5,23 +5,24 @@
  * Displays artwork from the active MPRIS track as an independent top-bar element.
  */
 
+import Clutter from "gi://Clutter";
+import Gio from "gi://Gio";
+import St from "gi://St";
+
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import Gio from "gi://Gio";
-import St from "gi://St";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
-
 import { IconNames } from "../../../shared/icons.js";
 import { TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
   calculateArtworkCornerRadius,
-  getArtworkPresentationGeometry,
+  resolveArtworkPresentationGeometry,
   prepareArtworkPixbuf,
 } from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
@@ -37,6 +38,11 @@ const logger = createLogger("TopBarArtwork");
 export default class TopBarArtwork {
   constructor(topBarSurface, artworkService) {
     this.topBarSurface = topBarSurface;
+    this.artworkService = artworkService;
+    this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
+      IconNames.MEDIA,
+      IconNames.MISSING,
+    ]);
     this.artworkFrame = null;
     this.artworkImage = null;
     this.loadedArtworkKey = null;
@@ -47,11 +53,6 @@ export default class TopBarArtwork {
     this.artworkLoadGeneration = 0;
     this.artworkLoadCancellable = null;
     this.panelHeightSignalId = null;
-    this.artworkService = artworkService;
-    this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
-    ]);
   }
 
   get settings() {
@@ -165,7 +166,7 @@ export default class TopBarArtwork {
 
   syncArtworkGeometry(width, radius) {
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getArtworkPresentationGeometry(width, radius);
+      resolveArtworkPresentationGeometry(width, radius);
 
     this.artworkFrame.style = `border-radius: ${frameRadius}px; padding: ${ARTWORK_OUTLINE_WIDTH}px;`;
     this.artworkFrame.set_size(frameSize, frameSize);
@@ -224,7 +225,7 @@ export default class TopBarArtwork {
   }
 
   setArtworkPixbuf(width, radius, pixbuf) {
-    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
+    const { imageSize, imageRadius } = resolveArtworkPresentationGeometry(
       width,
       radius,
     );
@@ -253,7 +254,7 @@ export default class TopBarArtwork {
   }
 
   setArtworkFallback(width, radius, icon) {
-    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
+    const { imageSize, fallbackIconSize } = resolveArtworkPresentationGeometry(
       width,
       radius,
     );

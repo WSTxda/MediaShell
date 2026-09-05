@@ -4,20 +4,20 @@
  *
  * Resolves playback-control visibility from the shared surface settings policy.
  *
- * Functions in this module are pure and accept a the scoped settings runtime target rather
+ * Functions in this module are pure and accept a scoped settings runtime target rather
  * than a live Gio.Settings object, keeping them usable by Shell and Node tests.
  */
 
 import { PlaybackControlSurfaceDefinitions } from "../../../shared/playback/surfaces.js";
 
 /**
- * Returns the canonical definition for a playback-control surface.
+ * Resolves the canonical definition for a playback-control surface.
  *
  * @param {string} surface - Stable playback-control surface ID.
  * @returns {object} Frozen surface definition.
  * @throws {TypeError} When the surface is unknown.
  */
-function getPlaybackControlSurfaceDefinition(surface) {
+function resolvePlaybackControlSurfaceDefinition(surface) {
   const definition = PlaybackControlSurfaceDefinitions[surface];
   if (!definition)
     throw new TypeError(`Unknown playback control surface: ${String(surface)}`);
@@ -38,7 +38,7 @@ function isPlaybackControlVisible(settingsTarget, show, control) {
  * @returns {boolean} Whether the surface should be rendered.
  */
 export function isPlaybackControlSurfaceVisible(settingsTarget, surface) {
-  const { show, controls } = getPlaybackControlSurfaceDefinition(surface);
+  const { show, controls } = resolvePlaybackControlSurfaceDefinition(surface);
   return controls.some((control) =>
     isPlaybackControlVisible(settingsTarget, show, control),
   );
@@ -62,7 +62,7 @@ export function resolvePlaybackControlSurfaceUpdates(
   controlRegions,
   dirtyRegions,
 ) {
-  const { show, controls } = getPlaybackControlSurfaceDefinition(surface);
+  const { show, controls } = resolvePlaybackControlSurfaceDefinition(surface);
   return controls
     .filter(({ controlId }) =>
       Boolean(dirtyRegions & controlRegions[controlId]),

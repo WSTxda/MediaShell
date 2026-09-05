@@ -13,8 +13,8 @@ import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
-import { gettext as _ } from "../translations.js";
 
+import { gettext as _ } from "../translations.js";
 import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TrackInformationFields } from "../../shared/ui/trackInformation.js";

@@ -9,10 +9,10 @@
  * absent from this module.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
+import { MediaShellStyleClasses } from "../style.js";
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { TopBarElementIds } from "../../../shared/ui/topBar.js";
 import { createLogger } from "../../../shared/logging/logger.js";
@@ -35,7 +35,7 @@ export default class TopBarSurface {
   ) {
     this.indicator = indicator;
     this.settings = topBarSettings;
-    this.settingsSubscriptions = [];
+    this.settingsUnsubscribers = [];
     this.topBarBox = null;
     this.topBarActionBoxBefore = null;
     this.topBarActionBoxAfter = null;
@@ -57,14 +57,14 @@ export default class TopBarSurface {
       this,
       playbackController,
     );
-    this.installSettingsSubscriptions();
+    this.subscribeToSettings();
   }
 
   get player() {
     return this.indicator.player;
   }
 
-  installSettingsSubscriptions() {
+  subscribeToSettings() {
     const subscriptions = [
       [
         ["trackInformationWidth", "trackInformationWidthLock"],
@@ -104,9 +104,14 @@ export default class TopBarSurface {
     ];
 
     for (const [properties, regions] of subscriptions)
-      this.settingsSubscriptions.push(
+      this.settingsUnsubscribers.push(
         this.settings.subscribe(properties, () => this.requestUpdate(regions)),
       );
+  }
+
+  unsubscribeFromSettings() {
+    for (const unsubscribe of this.settingsUnsubscribers.splice(0).reverse())
+      unsubscribe();
   }
 
   requestUpdate(regions) {
@@ -215,6 +220,18 @@ export default class TopBarSurface {
       this.syncLayout();
   }
 
+  runComponentUpdate(componentName, update) {
+    try {
+      update();
+    } catch (error) {
+      logger.errorOnce(
+        `component-update:${componentName}`,
+        `${componentName} update failed`,
+        error,
+      );
+    }
+  }
+
   ensureLayout() {
     if (this.topBarBox) return;
 
@@ -288,25 +305,12 @@ export default class TopBarSurface {
     this.visualizer.render(index, targetBox);
   }
 
-  runComponentUpdate(componentName, update) {
-    try {
-      update();
-    } catch (error) {
-      logger.errorOnce(
-        `component-update:${componentName}`,
-        `${componentName} update failed`,
-        error,
-      );
-    }
-  }
-
   destroy() {
     if (!this.indicator) return;
 
     this.updateQueue?.destroy();
     this.updateQueue = null;
-    for (const unsubscribe of this.settingsSubscriptions.splice(0).reverse())
-      unsubscribe();
+    this.unsubscribeFromSettings();
     this.settings = null;
     this.indicator = null;
 

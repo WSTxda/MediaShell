@@ -8,15 +8,16 @@
  * notification banner presentation.
  */
 
-import { MediaShellStyleClasses, styleClassNames } from "../../../ui/style.js";
 import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import St from "gi://St";
+
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
+import { MediaShellStyleClasses, styleClassNames } from "../../../ui/style.js";
 import { IconNames } from "../../../../shared/icons.js";
 import { MprisPlayerProperties } from "../../../mpris/protocol.js";
 import { MprisOperationStatuses } from "../../../mpris/operationResult.js";
@@ -27,7 +28,7 @@ import { resolvePlaybackProgress } from "../../../media/playback/progress.js";
 import { createArtworkRequest } from "../../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
-  getArtworkPresentationGeometry,
+  resolveArtworkPresentationGeometry,
   prepareArtworkPixbuf,
 } from "../../../media/artwork/presentation.js";
 import { createLogger } from "../../../../shared/logging/logger.js";
@@ -712,7 +713,7 @@ export default class EnhanceNotificationBannerBinding {
   syncArtworkGeometry() {
     if (!this.artworkFrame || !this.artworkImage) return;
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getArtworkPresentationGeometry(
+      resolveArtworkPresentationGeometry(
         ENHANCE_ARTWORK_SIZE,
         ENHANCE_ARTWORK_RADIUS,
       );
@@ -820,7 +821,7 @@ export default class EnhanceNotificationBannerBinding {
   }
 
   setArtworkPixbuf(pixbuf) {
-    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
+    const { imageSize, imageRadius } = resolveArtworkPresentationGeometry(
       ENHANCE_ARTWORK_SIZE,
       ENHANCE_ARTWORK_RADIUS,
     );
@@ -847,7 +848,7 @@ export default class EnhanceNotificationBannerBinding {
 
   setArtworkFallback(icon) {
     if (!this.artworkFrame || !this.artworkImage) return;
-    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
+    const { imageSize, fallbackIconSize } = resolveArtworkPresentationGeometry(
       ENHANCE_ARTWORK_SIZE,
       ENHANCE_ARTWORK_RADIUS,
     );

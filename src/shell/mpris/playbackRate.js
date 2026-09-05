@@ -33,12 +33,12 @@ export function normalizePlaybackRateRange(minimumRate, maximumRate) {
 }
 
 /**
- * Returns useful positive rates inside the normalized MPRIS range.
+ * Resolves useful positive rates inside the normalized MPRIS range.
  *
  * Published boundaries are included so a valid narrow range such as 0.8–1.2
  * still exposes meaningful alternatives even when no preferred step fits it.
  */
-export function getAvailablePlaybackRates(minimumRate, maximumRate) {
+export function resolveAvailablePlaybackRates(minimumRate, maximumRate) {
   const range = normalizePlaybackRateRange(minimumRate, maximumRate);
   const candidates = new Set([1]);
 
@@ -57,12 +57,12 @@ export function getAvailablePlaybackRates(minimumRate, maximumRate) {
 
 /** Returns whether the published range exposes at least one alternative to 1x. */
 export function canChangePlaybackRate(minimumRate, maximumRate) {
-  return getAvailablePlaybackRates(minimumRate, maximumRate).length > 1;
+  return resolveAvailablePlaybackRates(minimumRate, maximumRate).length > 1;
 }
 
 /** Resolves the next useful rate after the current confirmed player rate. */
 export function resolveNextPlaybackRate(currentRate, minimumRate, maximumRate) {
-  const rates = getAvailablePlaybackRates(minimumRate, maximumRate);
+  const rates = resolveAvailablePlaybackRates(minimumRate, maximumRate);
   if (rates.length <= 1) return null;
 
   const current =

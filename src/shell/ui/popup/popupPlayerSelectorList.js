@@ -10,15 +10,16 @@
  * intent without changing MprisPlayerRegistry directly.
  */
 
+import Clutter from "gi://Clutter";
+import St from "gi://St";
+
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import St from "gi://St";
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
-
 import { IconNames } from "../../../shared/icons.js";
 import {
   ACTIVE_OPACITY,
@@ -227,11 +228,11 @@ export default class PopupPlayerSelectorList {
   }
 
   createPlayerRow({ player, desktopApp }, pinnedPlayer, coloredClass) {
-    const displayName = this.desktopAppResolver.getDesktopAppName(
+    const displayName = this.desktopAppResolver.resolveDesktopAppName(
       desktopApp,
       player.identity || _("Unknown app"),
     );
-    const displayIcon = this.desktopAppResolver.getDesktopAppIcon(desktopApp);
+    const displayIcon = this.desktopAppResolver.resolveDesktopAppIcon(desktopApp);
     const isActive = this.popupSurface.isActivePlayer(player);
     const isPinned = player.isPinned;
     const canSelect = pinnedPlayer == null || isPinned;

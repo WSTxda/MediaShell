@@ -32,17 +32,17 @@ function gaussian(value, center, width) {
   return Math.exp(-0.5 * distance * distance);
 }
 
-/** Returns the normalized multiplier shared by every visualizer style. */
-export function getVisualizerSpeedMultiplier(speed) {
+/** Resolves the normalized multiplier shared by every visualizer style. */
+export function resolveVisualizerSpeedMultiplier(speed) {
   return (
     normalizeVisualizerSpeed(speed) /
     TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT
   );
 }
 
-function getAnimationTime(elapsedSeconds, speed) {
+function resolveAnimationTime(elapsedSeconds, speed) {
   const time = Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0;
-  return time * getVisualizerSpeedMultiplier(speed);
+  return time * resolveVisualizerSpeedMultiplier(speed);
 }
 
 function fillLevelAnimation(animationTime, definition, levels) {
@@ -142,7 +142,7 @@ export function normalizeVisualizerStyle(style) {
  * @param {number[]|null} outputLevels - Optional reusable output array.
  * @returns {number[]} Normalized animation levels.
  */
-export function getVisualizerLevels(
+export function resolveVisualizerLevels(
   animationKind,
   elapsedSeconds,
   speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
@@ -157,7 +157,7 @@ export function getVisualizerLevels(
       : new Array(definition.levelCount);
 
   fillLevelAnimation(
-    getAnimationTime(elapsedSeconds, speed),
+    resolveAnimationTime(elapsedSeconds, speed),
     definition,
     levels,
   );
@@ -176,7 +176,7 @@ export function getVisualizerLevels(
  * @param {string} layer - VisualizerSpectrumLayers value.
  * @returns {number[]} Signed offsets clamped from -1 to 1.
  */
-export function getVisualizerSpectrumOffsets(
+export function resolveVisualizerSpectrumOffsets(
   elapsedSeconds,
   speed = TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS.DEFAULT,
   outputOffsets = null,
@@ -193,7 +193,7 @@ export function getVisualizerSpectrumOffsets(
       : new Array(TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT);
 
   fillSpectrumOffsets(
-    getAnimationTime(elapsedSeconds, speed),
+    resolveAnimationTime(elapsedSeconds, speed),
     offsets,
     VISUALIZER_SPECTRUM_DEFINITION.layers[normalizedLayer],
   );

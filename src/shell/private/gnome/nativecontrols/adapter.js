@@ -12,7 +12,7 @@ import { createLogger } from "../../../../shared/logging/logger.js";
 import EnhanceNativeControls from "./enhance.js";
 import HideNativeControls from "./hide.js";
 
-const logger = createLogger("NativeControlsAdapter");
+const logger = createLogger("GnomeShellNativeControlsAdapter");
 
 const SessionProfiles = Object.freeze({
   USER: "user",

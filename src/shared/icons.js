@@ -15,7 +15,7 @@
  *
  * The names come from the current icon theme and are intentionally generic so
  * MediaShell can keep rendering even when an MPRIS app exposes incomplete identity
- * or album-art metadata.
+ * or artwork metadata.
  */
 export const IconNames = Object.freeze({
   MISSING: "image-missing-symbolic",

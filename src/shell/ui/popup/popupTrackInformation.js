@@ -9,10 +9,10 @@
  * model also used by the top bar. Missing fields are omitted before labels are created.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
+import { MediaShellStyleClasses } from "../style.js";
 import { TrackInformationFields } from "../../../shared/ui/trackInformation.js";
 import { buildTrackInformationItems } from "../../media/track/presentation.js";
 import ScrollingLabel from "../components/scrollingLabel.js";

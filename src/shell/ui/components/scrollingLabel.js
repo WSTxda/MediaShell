@@ -9,13 +9,13 @@
  * lifecycle so callers only provide text and scrolling settings.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import Pango from "gi://Pango";
 import GLib from "gi://GLib";
 import St from "gi://St";
 
+import { MediaShellStyleClasses } from "../style.js";
 import { GTypeNames } from "../../../shared/gobject.js";
 import {
   connectReducedMotionChanged,

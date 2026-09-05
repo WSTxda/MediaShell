@@ -9,13 +9,13 @@
  * Clutter interval used to animate progress while playback continues.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import St from "gi://St";
 
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
+import { MediaShellStyleClasses } from "../style.js";
 import { GTypeNames } from "../../../shared/gobject.js";
 import { formatDurationMilliseconds } from "../../../shared/format.js";
 import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../actorState.js";

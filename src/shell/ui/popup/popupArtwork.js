@@ -2,14 +2,14 @@
  * @file popupArtwork.js
  * @module shell.ui.popup.popupArtwork
  *
- * Owns popup album-art presentation, request lifecycle, and playback animation.
+ * Owns popup artwork presentation, request lifecycle, and playback animation.
  */
 
-import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import Gio from "gi://Gio";
 import St from "gi://St";
 
+import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
 import { IconNames } from "../../../shared/icons.js";
 import { POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
@@ -17,7 +17,7 @@ import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
   calculateArtworkCornerRadius,
-  getArtworkPresentationGeometry,
+  resolveArtworkPresentationGeometry,
   prepareArtworkPixbuf,
 } from "../../media/artwork/presentation.js";
 import { createLogger } from "../../../shared/logging/logger.js";
@@ -30,25 +30,25 @@ import { createIcon, setGIcon } from "../icons.js";
 
 const logger = createLogger("PopupArtwork");
 
-/** Owns popup album-art actors, async request state, and playback animation. */
+/** Owns popup artwork actors, async request state, and playback animation. */
 export default class PopupArtwork {
   constructor(popupSurface, artworkService) {
     this.popupSurface = popupSurface;
-    this.artworkFrame = null;
-    this.artworkImage = null;
-    this.artworkLoadGeneration = 0;
-    this.artworkLoadCancellable = null;
-    this.loadedArtworkKey = null;
-    this.loadingArtworkKey = null;
-    this.loadedArtworkPixbuf = null;
-    this.preparedArtwork = null;
-    this.loadedFallbackIcon = null;
-    this.playbackScaleTarget = null;
     this.artworkService = artworkService;
     this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
     ]);
+    this.artworkFrame = null;
+    this.artworkImage = null;
+    this.loadedArtworkKey = null;
+    this.loadingArtworkKey = null;
+    this.loadedArtworkPixbuf = null;
+    this.preparedArtwork = null;
+    this.loadedFallbackIcon = null;
+    this.artworkLoadGeneration = 0;
+    this.artworkLoadCancellable = null;
+    this.playbackScaleTarget = null;
   }
 
   get settings() {
@@ -69,22 +69,6 @@ export default class PopupArtwork {
 
   get actor() {
     return this.artworkFrame;
-  }
-
-  getArtworkWidth() {
-    return this.popupSurface.getArtworkWidth();
-  }
-
-  getArtworkGeometry() {
-    const width = this.getArtworkWidth();
-    const configuredRadius = Number.isFinite(this.settings.artworkCornerRadius)
-      ? this.settings.artworkCornerRadius
-      : POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
-
-    return {
-      width,
-      radius: calculateArtworkCornerRadius(width, configuredRadius),
-    };
   }
 
   render() {
@@ -114,84 +98,20 @@ export default class PopupArtwork {
     this.loadArtwork(request);
   }
 
-  async loadArtwork(request) {
-    const loadGeneration = ++this.artworkLoadGeneration;
-    const loadCancellable = new Gio.Cancellable();
-    this.artworkLoadCancellable = loadCancellable;
-    this.loadingArtworkKey = request.key;
+  getArtworkGeometry() {
+    const width = this.getArtworkWidth();
+    const configuredRadius = Number.isFinite(this.settings.artworkCornerRadius)
+      ? this.settings.artworkCornerRadius
+      : POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
 
-    try {
-      const { pixbuf, fallbackIcon } = await this.artworkService.load(
-        request,
-        loadCancellable,
-      );
-      if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
-
-      this.commitArtworkResult(request, pixbuf, fallbackIcon);
-    } catch (error) {
-      if (
-        !isCancellationError(error) &&
-        this.isCurrentLoad(loadGeneration, loadCancellable, request)
-      ) {
-        logger.warnOnce(
-          `processing:${request.busName}`,
-          "Album-art processing failed; using the fallback icon",
-          error,
-        );
-        this.commitArtworkResult(request, null, null);
-      }
-    } finally {
-      if (this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
-        this.loadingArtworkKey = null;
-        this.artworkLoadCancellable = null;
-      }
-    }
-  }
-
-  commitArtworkResult(request, pixbuf, fallbackIcon) {
-    this.loadedArtworkKey = request.key;
-    this.loadedArtworkPixbuf = pixbuf ?? null;
-    this.preparedArtwork = null;
-    this.loadedFallbackIcon = pixbuf ? null : (fallbackIcon ?? null);
-    const geometry = this.getArtworkGeometry();
-    this.syncLoadedArtwork(geometry.width, geometry.radius);
-  }
-
-  syncLoadedArtwork(width, radius) {
-    if (!this.artworkFrame || !this.loadedArtworkKey) return;
-
-    if (this.loadedArtworkPixbuf)
-      this.setArtworkPixbuf(width, radius, this.loadedArtworkPixbuf);
-    else this.setArtworkFallback(width, radius, this.loadedFallbackIcon);
-  }
-
-  setArtworkPixbuf(width, radius, pixbuf) {
-    const { imageSize, imageRadius } = getArtworkPresentationGeometry(
+    return {
       width,
-      radius,
-    );
-    if (
-      this.preparedArtwork?.key !== this.loadedArtworkKey ||
-      this.preparedArtwork.imageSize !== imageSize ||
-      this.preparedArtwork.imageRadius !== imageRadius
-    ) {
-      this.preparedArtwork = {
-        key: this.loadedArtworkKey,
-        imageSize,
-        imageRadius,
-        pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
-      };
-    }
-    const renderPixbuf = this.preparedArtwork.pixbuf;
+      radius: calculateArtworkCornerRadius(width, configuredRadius),
+    };
+  }
 
-    this.artworkImage.content = null;
-    this.artworkImage.remove_style_class_name(NativeStyleClasses.BUTTON);
-    this.artworkImage.remove_style_class_name(
-      MediaShellStyleClasses.ARTWORK_FALLBACK,
-    );
-    setGIcon(this.artworkImage, renderPixbuf, IconNames.MEDIA);
-    this.artworkImage.set_icon_size(imageSize);
-    this.artworkFrame.opacity = 255;
+  getArtworkWidth() {
+    return this.popupSurface.getArtworkWidth();
   }
 
   ensureActor() {
@@ -250,7 +170,7 @@ export default class PopupArtwork {
 
   syncArtworkGeometry(width, radius) {
     const { frameSize, frameRadius, imageSize, imageRadius } =
-      getArtworkPresentationGeometry(width, radius);
+      resolveArtworkPresentationGeometry(width, radius);
 
     this.artworkFrame.style = `border-radius: ${frameRadius}px; padding: ${ARTWORK_OUTLINE_WIDTH}px;`;
     this.artworkFrame.set_size(frameSize, frameSize);
@@ -258,8 +178,88 @@ export default class PopupArtwork {
     this.artworkImage.set_size(imageSize, imageSize);
   }
 
+  async loadArtwork(request) {
+    const loadGeneration = ++this.artworkLoadGeneration;
+    const loadCancellable = new Gio.Cancellable();
+    this.artworkLoadCancellable = loadCancellable;
+    this.loadingArtworkKey = request.key;
+
+    try {
+      const { pixbuf, fallbackIcon } = await this.artworkService.load(
+        request,
+        loadCancellable,
+      );
+      if (!this.isCurrentLoad(loadGeneration, loadCancellable, request)) return;
+
+      this.commitArtworkResult(request, pixbuf, fallbackIcon);
+    } catch (error) {
+      if (
+        !isCancellationError(error) &&
+        this.isCurrentLoad(loadGeneration, loadCancellable, request)
+      ) {
+        logger.warnOnce(
+          `processing:${request.busName}`,
+          "Artwork processing failed; using the fallback icon",
+          error,
+        );
+        this.commitArtworkResult(request, null, null);
+      }
+    } finally {
+      if (this.isCurrentLoad(loadGeneration, loadCancellable, request)) {
+        this.loadingArtworkKey = null;
+        this.artworkLoadCancellable = null;
+      }
+    }
+  }
+
+  commitArtworkResult(request, pixbuf, fallbackIcon) {
+    this.loadedArtworkKey = request.key;
+    this.loadedArtworkPixbuf = pixbuf ?? null;
+    this.preparedArtwork = null;
+    this.loadedFallbackIcon = pixbuf ? null : (fallbackIcon ?? null);
+    const geometry = this.getArtworkGeometry();
+    this.syncLoadedArtwork(geometry.width, geometry.radius);
+  }
+
+  syncLoadedArtwork(width, radius) {
+    if (!this.artworkFrame || !this.loadedArtworkKey) return;
+
+    if (this.loadedArtworkPixbuf)
+      this.setArtworkPixbuf(width, radius, this.loadedArtworkPixbuf);
+    else this.setArtworkFallback(width, radius, this.loadedFallbackIcon);
+  }
+
+  setArtworkPixbuf(width, radius, pixbuf) {
+    const { imageSize, imageRadius } = resolveArtworkPresentationGeometry(
+      width,
+      radius,
+    );
+    if (
+      this.preparedArtwork?.key !== this.loadedArtworkKey ||
+      this.preparedArtwork.imageSize !== imageSize ||
+      this.preparedArtwork.imageRadius !== imageRadius
+    ) {
+      this.preparedArtwork = {
+        key: this.loadedArtworkKey,
+        imageSize,
+        imageRadius,
+        pixbuf: prepareArtworkPixbuf(pixbuf, imageSize, imageRadius),
+      };
+    }
+    const renderPixbuf = this.preparedArtwork.pixbuf;
+
+    this.artworkImage.content = null;
+    this.artworkImage.remove_style_class_name(NativeStyleClasses.BUTTON);
+    this.artworkImage.remove_style_class_name(
+      MediaShellStyleClasses.ARTWORK_FALLBACK,
+    );
+    setGIcon(this.artworkImage, renderPixbuf, IconNames.MEDIA);
+    this.artworkImage.set_icon_size(imageSize);
+    this.artworkFrame.opacity = 255;
+  }
+
   setArtworkFallback(width, radius, icon) {
-    const { imageSize, fallbackIconSize } = getArtworkPresentationGeometry(
+    const { imageSize, fallbackIconSize } = resolveArtworkPresentationGeometry(
       width,
       radius,
     );
