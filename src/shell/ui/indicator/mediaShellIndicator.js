@@ -41,7 +41,6 @@ class MediaShellIndicator extends PanelMenu.Button {
   constructor(player, { mediaRuntime, settings, inputActions }) {
     super(0.5, "MediaShell", false);
     this.player = player;
-    this.destroyed = false;
     this.inputActions = inputActions;
     this.mediaRuntime = mediaRuntime;
     this.settings = settings;
@@ -71,7 +70,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   setPlayer(player) {
-    if (this.destroyed || !player || this.isActivePlayer(player)) return;
+    if (!player || this.isActivePlayer(player)) return;
 
     this.removePlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
@@ -91,20 +90,18 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 
   requestSurfaceUpdate({ popup = 0, topBar = 0 } = {}) {
-    if (this.destroyed) return;
-    if (topBar) this.topBarContent?.requestUpdate(topBar);
-    if (popup) this.popupContent?.requestUpdate(popup);
+    if (topBar) this.topBarContent.requestUpdate(topBar);
+    if (popup) this.popupContent.requestUpdate(popup);
   }
 
   reconcileSurfacesNow({ popup = 0, topBar = 0 } = {}) {
-    if (this.destroyed) return;
-    if (topBar) this.topBarContent?.reconcile(topBar);
-    if (popup) this.popupContent?.reconcile(popup);
+    if (topBar) this.topBarContent.reconcile(topBar);
+    if (popup) this.popupContent.reconcile(popup);
   }
 
   resetPendingSurfaceUpdates() {
-    this.topBarContent?.resetPendingUpdates();
-    this.popupContent?.resetPendingUpdates();
+    this.topBarContent.resetPendingUpdates();
+    this.popupContent.resetPendingUpdates();
   }
 
   addPlayerPropertyListeners() {
@@ -190,7 +187,7 @@ class MediaShellIndicator extends PanelMenu.Button {
   requestMetadataSurfaceUpdate() {
     this.requestSurfaceUpdate(
       createMetadataSurfaceUpdate(
-        Boolean(this.menu?.isOpen && this.settings.popup.progressBarShow),
+        Boolean(this.menu.isOpen && this.settings.popup.progressBarShow),
       ),
     );
   }
@@ -205,7 +202,7 @@ class MediaShellIndicator extends PanelMenu.Button {
       GLib.PRIORITY_DEFAULT,
       DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
       () => {
-        if (this.destroyed || this.player !== observedPlayer) {
+        if (this.player !== observedPlayer) {
           this.desktopAppResolutionRetrySourceId = null;
           this.desktopAppResolutionRetryAttemptsRemaining = 0;
           return GLib.SOURCE_REMOVE;
@@ -271,13 +268,13 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.playerPropertyListenerIds.set(property, listenerId);
   }
 
-  destroyOwnedResources() {
-    if (this.destroyed) return;
-    this.destroyed = true;
-
+  destroy() {
+    // PanelMenu.Button destroys its PopupMenu children as part of actor teardown.
+    // Remove MediaShell-owned sources and listeners first while Shell objects are
+    // still valid, then release child owners before the final GObject teardown.
+    this.cancelDesktopAppResolutionRetry();
     this.removePlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
-    this.cancelDesktopAppResolutionRetry();
 
     const pointerHandler = this.pointerHandler;
     const popupContent = this.popupContent;
@@ -290,17 +287,9 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.settings = null;
     this.inputActions = null;
 
-    pointerHandler?.destroy();
-    popupContent?.destroy();
-    topBarContent?.destroy();
-  }
-
-  destroy() {
-    if (this.destroyed) return;
-
-    // PanelMenu.Button destroys its PopupMenu children as part of actor teardown.
-    // Clean MediaShell-owned menu state first while Shell objects are still valid.
-    this.destroyOwnedResources();
+    pointerHandler.destroy();
+    popupContent.destroy();
+    topBarContent.destroy();
     super.destroy();
   }
 }
