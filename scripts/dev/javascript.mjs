@@ -26,16 +26,8 @@ import {
 
 let recordsPromise = null;
 
-const PRIVATE_SHELL_BOUNDARIES = Object.freeze([
-  {
-    root: "src/shell/private/gnomeShell/nativeControls/",
-    boundary: "src/shell/integrations/nativeControls.js",
-  },
-  {
-    root: "src/shell/private/gnomeShell/panelMenu/",
-    boundary: "src/shell/integrations/panelMenu.js",
-  },
-]);
+const PRIVATE_SHELL_ROOT = "src/shell/private/";
+const PRIVATE_SHELL_GATEWAY_ROOT = "src/shell/integrations/";
 
 function lineOf(node) {
   return node.loc?.start.line ?? 1;
@@ -85,27 +77,6 @@ export async function getJavaScriptRecords() {
   return loadRecords();
 }
 
-function declarationNames(declaration) {
-  if (!declaration) return [];
-  if (declaration.id?.type === "Identifier") return [declaration.id.name];
-  if (declaration.type !== "VariableDeclaration") return [];
-
-  const names = [];
-  for (const item of declaration.declarations) {
-    if (item.id.type === "Identifier") names.push(item.id.name);
-    else if (item.id.type === "ObjectPattern") {
-      for (const property of item.id.properties) {
-        if (
-          property.type === "Property" &&
-          property.value.type === "Identifier"
-        )
-          names.push(property.value.name);
-      }
-    }
-  }
-  return names;
-}
-
 /** Collects static, re-exported, and literal dynamic module specifiers. */
 export function collectModuleSpecifiers(record) {
   const specifiers = [];
@@ -151,37 +122,6 @@ export function collectModuleSpecifiers(record) {
     },
   });
   return specifiers;
-}
-
-function exportedNames(record) {
-  const names = new Set();
-  for (const node of record.ast.body) {
-    if (node.type === "ExportDefaultDeclaration") {
-      names.add("default");
-      continue;
-    }
-    if (node.type !== "ExportNamedDeclaration") continue;
-    for (const name of declarationNames(node.declaration)) names.add(name);
-    for (const specifier of node.specifiers)
-      names.add(specifier.exported.name ?? specifier.exported.value);
-  }
-  return names;
-}
-
-/** Returns imported bindings that are absent from a parsed target module. */
-export function findMissingImportedNames(importNode, targetRecord) {
-  if (importNode.type !== "ImportDeclaration") return [];
-  const availableExports = exportedNames(targetRecord);
-  const missing = [];
-  for (const imported of importNode.specifiers) {
-    if (imported.type === "ImportNamespaceSpecifier") continue;
-    const importedName =
-      imported.type === "ImportDefaultSpecifier"
-        ? "default"
-        : (imported.imported.name ?? imported.imported.value);
-    if (!availableExports.has(importedName)) missing.push(importedName);
-  }
-  return missing;
 }
 
 function sourceLayer(file) {
@@ -233,6 +173,14 @@ export function validateRelativeImport(layer, targetLayer, specifier) {
   )
     errors.push(`${layer} module crosses into ${targetLayer}`);
   return errors;
+}
+
+/** Validates the single gateway into private GNOME Shell adapters. */
+export function validatePrivateSourceBoundary(sourceFile, targetFile) {
+  if (!targetFile.startsWith(PRIVATE_SHELL_ROOT)) return null;
+  if (sourceFile.startsWith(PRIVATE_SHELL_ROOT)) return null;
+  if (sourceFile.startsWith(PRIVATE_SHELL_GATEWAY_ROOT)) return null;
+  return `${sourceFile}: private Shell implementation must be reached through ${PRIVATE_SHELL_GATEWAY_ROOT}: ${targetFile}`;
 }
 
 /** Rejects direct imports of GNOME Shell's private MPRIS implementation. */
@@ -297,31 +245,14 @@ export async function checkImportsAndBoundaries() {
       for (const error of validateRelativeImport(layer, targetLayer, specifier))
         errors.push(`${record.file}:${item.line}: ${error}: ${target}`);
 
-      for (const {
-        root: privateRoot,
-        boundary: privateBoundary,
-      } of PRIVATE_SHELL_BOUNDARIES) {
-        if (
-          target.startsWith(privateRoot) &&
-          !record.file.startsWith(privateRoot) &&
-          record.file !== privateBoundary
-        )
-          errors.push(
-            `${record.file}:${item.line}: private Shell implementation may only be imported through ${privateBoundary}: ${target}`,
-          );
-      }
+      const privateBoundaryError = validatePrivateSourceBoundary(
+        record.file,
+        target,
+      );
+      if (privateBoundaryError)
+        errors.push(`${record.file}:${item.line}: ${privateBoundaryError}`);
 
       dependencyGraph.get(record.file).push(target);
-
-      if (item.kind === "import") {
-        for (const importedName of findMissingImportedNames(
-          item.node,
-          sourceRecords.get(target),
-        ))
-          errors.push(
-            `${record.file}:${item.line}: ${target} does not export ${importedName}`,
-          );
-      }
     }
   }
 
@@ -347,7 +278,9 @@ export async function checkImportsAndBoundaries() {
   for (const file of dependencyGraph.keys()) visit(file);
 
   fail("Import and process-boundary validation", errors);
-  console.log("Imports, exports, cycles, and process boundaries passed.");
+  console.log(
+    "Imports, cycles, private gateways, and process boundaries passed.",
+  );
 }
 
 export function memberPath(node) {

@@ -1,0 +1,13 @@
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+minimumReleaseAgeExcludePrune: true
+trustPolicy: no-downgrade
+trustLockfile: false
+blockExoticSubdeps: true
+verifyDepsBeforeRun: error
+strictDepBuilds: true
+allowBuilds: {}
+strictPeerDependencies: true
+audit:
+  level: high

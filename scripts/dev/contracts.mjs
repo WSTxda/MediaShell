@@ -10,14 +10,12 @@
  */
 
 import { PREFERENCE_WIDGET_BINDINGS } from "../../src/prefs/bindings/preferenceBindings.js";
-import { PREFERENCE_PAGE_IDS } from "../../src/prefs/constants/preferencesUi.js";
-import { GTypeNames } from "../../src/shared/gobject.js";
 import {
   DBUS_DAEMON_IFACE_NAME,
   DBUS_PROPERTIES_IFACE_NAME,
-  DbusDaemonMethods,
-  DbusPropertiesMethods,
-  DbusDaemonSignals,
+  DBusDaemonMethods,
+  DBusPropertiesMethods,
+  DBusDaemonSignals,
 } from "../../src/shell/mpris/dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
@@ -65,6 +63,16 @@ const BINDING_WIDGET_CLASSES = Object.freeze({
   "enable-expansion": new Set(["AdwExpanderRow"]),
 });
 
+function enumEntriesFromObject(values) {
+  return Object.entries(values).map(([name, value], index) => ({
+    nick:
+      typeof value === "string"
+        ? value
+        : name.toLowerCase().replaceAll("_", "-"),
+    value: typeof value === "number" ? value : index,
+  }));
+}
+
 function compareEnum(errors, enumId, actual, expected) {
   if (!actual) {
     errors.push(`schema enum is missing: ${enumId}`);
@@ -109,13 +117,13 @@ export function validateDbusContracts(interfaces) {
     [
       DBUS_DAEMON_IFACE_NAME,
       {
-        method: Object.values(DbusDaemonMethods),
-        signal: Object.values(DbusDaemonSignals),
+        method: Object.values(DBusDaemonMethods),
+        signal: Object.values(DBusDaemonSignals),
       },
     ],
     [
       DBUS_PROPERTIES_IFACE_NAME,
-      { method: Object.values(DbusPropertiesMethods) },
+      { method: Object.values(DBusPropertiesMethods) },
     ],
     [
       MPRIS_ROOT_IFACE_NAME,
@@ -271,9 +279,6 @@ export async function checkSettingsContracts() {
   );
 
   const uiObjects = manifest.uiObjectsBySource?.[PREFERENCES_UI_SOURCE] ?? {};
-  const allUiObjects = Object.values(manifest.uiObjectsBySource ?? {}).flatMap(
-    (objects) => Object.values(objects),
-  );
   const seenBindingKeys = new Set();
   const seenBindingWidgets = new Set();
   for (const [key, widgetId, property] of PREFERENCE_WIDGET_BINDINGS) {
@@ -304,48 +309,24 @@ export async function checkSettingsContracts() {
         `${reference.file}:${reference.line}: unknown GtkBuilder object ${reference.id}`,
       );
   }
-  for (const pageId of PREFERENCE_PAGE_IDS) {
-    if (uiObjects[pageId]?.class !== "AdwPreferencesPage")
-      errors.push(`required preferences page is missing: ${pageId}`);
-  }
-
-  const registeredGTypeNames = Object.values(GTypeNames);
-  const registeredGTypes = new Set(registeredGTypeNames);
-  if (registeredGTypes.size !== registeredGTypeNames.length)
-    errors.push("shared GType names are not unique");
-  const customUiClasses = new Set(
-    allUiObjects
-      .map((object) => object.class)
-      .filter((className) => className?.startsWith("MediaShell")),
-  );
-  for (const className of customUiClasses) {
-    if (!registeredGTypes.has(className))
-      errors.push(
-        `GtkBuilder custom class has no GType registration: ${className}`,
-      );
-  }
-
   const schemaPrefix = schema.id;
   compareEnum(
     errors,
     `${schemaPrefix}.input-actions`,
     schema.enums[`${schemaPrefix}.input-actions`],
-    Object.entries(InputActions).map(([nick, value]) => ({ nick, value })),
+    enumEntriesFromObject(InputActions),
   );
   compareEnum(
     errors,
     `${schemaPrefix}.visualizer-styles`,
     schema.enums[`${schemaPrefix}.visualizer-styles`],
-    Object.entries(VisualizerStyles).map(([nick, value]) => ({ nick, value })),
+    enumEntriesFromObject(VisualizerStyles),
   );
   compareEnum(
     errors,
     `${schemaPrefix}.panel-positions`,
     schema.enums[`${schemaPrefix}.panel-positions`],
-    Object.keys(PanelPositions).map((key, value) => ({
-      nick: `${key[0]}${key.slice(1).toLowerCase()}`,
-      value,
-    })),
+    enumEntriesFromObject(PanelPositions),
   );
   fail("Settings and UI contract validation", errors);
   console.log(

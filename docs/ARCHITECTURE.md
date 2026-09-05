@@ -283,14 +283,14 @@ Normal MediaShell code reaches private Shell behavior only through public integr
 ```text
 shell/integrations/nativeControls.js
         ↓
-private/gnomeShell/nativeControls/adapter.js
+private/gnome/nativecontrols/adapter.js
 
 shell/integrations/panelMenu.js
         ↓
-private/gnomeShell/panelMenu/compatibility.js
+private/gnome/panelmenu/compatibility.js
 ```
 
-All direct internals for notification center and lock screen native controls are confined to `private/gnomeShell/nativeControls/compatibility.js`. Exact upstream private identifiers such as `MediaMessage`, `_mediaControls`, `_playerToMessage`, and `_players` remain unchanged at that compatibility boundary; MediaShell vocabulary outside it uses native controls, notification center, notification banner, Hide, and Enhance. PanelMenu `_clickGesture` compatibility is confined to its own adapter. The validator rejects direct imports of the private tree from other normal modules.
+All direct internals for notification center and lock screen native controls are confined to `private/gnome/nativecontrols/compatibility.js`. Exact upstream private identifiers such as `MediaMessage`, `_mediaControls`, `_playerToMessage`, and `_players` remain unchanged at that compatibility boundary; MediaShell vocabulary outside it uses native controls, notification center, notification banner, Hide, and Enhance. PanelMenu `_clickGesture` compatibility is confined to its own adapter. The validator rejects direct imports of the private tree from other normal modules.
 
 Hide and Enhance are consumers of MediaShell capabilities. Their settings are independent: Hide owns notification center banner removal, while Enhance owns MediaShell presentation on notification banners and on the supported lock screen surface. This allows the notification center banner to stay absent while lock screen Enhance remains active. Enhance receives injected player, playback, and artwork capabilities; it does not become a second MPRIS implementation. Unsupported private structures fail open by preserving or restoring native GNOME behavior.
 

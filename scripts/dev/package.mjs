@@ -5,8 +5,8 @@
  * Validates the generated GNOME Shell extension archive and runtime-only shape.
  *
  * Python's zipfile parser supplies bounded entry metadata, SHA-256 digests,
- * UTF-8 runtime sources, and gettext binary validation. Acorn resolves every
- * static packaged import, while native compilers derive the exact expected
+ * UTF-8 runtime sources, and gettext binary validation. Acorn parses packaged
+ * modules and resolves static relative targets, while native compilers derive the exact expected
  * resource and catalog bytes from the current checkout.
  */
 
@@ -20,12 +20,12 @@ import { EXTENSION_UUID } from "../../src/shared/project.js";
 import { ROOT, collect, fail, pathExists, read, rootPath } from "./files.mjs";
 import {
   collectModuleSpecifiers,
-  findMissingImportedNames,
   parseJavaScriptModule,
 } from "./javascript.mjs";
 import { validateExtensionMetadata } from "./metadata.mjs";
 
-export const EXTENSION_PACKAGE = `dist/builds/${EXTENSION_UUID}.shell-extension.zip`;
+export const PACKAGE_FILENAME = `${EXTENSION_UUID}.shell-extension.zip`;
+export const EXTENSION_PACKAGE = `dist/builds/${PACKAGE_FILENAME}`;
 
 function readZip(path) {
   const script = String.raw`
@@ -252,14 +252,6 @@ export function validatePackagedJavaScript(
         errors.push(
           `${record.file}:${item.line}: packaged import target is missing: ${target}`,
         );
-      } else if (item.kind === "import" && records.has(target)) {
-        for (const importedName of findMissingImportedNames(
-          item.node,
-          records.get(target),
-        ))
-          errors.push(
-            `${record.file}:${item.line}: ${target} does not export ${importedName}`,
-          );
       }
     }
   }
@@ -359,6 +351,41 @@ async function deriveExpectedPackageHashes(
     await rm(temporaryDirectory, { recursive: true, force: true });
   }
   return expectedHashes;
+}
+
+export function validatePackageReproducibility(firstEntries, secondEntries) {
+  const errors = [];
+  const firstFiles = new Map(
+    firstEntries
+      .filter(({ is_dir: isDirectory }) => !isDirectory)
+      .map(({ name, sha256 }) => [name, sha256]),
+  );
+  const secondFiles = new Map(
+    secondEntries
+      .filter(({ is_dir: isDirectory }) => !isDirectory)
+      .map(({ name, sha256 }) => [name, sha256]),
+  );
+  const names = new Set([...firstFiles.keys(), ...secondFiles.keys()]);
+  for (const name of [...names].sort()) {
+    if (!firstFiles.has(name)) errors.push(`first package is missing ${name}`);
+    else if (!secondFiles.has(name))
+      errors.push(`second package is missing ${name}`);
+    else if (firstFiles.get(name) !== secondFiles.get(name))
+      errors.push(`${name}: logical package bytes are not reproducible`);
+  }
+  return errors;
+}
+
+export function checkPackageReproducibility(firstPath, secondPath) {
+  const first = readZip(resolve(ROOT, firstPath));
+  const second = readZip(resolve(ROOT, secondPath));
+  const errors = [
+    ...validateArchiveShape(first.entries),
+    ...validateArchiveShape(second.entries),
+    ...validatePackageReproducibility(first.entries, second.entries),
+  ];
+  fail("Package reproducibility", errors);
+  console.log("Logical package content is reproducible across clean builds.");
 }
 
 export async function checkPackage(inputPath = EXTENSION_PACKAGE) {

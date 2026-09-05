@@ -75,8 +75,8 @@ export function fail(label, errors) {
 export function runCommand(label, command, args, options = {}) {
   if (!options.quiet) console.log(`\n==> ${label}`);
   const result = spawnSync(command, args, {
-    cwd: ROOT,
-    env: process.env,
+    cwd: options.cwd ?? ROOT,
+    env: options.env ?? process.env,
     encoding: options.capture ? "utf8" : undefined,
     stdio: options.capture ? "pipe" : "inherit",
     maxBuffer: options.maxBuffer ?? 16 * 1024 * 1024,
@@ -88,9 +88,13 @@ export function runCommand(label, command, args, options = {}) {
     const detail = options.capture
       ? [result.stdout, result.stderr].filter(Boolean).join("\n").trim()
       : "";
-    throw new Error(
-      `${label} exited with status ${result.status ?? "unknown"}${detail ? `:\n${detail}` : ""}`,
-    );
+    const outcome =
+      result.status !== null
+        ? `exited with status ${result.status}`
+        : result.signal
+          ? `was terminated by signal ${result.signal}`
+          : "exited without a status";
+    throw new Error(`${label} ${outcome}${detail ? `:\n${detail}` : ""}`);
   }
 
   return options.capture ? result.stdout : "";

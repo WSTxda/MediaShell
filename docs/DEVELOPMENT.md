@@ -9,75 +9,141 @@ MediaShell currently targets:
 - GNOME Shell 48–51;
 - GTK4/Libadwaita Preferences (Libadwaita 1.7+);
 - MPRIS2 players on the session D-Bus;
-- Node.js 20+ and pnpm for repository validation/tooling.
+- Node.js 20.19+;
+- pnpm 11.25.0 exactly for repository tooling.
 
 Private GNOME Shell integrations are version-sensitive. A successful Node/tooling run does not replace live validation on supported Shell releases.
 
 ## Setup
 
-Install the locked JavaScript dependencies and inspect the native toolchain:
+Install the locked JavaScript dependencies and inspect the complete development toolchain:
 
 ```bash
 pnpm install
-pnpm run env:doctor
+pnpm env:doctor
 ```
 
-The native build/release path expects GNOME/gettext tools such as `glib-compile-schemas`, `glib-compile-resources`, `gnome-extensions`, `xgettext`, and `msgfmt`.
+The project pins pnpm through `packageManager`/`engines`. `pnpm-workspace.yaml` also enforces dependency-state and supply-chain policy: a strict package maturity window, trust downgrade protection, lockfile revalidation, blocked exotic transitive sources, deny-by-default dependency build scripts, strict peer resolution, and high-severity audit reporting.
 
-## Validation commands
+Native validation uses the actual GLib/GIO/gettext tools (`glib-compile-schemas`, `glib-compile-resources`, `gdbus-codegen`, `xgettext`, `msgcmp`, and `msgfmt`). Package creation uses `gnome-extensions pack`, and release validation uses Shexli.
 
-### Source and behavior
+## Command hub
+
+The public pnpm surface is intentionally small. Build primitives such as staging, copying, resource compilation, and packing are internal implementation details of `scripts/dev.mjs` and `scripts/dev/build.mjs`.
+
+| Command                           | Purpose                                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `pnpm check`                      | Fast deterministic development validation; no release package and no registry audit.           |
+| `pnpm check:all`                  | Adds frozen dependency-state, registry security, and native GNOME/gettext validation.          |
+| `pnpm check:package`              | Deeply validates the single current package in `dist/builds/`.                                 |
+| `pnpm check:shexli`               | Runs Shexli JSON analysis on the single current package in `dist/builds/`.                     |
+| `pnpm test`                       | Runs the behavior/contract test suite.                                                         |
+| `pnpm lint`                       | Runs JavaScript parsing, module graph/boundary, GNOME API, and entrypoint checks.              |
+| `pnpm format`                     | Rewrites supported repository files with Prettier.                                             |
+| `pnpm build:debug`                | Checked local build that replaces the canonical package in `dist/builds/`.                     |
+| `pnpm build:force`                | Unchecked package that replaces the canonical package in `dist/builds/`.                       |
+| `pnpm build:release`              | Full EGO-oriented pipeline over the same canonical package; writes SHA-256 only after success. |
+| `pnpm ext:install`                | Installs the current canonical package, regardless of which build profile produced it.         |
+| `pnpm ext:remove`                 | Uninstalls MediaShell.                                                                         |
+| `pnpm ext:enable` / `ext:disable` | Enables or disables MediaShell.                                                                |
+| `pnpm ext:prefs`                  | Opens MediaShell Preferences.                                                                  |
+| `pnpm ext:reinstall`              | Builds debug into the canonical package and installs it; it does not fake hot-enable.          |
+| `pnpm ext:upload`                 | Rebuilds and validates release, then uploads only that release artifact to EGO.                |
+| `pnpm env:doctor`                 | Validates the declared Node/pnpm/GNOME/gettext/Shexli development environment.                 |
+| `pnpm shell:debug`                | Starts the supported GNOME Shell development session.                                          |
+| `pnpm translations`               | Regenerates/merges catalogs transactionally and leaves already-current POT/PO files untouched. |
+
+## Validation gates
+
+The tooling deliberately stays below the project ceiling of twenty checks. It groups related facts into a small number of strong gates rather than adding one test for every symbol or implementation detail.
+
+`pnpm check` validates:
+
+1. JavaScript parsing, static relative imports, cycles, process boundaries, and the gateway into private Shell adapters;
+2. stable GNOME runtime API and extension/preferences entrypoint contracts;
+3. observable behavior and reusable domain contracts through `node:test`;
+4. stable declarative contracts derived from metadata, GSettings, GtkBuilder, D-Bus, and shared playback descriptors;
+5. parsed resource/image/XML integrity and repository formatting.
+
+`pnpm check:all` additionally validates:
+
+6. the frozen pnpm dependency state under the repository supply-chain policy;
+7. high-severity advisories plus registry ECDSA signatures;
+8. schemas and GResources through GLib, D-Bus introspection through `gdbus-codegen`, and translation extraction/template/catalogs through GNU gettext.
+
+A release adds three artifact gates:
+
+9. exact ZIP inventory, safe paths, metadata, packaged module targets, and byte-for-byte comparison with freshly compiled resources/catalogs;
+10. logical reproducibility across two clean packages;
+11. Shexli JSON analysis of the exact ZIP that will be promoted; deterministic `error` findings block, while reviewer-oriented warnings/manual-review findings are surfaced without pretending they are definitive failures.
+
+These gates protect boundaries and externally meaningful behavior. Do not add checks for function names, class names, incidental call chains, arbitrary complexity/coverage thresholds, or source text patterns when a parser/native authority can prove the property instead.
+
+## Build profiles
+
+All profiles preserve the normal MediaShell icon, metadata, UUID, name, and version. There is no debug/force cosmetic mutation.
+
+### Debug
 
 ```bash
-pnpm check
+pnpm build:debug
 ```
 
-`pnpm check` runs the normal development gate:
+Runs the normal development checks, native compilation, creates a fresh package, and validates the resulting ZIP. Output: `dist/builds/mediashell@wstxda.github.com.shell-extension.zip`.
 
-1. JavaScript syntax/import/boundary checks;
-2. behavior tests;
-3. declarative schema/UI/D-Bus/playback contracts;
-4. resource and translation consistency;
-5. repository formatting check.
-
-For runtime gates without the formatter:
+### Force
 
 ```bash
-pnpm run check:runtime
+pnpm build:force
 ```
 
-### Native validation
+Copies the runtime and performs only operations intrinsically required to create a GNOME extension bundle (resource compilation and `gnome-extensions pack`). It replaces `dist/builds/mediashell@wstxda.github.com.shell-extension.zip` and removes any stale release SHA-256 sidecar. It intentionally skips source checks, tests, audits, package validation, reproducibility, and Shexli. A force build is never EGO-approved merely because it occupies the canonical package path.
+
+### Release
 
 ```bash
-pnpm run check:native
+pnpm build:release
 ```
 
-This validates schemas, resources, and gettext with the native toolchain.
+The release path:
 
-### Package
+1. verifies the frozen dependency state and pnpm supply-chain policy;
+2. runs all repository and native gates;
+3. builds a fresh package and atomically replaces the canonical `dist/builds/mediashell@wstxda.github.com.shell-extension.zip`; replacing the ZIP also removes any stale SHA-256 sidecar;
+4. validates that exact ZIP;
+5. builds one temporary clean reproduction and compares every logical runtime file hash;
+6. runs Shexli on the canonical ZIP, blocking deterministic `error` findings and surfacing reviewer-oriented findings;
+7. writes the SHA-256 sidecar only after every release gate passes.
+
+If a release fails after packaging, the canonical ZIP remains available for `pnpm check:package` and `pnpm check:shexli`, but no SHA-256 sidecar is written and `pnpm ext:upload` does not continue. The temporary reproduction is always removed.
+
+### Current package and installation
+
+There is exactly one persistent package artifact:
+
+```text
+dist/builds/mediashell@wstxda.github.com.shell-extension.zip
+```
+
+Build profile is pipeline state, not artifact identity. Each successful `build:debug`, `build:force`, or `build:release` replaces this ZIP. Commands that consume an existing package therefore need no selector:
 
 ```bash
-pnpm run build:package
-pnpm run check:package
+pnpm check:package
+pnpm check:shexli
+pnpm ext:install
 ```
 
-The extension archive is written under `dist/builds/`.
+`pnpm ext:reinstall` remains the development loop: it runs `build:debug` and then installs the same canonical ZIP. To install a force or release build, run that build command first and then `pnpm ext:install`.
 
-### Release candidate
-
-```bash
-pnpm verify
-```
-
-`verify` is the release gate: repository checks, native compilation, a fresh package, package validation, and `shexli` validation.
+`gnome-extensions install` places the extension under the user extension directory for discovery by the **next Shell session**. A first installation therefore is not immediately enableable in the already-running Wayland Shell. `ext:reinstall` deliberately stops after installation instead of issuing a misleading immediate `enable`; start a fresh supported development Shell with `pnpm shell:debug`, or begin a new desktop session, then use `pnpm ext:enable`.
 
 ## Formatting and naming
 
 The project uses Prettier as its repository formatter:
 
 ```bash
-pnpm run format
-pnpm run format:check
+pnpm format
+pnpm check
 ```
 
 Naming follows GJS/GNOME conventions where they apply:
@@ -234,13 +300,13 @@ Do not solve a local update problem by rebuilding the entire indicator, Popup, o
 Private native controls fields and methods belong only in:
 
 ```text
-src/shell/private/gnomeShell/nativeControls/compatibility.js
+src/shell/private/gnome/nativecontrols/compatibility.js
 ```
 
 PanelMenu private click-gesture compatibility belongs under:
 
 ```text
-src/shell/private/gnomeShell/panelMenu/
+src/shell/private/gnome/panelmenu/
 ```
 
 The MediaShell core must not adapt itself to a private Shell implementation. The private adapter receives MediaShell capabilities and translates them to the current Shell version. Unsupported private structures must fail open and preserve native behavior.
@@ -254,7 +320,7 @@ JavaScript UI strings use the project gettext helpers. GtkBuilder strings use `t
 After changing visible strings:
 
 ```bash
-pnpm run translations
+pnpm translations
 pnpm check
 ```
 
@@ -301,7 +367,7 @@ Minimum release-oriented scenarios include:
 1. Start from a clean tree.
 2. Update version metadata and visible release documentation.
 3. Regenerate/merge translations if strings changed.
-4. Run `pnpm verify` with the complete native toolchain.
+4. Run `pnpm build:release` with the complete native toolchain.
 5. Install the freshly generated archive, not a stale package.
 6. Run the relevant live GNOME matrix.
 7. Inspect journal output for leaks/fallback loops/errors.

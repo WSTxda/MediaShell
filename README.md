@@ -131,16 +131,16 @@ gnome-extensions enable mediashell@wstxda.github.com
 
 ## Development
 
-Use the versions declared by the project and verify the local GNOME toolchain:
+Use the exact pnpm version declared by the project and verify the local GNOME toolchain:
 
 ```bash
 pnpm install
-pnpm run env:doctor
+pnpm env:doctor
 pnpm check
-pnpm build
+pnpm build:debug
 ```
 
-Use `pnpm verify` for a release candidate. The generated extension package is written to `dist/builds/`.
+Every build profile writes the same canonical artifact at `dist/builds/mediashell@wstxda.github.com.shell-extension.zip`; the latest successful build replaces the previous one. `pnpm build:debug` runs development/native/package validation, `pnpm build:force` only performs the operations required to package the extension, and `pnpm build:release` adds dependency security, reproducibility, Shexli, and a SHA-256 sidecar. No profile changes extension identity or metadata.
 
 ### Documentation
 

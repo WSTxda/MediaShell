@@ -79,7 +79,7 @@ pnpm install
 pnpm check
 ```
 
-Run `pnpm build` when runtime source, schemas, resources, translations, packaging, or platform compatibility change. Run `pnpm verify` for a release candidate or EGO submission.
+Use `pnpm build:debug` when runtime source, schemas, resources, translations, packaging, or platform compatibility change. Use `pnpm build:release` for a release candidate or EGO submission; it is the only build profile considered publishable. `pnpm build:force` deliberately skips validation and is only a packaging escape hatch for local investigation.
 
 The generated extension must still be installed and exercised in GNOME. Automated checks cannot prove Shell actor behavior, private API compatibility, visual output, or the quirks of real MPRIS endpoints.
 
