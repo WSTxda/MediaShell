@@ -41,6 +41,41 @@ export function normalizeTrackDurationMicroseconds(value) {
 }
 
 /**
+ * Normalizes one absolute SetPosition request into the valid MPRIS range.
+ *
+ * MPRIS requires the requested position to be non-negative and, when a track
+ * length is known, strictly less than `mpris:length`. UI sliders may naturally
+ * resolve their 1.0 endpoint to the exact duration, so that endpoint is clamped
+ * to the final valid microsecond. Requests beyond a known duration remain invalid
+ * rather than silently changing the caller's absolute-position intent.
+ *
+ * @param {unknown} value - Requested absolute position in microseconds.
+ * @param {unknown} durationMicroseconds - Optional current `mpris:length`.
+ * @returns {number|null} Protocol-safe position, or null for an invalid request.
+ */
+export function normalizeSetPositionMicroseconds(
+  value,
+  durationMicroseconds = null,
+) {
+  if (
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > Number.MAX_SAFE_INTEGER
+  )
+    return null;
+
+  const positionMicroseconds = Math.trunc(value);
+  const duration = normalizeTrackDurationMicroseconds(durationMicroseconds);
+  if (duration === null) return positionMicroseconds;
+  if (positionMicroseconds > duration) return null;
+
+  return Math.min(
+    positionMicroseconds,
+    Math.max(0, Math.ceil(duration) - 1),
+  );
+}
+
+/**
  * Normalizes and bounds one position anchor.
  *
  * @param {unknown} value - Raw MPRIS position.

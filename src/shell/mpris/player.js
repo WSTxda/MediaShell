@@ -69,7 +69,10 @@ import {
 } from "./metadata.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { normalizePlaybackRateRange } from "./playbackRate.js";
-import { resolvePlaybackPositionTrackContext } from "./position.js";
+import {
+  normalizeSetPositionMicroseconds,
+  resolvePlaybackPositionTrackContext,
+} from "./position.js";
 import {
   MprisOperationReasons,
   mprisOperationCancelled,
@@ -900,14 +903,11 @@ export default class MprisPlayer {
     if (guardResult) return guardResult;
 
     const normalizedTrackId = normalizeMprisTrackId(trackId);
-    if (
-      normalizedTrackId !== currentTrackId ||
-      !Number.isFinite(positionMicroseconds)
-    )
-      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
-
-    const position = Math.trunc(positionMicroseconds);
-    if (position < 0)
+    const position = normalizeSetPositionMicroseconds(
+      positionMicroseconds,
+      this.metadata[MprisMetadataKeys.LENGTH],
+    );
+    if (normalizedTrackId !== currentTrackId || position === null)
       return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
 
     return this.#callPlayer(
