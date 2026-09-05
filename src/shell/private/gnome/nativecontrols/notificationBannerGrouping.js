@@ -1,6 +1,6 @@
 /**
  * @file notificationBannerGrouping.js
- * @module shell.private.gnomeShell.nativeControls.notificationBannerGrouping
+ * @module shell.private.gnome.nativecontrols.notificationBannerGrouping
  *
  * Owns the reversible notification center banner grouping transaction while
  * Enhance replaces native notification banners. Native ownership is restored on

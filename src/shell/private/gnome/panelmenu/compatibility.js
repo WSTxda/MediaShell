@@ -1,6 +1,6 @@
 /**
  * @file compatibility.js
- * @module shell.private.gnomeShell.panelMenu.compatibility
+ * @module shell.private.gnome.panelmenu.compatibility
  *
  * Contains the single private PanelMenu.Button compatibility hook MediaShell
  * needs for custom pointer routing.

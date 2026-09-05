@@ -1,6 +1,6 @@
 /**
  * @file compatibility.js
- * @module shell.private.gnomeShell.nativeControls.compatibility
+ * @module shell.private.gnome.nativecontrols.compatibility
  *
  * Resolves and feature-detects the private GNOME Shell native control contracts
  * used by Hide and Enhance. Direct reads of Shell-private native control fields are confined

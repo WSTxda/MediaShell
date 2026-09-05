@@ -6,7 +6,7 @@
  * controls. Private Shell APIs remain behind the injected adapter.
  */
 
-import GnomeShellNativeControlsAdapter from "../private/gnomeShell/nativeControls/adapter.js";
+import GnomeShellNativeControlsAdapter from "../private/gnome/nativecontrols/adapter.js";
 
 /** Exposes native controls integration without leaking private Shell contracts. */
 export default class NativeControlsIntegration {
