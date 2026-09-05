@@ -31,7 +31,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { DbusPropertiesMethods } from "./dbus.js";
+import { DBusPropertiesMethods } from "./dbus.js";
 import {
   MPRIS_ROOT_IFACE_NAME,
   MPRIS_PLAYER_IFACE_NAME,
@@ -408,7 +408,7 @@ export default class MprisPlayer {
     if (this.isDestroyed || !this.propertiesProxy || !this.playerProxy)
       return false;
     const result = await this.propertiesProxy.call(
-      DbusPropertiesMethods.GET,
+      DBusPropertiesMethods.GET,
       new GLib.Variant("(ss)", [
         MPRIS_PLAYER_IFACE_NAME,
         MprisPlayerProperties.METADATA,
@@ -817,7 +817,7 @@ export default class MprisPlayer {
 
     return this.#callProxy(
       this.propertiesProxy,
-      DbusPropertiesMethods.SET,
+      DBusPropertiesMethods.SET,
       new GLib.Variant("(ssv)", [MPRIS_PLAYER_IFACE_NAME, property, value]),
       `set-property:${this.busName}:${property}`,
       `Failed to set MPRIS property ${property}`,

@@ -12,7 +12,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { DbusPropertiesMethods } from "./dbus.js";
+import { DBusPropertiesMethods } from "./dbus.js";
 import { MPRIS_PLAYER_IFACE_NAME, MprisPlayerProperties } from "./protocol.js";
 import { DBUS_CALL_TIMEOUT_MS } from "./clientPolicy.js";
 import { PlaybackStatus } from "./protocol.js";
@@ -243,7 +243,7 @@ export default class MprisPositionTracker {
     if (!propertiesProxy) return this.positionMicroseconds;
 
     const result = await propertiesProxy.call(
-      DbusPropertiesMethods.GET,
+      DBusPropertiesMethods.GET,
       new GLib.Variant("(ss)", [
         MPRIS_PLAYER_IFACE_NAME,
         MprisPlayerProperties.POSITION,

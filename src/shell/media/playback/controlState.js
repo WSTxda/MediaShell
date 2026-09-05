@@ -6,7 +6,7 @@
  *
  * Popup and top bar consume the same result while retaining separate actors and
  * styling. The resolver never captures a live MprisPlayer in a callback; Shell
- * execution is delegated to the playback-control executor.
+ * execution is delegated to the PlaybackController.
  */
 
 import {

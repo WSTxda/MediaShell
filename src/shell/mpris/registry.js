@@ -15,7 +15,7 @@
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
-import { DbusDaemonMethods, DbusDaemonSignals } from "./dbus.js";
+import { DBusDaemonMethods, DBusDaemonSignals } from "./dbus.js";
 import {
   MPRIS_BUS_NAME_PREFIX,
   MprisPlayerProperties,
@@ -84,7 +84,7 @@ export default class MprisPlayerRegistry {
       () => this.handleBusOwnerChanged(),
     );
     this.nameOwnerChangedSignalId = this.busDaemonProxy.connectSignal(
-      DbusDaemonSignals.NAME_OWNER_CHANGED,
+      DBusDaemonSignals.NAME_OWNER_CHANGED,
       (_proxy, _sender, [busName, _oldOwner, newOwner]) => {
         if (!busName.startsWith(MPRIS_BUS_NAME_PREFIX)) return;
 
@@ -161,7 +161,7 @@ export default class MprisPlayerRegistry {
     if (!this.busDaemonProxy || this.isDestroyed) return;
 
     const listNamesResult = await this.busDaemonProxy.call(
-      DbusDaemonMethods.LIST_NAMES,
+      DBusDaemonMethods.LIST_NAMES,
       null,
       Gio.DBusCallFlags.NONE,
       DBUS_LIST_NAMES_TIMEOUT_MS,
