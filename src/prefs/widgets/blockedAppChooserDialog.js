@@ -20,14 +20,13 @@ import {
   buildSearchIndex,
   matchesSearchTokens,
   tokenizeSearchQuery,
-} from "../search.js";
+} from "../apps/search.js";
 import { gettext as _ } from "../translations.js";
 import {
   LARGE_DIALOG_HEIGHT,
   LARGE_DIALOG_WIDTH,
-  SEARCH_DELAY_MS,
-} from "../constants/preferencesUi.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+} from "../ui/presentation.js";
+import { PreferencesStyleClasses } from "../ui/style.js";
 import {
   createFallbackAppIcon,
   getAppIcon,
@@ -35,7 +34,9 @@ import {
   getAppName,
   getAppSearchAliases,
   listInstalledApps,
-} from "../services/installedAppCatalog.js";
+} from "../apps/installedAppCatalog.js";
+
+const SEARCH_DELAY_MS = 150;
 
 /**
  * Presents a searchable dialog for selecting installed apps to block.

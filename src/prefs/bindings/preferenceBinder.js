@@ -23,7 +23,7 @@ import { InputActions } from "../../shared/input/types.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 import { PREFERENCE_WIDGET_BINDINGS } from "./preferenceBindings.js";
 
 /**

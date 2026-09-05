@@ -1,6 +1,6 @@
 /**
  * @file installedAppCatalog.js
- * @module prefs.services.installedAppCatalog
+ * @module prefs.apps.installedAppCatalog
  *
  * Builds the searchable installed-application catalog used by blocked-app preferences.
  *

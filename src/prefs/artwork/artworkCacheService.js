@@ -1,6 +1,6 @@
 /**
  * @file artworkCacheService.js
- * @module prefs.services.artworkCacheService
+ * @module prefs.artwork.artworkCacheService
  *
  * Provides preferences-side maintenance for MediaShell's persistent artwork cache.
  *

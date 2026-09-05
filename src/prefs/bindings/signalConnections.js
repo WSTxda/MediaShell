@@ -1,6 +1,6 @@
 /**
  * @file signalConnections.js
- * @module prefs.utils.signalConnections
+ * @module prefs.bindings.signalConnections
  *
  * Tracks explicit signal ownership for preferences controllers.
  *

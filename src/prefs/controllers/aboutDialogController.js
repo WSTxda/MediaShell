@@ -21,7 +21,7 @@ import {
 } from "../../shared/project.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _ } from "../translations.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+import { PreferencesStyleClasses } from "../ui/style.js";
 
 const logger = createLogger("AboutDialogController");
 

@@ -14,7 +14,6 @@ import Gtk from "gi://Gtk";
 
 import { ResourcePaths } from "../shared/resources.js";
 import PreferenceBinder from "./bindings/preferenceBinder.js";
-import { PREFERENCE_PAGE_IDS } from "./constants/preferencesUi.js";
 import AboutDialogController from "./controllers/aboutDialogController.js";
 import InteractionsPageController from "./controllers/interactionsPageController.js";
 import OthersPageController from "./controllers/othersPageController.js";
@@ -22,6 +21,14 @@ import PopupLayoutController from "./controllers/popupLayoutController.js";
 import PreferenceSensitivityController from "./controllers/preferenceSensitivityController.js";
 import TopBarLayoutController from "./controllers/topBarLayoutController.js";
 import TrackInformationContentController from "./controllers/trackInformationContentController.js";
+
+const PREFERENCE_PAGE_IDS = Object.freeze([
+  "page-popup",
+  "page-top-bar",
+  "page-panel",
+  "page-interactions",
+  "page-others",
+]);
 import { registerPreferencesResources } from "./preferencesResources.js";
 
 /**

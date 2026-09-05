@@ -25,16 +25,16 @@ import {
   LARGE_DIALOG_WIDTH,
   SHORTCUT_DIALOG_WIDTH,
   TOAST_TIMEOUT_SECONDS,
-} from "../constants/preferencesUi.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+} from "../ui/presentation.js";
+import { PreferencesStyleClasses } from "../ui/style.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 import {
   isValidAccelerator,
   isValidBinding,
-} from "../utils/shortcutValidation.js";
+} from "../input/shortcutValidation.js";
 
 const SHORTCUT_SECTION_ORDER = Object.freeze([
   "playback",

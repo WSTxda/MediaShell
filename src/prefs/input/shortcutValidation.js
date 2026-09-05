@@ -1,6 +1,6 @@
 /**
  * @file shortcutValidation.js
- * @module prefs.utils.shortcutValidation
+ * @module prefs.input.shortcutValidation
  *
  * Validates keyboard accelerators entered in the preferences window.
  *

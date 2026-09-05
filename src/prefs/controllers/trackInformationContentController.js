@@ -19,7 +19,7 @@ import { normalizeTrackInformationContent } from "../../shared/ui/trackInformati
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 import { gettext as _ } from "../translations.js";
 
 /**

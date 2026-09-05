@@ -1,6 +1,6 @@
 /**
  * @file dragAndDrop.js
- * @module prefs.utils.dragAndDrop
+ * @module prefs.ui.dragAndDrop
  *
  * Provides preferences-only helpers for GTK drag-and-drop rendering.
  *

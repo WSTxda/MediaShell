@@ -19,7 +19,7 @@ import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TrackInformationFields } from "../../shared/ui/trackInformation.js";
 import { moveArrayItem } from "../ui/collections.js";
-import { createDragTexture } from "../utils/dragAndDrop.js";
+import { createDragTexture } from "../ui/dragAndDrop.js";
 
 function createTranslatedFields() {
   return Object.freeze({
