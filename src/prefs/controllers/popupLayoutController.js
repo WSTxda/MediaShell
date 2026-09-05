@@ -14,7 +14,7 @@ import { resolvePopupWidth } from "../../shared/ui/popupLayout.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 
 const POPUP_LAYOUT_WIDGETS = Object.freeze({
   width: "sp-popup-width",

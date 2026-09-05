@@ -18,7 +18,7 @@ import { normalizeOrderedValues } from "../../shared/format.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 
 /**
  * Coordinates custom preference widgets that edit top bar layout.

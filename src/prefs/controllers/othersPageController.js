@@ -16,13 +16,13 @@ import GLib from "gi://GLib";
 import { SettingsKeys } from "../../shared/settings/contract.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _, ngettext } from "../translations.js";
-import { TOAST_TIMEOUT_SECONDS } from "../constants/preferencesUi.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
-import ArtworkCacheService from "../services/artworkCacheService.js";
+import { TOAST_TIMEOUT_SECONDS } from "../ui/presentation.js";
+import { PreferencesStyleClasses } from "../ui/style.js";
+import ArtworkCacheService from "../artwork/artworkCacheService.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 
 const logger = createLogger("OthersPageController");
 

@@ -12,7 +12,7 @@
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
-} from "../utils/signalConnections.js";
+} from "../bindings/signalConnections.js";
 
 /**
  * Keeps dependent preferences sensitive only when their parent toggles allow them.

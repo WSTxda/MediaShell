@@ -1,6 +1,6 @@
 /**
  * @file search.js
- * @module prefs.search
+ * @module prefs.apps.search
  *
  * Builds tolerant text indexes for application and preference search.
  *

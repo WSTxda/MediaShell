@@ -1,6 +1,6 @@
 /**
- * @file styleClasses.js
- * @module prefs.constants.styleClasses
+ * @file style.js
+ * @module prefs.ui.style
  *
  * Defines GTK and Libadwaita style classes used by preferences widgets.
  *

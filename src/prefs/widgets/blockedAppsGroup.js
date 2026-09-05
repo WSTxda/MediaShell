@@ -24,8 +24,8 @@ import {
   getAppId,
   getAppName,
   listInstalledApps,
-} from "../services/installedAppCatalog.js";
-import { PreferencesStyleClasses } from "../constants/styleClasses.js";
+} from "../apps/installedAppCatalog.js";
+import { PreferencesStyleClasses } from "../ui/style.js";
 import BlockedAppChooserDialog from "./blockedAppChooserDialog.js";
 
 const logger = createLogger("BlockedAppsGroup");

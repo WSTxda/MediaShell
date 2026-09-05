@@ -19,7 +19,7 @@ import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TopBarElementIds } from "../../shared/ui/topBar.js";
 import { moveArrayItem } from "../ui/collections.js";
-import { createDragTexture } from "../utils/dragAndDrop.js";
+import { createDragTexture } from "../ui/dragAndDrop.js";
 
 /**
  * Custom preferences group for ordering top bar elements with drag and drop.
