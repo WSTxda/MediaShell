@@ -227,7 +227,7 @@ export default class MprisPositionTracker {
       return this.positionRefreshPromise;
 
     const refreshGeneration = ++this.positionRefreshGeneration;
-    const promise = this.readPositionMicroseconds(refreshGeneration).finally(
+    const promise = this.refreshPositionFromProxy(refreshGeneration).finally(
       () => {
         if (this.positionRefreshPromise === promise)
           this.positionRefreshPromise = null;
@@ -237,7 +237,7 @@ export default class MprisPositionTracker {
     return promise;
   }
 
-  async readPositionMicroseconds(refreshGeneration) {
+  async refreshPositionFromProxy(refreshGeneration) {
     const propertiesProxy = this.propertiesProxy;
     const operationCancellable = this.operationCancellable;
     if (!propertiesProxy) return this.positionMicroseconds;
