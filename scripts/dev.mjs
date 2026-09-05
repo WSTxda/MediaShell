@@ -229,11 +229,34 @@ async function buildRelease() {
   }
 }
 
-async function runBuild(profile) {
-  if (profile === "debug") return buildDebug();
-  if (profile === "force") return buildForce();
-  if (profile === "release") return buildRelease();
-  throw new Error("Build profile must be 'debug', 'force', or 'release'.");
+function parseBuildOptions(profile, args) {
+  let install = false;
+
+  for (const arg of args) {
+    if (arg === "--install") {
+      install = true;
+      continue;
+    }
+    throw new Error(
+      `build:${profile} only accepts the optional --install flag.`,
+    );
+  }
+
+  return { install };
+}
+
+async function runBuild(profile, args = []) {
+  if (!["debug", "force", "release"].includes(profile))
+    throw new Error("Build profile must be 'debug', 'force', or 'release'.");
+
+  const { install } = parseBuildOptions(profile, args);
+  let packagePath;
+  if (profile === "debug") packagePath = await buildDebug();
+  else if (profile === "force") packagePath = await buildForce();
+  else packagePath = await buildRelease();
+
+  if (install) await installExtension();
+  return packagePath;
 }
 
 function requireNoArgs(args, command) {
@@ -282,8 +305,7 @@ async function runExtensionCommand(action, args) {
   }
   if (action === "reinstall") {
     requireNoArgs(args, "ext:reinstall");
-    await buildDebug();
-    await installExtension();
+    await runBuild("debug", ["--install"]);
     console.log(
       "Start a fresh Shell session before enabling a newly installed extension; pnpm shell:debug provides the supported nested development session.",
     );
@@ -329,7 +351,7 @@ try {
   } else if (command === "test")
     runCommand("tests", process.execPath, ["--test"]);
   else if (command === "lint") await checkSource();
-  else if (command === "build") await runBuild(subcommand);
+  else if (command === "build") await runBuild(subcommand, args);
   else if (command === "ext") await runExtensionCommand(subcommand, args);
   else if (command === "env" && subcommand === "doctor")
     runCommand("development environment", "bash", [
