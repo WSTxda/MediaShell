@@ -81,7 +81,7 @@ import {
   mprisOperationUnsupported,
 } from "./operationResult.js";
 import {
-  getOperationErrorName,
+  resolveOperationErrorName,
   isCancellationError,
 } from "../platform/gioErrors.js";
 import MprisPositionTracker from "./positionTracker.js";
@@ -651,11 +651,11 @@ export default class MprisPlayer {
   }
   get positionMicroseconds() {
     return (
-      this.positionTracker?.getPositionMicroseconds() ?? Promise.resolve(0)
+      this.positionTracker?.readPositionMicroseconds() ?? Promise.resolve(0)
     );
   }
   get estimatedPositionMicroseconds() {
-    return this.positionTracker?.getEstimatedPositionMicroseconds() ?? 0;
+    return this.positionTracker?.resolveEstimatedPositionMicroseconds() ?? 0;
   }
   get minimumRate() {
     return finiteNumberOr(this.state[MprisPlayerProperties.MINIMUM_RATE], 1);
@@ -805,7 +805,7 @@ export default class MprisPlayer {
       if (isCancellationError(error))
         return mprisOperationCancelled(MprisOperationReasons.CANCELLED);
 
-      const errorName = getOperationErrorName(error);
+      const errorName = resolveOperationErrorName(error);
       logger.warnOnce(logKey, logMessage, this.busName, error);
       return mprisOperationFailed(MprisOperationReasons.DBUS_ERROR, errorName);
     }

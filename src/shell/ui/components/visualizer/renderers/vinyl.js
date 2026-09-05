@@ -12,7 +12,7 @@ import Cairo from "cairo";
 import Clutter from "gi://Clutter";
 import St from "gi://St";
 
-import { getVisualizerSpeedMultiplier } from "../animation.js";
+import { resolveVisualizerSpeedMultiplier } from "../animation.js";
 import {
   VISUALIZER_VINYL_BASE_ROTATION_DEGREES_PER_SECOND,
   VISUALIZER_VINYL_SIZE,
@@ -33,10 +33,10 @@ export function createVinylArea(parent, repaint) {
   return area;
 }
 
-export function getVinylTargetRotationSpeed(animationSpeed) {
+export function resolveVinylTargetRotationSpeed(animationSpeed) {
   return (
     VISUALIZER_VINYL_BASE_ROTATION_DEGREES_PER_SECOND *
-    getVisualizerSpeedMultiplier(animationSpeed)
+    resolveVisualizerSpeedMultiplier(animationSpeed)
   );
 }
 

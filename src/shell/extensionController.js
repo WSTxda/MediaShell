@@ -58,7 +58,7 @@ export default class ExtensionController {
     this.indicator = null;
     this.resourceRegistry = new ResourceRegistry(this.extensionPath);
     this.nativeControlsIntegration = new NativeControlsIntegration();
-    this.settingsSubscriptions = [];
+    this.settingsUnsubscribers = [];
   }
 
   async enable() {
@@ -69,7 +69,7 @@ export default class ExtensionController {
       this.settings = new MediaShellSettings(
         this.extensionInstance.getSettings(),
       );
-      this.installSettingsSubscriptions();
+      this.subscribeToSettings();
       this.sessionModeSignalId = Main.sessionMode.connect("updated", () =>
         this.handleSessionModeChanged(),
       );
@@ -237,11 +237,11 @@ export default class ExtensionController {
     }
   }
 
-  installSettingsSubscriptions() {
+  subscribeToSettings() {
     const rebuildPanelPlacement = () => {
       if (this.sessionProfile === SessionProfiles.USER) this.rebuildIndicator();
     };
-    this.settingsSubscriptions.push(
+    this.settingsUnsubscribers.push(
       this.settings.panel.subscribe(
         ["position", "index"],
         rebuildPanelPlacement,
@@ -259,8 +259,8 @@ export default class ExtensionController {
     );
   }
 
-  clearSettingsSubscriptions() {
-    for (const unsubscribe of this.settingsSubscriptions.splice(0).reverse())
+  unsubscribeFromSettings() {
+    for (const unsubscribe of this.settingsUnsubscribers.splice(0).reverse())
       unsubscribe();
   }
 
@@ -412,7 +412,7 @@ export default class ExtensionController {
       this.sessionModeSignalId = null;
     }
 
-    this.clearSettingsSubscriptions();
+    this.unsubscribeFromSettings();
     this.destroyRuntimeComponents();
     this.settings?.destroy();
     this.settings = null;

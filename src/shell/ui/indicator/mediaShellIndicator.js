@@ -9,12 +9,13 @@
  * surface updates and owns listeners tied to the currently active player.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import Clutter from "gi://Clutter";
 import GLib from "gi://GLib";
 import GObject from "gi://GObject";
+
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 
+import { MediaShellStyleClasses } from "../style.js";
 import {
   MprisPlayerProperties,
   MprisRootProperties,
@@ -58,7 +59,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.topBarSurface = new TopBarSurface(this, surfaceDependencies);
     this.popupSurface = new PopupSurface(this, surfaceDependencies);
     this.pointerHandler = new IndicatorPointerHandler(this, inputActions);
-    this.addPlayerPropertyListeners();
+    this.connectPlayerPropertyListeners();
     this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
     this.scheduleDesktopAppResolutionRetry();
     this.pointerHandler.install();
@@ -72,11 +73,11 @@ class MediaShellIndicator extends PanelMenu.Button {
   setPlayer(player) {
     if (!player || this.isActivePlayer(player)) return;
 
-    this.removePlayerPropertyListeners();
+    this.disconnectPlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
     this.cancelDesktopAppResolutionRetry();
     this.player = player;
-    this.addPlayerPropertyListeners();
+    this.connectPlayerPropertyListeners();
     // Preserve existing actors during feed/player hand-offs. Each surface
     // reconciles the new player into its current actor tree instead of remounting.
     this.reconcileSurfacesNow(PlayerSurfaceUpdates.ALL);
@@ -104,23 +105,23 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.popupSurface.resetPendingUpdates();
   }
 
-  addPlayerPropertyListeners() {
-    this.addPlayerPropertyListener(MprisPlayerProperties.METADATA, () => {
+  connectPlayerPropertyListeners() {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.METADATA, () => {
       this.requestMetadataSurfaceUpdate();
     });
     const updatePlayerIdentity = () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
       this.scheduleDesktopAppResolutionRetry();
     };
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisRootProperties.IDENTITY,
       updatePlayerIdentity,
     );
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisRootProperties.DESKTOP_ENTRY,
       updatePlayerIdentity,
     );
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisPlayerProperties.PLAYBACK_STATUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAYBACK_STATUS);
@@ -128,50 +129,50 @@ class MediaShellIndicator extends PanelMenu.Button {
         this.popupSurface.syncProgressBarPlaybackState();
       },
     );
-    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_PLAY, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_PAUSE, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PLAY_PAUSE_CAPABILITY);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SEEK_CAPABILITY);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.NEXT_CAPABILITY);
     });
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisPlayerProperties.CAN_GO_PREVIOUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PREVIOUS_CAPABILITY);
       },
     );
-    this.addPlayerPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.CONTROL_CAPABILITY);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SHUFFLE);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.LOOP_STATUS);
     });
-    this.addPlayerPropertyListener(MprisPlayerProperties.VOLUME, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.VOLUME, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.VOLUME);
     });
-    this.addPlayerPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
+    this.connectPlayerPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.PIN);
     });
     const updatePlaybackSpeedControl = () =>
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.RATE);
-    this.addPlayerPropertyListener(MprisPlayerProperties.RATE, () => {
+    this.connectPlayerPropertyListener(MprisPlayerProperties.RATE, () => {
       this.popupSurface.setPlaybackRate(this.player.rate);
       updatePlaybackSpeedControl();
     });
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisPlayerProperties.MINIMUM_RATE,
       updatePlaybackSpeedControl,
     );
-    this.addPlayerPropertyListener(
+    this.connectPlayerPropertyListener(
       MprisPlayerProperties.MAXIMUM_RATE,
       updatePlaybackSpeedControl,
     );
@@ -235,7 +236,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.desktopAppResolutionRetryAttemptsRemaining = 0;
   }
 
-  removePlayerPropertyListeners() {
+  disconnectPlayerPropertyListeners() {
     this.disconnectPositionChangeListener?.();
     this.disconnectPositionChangeListener = null;
 
@@ -250,7 +251,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.playerPropertyListenerIds.clear();
   }
 
-  addPlayerPropertyListener(property, callback) {
+  connectPlayerPropertyListener(property, callback) {
     const observedPlayer = this.player;
     const safeCallback = () => {
       if (this.player !== observedPlayer) return;
@@ -273,7 +274,7 @@ class MediaShellIndicator extends PanelMenu.Button {
     // Remove MediaShell-owned sources and listeners first while Shell objects are
     // still valid, then release child owners before the final GObject teardown.
     this.cancelDesktopAppResolutionRetry();
-    this.removePlayerPropertyListeners();
+    this.disconnectPlayerPropertyListeners();
     this.resetPendingSurfaceUpdates();
 
     const pointerHandler = this.pointerHandler;

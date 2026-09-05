@@ -181,7 +181,7 @@ export default class MprisPositionTracker {
     this.setPositionAnchor(positionMicroseconds, { emit: true });
   }
 
-  getEstimatedPositionMicroseconds() {
+  resolveEstimatedPositionMicroseconds() {
     if (!this.propertiesProxy) return this.positionMicroseconds;
 
     const estimate = this.resolveCurrentEstimate();
@@ -192,12 +192,12 @@ export default class MprisPositionTracker {
     return estimate.positionMicroseconds;
   }
 
-  async getPositionMicroseconds() {
+  async readPositionMicroseconds() {
     try {
       await this.refreshPosition();
     } catch (error) {
       if (isCancellationError(error))
-        return this.getEstimatedPositionMicroseconds();
+        return this.resolveEstimatedPositionMicroseconds();
       // A transient read failure must not blank a still-useful local estimate.
       logger.debugOnce(
         "estimated-position",
@@ -205,7 +205,7 @@ export default class MprisPositionTracker {
         error,
       );
     }
-    return this.getEstimatedPositionMicroseconds();
+    return this.resolveEstimatedPositionMicroseconds();
   }
 
   requestPositionRefresh(reason, force = false) {

@@ -10,7 +10,6 @@
  */
 
 import { extractChromiumPwaAppIds } from "../../../shared/identity/browser.js";
-
 import {
   MPRIS_BUS_NAME_PREFIX,
   normalizeMprisString,

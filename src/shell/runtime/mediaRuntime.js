@@ -35,7 +35,7 @@ export default class MediaRuntime {
     this.proxyFactory = null;
     this.registry = null;
     this.playback = new PlaybackController(() => this.activePlayer);
-    this.disconnectBlockedAppsSetting = mediaSettings.subscribe(
+    this.unsubscribeBlockedAppsSetting = mediaSettings.subscribe(
       "blockedAppIds",
       (blockedAppIds) => {
         this.setBlockedAppIds(blockedAppIds).catch((error) =>
@@ -111,8 +111,8 @@ export default class MediaRuntime {
     if (this.initialized) logger.debug("Destroying media runtime");
     this.initialized = false;
     this.callbacks = null;
-    this.disconnectBlockedAppsSetting?.();
-    this.disconnectBlockedAppsSetting = null;
+    this.unsubscribeBlockedAppsSetting?.();
+    this.unsubscribeBlockedAppsSetting = null;
 
     this.registry?.destroy();
     this.registry = null;

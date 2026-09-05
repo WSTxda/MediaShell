@@ -8,15 +8,16 @@
  * delegates state and execution to the shared playback-control domain.
  */
 
+import Clutter from "gi://Clutter";
+import St from "gi://St";
+
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import St from "gi://St";
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
-
 import {
   PlaybackControlContentKinds,
   PlaybackControlGroups,
@@ -41,11 +42,11 @@ import {
 export default class PopupPlaybackControls {
   constructor(popupSurface, playbackController) {
     this.popupSurface = popupSurface;
+    this.playbackController = playbackController;
     this.actor = null;
     this.primaryControlsBox = null;
     this.secondaryControlsBox = null;
     this.controlButtons = new Map();
-    this.playbackController = playbackController;
   }
 
   get settings() {

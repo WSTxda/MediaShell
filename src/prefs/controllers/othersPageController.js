@@ -206,7 +206,7 @@ export default class OthersPageController {
     const artworkCacheViewGeneration = ++this.artworkCacheViewGeneration;
     try {
       const { cachedImageCount, totalBytes } =
-        await this.artworkCacheService.getArtworkCacheStats();
+        await this.artworkCacheService.readArtworkCacheStats();
       if (artworkCacheViewGeneration === this.artworkCacheViewGeneration)
         this.clearArtworkCacheRow.subtitle = this.formatArtworkCacheStats(
           cachedImageCount,

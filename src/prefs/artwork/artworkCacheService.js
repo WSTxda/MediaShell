@@ -54,7 +54,7 @@ export default class ArtworkCacheService {
     );
   }
 
-  async getArtworkCacheStats() {
+  async readArtworkCacheStats() {
     let cachedImageCount = 0;
     let totalBytes = 0;
 

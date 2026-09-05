@@ -11,13 +11,13 @@
 
 import { PlaybackStatus } from "./protocol.js";
 
-function getPlayerOrderKey(player) {
+function resolvePlayerOrderKey(player) {
   return String(player?.busName ?? "");
 }
 
 function comparePlayers(firstPlayer, secondPlayer) {
-  const firstKey = getPlayerOrderKey(firstPlayer);
-  const secondKey = getPlayerOrderKey(secondPlayer);
+  const firstKey = resolvePlayerOrderKey(firstPlayer);
+  const secondKey = resolvePlayerOrderKey(secondPlayer);
   if (firstKey < secondKey) return -1;
   if (firstKey > secondKey) return 1;
   return 0;

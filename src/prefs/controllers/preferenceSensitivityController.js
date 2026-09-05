@@ -5,7 +5,7 @@
  * Keeps dependent preferences sensitive only when their parent toggles allow them.
  *
  * This controller watches the small set of settings that enable or disable
- * nested controls such as visualizer options and album-art rows. It owns no
+ * nested controls such as visualizer options and artwork rows. It owns no
  * persistent values; it only mirrors current settings into widget sensitivity.
  */
 

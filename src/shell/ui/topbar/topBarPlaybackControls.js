@@ -8,15 +8,16 @@
  * delegates state and execution to the shared playback-control domain.
  */
 
+import Clutter from "gi://Clutter";
+import St from "gi://St";
+
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
+
 import {
   MediaShellStyleClasses,
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import Clutter from "gi://Clutter";
-import St from "gi://St";
-import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
-
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../../media/playback/surfaceState.js";
@@ -34,9 +35,9 @@ import {
 export default class TopBarPlaybackControls {
   constructor(topBarSurface, playbackController) {
     this.topBarSurface = topBarSurface;
+    this.playbackController = playbackController;
     this.actor = null;
     this.controlButtons = new Map();
-    this.playbackController = playbackController;
   }
 
   get settings() {
@@ -138,7 +139,7 @@ export default class TopBarPlaybackControls {
       _,
     );
     buttonState.button.opacity = ACTIVE_OPACITY;
-    buttonState.content.actor.opacity = getContentOpacity(
+    buttonState.content.actor.opacity = resolveContentOpacity(
       isReactive,
       controlDefinition.isStateControl,
       isActive,
@@ -199,7 +200,7 @@ export default class TopBarPlaybackControls {
   }
 }
 
-function getContentOpacity(isReactive, isStateControl, isActive) {
+function resolveContentOpacity(isReactive, isStateControl, isActive) {
   if (!isReactive) return INACTIVE_OPACITY;
   if (isStateControl && !isActive) return INACTIVE_OPACITY;
   return ACTIVE_OPACITY;

@@ -43,7 +43,7 @@ export function readCachedResolvedApp(cache, key) {
   return null;
 }
 
-export function getAppInfoSafely(desktopApp) {
+export function readAppInfoSafely(desktopApp) {
   try {
     return desktopApp?.get_app_info?.() ?? null;
   } catch (error) {
@@ -57,7 +57,7 @@ export function getAppInfoSafely(desktopApp) {
 }
 
 export function readDesktopAppDescriptor(desktopApp) {
-  const appInfo = getAppInfoSafely(desktopApp) ?? desktopApp ?? null;
+  const appInfo = readAppInfoSafely(desktopApp) ?? desktopApp ?? null;
   return {
     desktopId: readAppStringSafely(
       () => desktopApp?.get_id?.() || appInfo?.get_id?.(),
@@ -78,5 +78,5 @@ export function readDesktopAppIcon(desktopApp) {
 
   const directIcon = desktopApp.get_icon?.();
   if (directIcon) return directIcon;
-  return getAppInfoSafely(desktopApp)?.get_icon?.() ?? null;
+  return readAppInfoSafely(desktopApp)?.get_icon?.() ?? null;
 }

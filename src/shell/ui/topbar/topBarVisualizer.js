@@ -22,8 +22,8 @@ import {
 } from "../accessibility/reducedMotion.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import {
-  getVisualizerLevels,
-  getVisualizerSpectrumOffsets,
+  resolveVisualizerLevels,
+  resolveVisualizerSpectrumOffsets,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
 } from "../components/visualizer/animation.js";
@@ -58,7 +58,7 @@ import {
 } from "../components/visualizer/renderers/spectrum.js";
 import {
   createVinylArea,
-  getVinylTargetRotationSpeed,
+  resolveVinylTargetRotationSpeed,
   repaintVinyl,
   updateVinylRotation,
 } from "../components/visualizer/renderers/vinyl.js";
@@ -356,7 +356,7 @@ export default class TopBarVisualizer {
     }
 
     if (this.playing) {
-      getVisualizerLevels(
+      resolveVisualizerLevels(
         this.styleDefinition.animationKind,
         this.animationElapsedSeconds,
         this.animationSpeed,
@@ -381,7 +381,7 @@ export default class TopBarVisualizer {
       area: this.vinylArea,
       playing: this.playing,
       previousSpeed: this.vinylRotationDegreesPerSecond,
-      targetSpeed: getVinylTargetRotationSpeed(this.animationSpeed),
+      targetSpeed: resolveVinylTargetRotationSpeed(this.animationSpeed),
       angleDegrees: this.vinylAngleDegrees,
       deltaSeconds,
     });
@@ -391,13 +391,13 @@ export default class TopBarVisualizer {
 
   updateSpectrumFrame() {
     if (this.playing) {
-      getVisualizerSpectrumOffsets(
+      resolveVisualizerSpectrumOffsets(
         this.animationElapsedSeconds,
         this.animationSpeed,
         this.spectrumOffsets,
         VisualizerSpectrumLayers.PRIMARY,
       );
-      getVisualizerSpectrumOffsets(
+      resolveVisualizerSpectrumOffsets(
         this.animationElapsedSeconds,
         this.animationSpeed,
         this.backgroundSpectrumOffsets,

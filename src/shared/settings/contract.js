@@ -117,7 +117,7 @@ export const SettingsKeys = Object.freeze({
 
 // --- Top bar settings ---
 
-/** Constraints for the top-bar album-art corner radius. */
+/** Constraints for the top-bar artwork corner radius. */
 export const TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
@@ -177,7 +177,7 @@ export const TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS = Object.freeze(
 
 // --- Popup settings ---
 
-/** Constraints for the popup album-art corner radius. */
+/** Constraints for the popup artwork corner radius. */
 export const POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,

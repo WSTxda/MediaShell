@@ -6,7 +6,7 @@
  *
  * MPRIS position tracking remains authoritative for time projection. This module
  * only validates one rendered snapshot and derives the normalized slider/timeline
- * values needed by popup and native-media presentations.
+ * values needed by popup and native controls presentations.
  */
 
 import {

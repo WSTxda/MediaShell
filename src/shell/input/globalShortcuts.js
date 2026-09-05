@@ -12,6 +12,7 @@
 
 import Meta from "gi://Meta";
 import Shell from "gi://Shell";
+
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 import { INPUT_ACTION_DEFINITIONS } from "../../shared/input/actions.js";

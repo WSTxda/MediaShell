@@ -30,7 +30,7 @@ import {
   stripDesktopFileSuffix,
 } from "./appIdentity.js";
 import {
-  getAppInfoSafely,
+  readAppInfoSafely,
   readAppStringSafely,
   readCachedResolvedApp,
   readDesktopAppIcon,
@@ -56,8 +56,8 @@ function storeBoundedCacheValue(cache, key, value) {
   return value;
 }
 
-function getNormalizedAppIdentityValues(desktopApp) {
-  const appInfo = getAppInfoSafely(desktopApp);
+function resolveNormalizedAppIdentityValues(desktopApp) {
+  const appInfo = readAppInfoSafely(desktopApp);
   return [
     readAppStringSafely(() => desktopApp.get_id?.()),
     readAppStringSafely(() => desktopApp.get_name?.()),
@@ -77,7 +77,7 @@ function getNormalizedAppIdentityValues(desktopApp) {
 function appMatchesIdentityCandidates(desktopApp, normalizedCandidates) {
   if (!desktopApp || normalizedCandidates.length === 0) return false;
 
-  const normalizedAppValues = getNormalizedAppIdentityValues(desktopApp);
+  const normalizedAppValues = resolveNormalizedAppIdentityValues(desktopApp);
   return normalizedCandidates.some((candidate) =>
     normalizedAppValues.some((appValue) =>
       normalizedIdentityContains(appValue, candidate),
@@ -389,7 +389,7 @@ export default class DesktopAppResolver {
     return desktopApp;
   }
 
-  #getFallbackDesktopAppIcon() {
+  #ensureFallbackDesktopAppIcon() {
     this.#fallbackDesktopAppIcon ??= Gio.ThemedIcon.new_from_names([
       IconNames.MEDIA,
       IconNames.MISSING,
@@ -397,10 +397,10 @@ export default class DesktopAppResolver {
     return this.#fallbackDesktopAppIcon;
   }
 
-  getDesktopAppIcon(desktopApp) {
+  resolveDesktopAppIcon(desktopApp) {
     try {
       return (
-        readDesktopAppIcon(desktopApp) ?? this.#getFallbackDesktopAppIcon()
+        readDesktopAppIcon(desktopApp) ?? this.#ensureFallbackDesktopAppIcon()
       );
     } catch (error) {
       logger.debugOnce(
@@ -408,7 +408,7 @@ export default class DesktopAppResolver {
         "The app icon could not be read; using the fallback",
         error,
       );
-      return this.#getFallbackDesktopAppIcon();
+      return this.#ensureFallbackDesktopAppIcon();
     }
   }
 
@@ -425,9 +425,9 @@ export default class DesktopAppResolver {
     }
   }
 
-  getDesktopAppName(desktopApp, fallback) {
+  resolveDesktopAppName(desktopApp, fallback) {
     try {
-      const appInfo = getAppInfoSafely(desktopApp);
+      const appInfo = readAppInfoSafely(desktopApp);
       return (
         desktopApp?.get_display_name?.() ||
         desktopApp?.get_name?.() ||

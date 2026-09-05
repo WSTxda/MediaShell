@@ -16,7 +16,7 @@ import { IconNames } from "../../shared/icons.js";
 
 const fallbackIcons = new Map();
 
-function getFallbackIcon(primaryName) {
+function ensureFallbackIcon(primaryName) {
   const fallbackName = primaryName || IconNames.MISSING;
   if (fallbackIcons.has(fallbackName)) return fallbackIcons.get(fallbackName);
 
@@ -30,7 +30,7 @@ function getFallbackIcon(primaryName) {
 }
 
 function setIconFallback(icon, fallbackIconName = IconNames.MISSING) {
-  icon.set_fallback_gicon(getFallbackIcon(fallbackIconName));
+  icon.set_fallback_gicon(ensureFallbackIcon(fallbackIconName));
   return icon;
 }
 
@@ -42,7 +42,7 @@ export function createIcon(params = {}, fallbackIconName = IconNames.MISSING) {
   // resolve a missing themed name or broken GIcon without a blank frame.
   if (gicon) icon.set_gicon(gicon);
   else if (iconName) icon.set_icon_name(iconName);
-  else icon.set_gicon(getFallbackIcon(fallbackIconName));
+  else icon.set_gicon(ensureFallbackIcon(fallbackIconName));
 
   return icon;
 }
@@ -58,7 +58,7 @@ export function setIconName(
 
 export function setGIcon(icon, gicon, fallbackIconName = IconNames.MISSING) {
   setIconFallback(icon, fallbackIconName);
-  icon.set_gicon(gicon ?? getFallbackIcon(fallbackIconName));
+  icon.set_gicon(gicon ?? ensureFallbackIcon(fallbackIconName));
 }
 
 export function clearIconCache() {
