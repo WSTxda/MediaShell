@@ -32,7 +32,7 @@
  * Shared visual treatment; each surface owns its layout and geometry.
  */
 .mediashell-artwork-frame {
-  background-color: rgba(128, 128, 128, 0.38);
+  background-color: rgba(128, 128, 128, 0.40);
 }
 
 .mediashell-artwork-image {
@@ -67,6 +67,10 @@
 /* Top Bar — App icon ------------------------------------------------- */
 .mediashell-top-bar-app-icon {
   margin: 0;
+}
+
+.mediashell-top-bar-app-icon.mediashell-app-icon-colored {
+  icon-size: 18px;
 }
 
 /* Top Bar — Artwork -------------------------------------------------- */
@@ -293,13 +297,13 @@
 .mediashell-popup-player-selector-row-pin-button:checked:hover {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
 .mediashell-popup-player-selector-row-pin-button:checked:active {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.2);
 }
 
 .mediashell-popup-player-selector-row-pin-icon {
@@ -348,7 +352,7 @@
  * Compact MPRIS volume row with endpoint buttons flanking the expanding slider.
  */
 .mediashell-popup-volume-control {
-  spacing: 8px;
+  spacing: 6px;
 }
 
 .mediashell-popup-volume-icon-button {
@@ -370,7 +374,7 @@
 
 .mediashell-popup-primary-controls {
   /* Five full-size transport controls fit the 350 px popup without compacting. */
-  spacing: 10px;
+  spacing: 12px;
 }
 
 .mediashell-popup-secondary-controls {
@@ -414,13 +418,13 @@
 .mediashell-popup-control-button-primary:hover {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
 }
 
 .mediashell-popup-control-button-primary:active {
   background-color: -st-accent-color;
   color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.2);
 }
 
 .mediashell-popup-control-button-state {

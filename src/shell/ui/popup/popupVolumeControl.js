@@ -70,7 +70,7 @@ export default class PopupVolumeControl {
     }
     const width =
       this.popupSurface.getPopupContentWidth() -
-      POPUP_VOLUME_CONTROL_HORIZONTAL_INSET * 2;
+      POPUP_VOLUME_CONTROL_HORIZONTAL_INSET * 1;
     this.actor.width = width;
     this.actor.style = this.popupSurface.buildFixedWidthStyle(width);
     this.syncVolume(this.player.volume);
