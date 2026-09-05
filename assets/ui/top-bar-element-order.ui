@@ -12,7 +12,7 @@
         </style>
         <property name="selection-mode">3</property>
         <child>
-          <object class="AdwActionRow" id="row-app-icon">
+          <object class="AdwActionRow" id="ar-app-icon">
             <property name="title" translatable="yes">App icon</property>
             <property name="activatable">true</property>
             <child type="suffix">
@@ -23,7 +23,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="row-artwork">
+          <object class="AdwActionRow" id="ar-artwork">
             <property name="title" translatable="yes">Album art</property>
             <property name="activatable">true</property>
             <child type="suffix">
@@ -34,7 +34,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="row-track-information">
+          <object class="AdwActionRow" id="ar-track-information">
             <property name="title" translatable="yes">Track information</property>
             <property name="activatable">true</property>
             <child type="suffix">
@@ -45,7 +45,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="row-visualizer">
+          <object class="AdwActionRow" id="ar-visualizer">
             <property name="title" translatable="yes">Visualizer</property>
             <property name="activatable">true</property>
             <child type="suffix">
@@ -56,7 +56,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="row-playback-controls">
+          <object class="AdwActionRow" id="ar-playback-controls">
             <property name="title" translatable="yes">Playback controls</property>
             <property name="activatable">true</property>
             <child type="suffix">

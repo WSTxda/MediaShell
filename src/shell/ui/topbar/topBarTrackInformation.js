@@ -24,7 +24,7 @@ export default class TopBarTrackInformation {
     this.actor = null;
     this.renderKey = null;
     this.width = normalizeWidth(this.settings.trackInformationWidth);
-    this.isFixedWidth = Boolean(this.settings.trackInformationWidthLock);
+    this.isFixedWidth = Boolean(this.settings.trackInformationFixedWidth);
   }
 
   get settings() {

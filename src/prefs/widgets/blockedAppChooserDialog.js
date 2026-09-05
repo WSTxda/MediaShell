@@ -15,7 +15,6 @@ import GLib from "gi://GLib";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
-import { GTypeNames } from "../../shared/gobject.js";
 import {
   buildSearchIndex,
   matchesSearchTokens,
@@ -297,7 +296,4 @@ class BlockedAppChooserDialog extends Adw.Dialog {
   }
 }
 
-export default GObject.registerClass(
-  { GTypeName: GTypeNames.BLOCKED_APP_CHOOSER_DIALOG },
-  BlockedAppChooserDialog,
-);
+export default GObject.registerClass(BlockedAppChooserDialog);

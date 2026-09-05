@@ -14,7 +14,6 @@ import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "../translations.js";
-import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { normalizeUniqueStrings } from "../../shared/format.js";
@@ -171,7 +170,7 @@ class BlockedAppsGroup extends Adw.PreferencesGroup {
 
 export default GObject.registerClass(
   {
-    GTypeName: GTypeNames.BLOCKED_APPS_GROUP,
+    GTypeName: "MediaShellBlockedAppsGroup",
     Template: ResourceUris.BLOCKED_APPS_UI,
     InternalChildren: ["lb-blocked-apps", "btn-add"],
     Properties: {

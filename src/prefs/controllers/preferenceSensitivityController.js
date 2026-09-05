@@ -34,7 +34,7 @@ export default class PreferenceSensitivityController {
       "sp-top-bar-track-information-scroll-speed",
     );
     this.topBarScrollPauseRow = this.builder.get_object(
-      "sp-top-bar-track-information-scroll-pause-time",
+      "sp-top-bar-track-information-scroll-pause-seconds",
     );
     this.topBarTrackInformationContentRow = this.builder.get_object(
       "er-top-bar-track-information-content",
@@ -52,7 +52,7 @@ export default class PreferenceSensitivityController {
       "sp-popup-track-information-scroll-speed",
     );
     this.popupScrollPauseRow = this.builder.get_object(
-      "sp-popup-track-information-scroll-pause-time",
+      "sp-popup-track-information-scroll-pause-seconds",
     );
 
     this.connectOwnedSignal(

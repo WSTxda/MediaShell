@@ -1,45 +1,60 @@
 /*
  * MediaShell Shell stylesheet.
  *
- * Sections mirror the runtime UI tree: shared utilities, top bar, popup root,
- * player selector, artwork, track information, progress bar, and playback controls.
- * Keep horizontal alignment rules centralized in component roots; JS computes
- * dimensions from canonical shared and Shell constants.
+ * Sections mirror runtime ownership: shared primitives, indicator, top bar,
+ * popup, and private Native Controls presentation. Every class defined by the
+ * extension is namespaced with `mediashell-`; native GNOME classes are consumed
+ * only from actor construction and are never redefined globally here.
  */
 
-/* Icons ----------------------------------------------------------------
+/* Shared — App icons ---------------------------------------------------
  * Toggle between colored app icons and symbolic icons. The class is
  * attached by JS because St only reads -st-icon-style when building icons.
  */
-.colored-icon {
+.mediashell-app-icon-colored {
   -st-icon-style: requested;
 }
 
-.symbolic-icon {
+.mediashell-app-icon-symbolic {
   -st-icon-style: symbolic;
 }
 
-/* Utilities ------------------------------------------------------------
- * Small reset classes used where GNOME Shell's stock actors would otherwise add
- * their own margins/padding. Keep these generic and side-effect free.
+/* Shared — Scrolling text --------------------------------------------
+ * St.ScrollView reapplies its fade from theme properties whenever its style
+ * changes. Keeping the offset in CSS makes the effect survive focus, hover,
+ * playback, and remapping state changes.
  */
-.no-margin {
-  margin: 0;
+.mediashell-scrolling-label {
+  -st-hfade-offset: 12px;
 }
 
-.no-padding {
+/* Shared — Artwork --------------------------------------------------
+ * Shared visual treatment; each surface owns its layout and geometry.
+ */
+.mediashell-artwork-frame {
+  background-color: rgba(128, 128, 128, 0.38);
+}
+
+.mediashell-artwork-image {
+  margin: 0;
   padding: 0;
 }
 
-/* Top bar ------------------------------------------------------------
- * Top bar actions live on the non-playback action boxes. Playback controls are
- * separate interactive actors so their clicks never trigger the button gestures.
- */
-.panel-button {
+/* Popup and top-bar fallbacks use the native .button surface. */
+.mediashell-artwork-fallback {
+  padding: 0;
+}
+
+/* Indicator ---------------------------------------------------------- */
+.mediashell-indicator {
   padding-left: 6px;
   padding-right: 6px;
 }
 
+/* Top Bar — Root / layout --------------------------------------------
+ * Top bar actions live on the non-playback action boxes. Playback controls are
+ * separate interactive actors so their clicks never trigger button gestures.
+ */
 .mediashell-top-bar-box {
   spacing: 0;
 }
@@ -49,23 +64,23 @@
   padding-right: 6px;
 }
 
-/* St.ScrollView reapplies its fade from theme properties whenever its style
- * changes. Keeping the offset in CSS makes the effect survive popup, focus,
- * hover, playback, and remapping state changes. */
-.mediashell-scrolling-label,
-.mediashell-top-bar-track-information {
-  -st-hfade-offset: 12px;
-}
-
+/* Top Bar — App icon ------------------------------------------------- */
 .mediashell-top-bar-app-icon {
   margin: 0;
 }
 
+/* Top Bar — Artwork -------------------------------------------------- */
 .mediashell-top-bar-artwork {
   margin-left: 6px;
   margin-right: 6px;
 }
 
+/* Top Bar — Track information --------------------------------------- */
+.mediashell-top-bar-track-information {
+  -st-hfade-offset: 12px;
+}
+
+/* Top Bar — Visualizer ----------------------------------------------- */
 .mediashell-top-bar-visualizer {
   spacing: 0;
 }
@@ -95,6 +110,7 @@
   border-radius: 1px;
 }
 
+/* Top Bar — Playback controls --------------------------------------- */
 .mediashell-top-bar-playback-controls {
   padding-left: 0;
   padding-right: 0;
@@ -124,11 +140,13 @@
 }
 
 .mediashell-top-bar-control-icon {
+  margin: 0;
   padding-left: 0;
   padding-right: 0;
 }
 
 .mediashell-top-bar-control-label {
+  margin: 0;
   font-feature-settings: "tnum";
 }
 
@@ -137,7 +155,7 @@
  * component root below controls spacing.
  *
  * `.mediashell-popup-box` is the single source of truth for popup outer padding:
- * - horizontal padding: 16px, matched by POPUP_CONTAINER_PADDING in shell/constants/popup.js;
+ * - horizontal padding: 16px, matched by POPUP_CONTAINER_PADDING in shell/ui/popup/presentation.js;
  * - top padding: 16px, matching Quick Settings density;
  * - bottom padding: 18px, a small optical balance for round controls.
  */
@@ -181,7 +199,7 @@
   padding: 0;
 }
 
-.mediashell-popup-player-selector-button-icon.symbolic-icon {
+.mediashell-popup-player-selector-button-icon.mediashell-app-icon-symbolic {
   icon-size: 18px;
 }
 
@@ -246,7 +264,7 @@
   padding: 0;
 }
 
-.mediashell-popup-player-selector-row-app-icon.symbolic-icon {
+.mediashell-popup-player-selector-row-app-icon.mediashell-app-icon-symbolic {
   icon-size: 18px;
 }
 
@@ -286,56 +304,6 @@
 
 .mediashell-popup-player-selector-row-pin-icon {
   icon-size: 14px;
-}
-
-/* Artwork ------------------------------------------------------------
- * Shared visual treatment; each surface owns its layout and geometry.
- */
-.mediashell-artwork-frame {
-  background-color: rgba(128, 128, 128, 0.38);
-}
-
-.mediashell-artwork-image {
-  margin: 0;
-  padding: 0;
-}
-
-/* Popup and top-bar fallbacks use the native .button surface. */
-.mediashell-artwork-fallback {
-  padding: 0;
-}
-
-/* GNOME native controls Enhance -------------------------------------- */
-.mediashell-enhance-media-artwork {
-  margin-right: 8px;
-}
-
-.mediashell-enhance-media-transport {
-  spacing: 2px;
-  margin-left: 6px;
-}
-
-.mediashell-enhance-media-actions {
-  spacing: 2px;
-}
-
-.mediashell-enhance-media-control {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0;
-}
-
-.mediashell-enhance-media-control-icon {
-  icon-size: 16px;
-}
-
-.mediashell-enhance-media-progress {
-  min-width: 72px;
-  min-height: 24px;
-  -barlevel-height: 4px;
-  -slider-handle-radius: 7px;
 }
 
 /* Popup — Track information -----------------------------------------
@@ -488,4 +456,37 @@
 
 .mediashell-popup-control-button-state .mediashell-popup-control-icon {
   icon-size: 16px;
+}
+
+/* Native Controls — Enhance ---------------------------------------- */
+.mediashell-enhance-media-artwork {
+  margin-right: 8px;
+}
+
+.mediashell-enhance-media-transport {
+  spacing: 2px;
+  margin-left: 6px;
+}
+
+.mediashell-enhance-media-actions {
+  spacing: 2px;
+}
+
+.mediashell-enhance-media-control {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.mediashell-enhance-media-control-icon {
+  icon-size: 16px;
+}
+
+.mediashell-enhance-media-progress {
+  min-width: 72px;
+  min-height: 24px;
+  -barlevel-height: 4px;
+  -slider-handle-radius: 7px;
 }

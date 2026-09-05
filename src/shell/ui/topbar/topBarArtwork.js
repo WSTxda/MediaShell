@@ -17,11 +17,11 @@ import {
   styleClassNames,
 } from "../style.js";
 import { IconNames } from "../../../shared/icons.js";
-import { TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
+import { TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
-  calculateArtworkCornerRadius,
+  resolveArtworkCornerRadius,
   resolveArtworkPresentationGeometry,
   prepareArtworkPixbuf,
 } from "../../media/artwork/presentation.js";
@@ -97,13 +97,15 @@ export default class TopBarArtwork {
 
   getArtworkGeometry() {
     const width = this.getArtworkSize();
-    const configuredRadius = Number.isFinite(this.settings.artworkCornerRadius)
-      ? this.settings.artworkCornerRadius
-      : TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+    const cornerRadiusPercent = Number.isFinite(
+      this.settings.artworkCornerRadiusPercent,
+    )
+      ? this.settings.artworkCornerRadiusPercent
+      : TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS.DEFAULT;
 
     return {
       width,
-      radius: calculateArtworkCornerRadius(width, configuredRadius),
+      radius: resolveArtworkCornerRadius(width, cornerRadiusPercent),
     };
   }
 

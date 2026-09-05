@@ -15,7 +15,6 @@ import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
 import { gettext as _ } from "../translations.js";
-import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TrackInformationFields } from "../../shared/ui/trackInformation.js";
 import { moveArrayItem } from "../ui/collections.js";
@@ -187,7 +186,7 @@ class TrackInformationContentRow extends Adw.ExpanderRow {
 
 export default GObject.registerClass(
   {
-    GTypeName: GTypeNames.TRACK_INFORMATION_CONTENT_ROW,
+    GTypeName: "MediaShellTrackInformationContentRow",
     Template: ResourceUris.TRACK_INFORMATION_CONTENT_ROW_UI,
     InternalChildren: ["btn-add-field", "btn-add-text"],
     Properties: {

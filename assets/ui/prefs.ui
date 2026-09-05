@@ -132,7 +132,7 @@
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSpinRow" id="sp-popup-artwork-corner-radius">
+              <object class="AdwSpinRow" id="sp-popup-artwork-corner-radius-percent">
                 <property name="title" translatable="yes">Corner radius</property>
                 <property name="subtitle" translatable="yes">0 disables rounded corners</property>
                 <property name="adjustment">
@@ -154,7 +154,7 @@
             <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwActionRow" id="sr-popup-track-information-scroll-enabled">
+              <object class="AdwActionRow" id="ar-popup-track-information-scroll-enabled">
                 <property name="title" translatable="yes">Scroll track information</property>
                 <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
@@ -203,7 +203,7 @@
               </object>
             </child>
             <child>
-              <object class="AdwSpinRow" id="sp-popup-track-information-scroll-pause-time">
+              <object class="AdwSpinRow" id="sp-popup-track-information-scroll-pause-seconds">
                 <property name="title" translatable="yes">Scroll pause</property>
                 <property name="subtitle" translatable="yes">Seconds before scrolling starts again</property>
                 <property name="adjustment">
@@ -231,7 +231,7 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Apps</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-popup-app-icon-use-color">
+          <object class="AdwSwitchRow" id="sr-popup-player-selector-app-icon-use-color">
             <property name="title" translatable="yes">Colored app icon</property>
             <property name="subtitle" translatable="yes">Use the media app's full-color icon</property>
           </object>
@@ -260,7 +260,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwSwitchRow" id="sr-top-bar-track-information-width-lock">
+          <object class="AdwSwitchRow" id="sr-top-bar-track-information-fixed-width">
             <property name="title" translatable="yes">Lock width</property>
             <property name="subtitle" translatable="yes">Keep the configured width for short text</property>
           </object>
@@ -417,7 +417,7 @@
             <property name="subtitle" translatable="yes">Show album art</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwSpinRow" id="sp-top-bar-artwork-corner-radius">
+              <object class="AdwSpinRow" id="sp-top-bar-artwork-corner-radius-percent">
                 <property name="title" translatable="yes">Corner radius</property>
                 <property name="subtitle" translatable="yes">0 disables rounded corners</property>
                 <property name="adjustment">
@@ -439,7 +439,7 @@
             <property name="subtitle" translatable="yes">Show track information</property>
             <property name="expanded">false</property>
             <child>
-              <object class="AdwActionRow" id="sr-top-bar-track-information-scroll-enabled">
+              <object class="AdwActionRow" id="ar-top-bar-track-information-scroll-enabled">
                 <property name="title" translatable="yes">Scroll track information</property>
                 <property name="subtitle" translatable="yes">Scroll overflowing track information</property>
                 <child type="suffix">
@@ -488,7 +488,7 @@
               </object>
             </child>
             <child>
-              <object class="AdwSpinRow" id="sp-top-bar-track-information-scroll-pause-time">
+              <object class="AdwSpinRow" id="sp-top-bar-track-information-scroll-pause-seconds">
                 <property name="title" translatable="yes">Scroll pause</property>
                 <property name="subtitle" translatable="yes">Seconds before scrolling starts again</property>
                 <property name="adjustment">
@@ -950,7 +950,7 @@
         <property name="title" translatable="yes">Cache</property>
         <property name="description" translatable="yes">Store content on disk to load it faster</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-artwork-cache-enabled">
+          <object class="AdwSwitchRow" id="sr-media-artwork-cache-enabled">
             <property name="title" translatable="yes">Store album art</property>
           </object>
         </child>

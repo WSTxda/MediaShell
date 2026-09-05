@@ -10,9 +10,9 @@
  */
 
 export const TopBarElementIds = Object.freeze({
-  APP_ICON: "APP_ICON",
-  ARTWORK: "ARTWORK",
-  TRACK_INFORMATION: "TRACK_INFORMATION",
-  VISUALIZER: "VISUALIZER",
-  PLAYBACK_CONTROLS: "PLAYBACK_CONTROLS",
+  APP_ICON: "app-icon",
+  ARTWORK: "artwork",
+  TRACK_INFORMATION: "track-information",
+  VISUALIZER: "visualizer",
+  PLAYBACK_CONTROLS: "playback-controls",
 });

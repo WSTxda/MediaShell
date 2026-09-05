@@ -15,7 +15,6 @@ import Gdk from "gi://Gdk";
 import GObject from "gi://GObject";
 import Gtk from "gi://Gtk";
 
-import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TopBarElementIds } from "../../shared/ui/topBar.js";
 import { moveArrayItem } from "../ui/collections.js";
@@ -31,11 +30,11 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
     super(params);
     this.dragControllersInitialized = false;
     this.listBox = this._lb_top_bar_element_order;
-    this.appIconRow = this._row_app_icon;
-    this.artworkRow = this._row_artwork;
-    this.trackInformationRow = this._row_track_information;
-    this.visualizerRow = this._row_visualizer;
-    this.playbackControlsRow = this._row_playback_controls;
+    this.appIconRow = this._ar_app_icon;
+    this.artworkRow = this._ar_artwork;
+    this.trackInformationRow = this._ar_track_information;
+    this.visualizerRow = this._ar_visualizer;
+    this.playbackControlsRow = this._ar_playback_controls;
     this.appIconRow.elementId = TopBarElementIds.APP_ICON;
     this.artworkRow.elementId = TopBarElementIds.ARTWORK;
     this.trackInformationRow.elementId = TopBarElementIds.TRACK_INFORMATION;
@@ -114,15 +113,15 @@ class TopBarElementOrderGroup extends Adw.PreferencesGroup {
 
 export default GObject.registerClass(
   {
-    GTypeName: GTypeNames.TOP_BAR_ELEMENT_ORDER_GROUP,
+    GTypeName: "MediaShellTopBarElementOrderGroup",
     Template: ResourceUris.TOP_BAR_ELEMENT_ORDER_UI,
     InternalChildren: [
       "lb-top-bar-element-order",
-      "row-app-icon",
-      "row-artwork",
-      "row-track-information",
-      "row-visualizer",
-      "row-playback-controls",
+      "ar-app-icon",
+      "ar-artwork",
+      "ar-track-information",
+      "ar-visualizer",
+      "ar-playback-controls",
     ],
     Properties: {
       "element-order": GObject.ParamSpec.jsobject(

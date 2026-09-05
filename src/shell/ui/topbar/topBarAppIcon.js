@@ -84,10 +84,9 @@ export default class TopBarAppIcon {
         styleClass: styleClassNames(
           NativeStyleClasses.SYSTEM_STATUS_ICON,
           MediaShellStyleClasses.TOP_BAR_APP_ICON,
-          NativeStyleClasses.NO_MARGIN,
           useColoredIcon
-            ? MediaShellStyleClasses.COLORED_ICON
-            : MediaShellStyleClasses.SYMBOLIC_ICON,
+            ? MediaShellStyleClasses.APP_ICON_COLORED
+            : MediaShellStyleClasses.APP_ICON_SYMBOLIC,
         ),
       },
       IconNames.MEDIA,

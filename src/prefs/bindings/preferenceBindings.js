@@ -73,8 +73,8 @@ const POPUP_BINDINGS = Object.freeze([
   ],
   [SettingsKeys.POPUP_ARTWORK_SHOW, "er-popup-artwork", "enable-expansion"],
   [
-    SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS,
-    "sp-popup-artwork-corner-radius",
+    SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS_PERCENT,
+    "sp-popup-artwork-corner-radius-percent",
     "value",
   ],
   [
@@ -93,13 +93,13 @@ const POPUP_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
-    "sp-popup-track-information-scroll-pause-time",
+    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS,
+    "sp-popup-track-information-scroll-pause-seconds",
     "value",
   ],
   [
-    SettingsKeys.POPUP_APP_ICON_USE_COLOR,
-    "sr-popup-app-icon-use-color",
+    SettingsKeys.POPUP_PLAYER_SELECTOR_APP_ICON_USE_COLOR,
+    "sr-popup-player-selector-app-icon-use-color",
     "active",
   ],
 ]);
@@ -111,8 +111,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK,
-    "sr-top-bar-track-information-width-lock",
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_FIXED_WIDTH,
+    "sr-top-bar-track-information-fixed-width",
     "active",
   ],
   TOP_BAR_PLAYBACK_CONTROL_BINDINGS.show,
@@ -148,8 +148,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "value",
   ],
   [
-    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
-    "sp-top-bar-track-information-scroll-pause-time",
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS,
+    "sp-top-bar-track-information-scroll-pause-seconds",
     "value",
   ],
   [
@@ -164,8 +164,8 @@ const TOP_BAR_BINDINGS = Object.freeze([
   ],
   [SettingsKeys.TOP_BAR_ARTWORK_SHOW, "er-top-bar-artwork", "enable-expansion"],
   [
-    SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS,
-    "sp-top-bar-artwork-corner-radius",
+    SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT,
+    "sp-top-bar-artwork-corner-radius-percent",
     "value",
   ],
 ]);
@@ -285,7 +285,11 @@ const OTHERS_BINDINGS = Object.freeze([
     "sr-native-controls-enhance",
     "active",
   ],
-  [SettingsKeys.ARTWORK_CACHE_ENABLED, "sr-artwork-cache-enabled", "active"],
+  [
+    SettingsKeys.MEDIA_ARTWORK_CACHE_ENABLED,
+    "sr-media-artwork-cache-enabled",
+    "active",
+  ],
 ]);
 
 export const PREFERENCE_WIDGET_BINDINGS = Object.freeze([
