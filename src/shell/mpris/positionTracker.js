@@ -267,8 +267,7 @@ export default class MprisPositionTracker {
   }
 
   onPositionChanged(callback) {
-    if (!this.propertiesProxy || typeof callback !== "function")
-      return () => {};
+    if (!this.propertiesProxy) return () => {};
     const listenerId = this.nextPositionChangeListenerId++;
     this.positionChangeListeners.set(listenerId, callback);
     return () => this.positionChangeListeners.delete(listenerId);

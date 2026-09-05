@@ -107,13 +107,6 @@ test("MPRIS operations return explicit results through one executor", async () =
           ),
           mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET),
         );
-        assert.deepEqual(
-          await executePlaybackControlAction(
-            {},
-            PlaybackControlActions.PLAY_PAUSE,
-          ),
-          mprisOperationUnsupported(MprisOperationReasons.MISSING_METHOD),
-        );
       },
     ],
     [

@@ -332,27 +332,17 @@ export default class MprisPlayerRegistry {
     };
 
     if (removeIfStopped()) return true;
-    if (!shellApp || typeof shellApp.connect !== "function") return false;
+    if (!shellApp) return false;
 
-    try {
-      const stateSignalId = shellApp.connect("notify::state", removeIfStopped);
-      this.pendingRemovalPlayerStateConnections.set(busName, {
-        shellApp,
-        stateSignalId,
-      });
+    const stateSignalId = shellApp.connect("notify::state", removeIfStopped);
+    this.pendingRemovalPlayerStateConnections.set(busName, {
+      shellApp,
+      stateSignalId,
+    });
 
-      // Close the race between the initial state read and signal
-      // connection without introducing polling.
-      return removeIfStopped();
-    } catch (error) {
-      logger.debugOnce(
-        `shell-app-state:${busName}`,
-        "Could not observe exact Shell app state during MPRIS hand-off",
-        busName,
-        error,
-      );
-      return false;
-    }
+    // Close the race between the initial state read and signal connection
+    // without introducing polling.
+    return removeIfStopped();
   }
 
   cancelScheduledRemoval(busName) {
