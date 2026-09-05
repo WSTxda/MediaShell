@@ -9,6 +9,14 @@
  * not drift across otherwise unrelated modules.
  */
 
+/** GNOME Shell major versions declared as supported by MediaShell. */
+export const SUPPORTED_GNOME_SHELL_VERSIONS = Object.freeze([
+  "48",
+  "49",
+  "50",
+  "51",
+]);
+
 /** Stable GNOME Shell extension identifier and gettext domain. */
 export const EXTENSION_UUID = "mediashell@wstxda.github.com";
 

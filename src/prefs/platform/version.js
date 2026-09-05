@@ -1,14 +1,18 @@
 /**
  * @file version.js
- * @module shared.platform.version
+ * @module prefs.platform.version
  *
- * Provides toolkit-independent version comparisons for platform guards.
+ * Owns the Preferences-process Libadwaita version requirement and comparison.
  *
- * Preferences and tests use the same comparison without importing GTK or
- * Libadwaita runtime objects.
+ * Keeping this guard under prefs makes the process-specific platform dependency
+ * explicit while the comparison itself remains deterministic and GI-free.
  */
 
-import { MINIMUM_LIBADWAITA_VERSION } from "./constants.js";
+/** Minimum Libadwaita version required by MediaShell preferences. */
+export const MINIMUM_LIBADWAITA_VERSION = Object.freeze({
+  major: 1,
+  minor: 7,
+});
 
 /**
  * Returns whether a major/minor version satisfies the declared minimum.

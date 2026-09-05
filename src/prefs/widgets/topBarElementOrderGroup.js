@@ -18,7 +18,7 @@ import Gtk from "gi://Gtk";
 import { GTypeNames } from "../../shared/gobject.js";
 import { ResourceUris } from "../../shared/resources.js";
 import { TopBarElementIds } from "../../shared/ui/topBar.js";
-import { moveArrayItem } from "../../shared/collections.js";
+import { moveArrayItem } from "../ui/collections.js";
 import { createDragTexture } from "../utils/dragAndDrop.js";
 
 /**
