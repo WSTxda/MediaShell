@@ -23,15 +23,15 @@ import {
 } from "../../mpris/operationResult.js";
 import { resolveNextPlaybackRate } from "../../mpris/playbackRate.js";
 
-const PLAYER_METHOD_BY_ACTION = Object.freeze({
-  [PlaybackControlActions.TOGGLE_SHUFFLE]: "toggleShuffle",
-  [PlaybackControlActions.PREVIOUS]: "previous",
-  [PlaybackControlActions.PLAY]: "play",
-  [PlaybackControlActions.PAUSE]: "pause",
-  [PlaybackControlActions.PLAY_PAUSE]: "playPause",
-  [PlaybackControlActions.STOP]: "stop",
-  [PlaybackControlActions.NEXT]: "next",
-  [PlaybackControlActions.TOGGLE_REPEAT]: "toggleLoop",
+const PLAYER_OPERATION_BY_ACTION = Object.freeze({
+  [PlaybackControlActions.TOGGLE_SHUFFLE]: (player) => player.toggleShuffle(),
+  [PlaybackControlActions.PREVIOUS]: (player) => player.previous(),
+  [PlaybackControlActions.PLAY]: (player) => player.play(),
+  [PlaybackControlActions.PAUSE]: (player) => player.pause(),
+  [PlaybackControlActions.PLAY_PAUSE]: (player) => player.playPause(),
+  [PlaybackControlActions.STOP]: (player) => player.stop(),
+  [PlaybackControlActions.NEXT]: (player) => player.next(),
+  [PlaybackControlActions.TOGGLE_REPEAT]: (player) => player.toggleLoop(),
 });
 
 const SEEK_DIRECTION_BY_ACTION = Object.freeze({
@@ -42,21 +42,17 @@ const SEEK_DIRECTION_BY_ACTION = Object.freeze({
 const MICROSECONDS_PER_SECOND = 1_000_000;
 const logger = createLogger("PlaybackController");
 
-async function executePlayerMethod(player, methodName, ...arguments_) {
+async function executePlayerOperation(player, operationName, operation) {
   if (!player)
     return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
 
-  const method = player[methodName];
-  if (typeof method !== "function")
-    return mprisOperationUnsupported(MprisOperationReasons.MISSING_METHOD);
-
   try {
-    const value = await method.call(player, ...arguments_);
+    const value = await operation(player);
     return normalizeMprisOperationResult(value);
   } catch (error) {
     logger.errorOnce(
-      `${methodName}:${error?.name ?? "Error"}`,
-      `Playback delegate ${methodName} failed unexpectedly`,
+      `${operationName}:${error?.name ?? "Error"}`,
+      `Playback operation ${operationName} failed unexpectedly`,
       error,
     );
     return mprisOperationFailed(
@@ -86,18 +82,17 @@ export async function executeSetPosition(
   positionMicroseconds,
   expectedTrackId = player?.trackId ?? null,
 ) {
-  return executePlayerMethod(
-    player,
-    "setPosition",
-    expectedTrackId,
-    positionMicroseconds,
+  return executePlayerOperation(player, "setPosition", (target) =>
+    target.setPosition(expectedTrackId, positionMicroseconds),
   );
 }
 
 export async function executePlaybackControlAction(player, action) {
   const seekOffset = resolveSeekOffsetMicroseconds(action);
   if (seekOffset !== null)
-    return executePlayerMethod(player, "seek", seekOffset);
+    return executePlayerOperation(player, "seek", (target) =>
+      target.seek(seekOffset),
+    );
 
   if (action === PlaybackControlActions.CYCLE_SPEED) {
     const nextRate = resolveNextPlaybackRate(
@@ -107,13 +102,19 @@ export async function executePlaybackControlAction(player, action) {
     );
     return nextRate === null
       ? mprisOperationUnsupported(MprisOperationReasons.NO_CHANGE)
-      : executePlayerMethod(player, "setPlaybackRate", nextRate);
+      : executePlayerOperation(player, "setPlaybackRate", (target) =>
+          target.setPlaybackRate(nextRate),
+        );
   }
 
-  if (!Object.hasOwn(PLAYER_METHOD_BY_ACTION, action))
+  if (!Object.hasOwn(PLAYER_OPERATION_BY_ACTION, action))
     return mprisOperationUnsupported(MprisOperationReasons.UNKNOWN_ACTION);
 
-  return executePlayerMethod(player, PLAYER_METHOD_BY_ACTION[action]);
+  return executePlayerOperation(
+    player,
+    action,
+    PLAYER_OPERATION_BY_ACTION[action],
+  );
 }
 
 /**
@@ -129,7 +130,7 @@ export default class PlaybackController {
   }
 
   get activePlayer() {
-    return this.getActivePlayer?.() ?? null;
+    return this.getActivePlayer();
   }
 
   execute(action, player = this.activePlayer) {
@@ -145,35 +146,35 @@ export default class PlaybackController {
   }
 
   setVolume(volume, player = this.activePlayer) {
-    return executePlayerMethod(player, "setVolume", volume);
+    return executePlayerOperation(player, "setVolume", (target) =>
+      target.setVolume(volume),
+    );
   }
 
   increaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    return executePlayerMethod(
-      player,
-      "setVolume",
-      Math.min(player.volume + step, 1),
+    const volume = Math.min(player.volume + step, 1);
+    return executePlayerOperation(player, "setVolume", (target) =>
+      target.setVolume(volume),
     );
   }
 
   decreaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    return executePlayerMethod(
-      player,
-      "setVolume",
-      Math.max(player.volume - step, 0),
+    const volume = Math.max(player.volume - step, 0);
+    return executePlayerOperation(player, "setVolume", (target) =>
+      target.setVolume(volume),
     );
   }
 
   raise(player = this.activePlayer) {
-    return executePlayerMethod(player, "raise");
+    return executePlayerOperation(player, "raise", (target) => target.raise());
   }
 
   quit(player = this.activePlayer) {
-    return executePlayerMethod(player, "quit");
+    return executePlayerOperation(player, "quit", (target) => target.quit());
   }
 
   destroy() {

@@ -22,7 +22,6 @@ export const MprisOperationReasons = Object.freeze({
   INVALID_ARGUMENT: "invalid-argument",
   NO_CHANGE: "no-change",
   MISSING_TARGET: "missing-target",
-  MISSING_METHOD: "missing-method",
   UNKNOWN_ACTION: "unknown-action",
   DESTROYED: "destroyed",
   CANCELLED: "cancelled",

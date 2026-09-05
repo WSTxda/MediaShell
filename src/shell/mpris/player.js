@@ -570,7 +570,7 @@ export default class MprisPlayer {
       this.playerProxy,
       this.propertiesProxy,
     ]) {
-      if (typeof proxy?.get_name_owner !== "function") continue;
+      if (!proxy) continue;
       const nameOwner = proxy.get_name_owner();
       if (nameOwner) return nameOwner;
     }

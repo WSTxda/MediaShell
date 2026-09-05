@@ -341,36 +341,16 @@ export default class DesktopAppResolver {
     const desktopFileBasename = stripDesktopFileSuffix(desktopEntry);
     if (!desktopFileBasename) return null;
 
-    try {
-      const appSystem = Shell.AppSystem.get_default();
-      return (
-        appSystem.lookup_app(`${desktopFileBasename}.desktop`) ??
-        appSystem.lookup_app(desktopFileBasename) ??
-        null
-      );
-    } catch (error) {
-      logger.debugOnce(
-        `lifecycle-app:${desktopFileBasename}`,
-        "The exact MPRIS desktop entry could not be resolved for lifecycle observation",
-        error,
-      );
-      return null;
-    }
+    const appSystem = Shell.AppSystem.get_default();
+    return (
+      appSystem.lookup_app(`${desktopFileBasename}.desktop`) ??
+      appSystem.lookup_app(desktopFileBasename) ??
+      null
+    );
   }
 
   isShellAppStopped(shellApp) {
-    if (!shellApp || typeof shellApp.get_state !== "function") return false;
-
-    try {
-      return shellApp.get_state() === Shell.AppState.STOPPED;
-    } catch (error) {
-      logger.debugOnce(
-        "lifecycle-app-state",
-        "Shell app state became unavailable during cleanup",
-        error,
-      );
-      return false;
-    }
+    return Boolean(shellApp && shellApp.get_state() === Shell.AppState.STOPPED);
   }
 
   #isRecentMiss(appCacheKey) {
