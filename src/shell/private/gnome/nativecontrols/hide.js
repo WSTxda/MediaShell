@@ -1,6 +1,6 @@
 /**
  * @file hide.js
- * @module shell.private.gnomeShell.nativeControls.hide
+ * @module shell.private.gnome.nativecontrols.hide
  *
  * Reversibly removes native media control notification banners from the
  * notification center

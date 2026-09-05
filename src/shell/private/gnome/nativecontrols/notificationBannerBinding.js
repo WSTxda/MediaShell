@@ -1,6 +1,6 @@
 /**
  * @file notificationBannerBinding.js
- * @module shell.private.gnomeShell.nativeControls.notificationBannerBinding
+ * @module shell.private.gnome.nativecontrols.notificationBannerBinding
  *
  * Owns the reversible presentation binding between one private GNOME Shell
  * notification banner and one canonical MprisPlayer. Protocol state and

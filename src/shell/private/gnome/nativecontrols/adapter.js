@@ -1,6 +1,6 @@
 /**
  * @file adapter.js
- * @module shell.private.gnomeShell.nativeControls.adapter
+ * @module shell.private.gnome.nativecontrols.adapter
  *
  * Selects and owns the private GNOME Shell native controls implementation for
  * the active session profile. Hide and Enhance are independent user choices:

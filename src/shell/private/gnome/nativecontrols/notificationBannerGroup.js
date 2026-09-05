@@ -1,6 +1,6 @@
 /**
  * @file notificationBannerGroup.js
- * @module shell.private.gnomeShell.nativeControls.notificationBannerGroup
+ * @module shell.private.gnome.nativecontrols.notificationBannerGroup
  *
  * Native-style notification banner group used only by the private Enhance
  * adapter.

@@ -1,6 +1,6 @@
 /**
  * @file enhance.js
- * @module shell.private.gnomeShell.nativeControls.enhance
+ * @module shell.private.gnome.nativecontrols.enhance
  *
  * Applies and reverses Enhance on one GNOME Shell native control surface by
  * projecting injected MediaShell players, artwork, and playback capabilities

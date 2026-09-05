@@ -6,10 +6,10 @@
  *
  * Indicator code depends on this integration rather than GNOME Shell private
  * fields. Version-specific/private adaptation remains quarantined under
- * shell/private/gnomeShell/panelMenu.
+ * shell/private/gnome/panelmenu.
  */
 
-import { suspendDefaultPanelClickGesture } from "../private/gnomeShell/panelMenu/compatibility.js";
+import { suspendDefaultPanelClickGesture } from "../private/gnome/panelmenu/compatibility.js";
 
 /** Temporarily disables PanelMenu's default primary activation when supported. */
 export function suspendPanelMenuPrimaryActivation(panelButton) {
