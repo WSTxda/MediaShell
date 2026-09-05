@@ -2,12 +2,12 @@
  * @file topBarTrackInformation.js
  * @module shell.ui.topbar.topBarTrackInformation
  *
- * Renders configurable track metadata inside the GNOME top bar.
+ * Renders configurable track information inside the GNOME top bar.
  *
- * TopBarSurface owns this component and passes the ordered metadata fields chosen
+ * TopBarSurface owns this component and passes the ordered track-information fields chosen
  * in preferences. It uses ScrollingLabel for long text and the canonical Track presentation
  * helper for field assembly. TopBarSurface owns layout orchestration, while this
- * component preserves the original metadata width and Lock width contract.
+ * component preserves the original track-information width and Lock width contract.
  */
 
 import { MediaShellStyleClasses } from "../style.js";
@@ -16,7 +16,7 @@ import { placeActorAtIndex } from "../components/actorOrder.js";
 import ScrollingLabel from "../components/scrollingLabel.js";
 
 /**
- * Renders configurable track metadata inside the GNOME top bar.
+ * Renders configurable track information inside the GNOME top bar.
  */
 export default class TopBarTrackInformation {
   constructor(topBarSurface) {
