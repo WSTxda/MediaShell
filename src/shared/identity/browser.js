@@ -12,7 +12,7 @@
  * The resolver is deliberately conservative. A PWA is selected only when MPRIS
  * exposes one unambiguous Chromium app ID and one installed desktop entry has the
  * strongest matching metadata. Missing or conflicting evidence falls back to the
- * normal media-app identity path.
+ * normal application identity path.
  */
 
 const CHROMIUM_PWA_APP_ID_PATTERN = /^[a-p]{32}$/;

@@ -31,7 +31,7 @@ export function isCancellationError(error) {
  * @param {unknown} error - Error returned by a Gio D-Bus operation.
  * @returns {string|null} Remote D-Bus error name when present.
  */
-function getRemoteDbusErrorName(error) {
+function getRemoteDBusErrorName(error) {
   try {
     if (!Gio.DBusError.is_remote_error(error)) return null;
     return Gio.DBusError.get_remote_error(error) ?? null;
@@ -47,7 +47,7 @@ function getRemoteDbusErrorName(error) {
  * @returns {string|null} Remote D-Bus name, local error name, or null.
  */
 export function getOperationErrorName(error) {
-  const remoteErrorName = getRemoteDbusErrorName(error);
+  const remoteErrorName = getRemoteDBusErrorName(error);
   if (remoteErrorName) return remoteErrorName;
   return typeof error?.name === "string" && error.name.length > 0
     ? error.name
