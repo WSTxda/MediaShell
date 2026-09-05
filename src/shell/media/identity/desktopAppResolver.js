@@ -4,7 +4,7 @@
  *
  * Resolves MPRIS identity hints to installed desktop applications.
  *
- * One MediaRuntime-owned instance owns bounded Shell.App and Gio.AppInfo
+ * One MediaRuntime-owned instance owns bounded Shell.App, Gio.AppInfo, and miss
  * caches. Misses use a short TTL so unresolved browser/PWA identities can be
  * retried when desktop metadata appears later. Teardown releases cached
  * Shell.App and Gio.AppInfo references.
@@ -365,7 +365,10 @@ export default class DesktopAppResolver {
   }
 
   #recordMiss(appCacheKey) {
+    this.#missCache.delete(appCacheKey);
     this.#missCache.set(appCacheKey, GLib.get_monotonic_time() / 1000);
+    if (this.#missCache.size > DESKTOP_APP_RESOLVER_CACHE_LIMIT)
+      this.#missCache.delete(this.#missCache.keys().next().value);
   }
 
   resolveDesktopApp(identity, desktopEntry, busName = "") {
