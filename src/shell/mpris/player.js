@@ -344,7 +344,6 @@ export default class MprisPlayer {
     // Some MPRIS players export their bus name before proxy properties are
     // populated. Poll at a bounded interval until metadata appears or the
     // timeout expires instead of trusting the initial D-Bus cache.
-    let pollCount = 0;
     let remaining = Math.ceil(
       MPRIS_INIT_TIMEOUT_MS / MPRIS_INIT_POLL_INTERVAL_MS,
     );
@@ -361,7 +360,6 @@ export default class MprisPlayer {
           return GLib.SOURCE_REMOVE;
         }
 
-        pollCount++;
         this.refreshMetadata().catch((error) => {
           if (!isCancellationError(error))
             logger.debugOnce(

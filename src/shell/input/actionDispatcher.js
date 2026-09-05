@@ -32,13 +32,13 @@ export default class InputActionDispatcher {
 
     const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
     if (playbackAction)
-      return this.mediaRuntime.playback?.execute(playbackAction);
+      return this.mediaRuntime.playback.execute(playbackAction);
 
     switch (inputAction) {
       case InputActions.VOLUME_UP:
-        return this.mediaRuntime.playback?.increaseVolume(VOLUME_STEP);
+        return this.mediaRuntime.playback.increaseVolume(VOLUME_STEP);
       case InputActions.VOLUME_DOWN:
-        return this.mediaRuntime.playback?.decreaseVolume(VOLUME_STEP);
+        return this.mediaRuntime.playback.decreaseVolume(VOLUME_STEP);
       case InputActions.TOGGLE_POPUP:
         this.onTogglePopup?.();
         return;
@@ -46,9 +46,9 @@ export default class InputActionDispatcher {
         this.onOpenPreferences?.();
         return;
       case InputActions.RAISE_APP:
-        return this.mediaRuntime.playback?.raise();
+        return this.mediaRuntime.playback.raise();
       case InputActions.QUIT_APP:
-        return this.mediaRuntime.playback?.quit();
+        return this.mediaRuntime.playback.quit();
       case InputActions.SWITCH_APP:
         return this.mediaRuntime.switchPlayer();
       default:
