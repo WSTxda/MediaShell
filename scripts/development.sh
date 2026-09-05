@@ -34,7 +34,7 @@ assert_supported_shell_version() {
 
 doctor_main() {
   missing_commands=()
-  for command in node pnpm gjs glib-compile-resources glib-compile-schemas gnome-extensions gnome-shell msgfmt xgettext; do
+  for command in node pnpm gjs glib-compile-resources glib-compile-schemas gdbus-codegen gnome-extensions gnome-shell dbus-run-session msgcmp msgfmt msgmerge shexli xgettext; do
     if ! command -v "$command" >/dev/null 2>&1; then
       missing_commands+=("$command")
     fi
@@ -45,9 +45,25 @@ doctor_main() {
     exit 1
   fi
 
-  node_major=$(node --version | sed -E 's/^v([0-9]+).*/\1/')
-  if [[ ! "$node_major" =~ ^[0-9]+$ ]] || (( node_major < 20 )); then
-    printf 'MediaShell: Node.js 20 or later is required; found %s.\n' "$(node --version 2>&1)" >&2
+  node_version=$(node --version)
+  if [[ "$node_version" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+    node_major=${BASH_REMATCH[1]}
+    node_minor=${BASH_REMATCH[2]}
+  else
+    printf 'MediaShell: unable to parse the Node.js version from: %s\n' "$node_version" >&2
+    exit 1
+  fi
+  if (( node_major < 20 || (node_major == 20 && node_minor < 19) )); then
+    printf 'MediaShell: Node.js 20.19 or later is required; found %s.\n' "$node_version" >&2
+    exit 1
+  fi
+
+  pnpm_version=$(pnpm --version 2>&1) || {
+    printf 'MediaShell: unable to read the pnpm version.\n' >&2
+    exit 1
+  }
+  if [[ "$pnpm_version" != "11.25.0" ]]; then
+    printf 'MediaShell: pnpm 11.25.0 is required; found %s.\n' "$pnpm_version" >&2
     exit 1
   fi
 
@@ -73,8 +89,8 @@ doctor_main() {
     exit 1
   fi
 
-  printf 'MediaShell development environment is ready: Node %s, %s, Libadwaita %s.\n' \
-    "$(node --version)" "$shell_version_output" "$adwaita_version"
+  printf 'MediaShell development environment is ready: Node %s, pnpm %s, %s, Libadwaita %s.\n' \
+    "$node_version" "$pnpm_version" "$shell_version_output" "$adwaita_version"
   if command -v gnome-shell-test-tool >/dev/null 2>&1 && (( shell_major >= 50 )); then
     printf 'GNOME Shell test-tool integration is available on this host.\n'
   fi

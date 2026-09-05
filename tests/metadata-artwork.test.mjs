@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MprisMetadataKeys } from "../src/shell/mpris/protocol.js";
+import { TrackInformationFields } from "../src/shared/ui/trackInformation.js";
 import {
   ARTWORK_CACHE_MAX_BYTES,
   ARTWORK_MAX_BYTES,
@@ -99,7 +100,7 @@ test("metadata normalization produces one stable and display-safe domain shape",
               title: { title: "bad" },
               artists: ["Artist", {}, null],
             },
-            ["TITLE", "ARTIST"],
+            [TrackInformationFields.TITLE, TrackInformationFields.ARTIST],
           ),
           "Artist",
         );

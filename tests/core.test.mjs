@@ -49,6 +49,7 @@ import {
   normalizeUniqueStrings,
 } from "../src/shared/format.js";
 import { createLogger } from "../src/shared/logging/logger.js";
+import { TrackInformationFields } from "../src/shared/ui/trackInformation.js";
 import { normalizeTrackInformationContent } from "../src/shared/ui/trackInformationContent.js";
 import {
   buildSearchIndex,
@@ -56,10 +57,10 @@ import {
   matchesSearchTokens,
   normalizeSearchText,
   tokenizeSearchQuery,
-} from "../src/prefs/search.js";
+} from "../src/prefs/apps/search.js";
 import {
-  getVisualizerLevels,
-  getVisualizerSpectrumOffsets,
+  resolveVisualizerLevels,
+  resolveVisualizerSpectrumOffsets,
   normalizeVisualizerSpeed,
   normalizeVisualizerStyle,
 } from "../src/shell/ui/components/visualizer/animation.js";
@@ -96,10 +97,13 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         assert.deepEqual(values, ["second", "third", "first"]);
         assert.equal(arraysEqual(values, ["second", "third", "first"]), true);
         assert.equal(arraysEqual(values, ["second", "first", "third"]), false);
-        const fallback = ["TITLE", "ARTIST"];
+        const fallback = [
+          TrackInformationFields.TITLE,
+          TrackInformationFields.ARTIST,
+        ];
         assert.deepEqual(
-          normalizeTrackInformationContent([" TITLE ", "", "TITLE"], fallback),
-          ["TITLE", "TITLE"],
+          normalizeTrackInformationContent([" title ", "", "title"], fallback),
+          [TrackInformationFields.TITLE, TrackInformationFields.TITLE],
         );
         assert.equal(normalizeTrackInformationContent([], fallback), fallback);
         assert.equal(moveArrayItem(values, 2, 0), true);
@@ -164,7 +168,7 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         );
 
         const reusableLevels = new Array(TOP_BAR_VISUALIZER_BAND_COUNT);
-        const beats = getVisualizerLevels(
+        const beats = resolveVisualizerLevels(
           VisualizerAnimationKinds.BEATS,
           0.37,
           4,
@@ -179,15 +183,15 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
           ],
         );
         assertFramesClose(
-          getVisualizerLevels(VisualizerAnimationKinds.PULSE, 0.37),
+          resolveVisualizerLevels(VisualizerAnimationKinds.PULSE, 0.37),
           [
             0.7941959066656921, 0.2506807791258749, 0.25565841237106834,
             0.7119127027050491,
           ],
         );
         assertFramesClose(
-          getVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.37, 8),
-          getVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.74, 4),
+          resolveVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.37, 8),
+          resolveVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.74, 4),
         );
 
         assert.equal(
@@ -197,7 +201,7 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         const reusableClassic = new Array(
           TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
         );
-        const classic = getVisualizerLevels(
+        const classic = resolveVisualizerLevels(
           TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.CLASSIC]
             .animationKind,
           0.37,
@@ -213,13 +217,13 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         const secondaryOffsets = new Array(
           TOP_BAR_VISUALIZER_SPECTRUM_POINT_COUNT,
         );
-        const spectrum = getVisualizerSpectrumOffsets(
+        const spectrum = resolveVisualizerSpectrumOffsets(
           0.37,
           4,
           primaryOffsets,
           VisualizerSpectrumLayers.PRIMARY,
         );
-        const backgroundSpectrum = getVisualizerSpectrumOffsets(
+        const backgroundSpectrum = resolveVisualizerSpectrumOffsets(
           0.37,
           4,
           secondaryOffsets,
@@ -253,8 +257,8 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
           ],
         );
         assertFramesClose(
-          getVisualizerSpectrumOffsets(0.37, 8),
-          getVisualizerSpectrumOffsets(0.74, 4),
+          resolveVisualizerSpectrumOffsets(0.37, 8),
+          resolveVisualizerSpectrumOffsets(0.74, 4),
         );
       },
     ],

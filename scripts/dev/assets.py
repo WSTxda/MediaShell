@@ -5,14 +5,12 @@ from __future__ import annotations
 
 import ast
 import json
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
 import zlib
-from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,203 +18,22 @@ ASSETS = ROOT / "assets"
 LOCALE_DIR = ASSETS / "locale"
 POT = LOCALE_DIR / "mediashell@wstxda.github.com.pot"
 PACKAGE_JSON = ROOT / "package.json"
-PLACEHOLDER_RE = re.compile(r"%(?:\d+\$)?[A-Za-z]|\{[A-Za-z_][A-Za-z0-9_]*\}")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 NATIVE_TOOL_NAMES = (
     "glib-compile-schemas",
     "glib-compile-resources",
+    "gdbus-codegen",
     "xgettext",
     "msgfmt",
+    "msgcmp",
 )
 
 
-@dataclass
-class CatalogEntry:
-    msgid: str
-    msgid_plural: str | None = None
-    translations: dict[int, str] = field(default_factory=dict)
-    references: list[str] = field(default_factory=list)
-
-
-def decode_quoted(value: str) -> str:
-    try:
-        decoded = ast.literal_eval(value)
-    except (SyntaxError, ValueError) as error:
-        raise ValueError(f"invalid gettext string literal {value!r}: {error}") from error
-    if not isinstance(decoded, str):
-        raise ValueError(f"gettext literal is not a string: {value!r}")
-    return decoded
-
-
-def parse_catalog(path: Path) -> dict[str, CatalogEntry]:
-    entries: dict[str, CatalogEntry] = {}
-    block: list[str] = []
-
-    def flush() -> None:
-        nonlocal block
-        if not block:
-            return
-
-        references: list[str] = []
-        fields: dict[str, str] = {}
-        current_field: str | None = None
-
-        for line in block:
-            if line.startswith("#~"):
-                continue
-            if line.startswith("#:"):
-                references.extend(line[2:].strip().split())
-                continue
-            if line.startswith("#"):
-                continue
-
-            match = re.match(
-                r"(msgid_plural|msgid|msgstr(?:\[(\d+)\])?)\s+(.*)$",
-                line,
-            )
-            if match:
-                directive = match.group(1)
-                index = match.group(2)
-                current_field = (
-                    f"msgstr[{index}]"
-                    if directive.startswith("msgstr[")
-                    else directive
-                )
-                fields[current_field] = decode_quoted(match.group(3))
-                continue
-
-            if line.startswith('"') and current_field is not None:
-                fields[current_field] += decode_quoted(line)
-
-        msgid = fields.get("msgid")
-        if msgid is not None:
-            translations: dict[int, str] = {}
-            if "msgstr" in fields:
-                translations[0] = fields["msgstr"]
-            for key, value in fields.items():
-                match = re.fullmatch(r"msgstr\[(\d+)\]", key)
-                if match:
-                    translations[int(match.group(1))] = value
-            entries[msgid] = CatalogEntry(
-                msgid=msgid,
-                msgid_plural=fields.get("msgid_plural"),
-                translations=translations,
-                references=references,
-            )
-
-        block = []
-
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        if not raw_line.strip():
-            flush()
-        else:
-            block.append(raw_line)
-    flush()
-    return entries
-
-
-def validate_catalog_header(
-    path: Path,
-    entries: dict[str, CatalogEntry],
-    language: str | None,
-) -> list[str]:
-    errors: list[str] = []
-    header = entries.get("")
-    if header is None:
-        return [f"{path.name}: missing gettext header"]
-
-    header_text = header.translations.get(0, "")
-    fields: dict[str, str] = {}
-    for line in header_text.splitlines():
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip()
-
-    if "charset=UTF-8" not in fields.get("Content-Type", ""):
-        errors.append(f"{path.name}: Content-Type must declare charset=UTF-8")
-    if fields.get("Content-Transfer-Encoding") != "8bit":
-        errors.append(f"{path.name}: Content-Transfer-Encoding must be 8bit")
-    if not fields.get("Project-Id-Version", "").startswith("MediaShell "):
-        errors.append(f"{path.name}: Project-Id-Version must identify MediaShell")
-    if language is not None:
-        if fields.get("Language") != language:
-            errors.append(f"{path.name}: Language header must be {language!r}")
-        if not fields.get("Plural-Forms"):
-            errors.append(f"{path.name}: Plural-Forms header is required")
-    return errors
-
-
-def validate_source_references(
-    path: Path,
-    entries: dict[str, CatalogEntry],
-) -> list[str]:
-    errors: list[str] = []
-    checked: set[str] = set()
-    for entry in entries.values():
-        for reference in entry.references:
-            source_path = reference.rsplit(":", 1)[0]
-            if source_path in checked:
-                continue
-            checked.add(source_path)
-            if not (ROOT / source_path).is_file():
-                errors.append(
-                    f"{path.name}: source reference does not exist: {source_path}"
-                )
-    return errors
-
-
-def extract_source_catalog_fallback() -> dict[str, CatalogEntry]:
-    """Extract literal JavaScript and GtkBuilder messages from parsed sources."""
-    result = subprocess.run(
-        ["node", "scripts/dev/extractTranslations.mjs"],
-        cwd=ROOT,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise SystemExit(
-            "Translation validation failed:\n"
-            f"- parsed JavaScript extraction failed: {result.stderr.strip()}"
-        )
-
-    entries: dict[str, CatalogEntry] = {}
-    for item in json.loads(result.stdout):
-        msgid = item.get("msgid")
-        if not msgid:
-            continue
-        entries[msgid] = CatalogEntry(
-            msgid=msgid,
-            msgid_plural=item.get("msgidPlural"),
-            references=list(item.get("references") or []),
-        )
-
-    for ui_path in sorted((ASSETS / "ui").glob("*.ui")):
-        root = ET.parse(ui_path).getroot()
-        for node in root.iter():
-            if node.get("translatable") != "yes":
-                continue
-            msgid = "".join(node.itertext()).strip()
-            if not msgid:
-                continue
-            reference = str(ui_path.relative_to(ROOT))
-            entry = entries.setdefault(msgid, CatalogEntry(msgid=msgid))
-            if reference not in entry.references:
-                entry.references.append(reference)
-    return entries
-
-
-def extract_source_catalog(
-    output_path: Path, *, require_native: bool = False
-) -> dict[str, CatalogEntry]:
+def extract_source_catalog(output_path: Path, xgettext: str | None = None) -> None:
     """Extract messages with GNU gettext's JavaScript and Glade parsers."""
-    xgettext = shutil.which("xgettext")
-    if xgettext is None:
-        if require_native:
-            raise SystemExit("Translation validation failed: xgettext is required")
-        return extract_source_catalog_fallback()
+    executable = xgettext or shutil.which("xgettext")
+    if executable is None:
+        raise SystemExit("Translation extraction failed: xgettext is required")
 
     javascript_paths = [
         str(path.relative_to(ROOT))
@@ -237,7 +54,7 @@ def extract_source_catalog(
     ]
     commands = [
         [
-            xgettext,
+            executable,
             *common_args,
             "--keyword=_",
             "--keyword=ngettext:1,2",
@@ -247,7 +64,7 @@ def extract_source_catalog(
             *javascript_paths,
         ],
         [
-            xgettext,
+            executable,
             *common_args,
             "--join-existing",
             "--language=Glade",
@@ -267,11 +84,9 @@ def extract_source_catalog(
         )
         if result.returncode != 0:
             raise SystemExit(
-                "Translation validation failed:\n"
+                "Translation extraction failed:\n"
                 f"- xgettext failed: {result.stderr.strip()}"
             )
-
-    return parse_catalog(output_path)
 
 
 def validate_png(path: Path) -> list[str]:
@@ -645,11 +460,9 @@ def check_resources() -> None:
     print("Parsed resource, schema, UI, and D-Bus validation passed.")
 
 
-def require_native_tools() -> dict[str, str]:
-    """Return the complete native toolchain or fail once with all missing tools."""
-    resolved_tools = {
-        tool_name: shutil.which(tool_name) for tool_name in NATIVE_TOOL_NAMES
-    }
+def require_tools(tool_names: tuple[str, ...]) -> dict[str, str]:
+    """Return requested command paths or fail once with all missing tools."""
+    resolved_tools = {tool_name: shutil.which(tool_name) for tool_name in tool_names}
     missing_tools = [
         tool_name
         for tool_name, executable in resolved_tools.items()
@@ -709,117 +522,75 @@ def check_native_resources(tools: dict[str, str]) -> None:
         elif not output_path.is_file() or output_path.stat().st_size == 0:
             errors.append("glib-compile-resources produced an empty file")
 
+        for index, dbus_path in enumerate(sorted((ASSETS / "dbus").glob("*.xml"))):
+            output_prefix = Path(temporary_directory) / f"dbus-{index}"
+            result = subprocess.run(
+                [
+                    tools["gdbus-codegen"],
+                    "--generate-c-code",
+                    str(output_prefix),
+                    str(dbus_path),
+                ],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            if result.returncode != 0:
+                errors.append(
+                    f"{dbus_path.relative_to(ROOT)}: gdbus-codegen failed: "
+                    f"{result.stderr.strip()}"
+                )
+
     if errors:
         raise SystemExit(
             "Native resource validation failed:\n"
             + "\n".join(f"- {error}" for error in errors)
         )
-    print("Native schema and resource compilation passed.")
-
-
-def catalog_message_set(entries: dict[str, CatalogEntry]) -> set[str]:
-    """Return singular and plural source messages without the header entry."""
-    messages = set(entries) - {""}
-    messages.update(
-        entry.msgid_plural
-        for entry in entries.values()
-        if entry.msgid_plural is not None
-    )
-    return messages
-
-
-def check_translations() -> None:
-    errors: list[str] = []
-    pot_entries = parse_catalog(POT)
-    errors.extend(validate_catalog_header(POT, pot_entries, None))
-    errors.extend(validate_source_references(POT, pot_entries))
-
-    source_entries = extract_source_catalog_fallback()
-    source_messages = catalog_message_set(source_entries)
-    template_messages = catalog_message_set(pot_entries)
-
-    missing = sorted(source_messages - template_messages)
-    stale = sorted(template_messages - source_messages)
-    if missing:
-        errors.append(f"template is missing source messages: {missing}")
-    if stale:
-        errors.append(f"template contains stale source messages: {stale}")
-
-    for po_path in sorted(LOCALE_DIR.glob("*.po")):
-        entries = parse_catalog(po_path)
-        language = po_path.stem
-        errors.extend(validate_catalog_header(po_path, entries, language))
-
-        for msgid, entry in entries.items():
-            if not msgid or msgid not in pot_entries:
-                continue
-
-            template_entry = pot_entries[msgid]
-            if entry.msgid_plural != template_entry.msgid_plural:
-                errors.append(
-                    f"{po_path.name}: plural source mismatch for {msgid!r}"
-                )
-                continue
-
-            expected_forms = [msgid]
-            if entry.msgid_plural is not None:
-                expected_forms.append(entry.msgid_plural)
-
-            for index, translation in entry.translations.items():
-                if not translation:
-                    continue
-                expected_index = 0 if index == 0 else min(
-                    1,
-                    len(expected_forms) - 1,
-                )
-                expected = expected_forms[expected_index]
-                if sorted(PLACEHOLDER_RE.findall(expected)) != sorted(
-                    PLACEHOLDER_RE.findall(translation)
-                ):
-                    errors.append(
-                        f"{po_path.name}: placeholder mismatch for "
-                        f"{msgid!r} form {index}"
-                    )
-
-    if errors:
-        raise SystemExit(
-            "Translation validation failed:\n"
-            + "\n".join(f"- {error}" for error in errors)
-        )
-
-    print(
-        "Parsed translation template, references, headers, and placeholders "
-        "passed. GNU gettext compilation belongs to the native gate."
-    )
+    print("Native schema, resource, and D-Bus validation passed.")
 
 
 def check_native_translations(tools: dict[str, str]) -> None:
-    """Run GNU gettext extraction and catalog compilation."""
+    """Validate source/template parity and compile catalogs with GNU gettext."""
     errors: list[str] = []
 
-    pot_entries = parse_catalog(POT)
+    def run_gettext(label: str, command: list[str]) -> None:
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode != 0:
+            details = result.stderr.strip() or result.stdout.strip()
+            errors.append(f"{label}: {details or 'command failed'}")
+
     with tempfile.TemporaryDirectory(
         prefix="mediashell-gettext-native-"
     ) as temporary_directory:
-        source_entries = extract_source_catalog(
-            Path(temporary_directory) / "source-messages.pot",
-            require_native=True,
-        )
-    source_messages = catalog_message_set(source_entries)
-    template_messages = catalog_message_set(pot_entries)
-    missing = sorted(source_messages - template_messages)
-    stale = sorted(template_messages - source_messages)
-    if missing:
-        errors.append(f"template is missing GNU gettext messages: {missing}")
-    if stale:
-        errors.append(f"template contains stale GNU gettext messages: {stale}")
+        source_pot = Path(temporary_directory) / "source-messages.pot"
+        extract_source_catalog(source_pot, tools["xgettext"])
 
-    for po_path in sorted(LOCALE_DIR.glob("*.po")):
-        with tempfile.TemporaryDirectory(
-            prefix="mediashell-locale-native-"
-        ) as temporary_directory:
+        comparison_args = [
+            "--no-fuzzy-matching",
+            "--use-fuzzy",
+            "--use-untranslated",
+        ]
+        run_gettext(
+            "translation template is missing or changes source messages",
+            [tools["msgcmp"], *comparison_args, str(POT), str(source_pot)],
+        )
+        run_gettext(
+            "translation template contains messages absent from source",
+            [tools["msgcmp"], *comparison_args, str(source_pot), str(POT)],
+        )
+
+        for po_path in sorted(LOCALE_DIR.glob("*.po")):
             output_path = Path(temporary_directory) / f"{po_path.stem}.mo"
-            result = subprocess.run(
+            run_gettext(
+                f"{po_path.name}: msgfmt validation failed",
                 [
                     tools["msgfmt"],
                     "--check",
@@ -829,33 +600,174 @@ def check_native_translations(tools: dict[str, str]) -> None:
                     str(output_path),
                     str(po_path),
                 ],
-                check=False,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
             )
-            if result.returncode != 0:
-                errors.append(
-                    f"{po_path.name}: msgfmt failed: {result.stderr.strip()}"
-                )
-            elif not output_path.is_file() or output_path.stat().st_size == 0:
+            if output_path.exists() and output_path.stat().st_size == 0:
                 errors.append(f"{po_path.name}: msgfmt produced an empty catalog")
+
+            run_gettext(
+                f"{po_path.name}: catalog does not match the template",
+                [
+                    tools["msgcmp"],
+                    *comparison_args,
+                    str(po_path),
+                    str(POT),
+                ],
+            )
 
     if errors:
         raise SystemExit(
             "Native translation validation failed:\n"
             + "\n".join(f"- {error}" for error in errors)
         )
-    print("Native gettext extraction and catalog compilation passed.")
+    print("GNU gettext extraction, template parity, and catalog compilation passed.")
+
+
+def stabilize_pot_timestamp(generated_path: Path, current_path: Path) -> bool:
+    """Keep a stable POT when regeneration changed only POT-Creation-Date."""
+    if not current_path.is_file():
+        return True
+
+    generated = generated_path.read_text(encoding="utf-8")
+    current = current_path.read_text(encoding="utf-8")
+    if generated == current:
+        return False
+
+    prefix = '"POT-Creation-Date: '
+    generated_lines = generated.splitlines(keepends=True)
+    current_lines = current.splitlines(keepends=True)
+    generated_index = next(
+        (index for index, line in enumerate(generated_lines) if line.startswith(prefix)),
+        None,
+    )
+    current_line = next(
+        (line for line in current_lines if line.startswith(prefix)),
+        None,
+    )
+    if generated_index is None or current_line is None:
+        return True
+
+    generated_lines[generated_index] = current_line
+    stabilized = "".join(generated_lines)
+    if stabilized != current:
+        return True
+
+    generated_path.write_text(current, encoding="utf-8")
+    return False
+
+
+def replace_if_changed(source: Path, destination: Path) -> bool:
+    """Replace destination only when generated bytes differ."""
+    if destination.is_file() and source.read_bytes() == destination.read_bytes():
+        source.unlink()
+        return False
+    source.replace(destination)
+    return True
+
+
+def update_translations() -> None:
+    """Regenerate and merge translations through GNU gettext, then validate them."""
+    tools = require_tools((*NATIVE_TOOL_NAMES[3:], "msgmerge"))
+    source_po_files = sorted(LOCALE_DIR.glob("*.po"))
+    with tempfile.TemporaryDirectory(
+        prefix=".mediashell-translations-", dir=LOCALE_DIR
+    ) as temporary_directory:
+        temporary_path = Path(temporary_directory)
+        next_pot = temporary_path / POT.name
+        extract_source_catalog(next_pot, tools["xgettext"])
+        pot_changed = stabilize_pot_timestamp(next_pot, POT)
+
+        merged_files: list[tuple[Path, Path]] = []
+        errors: list[str] = []
+        for po_path in source_po_files:
+            output_path = temporary_path / po_path.name
+            result = subprocess.run(
+                [
+                    tools["msgmerge"],
+                    "--quiet",
+                    "--output-file",
+                    str(output_path),
+                    str(po_path),
+                    str(next_pot),
+                ],
+                cwd=ROOT,
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            if result.returncode != 0:
+                errors.append(f"{po_path.name}: msgmerge failed: {result.stderr.strip()}")
+                continue
+
+            for label, command in (
+                (
+                    "msgfmt validation failed",
+                    [
+                        tools["msgfmt"],
+                        "--check",
+                        "--check-header",
+                        "--check-format",
+                        "--output-file",
+                        str(temporary_path / f"{po_path.stem}.mo"),
+                        str(output_path),
+                    ],
+                ),
+                (
+                    "catalog does not match regenerated template",
+                    [
+                        tools["msgcmp"],
+                        "--no-fuzzy-matching",
+                        "--use-fuzzy",
+                        "--use-untranslated",
+                        str(output_path),
+                        str(next_pot),
+                    ],
+                ),
+            ):
+                result = subprocess.run(
+                    command,
+                    cwd=ROOT,
+                    check=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    errors.append(
+                        f"{po_path.name}: {label}: "
+                        f"{result.stderr.strip() or result.stdout.strip()}"
+                    )
+            merged_files.append((output_path, po_path))
+
+        if errors:
+            raise SystemExit(
+                "Translation update failed:\n"
+                + "\n".join(f"- {error}" for error in errors)
+            )
+
+        changed_files = 0
+        if pot_changed:
+            next_pot.replace(POT)
+            changed_files += 1
+        else:
+            next_pot.unlink()
+
+        for temporary_file, destination in merged_files:
+            if replace_if_changed(temporary_file, destination):
+                changed_files += 1
+
+    if changed_files == 0:
+        print("Translations are already up to date.")
+    else:
+        print(
+            f"Updated translation template/catalogs: {changed_files} file"
+            f"{'s' if changed_files != 1 else ''} changed."
+        )
 
 
 def main() -> None:
     if sys.argv[1:] == ["--manifest"]:
         print(json.dumps(build_asset_manifest(), ensure_ascii=False))
-        return
-    if sys.argv[1:] == ["--extract-translations"]:
-        POT.unlink(missing_ok=True)
-        extract_source_catalog(POT, require_native=True)
         return
     if sys.argv[1:] == ["--check-images"]:
         check_images()
@@ -863,22 +775,21 @@ def main() -> None:
     if sys.argv[1:] == ["--check-resources"]:
         check_resources()
         return
-    if sys.argv[1:] == ["--check-translations"]:
-        check_translations()
-        return
     if sys.argv[1:] == ["--check-native"]:
-        tools = require_native_tools()
+        tools = require_tools(NATIVE_TOOL_NAMES)
         check_native_resources(tools)
         check_native_translations(tools)
         return
+    if sys.argv[1:] == ["--update-translations"]:
+        update_translations()
+        return
     if sys.argv[1:]:
         raise SystemExit(
-            "Usage: assets.py [--manifest|--extract-translations|--check-images|"
-            "--check-resources|--check-translations|--check-native]"
+            "Usage: assets.py [--manifest|--check-images|--check-resources|"
+            "--check-native|--update-translations]"
         )
 
     check_resources()
-    check_translations()
 
 
 if __name__ == "__main__":

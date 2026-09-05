@@ -19,6 +19,7 @@ import {
   validateEntryPointModule,
   validateExternalImport,
   validatePrivateShellImport,
+  validatePrivateSourceBoundary,
   validateRelativeImport,
 } from "../scripts/dev/javascript.mjs";
 import { validateExtensionMetadata } from "../scripts/dev/metadata.mjs";
@@ -26,6 +27,7 @@ import {
   validateArchiveShape,
   validatePackageContents,
   validatePackageInventory,
+  validatePackageReproducibility,
   validatePackagedJavaScript,
 } from "../scripts/dev/package.mjs";
 import { runCases } from "./helpers.mjs";
@@ -78,12 +80,12 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
               'import "./missing.js"; export default class Extension {}',
           }).some((error) => error.includes("import target is missing")),
         );
-        assert.ok(
-          validatePackagedJavaScript({
-            "extension.js":
-              'import { missing } from "./module.js"; export default class Extension {}',
-            "module.js": "export const present = true;",
-          }).some((error) => error.includes("does not export missing")),
+        assert.deepEqual(
+          validatePackageReproducibility(
+            [{ name: "extension.js", is_dir: false, sha256: "same" }],
+            [{ name: "extension.js", is_dir: false, sha256: "changed" }],
+          ),
+          ["extension.js: logical package bytes are not reproducible"],
         );
         assert.deepEqual(
           validatePackageContents(
@@ -179,6 +181,20 @@ test("essential validators reject corrupted source, contracts, and ZIP contents"
             "resource:///org/gnome/shell/ui/mpris.js",
           ),
           /must not be imported directly/,
+        );
+        assert.equal(
+          validatePrivateSourceBoundary(
+            "src/shell/integrations/example.js",
+            "src/shell/private/gnome/example.js",
+          ),
+          null,
+        );
+        assert.match(
+          validatePrivateSourceBoundary(
+            "src/shell/ui/example.js",
+            "src/shell/private/gnome/example.js",
+          ),
+          /must be reached through/,
         );
       },
     ],

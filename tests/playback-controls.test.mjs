@@ -42,7 +42,7 @@ import { resolvePopupWidth } from "../src/shared/ui/popupLayout.js";
 import {
   canChangePlaybackRate,
   formatPlaybackRate,
-  getAvailablePlaybackRates,
+  resolveAvailablePlaybackRates,
   resolveNextPlaybackRate,
 } from "../src/shell/mpris/playbackRate.js";
 import {
@@ -418,8 +418,14 @@ test("playback rates and actor reconciliation remain reusable", async () => {
     [
       "rate ranges",
       () => {
-        assert.deepEqual(getAvailablePlaybackRates(0.8, 1.2), [0.8, 1, 1.2]);
-        assert.deepEqual(getAvailablePlaybackRates(1, 3), [1, 1.25, 1.5, 2, 3]);
+        assert.deepEqual(
+          resolveAvailablePlaybackRates(0.8, 1.2),
+          [0.8, 1, 1.2],
+        );
+        assert.deepEqual(
+          resolveAvailablePlaybackRates(1, 3),
+          [1, 1.25, 1.5, 2, 3],
+        );
         assert.equal(canChangePlaybackRate(1, 1), false);
         assert.equal(canChangePlaybackRate(0.8, 1.2), true);
         assert.equal(resolveNextPlaybackRate(1, 0.8, 1.2), 1.2);
