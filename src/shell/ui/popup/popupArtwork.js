@@ -11,12 +11,12 @@ import St from "gi://St";
 
 import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
 import { IconNames } from "../../../shared/icons.js";
-import { POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS } from "../../../shared/settings/contract.js";
+import { POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
   ARTWORK_OUTLINE_WIDTH,
-  calculateArtworkCornerRadius,
+  resolveArtworkCornerRadius,
   resolveArtworkPresentationGeometry,
   prepareArtworkPixbuf,
 } from "../../media/artwork/presentation.js";
@@ -100,13 +100,15 @@ export default class PopupArtwork {
 
   getArtworkGeometry() {
     const width = this.getArtworkWidth();
-    const configuredRadius = Number.isFinite(this.settings.artworkCornerRadius)
-      ? this.settings.artworkCornerRadius
-      : POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS.DEFAULT;
+    const cornerRadiusPercent = Number.isFinite(
+      this.settings.artworkCornerRadiusPercent,
+    )
+      ? this.settings.artworkCornerRadiusPercent
+      : POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS.DEFAULT;
 
     return {
       width,
-      radius: calculateArtworkCornerRadius(width, configuredRadius),
+      radius: resolveArtworkCornerRadius(width, cornerRadiusPercent),
     };
   }
 

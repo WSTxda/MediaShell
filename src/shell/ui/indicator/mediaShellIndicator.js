@@ -20,7 +20,6 @@ import {
   MprisPlayerProperties,
   MprisRootProperties,
 } from "../../mpris/protocol.js";
-import { GTypeNames } from "../../../shared/gobject.js";
 import { MprisPlayerStateProperties } from "../../mpris/clientPolicy.js";
 import {
   DESKTOP_APP_RESOLUTION_RETRY_DELAY_MS,
@@ -41,6 +40,7 @@ const logger = createLogger("MediaShellIndicator");
 class MediaShellIndicator extends PanelMenu.Button {
   constructor(player, { mediaRuntime, settings, inputActions }) {
     super(0.5, "MediaShell", false);
+    this.add_style_class_name(MediaShellStyleClasses.INDICATOR);
     this.player = player;
     this.inputActions = inputActions;
     this.mediaRuntime = mediaRuntime;
@@ -295,7 +295,4 @@ class MediaShellIndicator extends PanelMenu.Button {
   }
 }
 
-export default GObject.registerClass(
-  { GTypeName: GTypeNames.MEDIA_SHELL_INDICATOR },
-  MediaShellIndicator,
-);
+export default GObject.registerClass(MediaShellIndicator);

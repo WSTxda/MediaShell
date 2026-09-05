@@ -10,13 +10,13 @@
  */
 
 export const TrackInformationFields = Object.freeze({
-  TITLE: "TITLE",
-  ARTIST: "ARTIST",
-  ALBUM: "ALBUM",
-  ALBUM_ARTIST: "ALBUM_ARTIST",
-  GENRE: "GENRE",
-  COMPOSER: "COMPOSER",
-  CONTENT_CREATED: "CONTENT_CREATED",
-  DISC_NUMBER: "DISC_NUMBER",
-  TRACK_NUMBER: "TRACK_NUMBER",
+  TITLE: "title",
+  ARTIST: "artist",
+  ALBUM: "album",
+  ALBUM_ARTIST: "album-artist",
+  GENRE: "genre",
+  COMPOSER: "composer",
+  CONTENT_CREATED: "content-created",
+  DISC_NUMBER: "disc-number",
+  TRACK_NUMBER: "track-number",
 });

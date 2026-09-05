@@ -11,13 +11,13 @@
  */
 
 import {
-  POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
+  POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
   POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
   TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
   TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
-  TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
+  TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
   PANEL_INDEX_CONSTRAINTS,
@@ -44,27 +44,27 @@ function createSecondsToMillisecondsTransform(bounds) {
   return (value) => constrainValue(value) * 1000;
 }
 
-function define(key, read, transform = null) {
+function defineSetting(key, read, transform = null) {
   return Object.freeze({ key, read, transform });
 }
 
 const POPUP_DEFINITIONS = Object.freeze({
-  width: define(
+  width: defineSetting(
     SettingsKeys.POPUP_WIDTH,
     "get_uint",
     createNumericConstraint(POPUP_WIDTH_CONSTRAINTS),
   ),
-  artworkShow: define(SettingsKeys.POPUP_ARTWORK_SHOW, "get_boolean"),
-  artworkCornerRadius: define(
-    SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS,
+  artworkShow: defineSetting(SettingsKeys.POPUP_ARTWORK_SHOW, "get_boolean"),
+  artworkCornerRadiusPercent: defineSetting(
+    SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS_PERCENT,
     "get_uint",
-    createNumericConstraint(POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS),
+    createNumericConstraint(POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS),
   ),
-  trackInformationShow: define(
+  trackInformationShow: defineSetting(
     SettingsKeys.POPUP_TRACK_INFORMATION_SHOW,
     "get_boolean",
   ),
-  trackInformationContent: define(
+  trackInformationContent: defineSetting(
     SettingsKeys.POPUP_TRACK_INFORMATION_CONTENT,
     "get_strv",
     (value) =>
@@ -73,97 +73,103 @@ const POPUP_DEFINITIONS = Object.freeze({
         POPUP_TRACK_INFORMATION_CONTENT_DEFAULT,
       ),
   ),
-  progressBarShow: define(SettingsKeys.POPUP_PROGRESS_BAR_SHOW, "get_boolean"),
-  playbackControlsShow: define(
+  progressBarShow: defineSetting(
+    SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
+    "get_boolean",
+  ),
+  playbackControlsShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHOW,
     "get_boolean",
   ),
-  playbackControlsShuffleShow: define(
+  playbackControlsShuffleShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
     "get_boolean",
   ),
-  playbackControlsSeekBackwardShow: define(
+  playbackControlsSeekBackwardShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW,
     "get_boolean",
   ),
-  playbackControlsPreviousTrackShow: define(
+  playbackControlsPreviousTrackShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
     "get_boolean",
   ),
-  playbackControlsPlayPauseShow: define(
+  playbackControlsPlayPauseShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
     "get_boolean",
   ),
-  playbackControlsNextTrackShow: define(
+  playbackControlsNextTrackShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
     "get_boolean",
   ),
-  playbackControlsSeekForwardShow: define(
+  playbackControlsSeekForwardShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW,
     "get_boolean",
   ),
-  playbackControlsRepeatShow: define(
+  playbackControlsRepeatShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_REPEAT_SHOW,
     "get_boolean",
   ),
-  playbackControlsSpeedShow: define(
+  playbackControlsSpeedShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SPEED_SHOW,
     "get_boolean",
   ),
-  volumeControlShow: define(
+  volumeControlShow: defineSetting(
     SettingsKeys.POPUP_VOLUME_CONTROL_SHOW,
     "get_boolean",
   ),
-  trackInformationScrollEnabled: define(
+  trackInformationScrollEnabled: defineSetting(
     SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_ENABLED,
     "get_boolean",
   ),
-  trackInformationScrollSpeed: define(
+  trackInformationScrollSpeed: defineSetting(
     SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED,
     "get_uint",
     createNumericConstraint(TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS),
   ),
-  trackInformationScrollPauseMilliseconds: define(
-    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
+  trackInformationScrollPauseMilliseconds: defineSetting(
+    SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS,
     "get_uint",
     createSecondsToMillisecondsTransform(
       TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
     ),
   ),
-  appIconUseColor: define(SettingsKeys.POPUP_APP_ICON_USE_COLOR, "get_boolean"),
+  playerSelectorAppIconUseColor: defineSetting(
+    SettingsKeys.POPUP_PLAYER_SELECTOR_APP_ICON_USE_COLOR,
+    "get_boolean",
+  ),
 });
 
 const TOP_BAR_DEFINITIONS = Object.freeze({
-  trackInformationShow: define(
+  trackInformationShow: defineSetting(
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_SHOW,
     "get_boolean",
   ),
-  trackInformationWidth: define(
+  trackInformationWidth: defineSetting(
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH,
     "get_uint",
     createNumericConstraint(TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS),
   ),
-  trackInformationWidthLock: define(
-    SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK,
+  trackInformationFixedWidth: defineSetting(
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_FIXED_WIDTH,
     "get_boolean",
   ),
-  trackInformationScrollEnabled: define(
+  trackInformationScrollEnabled: defineSetting(
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED,
     "get_boolean",
   ),
-  trackInformationScrollSpeed: define(
+  trackInformationScrollSpeed: defineSetting(
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED,
     "get_uint",
     createNumericConstraint(TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS),
   ),
-  trackInformationScrollPauseMilliseconds: define(
-    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME,
+  trackInformationScrollPauseMilliseconds: defineSetting(
+    SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS,
     "get_uint",
     createSecondsToMillisecondsTransform(
       TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
     ),
   ),
-  trackInformationContent: define(
+  trackInformationContent: defineSetting(
     SettingsKeys.TOP_BAR_TRACK_INFORMATION_CONTENT,
     "get_strv",
     (value) =>
@@ -172,57 +178,60 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
         TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
       ),
   ),
-  appIconShow: define(SettingsKeys.TOP_BAR_APP_ICON_SHOW, "get_boolean"),
-  appIconUseColor: define(
+  appIconShow: defineSetting(SettingsKeys.TOP_BAR_APP_ICON_SHOW, "get_boolean"),
+  appIconUseColor: defineSetting(
     SettingsKeys.TOP_BAR_APP_ICON_USE_COLOR,
     "get_boolean",
   ),
-  artworkShow: define(SettingsKeys.TOP_BAR_ARTWORK_SHOW, "get_boolean"),
-  artworkCornerRadius: define(
-    SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS,
+  artworkShow: defineSetting(SettingsKeys.TOP_BAR_ARTWORK_SHOW, "get_boolean"),
+  artworkCornerRadiusPercent: defineSetting(
+    SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT,
     "get_uint",
-    createNumericConstraint(TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS),
+    createNumericConstraint(TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS),
   ),
-  visualizerShow: define(SettingsKeys.TOP_BAR_VISUALIZER_SHOW, "get_boolean"),
-  visualizerStyle: define(SettingsKeys.TOP_BAR_VISUALIZER_STYLE, "get_enum"),
-  visualizerSpeed: define(
+  visualizerShow: defineSetting(
+    SettingsKeys.TOP_BAR_VISUALIZER_SHOW,
+    "get_boolean",
+  ),
+  visualizerStyle: defineSetting(SettingsKeys.TOP_BAR_VISUALIZER_STYLE, "get_enum"),
+  visualizerSpeed: defineSetting(
     SettingsKeys.TOP_BAR_VISUALIZER_SPEED,
     "get_uint",
     createNumericConstraint(TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS),
   ),
-  playbackControlsShow: define(
+  playbackControlsShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
     "get_boolean",
   ),
-  playbackControlsShuffleShow: define(
+  playbackControlsShuffleShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
     "get_boolean",
   ),
-  playbackControlsSeekBackwardShow: define(
+  playbackControlsSeekBackwardShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW,
     "get_boolean",
   ),
-  playbackControlsPreviousTrackShow: define(
+  playbackControlsPreviousTrackShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PREVIOUS_TRACK_SHOW,
     "get_boolean",
   ),
-  playbackControlsPlayPauseShow: define(
+  playbackControlsPlayPauseShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_PLAY_PAUSE_SHOW,
     "get_boolean",
   ),
-  playbackControlsNextTrackShow: define(
+  playbackControlsNextTrackShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_NEXT_TRACK_SHOW,
     "get_boolean",
   ),
-  playbackControlsSeekForwardShow: define(
+  playbackControlsSeekForwardShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SEEK_FORWARD_SHOW,
     "get_boolean",
   ),
-  playbackControlsRepeatShow: define(
+  playbackControlsRepeatShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_REPEAT_SHOW,
     "get_boolean",
   ),
-  elementOrder: define(
+  elementOrder: defineSetting(
     SettingsKeys.TOP_BAR_ELEMENT_ORDER,
     "get_strv",
     (value) => normalizeOrderedValues(value, TOP_BAR_ELEMENT_ORDER_DEFAULT),
@@ -230,43 +239,43 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
 });
 
 const PANEL_DEFINITIONS = Object.freeze({
-  position: define(SettingsKeys.PANEL_POSITION, "get_enum", (value) =>
+  position: defineSetting(SettingsKeys.PANEL_POSITION, "get_enum", (value) =>
     enumValueByIndex(PanelPositions, value),
   ),
-  index: define(
+  index: defineSetting(
     SettingsKeys.PANEL_INDEX,
     "get_uint",
     createNumericConstraint(PANEL_INDEX_CONSTRAINTS),
   ),
 });
 
-const INTERACTION_DEFINITIONS = Object.freeze({
-  mouseActionLeft: define(
+const INTERACTIONS_DEFINITIONS = Object.freeze({
+  mouseActionLeft: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_LEFT,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionMiddle: define(
+  mouseActionMiddle: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_MIDDLE,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionRight: define(
+  mouseActionRight: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_RIGHT,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionDouble: define(
+  mouseActionDouble: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_DOUBLE,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionScrollUp: define(
+  mouseActionScrollUp: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_UP,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
   ),
-  mouseActionScrollDown: define(
+  mouseActionScrollDown: defineSetting(
     SettingsKeys.INTERACTIONS_MOUSE_ACTION_SCROLL_DOWN,
     "get_enum",
     (value) => normalizeInputAction(value, InputActions.NONE),
@@ -274,17 +283,17 @@ const INTERACTION_DEFINITIONS = Object.freeze({
 });
 
 const NATIVE_CONTROLS_DEFINITIONS = Object.freeze({
-  hide: define(SettingsKeys.NATIVE_CONTROLS_HIDE, "get_boolean"),
-  enhance: define(SettingsKeys.NATIVE_CONTROLS_ENHANCE, "get_boolean"),
+  hide: defineSetting(SettingsKeys.NATIVE_CONTROLS_HIDE, "get_boolean"),
+  enhance: defineSetting(SettingsKeys.NATIVE_CONTROLS_ENHANCE, "get_boolean"),
 });
 
 const MEDIA_DEFINITIONS = Object.freeze({
-  artworkCacheEnabled: define(
-    SettingsKeys.ARTWORK_CACHE_ENABLED,
+  artworkCacheEnabled: defineSetting(
+    SettingsKeys.MEDIA_ARTWORK_CACHE_ENABLED,
     "get_boolean",
   ),
-  blockedAppIds: define(
-    SettingsKeys.BLOCKED_APPS,
+  blockedAppIds: defineSetting(
+    SettingsKeys.MEDIA_BLOCKED_APPS,
     "get_strv",
     normalizeUniqueStrings,
   ),
@@ -303,7 +312,7 @@ const SETTING_SCOPE_DEFINITIONS = Object.freeze({
   [SettingScopes.POPUP]: POPUP_DEFINITIONS,
   [SettingScopes.TOP_BAR]: TOP_BAR_DEFINITIONS,
   [SettingScopes.PANEL]: PANEL_DEFINITIONS,
-  [SettingScopes.INTERACTIONS]: INTERACTION_DEFINITIONS,
+  [SettingScopes.INTERACTIONS]: INTERACTIONS_DEFINITIONS,
   [SettingScopes.NATIVE_CONTROLS]: NATIVE_CONTROLS_DEFINITIONS,
   [SettingScopes.MEDIA]: MEDIA_DEFINITIONS,
 });
@@ -409,7 +418,7 @@ export default class MediaShellSettings {
       this.popup = new SettingsScope(gsettings, POPUP_DEFINITIONS);
       this.topBar = new SettingsScope(gsettings, TOP_BAR_DEFINITIONS);
       this.panel = new SettingsScope(gsettings, PANEL_DEFINITIONS);
-      this.interactions = new SettingsScope(gsettings, INTERACTION_DEFINITIONS);
+      this.interactions = new SettingsScope(gsettings, INTERACTIONS_DEFINITIONS);
       this.nativeControls = new SettingsScope(
         gsettings,
         NATIVE_CONTROLS_DEFINITIONS,

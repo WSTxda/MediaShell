@@ -67,7 +67,7 @@ export default class TopBarSurface {
   subscribeToSettings() {
     const subscriptions = [
       [
-        ["trackInformationWidth", "trackInformationWidthLock"],
+        ["trackInformationWidth", "trackInformationFixedWidth"],
         TopBarRegions.LAYOUT,
       ],
       [
@@ -81,7 +81,7 @@ export default class TopBarSurface {
         TopBarRegions.TRACK_INFORMATION,
       ],
       [["appIconShow", "appIconUseColor"], TopBarRegions.APP_ICON],
-      [["artworkShow", "artworkCornerRadius"], TopBarRegions.ARTWORK],
+      [["artworkShow", "artworkCornerRadiusPercent"], TopBarRegions.ARTWORK],
       [
         ["visualizerShow", "visualizerStyle", "visualizerSpeed"],
         TopBarRegions.VISUALIZER,
@@ -262,7 +262,7 @@ export default class TopBarSurface {
     // Width belongs to track information, not to the complete top-bar row.
     this.trackInformation.setWidth(
       this.settings.trackInformationWidth,
-      this.settings.trackInformationWidthLock,
+      this.settings.trackInformationFixedWidth,
     );
     this.topBarBox.set_style(null);
   }

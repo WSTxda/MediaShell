@@ -22,7 +22,7 @@ import { TrackInformationFields } from "../ui/trackInformation.js";
 export const SettingsKeys = Object.freeze({
   POPUP_WIDTH: "popup-width",
   POPUP_ARTWORK_SHOW: "popup-artwork-show",
-  POPUP_ARTWORK_CORNER_RADIUS: "popup-artwork-corner-radius",
+  POPUP_ARTWORK_CORNER_RADIUS_PERCENT: "popup-artwork-corner-radius-percent",
   POPUP_TRACK_INFORMATION_SHOW: "popup-track-information-show",
   POPUP_TRACK_INFORMATION_CONTENT: "popup-track-information-content",
   POPUP_PROGRESS_BAR_SHOW: "popup-progress-bar-show",
@@ -44,25 +44,25 @@ export const SettingsKeys = Object.freeze({
   POPUP_TRACK_INFORMATION_SCROLL_ENABLED:
     "popup-track-information-scroll-enabled",
   POPUP_TRACK_INFORMATION_SCROLL_SPEED: "popup-track-information-scroll-speed",
-  POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
-    "popup-track-information-scroll-pause-time",
-  POPUP_APP_ICON_USE_COLOR: "popup-app-icon-use-color",
+  POPUP_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS:
+    "popup-track-information-scroll-pause-seconds",
+  POPUP_PLAYER_SELECTOR_APP_ICON_USE_COLOR:
+    "popup-player-selector-app-icon-use-color",
 
-  // Historical schema IDs remain the persisted track-information width contract.
   TOP_BAR_TRACK_INFORMATION_WIDTH: "top-bar-track-information-width",
-  TOP_BAR_TRACK_INFORMATION_WIDTH_LOCK: "top-bar-track-information-width-lock",
+  TOP_BAR_TRACK_INFORMATION_FIXED_WIDTH: "top-bar-track-information-fixed-width",
   TOP_BAR_TRACK_INFORMATION_SHOW: "top-bar-track-information-show",
   TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED:
     "top-bar-track-information-scroll-enabled",
   TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED:
     "top-bar-track-information-scroll-speed",
-  TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME:
-    "top-bar-track-information-scroll-pause-time",
+  TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS:
+    "top-bar-track-information-scroll-pause-seconds",
   TOP_BAR_TRACK_INFORMATION_CONTENT: "top-bar-track-information-content",
   TOP_BAR_APP_ICON_SHOW: "top-bar-app-icon-show",
   TOP_BAR_APP_ICON_USE_COLOR: "top-bar-app-icon-use-color",
   TOP_BAR_ARTWORK_SHOW: "top-bar-artwork-show",
-  TOP_BAR_ARTWORK_CORNER_RADIUS: "top-bar-artwork-corner-radius",
+  TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT: "top-bar-artwork-corner-radius-percent",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
@@ -111,14 +111,14 @@ export const SettingsKeys = Object.freeze({
 
   NATIVE_CONTROLS_HIDE: "native-controls-hide",
   NATIVE_CONTROLS_ENHANCE: "native-controls-enhance",
-  ARTWORK_CACHE_ENABLED: "artwork-cache-enabled",
-  BLOCKED_APPS: "blocked-apps",
+  MEDIA_ARTWORK_CACHE_ENABLED: "media-artwork-cache-enabled",
+  MEDIA_BLOCKED_APPS: "media-blocked-apps",
 });
 
 // --- Top bar settings ---
 
 /** Constraints for the top-bar artwork corner radius. */
-export const TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+export const TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
   DEFAULT: 40,
@@ -178,7 +178,7 @@ export const TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS = Object.freeze(
 // --- Popup settings ---
 
 /** Constraints for the popup artwork corner radius. */
-export const POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS = Object.freeze({
+export const POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS = Object.freeze({
   MIN: 0,
   MAX: 100,
   DEFAULT: 20,
@@ -216,20 +216,20 @@ export const PANEL_INDEX_CONSTRAINTS = Object.freeze({
  */
 export const NUMERIC_SETTING_CONSTRAINTS = Object.freeze({
   [SettingsKeys.POPUP_WIDTH]: POPUP_WIDTH_CONSTRAINTS,
-  [SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS]:
-    POPUP_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
+  [SettingsKeys.POPUP_ARTWORK_CORNER_RADIUS_PERCENT]:
+    POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_SPEED]:
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
-  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
+  [SettingsKeys.POPUP_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_WIDTH]:
     TOP_BAR_TRACK_INFORMATION_WIDTH_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_SPEED]:
     TRACK_INFORMATION_SCROLL_SPEED_CONSTRAINTS,
-  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_TIME]:
+  [SettingsKeys.TOP_BAR_TRACK_INFORMATION_SCROLL_PAUSE_SECONDS]:
     TRACK_INFORMATION_SCROLL_PAUSE_SECONDS_CONSTRAINTS,
-  [SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS]:
-    TOP_BAR_ARTWORK_CORNER_RADIUS_CONSTRAINTS,
+  [SettingsKeys.TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT]:
+    TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS,
   [SettingsKeys.TOP_BAR_VISUALIZER_SPEED]: TOP_BAR_VISUALIZER_SPEED_CONSTRAINTS,
   [SettingsKeys.PANEL_INDEX]: PANEL_INDEX_CONSTRAINTS,
 });

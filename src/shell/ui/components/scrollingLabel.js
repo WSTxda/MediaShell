@@ -16,7 +16,6 @@ import GLib from "gi://GLib";
 import St from "gi://St";
 
 import { MediaShellStyleClasses } from "../style.js";
-import { GTypeNames } from "../../../shared/gobject.js";
 import {
   connectReducedMotionChanged,
   disconnectReducedMotionChanged,
@@ -382,11 +381,6 @@ class ScrollingLabel extends St.ScrollView {
   }
 }
 
-const RegisteredScrollingLabel = GObject.registerClass(
-  {
-    GTypeName: GTypeNames.SCROLLING_LABEL,
-  },
-  ScrollingLabel,
-);
+const RegisteredScrollingLabel = GObject.registerClass(ScrollingLabel);
 
 export default RegisteredScrollingLabel;

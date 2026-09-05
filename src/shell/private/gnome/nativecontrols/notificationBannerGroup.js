@@ -17,9 +17,6 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 import { installPrimaryClickAction } from "../../../ui/input/pointerActions.js";
 import { prefersReducedMotion } from "../../../ui/accessibility/reducedMotion.js";
 
-const GROUP_GTYPE_NAME = "MediaShellEnhanceNotificationBannerGroup";
-const GROUP_LAYOUT_GTYPE_NAME = "MediaShellEnhanceNotificationBannerGroupLayout";
-
 // Matches GNOME Shell's private notification-group stack geometry.
 const GROUP_EXPANSION_TIME = 200;
 const MAX_VISIBLE_STACKED_BANNERS = 3;
@@ -30,7 +27,6 @@ const HEIGHT_OFFSET_REDUCTION_STACKED = 1.4;
 
 const EnhanceNotificationBannerGroupLayout = GObject.registerClass(
   {
-    GTypeName: GROUP_LAYOUT_GTYPE_NAME,
     Properties: {
       expansion: GObject.ParamSpec.double(
         "expansion",
@@ -369,7 +365,6 @@ class EnhanceNotificationBannerGroup extends St.Widget {
 
 export default GObject.registerClass(
   {
-    GTypeName: GROUP_GTYPE_NAME,
     Properties: {
       expanded: GObject.ParamSpec.boolean(
         "expanded",

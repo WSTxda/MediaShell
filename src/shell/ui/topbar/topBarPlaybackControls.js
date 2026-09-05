@@ -102,13 +102,9 @@ export default class TopBarPlaybackControls {
     const content = createPlaybackControlContent(controlDefinition, {
       iconStyleClass: styleClassNames(
         NativeStyleClasses.SYSTEM_STATUS_ICON,
-        NativeStyleClasses.NO_MARGIN,
         MediaShellStyleClasses.TOP_BAR_CONTROL_ICON,
       ),
-      labelStyleClass: styleClassNames(
-        NativeStyleClasses.NO_MARGIN,
-        MediaShellStyleClasses.TOP_BAR_CONTROL_LABEL,
-      ),
+      labelStyleClass: MediaShellStyleClasses.TOP_BAR_CONTROL_LABEL,
     });
     buttonState = { button, content, signalId: 0, action: null };
     buttonState.signalId = button.connect("clicked", () => {

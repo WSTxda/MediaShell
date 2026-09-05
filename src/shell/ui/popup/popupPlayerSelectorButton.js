@@ -75,10 +75,10 @@ export default class PopupPlayerSelectorButton {
 
     const identity = this.player.identity;
     const desktopEntry = this.player.desktopEntry;
-    const coloredClass = this.settings.appIconUseColor
-      ? MediaShellStyleClasses.COLORED_ICON
-      : MediaShellStyleClasses.SYMBOLIC_ICON;
-    const renderKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${coloredClass}`;
+    const appIconStyleClass = this.settings.playerSelectorAppIconUseColor
+      ? MediaShellStyleClasses.APP_ICON_COLORED
+      : MediaShellStyleClasses.APP_ICON_SYMBOLIC;
+    const renderKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${appIconStyleClass}`;
     if (renderKey !== this.renderKey) {
       const desktopApp = this.desktopAppResolver.resolveDesktopApp(
         identity,
@@ -98,7 +98,7 @@ export default class PopupPlayerSelectorButton {
         styleClassNames(
           NativeStyleClasses.POPUP_MENU_ICON,
           MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON_ICON,
-          coloredClass,
+          appIconStyleClass,
         ),
       );
       this.renderKey =
@@ -134,7 +134,7 @@ export default class PopupPlayerSelectorButton {
       styleClass: styleClassNames(
         NativeStyleClasses.POPUP_MENU_ICON,
         MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON_ICON,
-        MediaShellStyleClasses.SYMBOLIC_ICON,
+        MediaShellStyleClasses.APP_ICON_SYMBOLIC,
       ),
       yAlign: Clutter.ActorAlign.CENTER,
     });

@@ -53,14 +53,14 @@ export default class OthersPageController {
     this.createResetSettingsRow();
 
     this.blockedAppsGroup.setBlockedAppIds(
-      this.settings.get_strv(SettingsKeys.BLOCKED_APPS),
+      this.settings.get_strv(SettingsKeys.MEDIA_BLOCKED_APPS),
     );
     this.connectOwnedSignal(
       this.blockedAppsGroup,
       "notify::blocked-app-ids",
       () => {
         this.settings.set_strv(
-          SettingsKeys.BLOCKED_APPS,
+          SettingsKeys.MEDIA_BLOCKED_APPS,
           this.blockedAppsGroup.blockedAppIds,
         );
       },
@@ -70,9 +70,11 @@ export default class OthersPageController {
     );
     this.connectOwnedSignal(
       this.settings,
-      `changed::${SettingsKeys.BLOCKED_APPS}`,
+      `changed::${SettingsKeys.MEDIA_BLOCKED_APPS}`,
       () => {
-        const blockedAppIds = this.settings.get_strv(SettingsKeys.BLOCKED_APPS);
+        const blockedAppIds = this.settings.get_strv(
+          SettingsKeys.MEDIA_BLOCKED_APPS,
+        );
         if (
           JSON.stringify(blockedAppIds) !==
           JSON.stringify(this.blockedAppsGroup.blockedAppIds)

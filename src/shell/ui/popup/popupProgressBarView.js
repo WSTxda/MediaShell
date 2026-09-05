@@ -16,7 +16,6 @@ import St from "gi://St";
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { MediaShellStyleClasses } from "../style.js";
-import { GTypeNames } from "../../../shared/gobject.js";
 import { formatDurationMilliseconds } from "../../../shared/format.js";
 import { ACTIVE_OPACITY, INACTIVE_OPACITY } from "../actorState.js";
 import { normalizePositionPlaybackRate } from "../../mpris/position.js";
@@ -267,7 +266,6 @@ class PopupProgressBarView extends St.BoxLayout {
 
 export default GObject.registerClass(
   {
-    GTypeName: GTypeNames.POPUP_PROGRESS_BAR_VIEW,
     Signals: {
       "seek-requested": {
         param_types: [GObject.TYPE_INT64],

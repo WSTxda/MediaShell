@@ -26,7 +26,7 @@ function normalizePositiveInteger(value, fallback = 1) {
 }
 
 /** Converts a relative corner preference to a radius for a square artwork actor. */
-export function calculateArtworkCornerRadius(size, percentage) {
+export function resolveArtworkCornerRadius(size, percentage) {
   const safeSize = normalizePositiveInteger(size);
   const safePercentage = Math.min(
     100,

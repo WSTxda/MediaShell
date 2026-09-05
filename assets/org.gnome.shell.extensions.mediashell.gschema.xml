@@ -2,35 +2,35 @@
 <schemalist>
 
   <enum id="org.gnome.shell.extensions.mediashell.input-actions">
-    <value nick="NONE"             value="0"  />
-    <value nick="TOGGLE_SHUFFLE"   value="1"  />
-    <value nick="PREVIOUS_TRACK"   value="2"  />
-    <value nick="PLAY_PAUSE"       value="3"  />
-    <value nick="NEXT_TRACK"       value="4"  />
-    <value nick="TOGGLE_LOOP"      value="5"  />
-    <value nick="VOLUME_UP"        value="6"  />
-    <value nick="VOLUME_DOWN"      value="7"  />
-    <value nick="TOGGLE_POPUP"     value="8"  />
-    <value nick="OPEN_PREFERENCES" value="9"  />
-    <value nick="RAISE_APP"        value="10" />
-    <value nick="QUIT_APP"         value="11" />
-    <value nick="SWITCH_APP"       value="12" />
-    <value nick="SEEK_BACKWARD"    value="13" />
-    <value nick="SEEK_FORWARD"     value="14" />
+    <value nick="none"             value="0"  />
+    <value nick="toggle-shuffle"   value="1"  />
+    <value nick="previous-track"   value="2"  />
+    <value nick="play-pause"       value="3"  />
+    <value nick="next-track"       value="4"  />
+    <value nick="toggle-loop"      value="5"  />
+    <value nick="volume-up"        value="6"  />
+    <value nick="volume-down"      value="7"  />
+    <value nick="toggle-popup"     value="8"  />
+    <value nick="open-preferences" value="9"  />
+    <value nick="raise-app"        value="10" />
+    <value nick="quit-app"         value="11" />
+    <value nick="switch-app"       value="12" />
+    <value nick="seek-backward"    value="13" />
+    <value nick="seek-forward"     value="14" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
-    <value nick="Left"   value="0" />
-    <value nick="Center" value="1" />
-    <value nick="Right"  value="2" />
+    <value nick="left"   value="0" />
+    <value nick="center" value="1" />
+    <value nick="right"  value="2" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.visualizer-styles">
-    <value nick="BEATS"    value="0" />
-    <value nick="PULSE"    value="1" />
-    <value nick="CLASSIC"  value="2" />
-    <value nick="SPECTRUM" value="3" />
-    <value nick="VINYL"    value="4" />
+    <value nick="beats"    value="0" />
+    <value nick="pulse"    value="1" />
+    <value nick="classic"  value="2" />
+    <value nick="spectrum" value="3" />
+    <value nick="vinyl"    value="4" />
   </enum>
 
   <schema id="org.gnome.shell.extensions.mediashell"
@@ -44,7 +44,7 @@
     <key name="popup-artwork-show" type="b">
       <default>true</default>
     </key>
-    <key name="popup-artwork-corner-radius" type="u">
+    <key name="popup-artwork-corner-radius-percent" type="u">
       <range min="0" max="100" />
       <default>20</default>
     </key>
@@ -52,7 +52,7 @@
       <default>true</default>
     </key>
     <key name="popup-track-information-content" type="as">
-      <default>['TITLE', 'ARTIST', 'ALBUM']</default>
+      <default>['title', 'artist', 'album']</default>
     </key>
     <key name="popup-progress-bar-show" type="b">
       <default>true</default>
@@ -94,11 +94,11 @@
       <range min="1" max="10" />
       <default>4</default>
     </key>
-    <key name="popup-track-information-scroll-pause-time" type="u">
+    <key name="popup-track-information-scroll-pause-seconds" type="u">
       <range min="0" max="10" />
       <default>1</default>
     </key>
-    <key name="popup-app-icon-use-color" type="b">
+    <key name="popup-player-selector-app-icon-use-color" type="b">
       <default>true</default>
     </key>
 
@@ -110,7 +110,7 @@
       <range min="0" max="1000" />
       <default>200</default>
     </key>
-    <key name="top-bar-track-information-width-lock" type="b">
+    <key name="top-bar-track-information-fixed-width" type="b">
       <default>false</default>
     </key>
     <key name="top-bar-track-information-scroll-enabled" type="b">
@@ -120,12 +120,12 @@
       <range min="1" max="10" />
       <default>4</default>
     </key>
-    <key name="top-bar-track-information-scroll-pause-time" type="u">
+    <key name="top-bar-track-information-scroll-pause-seconds" type="u">
       <range min="0" max="10" />
       <default>1</default>
     </key>
     <key name="top-bar-track-information-content" type="as">
-      <default>['TITLE', '•', 'ARTIST']</default>
+      <default>['title', '•', 'artist']</default>
     </key>
     <key name="top-bar-app-icon-show" type="b">
       <default>true</default>
@@ -136,7 +136,7 @@
     <key name="top-bar-artwork-show" type="b">
       <default>false</default>
     </key>
-    <key name="top-bar-artwork-corner-radius" type="u">
+    <key name="top-bar-artwork-corner-radius-percent" type="u">
       <range min="0" max="100" />
       <default>40</default>
     </key>
@@ -145,7 +145,7 @@
     </key>
     <key name="top-bar-visualizer-style"
          enum="org.gnome.shell.extensions.mediashell.visualizer-styles">
-      <default>'BEATS'</default>
+      <default>'beats'</default>
     </key>
     <key name="top-bar-visualizer-speed" type="u">
       <range min="1" max="8" />
@@ -176,13 +176,13 @@
       <default>false</default>
     </key>
     <key name="top-bar-element-order" type="as">
-      <default>['APP_ICON', 'ARTWORK', 'TRACK_INFORMATION', 'VISUALIZER', 'PLAYBACK_CONTROLS']</default>
+      <default>['app-icon', 'artwork', 'track-information', 'visualizer', 'playback-controls']</default>
     </key>
 
     <!-- Panel -->
     <key name="panel-position"
          enum="org.gnome.shell.extensions.mediashell.panel-positions">
-      <default>'Center'</default>
+      <default>'center'</default>
     </key>
     <key name="panel-index" type="u">
       <range min="0" max="100" />
@@ -234,27 +234,27 @@
     </key>
     <key name="interactions-mouse-action-left"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'TOGGLE_POPUP'</default>
+      <default>'toggle-popup'</default>
     </key>
     <key name="interactions-mouse-action-middle"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'OPEN_PREFERENCES'</default>
+      <default>'open-preferences'</default>
     </key>
     <key name="interactions-mouse-action-right"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'RAISE_APP'</default>
+      <default>'raise-app'</default>
     </key>
     <key name="interactions-mouse-action-double"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'NONE'</default>
+      <default>'none'</default>
     </key>
     <key name="interactions-mouse-action-scroll-up"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'VOLUME_UP'</default>
+      <default>'volume-up'</default>
     </key>
     <key name="interactions-mouse-action-scroll-down"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'VOLUME_DOWN'</default>
+      <default>'volume-down'</default>
     </key>
 
     <!-- Others -->
@@ -264,10 +264,10 @@
     <key name="native-controls-enhance" type="b">
       <default>false</default>
     </key>
-    <key name="artwork-cache-enabled" type="b">
+    <key name="media-artwork-cache-enabled" type="b">
       <default>true</default>
     </key>
-    <key name="blocked-apps" type="as">
+    <key name="media-blocked-apps" type="as">
       <default>[]</default>
     </key>
 

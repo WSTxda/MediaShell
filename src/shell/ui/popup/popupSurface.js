@@ -14,11 +14,7 @@ import Clutter from "gi://Clutter";
 
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
-import {
-  MediaShellStyleClasses,
-  NativeStyleClasses,
-  styleClassNames,
-} from "../style.js";
+import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
@@ -57,10 +53,7 @@ export default class PopupSurface {
         ),
     );
     this.popupItem = new PopupMenu.PopupBaseMenuItem({
-      style_class: styleClassNames(
-        NativeStyleClasses.NO_PADDING,
-        MediaShellStyleClasses.POPUP_BOX,
-      ),
+      style_class: MediaShellStyleClasses.POPUP_BOX,
       activate: false,
     });
     this.popupItem.set_orientation(Clutter.Orientation.VERTICAL);
@@ -110,7 +103,7 @@ export default class PopupSurface {
           PopupRegions.TRACK_INFORMATION |
           PopupRegions.PROGRESS,
       ],
-      [["artworkCornerRadius"], PopupRegions.ARTWORK],
+      [["artworkCornerRadiusPercent"], PopupRegions.ARTWORK],
       [
         [
           "trackInformationShow",
@@ -123,7 +116,7 @@ export default class PopupSurface {
       ],
       [["progressBarShow"], PopupRegions.PROGRESS],
       [["volumeControlShow"], PopupRegions.VOLUME],
-      [["appIconUseColor"], PopupRegions.PLAYER_SELECTOR],
+      [["playerSelectorAppIconUseColor"], PopupRegions.PLAYER_SELECTOR],
       [["playbackControlsShow"], PopupRegions.PLAYBACK_CONTROLS],
       [["playbackControlsShuffleShow"], PopupRegions.PLAYBACK_SHUFFLE],
       [

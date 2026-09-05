@@ -185,10 +185,10 @@ export default class PopupPlayerSelectorList {
     if (resolvedDesktopAppKeys.some((desktopAppKey) => desktopAppKey === null))
       return null;
 
-    const coloredIcons = this.settings.appIconUseColor;
+    const useColoredAppIcons = this.settings.playerSelectorAppIconUseColor;
     const activeBusName = this.popupSurface.player.busName;
     return JSON.stringify([
-      coloredIcons,
+      useColoredAppIcons,
       activeBusName,
       ...resolvedPlayerRows.map(({ player }, index) => [
         player.busName,
@@ -213,21 +213,21 @@ export default class PopupPlayerSelectorList {
       orientation: Clutter.Orientation.VERTICAL,
       styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_LIST,
     });
-    const coloredClass = this.settings.appIconUseColor
-      ? MediaShellStyleClasses.COLORED_ICON
-      : MediaShellStyleClasses.SYMBOLIC_ICON;
+    const appIconStyleClass = this.settings.playerSelectorAppIconUseColor
+      ? MediaShellStyleClasses.APP_ICON_COLORED
+      : MediaShellStyleClasses.APP_ICON_SYMBOLIC;
     const pinnedPlayer =
       resolvedPlayerRows.find(({ player }) => player.isPinned)?.player ?? null;
 
     for (const resolvedPlayerRow of resolvedPlayerRows) {
       playerList.add_child(
-        this.createPlayerRow(resolvedPlayerRow, pinnedPlayer, coloredClass),
+        this.createPlayerRow(resolvedPlayerRow, pinnedPlayer, appIconStyleClass),
       );
     }
     return playerList;
   }
 
-  createPlayerRow({ player, desktopApp }, pinnedPlayer, coloredClass) {
+  createPlayerRow({ player, desktopApp }, pinnedPlayer, appIconStyleClass) {
     const displayName = this.desktopAppResolver.resolveDesktopAppName(
       desktopApp,
       player.identity || _("Unknown app"),
@@ -246,7 +246,7 @@ export default class PopupPlayerSelectorList {
         player,
         displayName,
         displayIcon,
-        coloredClass,
+        appIconStyleClass,
         isActive,
         canSelect,
       }),
@@ -259,7 +259,7 @@ export default class PopupPlayerSelectorList {
     player,
     displayName,
     displayIcon,
-    coloredClass,
+    appIconStyleClass,
     isActive,
     canSelect,
   }) {
@@ -278,7 +278,7 @@ export default class PopupPlayerSelectorList {
       this.createPlayerIdentityContent(
         displayName,
         displayIcon,
-        coloredClass,
+        appIconStyleClass,
         isActive,
       ),
     );
@@ -292,7 +292,7 @@ export default class PopupPlayerSelectorList {
   createPlayerIdentityContent(
     displayName,
     displayIcon,
-    coloredClass,
+    appIconStyleClass,
     isActive,
   ) {
     const playerContent = new St.BoxLayout({
@@ -306,7 +306,7 @@ export default class PopupPlayerSelectorList {
           styleClass: styleClassNames(
             NativeStyleClasses.POPUP_MENU_ICON,
             MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_APP_ICON,
-            coloredClass,
+            appIconStyleClass,
           ),
           yAlign: Clutter.ActorAlign.CENTER,
         },
