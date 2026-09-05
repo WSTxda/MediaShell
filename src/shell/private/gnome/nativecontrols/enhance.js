@@ -272,16 +272,20 @@ export default class EnhanceNativeControls {
   }
 
   createBinding(banner, bannerContext, player) {
-    const binding = new EnhanceNotificationBannerBinding(bannerContext, player, {
-      artworkService: this.artworkService,
-      playbackController: this.playbackController,
-      onDestroyed: (destroyedBinding) => {
-        if (this.bindings.get(banner) === destroyedBinding) {
-          this.bindings.delete(banner);
-          this.scheduleReconcile();
-        }
+    const binding = new EnhanceNotificationBannerBinding(
+      bannerContext,
+      player,
+      {
+        artworkService: this.artworkService,
+        playbackController: this.playbackController,
+        onDestroyed: (destroyedBinding) => {
+          if (this.bindings.get(banner) === destroyedBinding) {
+            this.bindings.delete(banner);
+            this.scheduleReconcile();
+          }
+        },
       },
-    });
+    );
 
     if (!binding.enable()) return;
     this.bindings.set(banner, binding);

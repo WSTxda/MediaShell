@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 03:50-0300\n"
+"POT-Creation-Date: 2026-09-04 23:07-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: be\n"
 "MIME-Version: 1.0\n"
@@ -33,79 +33,79 @@ msgstr "Распрацавана"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:998
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:991
 msgid "Shuffle"
 msgstr "Выпадкова"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:999
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:992
 msgid "Seek backward"
 msgstr "Пераматаць назад"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:1000
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:993
 msgid "Previous track"
 msgstr "Папярэдні трэк"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:1001
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:994
 msgid "Play / pause"
 msgstr "Прайграць / Паўза"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:1002
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:995
 msgid "Next track"
 msgstr "Наступны трэк"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:1003
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:996
 msgid "Seek forward"
 msgstr "Пераматаць наперад"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:1004
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:997
 msgid "Repeat"
 msgstr "Паўтор"
 
 #: src/prefs/controllers/interactionsPageController.js:73
-#: src/shell/ui/popup/popupVolumeControl.js:142 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:1005
+#: src/shell/ui/popup/popupVolumeControl.js:143 assets/ui/prefs.ui:710
+#: assets/ui/prefs.ui:998
 msgid "Volume up"
 msgstr "Павялічыць гучнасць"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:1006
+#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:999
 msgid "Volume down"
 msgstr "Паменшыць гучнасць"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1007
+#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1000
 msgid "Popup"
 msgstr "Усплывальнае меню"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1008
+#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1001
 msgid "Preferences"
 msgstr "Налады"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1009
+#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1002
 msgid "Open app"
 msgstr "Адкрыць праграму"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1010
+#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1003
 msgid "Quit app"
 msgstr "Завяршыць праграму"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1011
+#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1004
 msgid "Switch app"
 msgstr "Пераключыць праграму"
 
@@ -128,14 +128,14 @@ msgstr "Інтэрфейс"
 
 #: src/prefs/controllers/interactionsPageController.js:136
 #: src/prefs/controllers/interactionsPageController.js:416
-#: src/prefs/controllers/othersPageController.js:106
+#: src/prefs/controllers/othersPageController.js:108
 msgid "Reset"
 msgstr "Скінуць"
 
 #: src/prefs/controllers/interactionsPageController.js:185
 #: src/prefs/controllers/interactionsPageController.js:415
-#: src/prefs/controllers/othersPageController.js:135
-#: src/prefs/widgets/blockedAppChooserDialog.js:70
+#: src/prefs/controllers/othersPageController.js:137
+#: src/prefs/widgets/blockedAppChooserDialog.js:67
 msgid "Cancel"
 msgstr "Скасаваць"
 
@@ -179,43 +179,43 @@ msgstr "Усе спалучэнні клавіш будуць адключаны
 msgid "Keyboard shortcuts reset"
 msgstr "Спалучэнні клавіш скінуты"
 
-#: src/prefs/controllers/othersPageController.js:90
+#: src/prefs/controllers/othersPageController.js:92
 msgid "Reset all settings"
 msgstr "Скінуць усе налады"
 
-#: src/prefs/controllers/othersPageController.js:104
+#: src/prefs/controllers/othersPageController.js:106
 msgid "Reset all settings?"
 msgstr "Скінуць усе налады?"
 
-#: src/prefs/controllers/othersPageController.js:105
+#: src/prefs/controllers/othersPageController.js:107
 msgid "Every MediaShell preference will return to its default value."
 msgstr "Усе налады MediaShell вернуцца да прадвызначаных значэнняў."
 
-#: src/prefs/controllers/othersPageController.js:116
+#: src/prefs/controllers/othersPageController.js:118
 msgid "Settings reset"
 msgstr "Налады скінуты"
 
-#: src/prefs/controllers/othersPageController.js:124
+#: src/prefs/controllers/othersPageController.js:126
 msgid "Clear the cache?"
 msgstr "Ачысціць кэш?"
 
-#: src/prefs/controllers/othersPageController.js:125
+#: src/prefs/controllers/othersPageController.js:127
 msgid "Cached content will be downloaded again when needed."
 msgstr "Кэшаваны змест будзе загружаны зноў пры неабходнасці."
 
-#: src/prefs/controllers/othersPageController.js:126 assets/ui/prefs.ui:959
+#: src/prefs/controllers/othersPageController.js:128 assets/ui/prefs.ui:959
 msgid "Clear cache"
 msgstr "Ачысціць кэш"
 
-#: src/prefs/controllers/othersPageController.js:178
+#: src/prefs/controllers/othersPageController.js:180
 msgid "Cache cleared"
 msgstr "Кэш ачышчаны"
 
-#: src/prefs/controllers/othersPageController.js:188
+#: src/prefs/controllers/othersPageController.js:190
 msgid "Could not clear the cache"
 msgstr "Не ўдалося ачысціць кэш"
 
-#: src/prefs/controllers/othersPageController.js:198
+#: src/prefs/controllers/othersPageController.js:200
 #, javascript-format
 msgid "%d cached image — %s"
 msgid_plural "%d cached images — %s"
@@ -227,74 +227,74 @@ msgstr[2] "%d кэшаваных выяў — %s"
 msgid "by"
 msgstr "ад"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:47
+#: src/prefs/widgets/blockedAppChooserDialog.js:44
 msgid "Select an app to block"
 msgstr "Выбраць праграму для блакіроўкі"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:73
-#: src/prefs/widgets/blockedAppChooserDialog.js:89
+#: src/prefs/widgets/blockedAppChooserDialog.js:70
+#: src/prefs/widgets/blockedAppChooserDialog.js:86
 msgid "Search apps"
 msgstr "Пошук праграм"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:76
+#: src/prefs/widgets/blockedAppChooserDialog.js:73
 msgid "Select"
 msgstr "Выбраць"
 
-#: src/prefs/widgets/blockedAppChooserDialog.js:109
+#: src/prefs/widgets/blockedAppChooserDialog.js:106
 msgid "No apps found"
 msgstr "Праграмы не знойдзены"
 
-#: src/prefs/widgets/blockedAppsGroup.js:107
+#: src/prefs/widgets/blockedAppsGroup.js:106
 msgid "No apps are blocked"
 msgstr "Няма заблакіраваных праграм"
 
-#: src/prefs/widgets/blockedAppsGroup.js:137
-#: src/prefs/widgets/trackInformationContentRow.js:124
+#: src/prefs/widgets/blockedAppsGroup.js:136
+#: src/prefs/widgets/trackInformationContentRow.js:123
 msgid "Remove"
 msgstr "Выдаліць"
 
-#: src/prefs/widgets/trackInformationContentRow.js:26
+#: src/prefs/widgets/trackInformationContentRow.js:25
 msgid "Title"
 msgstr "Назва"
 
-#: src/prefs/widgets/trackInformationContentRow.js:27
+#: src/prefs/widgets/trackInformationContentRow.js:26
 msgid "Artist"
 msgstr "Выканаўца"
 
-#: src/prefs/widgets/trackInformationContentRow.js:28
+#: src/prefs/widgets/trackInformationContentRow.js:27
 msgid "Album"
 msgstr "Альбом"
 
-#: src/prefs/widgets/trackInformationContentRow.js:29
+#: src/prefs/widgets/trackInformationContentRow.js:28
 msgid "Album artist"
 msgstr "Выканаўца альбома"
 
-#: src/prefs/widgets/trackInformationContentRow.js:30
+#: src/prefs/widgets/trackInformationContentRow.js:29
 msgid "Genre"
 msgstr "Жанр"
 
-#: src/prefs/widgets/trackInformationContentRow.js:31
+#: src/prefs/widgets/trackInformationContentRow.js:30
 msgid "Composer"
 msgstr "Кампазітар"
 
-#: src/prefs/widgets/trackInformationContentRow.js:32
+#: src/prefs/widgets/trackInformationContentRow.js:31
 msgid "Year"
 msgstr "Год"
 
-#: src/prefs/widgets/trackInformationContentRow.js:33
+#: src/prefs/widgets/trackInformationContentRow.js:32
 msgid "Disc"
 msgstr "Дыск"
 
-#: src/prefs/widgets/trackInformationContentRow.js:34
+#: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
 msgid "Track"
 msgstr "Трэк"
 
-#: src/prefs/widgets/trackInformationContentRow.js:84
+#: src/prefs/widgets/trackInformationContentRow.js:83
 msgid "No track information fields added"
 msgstr "Палі звестак аб трэку не дададзены"
 
-#: src/prefs/widgets/trackInformationContentRow.js:104
+#: src/prefs/widgets/trackInformationContentRow.js:103
 msgid "Custom text"
 msgstr "Уласны тэкст"
 
@@ -314,7 +314,7 @@ msgstr "Спыніць"
 msgid "Playlist"
 msgstr "Спіс прайгравання"
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:997
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:990
 msgid "None"
 msgstr "Няма"
 
@@ -322,25 +322,25 @@ msgstr "Няма"
 msgid "Playback speed"
 msgstr "Хуткасць прайгравання"
 
-#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:197
-#: src/shell/private/gnomeShell/nativeControls/notificationBannerGroup.js:210
+#: src/shell/private/gnome/nativecontrols/notificationBannerGroup.js:195
+#: src/shell/private/gnome/nativecontrols/notificationBannerGroup.js:208
 msgid "Media"
 msgstr "Медыя"
 
-#: src/shell/ui/popup/popupPlayerSelectorButton.js:89
-#: src/shell/ui/popup/popupPlayerSelectorList.js:232
+#: src/shell/ui/popup/popupPlayerSelectorButton.js:90
+#: src/shell/ui/popup/popupPlayerSelectorList.js:237
 msgid "Unknown app"
 msgstr "Невядомая праграма"
 
-#: src/shell/ui/popup/popupVolumeControl.js:107 assets/ui/prefs.ui:119
+#: src/shell/ui/popup/popupVolumeControl.js:108 assets/ui/prefs.ui:119
 msgid "Volume"
 msgstr "Гучнасць"
 
-#: src/shell/ui/popup/popupVolumeControl.js:171
+#: src/shell/ui/popup/popupVolumeControl.js:172
 msgid "Unmute"
 msgstr "Уключыць гук"
 
-#: src/shell/ui/popup/popupVolumeControl.js:171
+#: src/shell/ui/popup/popupVolumeControl.js:172
 msgid "Mute"
 msgstr "Выключыць гук"
 
@@ -678,8 +678,12 @@ msgid "Private API integration"
 msgstr "Інтэграцыя праз прыватны API"
 
 #: assets/ui/prefs.ui:918
-msgid "These options use private APIs to function. Stability may vary depending on the GNOME version or distribution customizations."
-msgstr "Гэтыя параметры выкарыстоўваюць прыватныя API для працы. Стабільнасць можа залежаць ад версіі GNOME або змен у дыстрыбутыве."
+msgid ""
+"These options use private APIs to function. Stability may vary depending on "
+"the GNOME version or distribution customizations."
+msgstr ""
+"Гэтыя параметры выкарыстоўваюць прыватныя API для працы. Стабільнасць можа "
+"залежаць ад версіі GNOME або змен у дыстрыбутыве."
 
 #: assets/ui/prefs.ui:934
 msgid "Hide native control"
@@ -694,8 +698,12 @@ msgid "Enhanced native control"
 msgstr "Палепшаны натыўны элемент кіравання"
 
 #: assets/ui/prefs.ui:941
-msgid "Apply a modern and enhanced style to media control banners in the notification center and on the lock screen"
-msgstr "Ужыць сучасны і палепшаны стыль да банераў кіравання медыя ў цэнтры апавяшчэнняў і на экране блакіроўкі"
+msgid ""
+"Apply a modern and enhanced style to media control banners in the "
+"notification center and on the lock screen"
+msgstr ""
+"Ужыць сучасны і палепшаны стыль да банераў кіравання медыя ў цэнтры "
+"апавяшчэнняў і на экране блакіроўкі"
 
 #: assets/ui/prefs.ui:950
 msgid "Cache"

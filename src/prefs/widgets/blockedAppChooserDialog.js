@@ -21,10 +21,7 @@ import {
   tokenizeSearchQuery,
 } from "../apps/search.js";
 import { gettext as _ } from "../translations.js";
-import {
-  LARGE_DIALOG_HEIGHT,
-  LARGE_DIALOG_WIDTH,
-} from "../ui/presentation.js";
+import { LARGE_DIALOG_HEIGHT, LARGE_DIALOG_WIDTH } from "../ui/presentation.js";
 import { PreferencesStyleClasses } from "../ui/style.js";
 import {
   createFallbackAppIcon,

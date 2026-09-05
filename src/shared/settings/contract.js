@@ -50,7 +50,8 @@ export const SettingsKeys = Object.freeze({
     "popup-player-selector-app-icon-use-color",
 
   TOP_BAR_TRACK_INFORMATION_WIDTH: "top-bar-track-information-width",
-  TOP_BAR_TRACK_INFORMATION_FIXED_WIDTH: "top-bar-track-information-fixed-width",
+  TOP_BAR_TRACK_INFORMATION_FIXED_WIDTH:
+    "top-bar-track-information-fixed-width",
   TOP_BAR_TRACK_INFORMATION_SHOW: "top-bar-track-information-show",
   TOP_BAR_TRACK_INFORMATION_SCROLL_ENABLED:
     "top-bar-track-information-scroll-enabled",
@@ -62,7 +63,8 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_APP_ICON_SHOW: "top-bar-app-icon-show",
   TOP_BAR_APP_ICON_USE_COLOR: "top-bar-app-icon-use-color",
   TOP_BAR_ARTWORK_SHOW: "top-bar-artwork-show",
-  TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT: "top-bar-artwork-corner-radius-percent",
+  TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT:
+    "top-bar-artwork-corner-radius-percent",
   TOP_BAR_VISUALIZER_SHOW: "top-bar-visualizer-show",
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",

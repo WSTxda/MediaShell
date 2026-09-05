@@ -221,7 +221,11 @@ export default class PopupPlayerSelectorList {
 
     for (const resolvedPlayerRow of resolvedPlayerRows) {
       playerList.add_child(
-        this.createPlayerRow(resolvedPlayerRow, pinnedPlayer, appIconStyleClass),
+        this.createPlayerRow(
+          resolvedPlayerRow,
+          pinnedPlayer,
+          appIconStyleClass,
+        ),
       );
     }
     return playerList;
@@ -232,7 +236,8 @@ export default class PopupPlayerSelectorList {
       desktopApp,
       player.identity || _("Unknown app"),
     );
-    const displayIcon = this.desktopAppResolver.resolveDesktopAppIcon(desktopApp);
+    const displayIcon =
+      this.desktopAppResolver.resolveDesktopAppIcon(desktopApp);
     const isActive = this.popupSurface.isActivePlayer(player);
     const isPinned = player.isPinned;
     const canSelect = pinnedPlayer == null || isPinned;

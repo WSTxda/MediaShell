@@ -138,30 +138,42 @@ class MediaShellIndicator extends PanelMenu.Button {
     this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_SEEK, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SEEK_CAPABILITY);
     });
-    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_GO_NEXT, () => {
-      this.requestSurfaceUpdate(PlayerSurfaceUpdates.NEXT_CAPABILITY);
-    });
+    this.connectPlayerPropertyListener(
+      MprisPlayerProperties.CAN_GO_NEXT,
+      () => {
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.NEXT_CAPABILITY);
+      },
+    );
     this.connectPlayerPropertyListener(
       MprisPlayerProperties.CAN_GO_PREVIOUS,
       () => {
         this.requestSurfaceUpdate(PlayerSurfaceUpdates.PREVIOUS_CAPABILITY);
       },
     );
-    this.connectPlayerPropertyListener(MprisPlayerProperties.CAN_CONTROL, () => {
-      this.requestSurfaceUpdate(PlayerSurfaceUpdates.CONTROL_CAPABILITY);
-    });
+    this.connectPlayerPropertyListener(
+      MprisPlayerProperties.CAN_CONTROL,
+      () => {
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.CONTROL_CAPABILITY);
+      },
+    );
     this.connectPlayerPropertyListener(MprisPlayerProperties.SHUFFLE, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.SHUFFLE);
     });
-    this.connectPlayerPropertyListener(MprisPlayerProperties.LOOP_STATUS, () => {
-      this.requestSurfaceUpdate(PlayerSurfaceUpdates.LOOP_STATUS);
-    });
+    this.connectPlayerPropertyListener(
+      MprisPlayerProperties.LOOP_STATUS,
+      () => {
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.LOOP_STATUS);
+      },
+    );
     this.connectPlayerPropertyListener(MprisPlayerProperties.VOLUME, () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.VOLUME);
     });
-    this.connectPlayerPropertyListener(MprisPlayerStateProperties.IS_PINNED, () => {
-      this.requestSurfaceUpdate(PlayerSurfaceUpdates.PIN);
-    });
+    this.connectPlayerPropertyListener(
+      MprisPlayerStateProperties.IS_PINNED,
+      () => {
+        this.requestSurfaceUpdate(PlayerSurfaceUpdates.PIN);
+      },
+    );
     const updatePlaybackSpeedControl = () =>
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.RATE);
     this.connectPlayerPropertyListener(MprisPlayerProperties.RATE, () => {
