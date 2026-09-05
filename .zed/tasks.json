@@ -1,0 +1,117 @@
+[
+  {
+    "label": "MediaShell: Check",
+    "command": "pnpm",
+    "args": ["check"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Check All",
+    "command": "pnpm",
+    "args": ["check:all"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Test",
+    "command": "pnpm",
+    "args": ["test"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Lint",
+    "command": "pnpm",
+    "args": ["lint"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Format",
+    "command": "pnpm",
+    "args": ["format"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Build & Install Debug",
+    "command": "pnpm",
+    "args": ["build:debug", "--install"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Build & Install Force",
+    "command": "pnpm",
+    "args": ["build:force", "--install"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Build & Install Release",
+    "command": "pnpm",
+    "args": ["build:release", "--install"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Install Current Build",
+    "command": "pnpm",
+    "args": ["ext:install"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Enable Extension",
+    "command": "pnpm",
+    "args": ["ext:enable"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Disable Extension",
+    "command": "pnpm",
+    "args": ["ext:disable"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Open Preferences",
+    "command": "pnpm",
+    "args": ["ext:prefs"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Shell Debug",
+    "command": "pnpm",
+    "args": ["shell:debug"],
+    "save": "all",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Translations",
+    "command": "pnpm",
+    "args": ["translations"],
+    "save": "all",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "MediaShell: Environment Doctor",
+    "command": "pnpm",
+    "args": ["env:doctor"],
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  }
+]

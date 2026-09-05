@@ -1,0 +1,31 @@
+[
+  {
+    "adapter": "JavaScript",
+    "label": "MediaShell: Debug Current Node File",
+    "type": "node",
+    "request": "launch",
+    "program": "$ZED_FILE",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "skipFiles": ["<node_internals>/**"]
+  },
+  {
+    "adapter": "JavaScript",
+    "label": "MediaShell: Debug Current Node Test",
+    "type": "node",
+    "request": "launch",
+    "program": "$ZED_FILE",
+    "runtimeArgs": ["--test"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "skipFiles": ["<node_internals>/**"]
+  },
+  {
+    "adapter": "JavaScript",
+    "label": "MediaShell: Debug Tooling Check",
+    "type": "node",
+    "request": "launch",
+    "program": "$ZED_WORKTREE_ROOT/scripts/dev.mjs",
+    "args": ["check"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "skipFiles": ["<node_internals>/**"]
+  }
+]

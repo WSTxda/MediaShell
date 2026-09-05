@@ -1,0 +1,43 @@
+{
+  "terminal": {
+    "working_directory": "current_project_directory"
+  },
+  "languages": {
+    "JavaScript": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "CSS": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "JSON": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "YAML": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "XML": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "Shell Script": {
+      "tab_size": 2,
+      "hard_tabs": false
+    }
+  },
+  "lsp": {
+    "vscode-css-language-server": {
+      "settings": {
+        "css": {
+          "lint": {
+            "unknownProperties": "ignore",
+            "vendorPrefix": "ignore"
+          }
+        }
+      }
+    }
+  }
+}
