@@ -74,8 +74,8 @@ function resolvePlayerRows(players, desktopAppResolver) {
  * Builds the popup list of available MPRIS players.
  */
 export default class PopupPlayerSelectorList {
-  constructor(popupContent, playerSelectorButton, desktopAppResolver) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, playerSelectorButton, desktopAppResolver) {
+    this.popupSurface = popupSurface;
     this.playerSelectorButton = playerSelectorButton;
     this.revealer = null;
     this.card = null;
@@ -84,10 +84,10 @@ export default class PopupPlayerSelectorList {
   }
 
   get settings() {
-    return this.popupContent.settings;
+    return this.popupSurface.settings;
   }
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
   get isOpen() {
     return this.revealer != null;
@@ -99,7 +99,7 @@ export default class PopupPlayerSelectorList {
   }
 
   open() {
-    const players = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
+    const players = this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? [];
     if (players.length <= 1) return;
 
     this.revealer = new St.BoxLayout({
@@ -149,7 +149,7 @@ export default class PopupPlayerSelectorList {
 
   refreshPlayers() {
     if (!this.revealer) return;
-    const players = this.popupContent.mediaRuntime?.getAvailablePlayers() ?? [];
+    const players = this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? [];
     if (players.length <= 1) {
       this.close();
       return;
@@ -185,7 +185,7 @@ export default class PopupPlayerSelectorList {
       return null;
 
     const coloredIcons = this.settings.appIconUseColor;
-    const activeBusName = this.popupContent.player.busName;
+    const activeBusName = this.popupSurface.player.busName;
     return JSON.stringify([
       coloredIcons,
       activeBusName,
@@ -200,8 +200,8 @@ export default class PopupPlayerSelectorList {
   }
 
   syncPlayerSelectorListWidth() {
-    const style = this.popupContent.buildFixedWidthStyle(
-      this.popupContent.getPopupContentWidth(),
+    const style = this.popupSurface.buildFixedWidthStyle(
+      this.popupSurface.getPopupContentWidth(),
     );
     if (this.revealer) this.revealer.style = style;
     if (this.card) this.card.style = style;
@@ -232,7 +232,7 @@ export default class PopupPlayerSelectorList {
       player.identity || _("Unknown app"),
     );
     const displayIcon = this.desktopAppResolver.getDesktopAppIcon(desktopApp);
-    const isActive = this.popupContent.isActivePlayer(player);
+    const isActive = this.popupSurface.isActivePlayer(player);
     const isPinned = player.isPinned;
     const canSelect = pinnedPlayer == null || isPinned;
     const rowItem = new St.BoxLayout({
@@ -283,7 +283,7 @@ export default class PopupPlayerSelectorList {
     );
     playerButton.connect("clicked", () => {
       if (!canSelect) return;
-      if (isActive || this.popupContent.selectPlayer(player)) this.close();
+      if (isActive || this.popupSurface.selectPlayer(player)) this.close();
     });
     return playerButton;
   }
@@ -359,7 +359,7 @@ export default class PopupPlayerSelectorList {
       }),
     );
     pinButton.connect("clicked", () => {
-      const pinStateChanged = this.popupContent.togglePlayerPin(player);
+      const pinStateChanged = this.popupSurface.togglePlayerPin(player);
       if (!pinStateChanged) pinButton.checked = isPinned;
       this.refreshPlayers();
     });
@@ -412,6 +412,6 @@ export default class PopupPlayerSelectorList {
     this.close(false);
     this.desktopAppResolver = null;
     this.playerSelectorButton = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

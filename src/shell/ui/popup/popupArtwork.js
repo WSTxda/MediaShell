@@ -32,8 +32,8 @@ const logger = createLogger("PopupArtwork");
 
 /** Owns popup album-art actors, async request state, and playback animation. */
 export default class PopupArtwork {
-  constructor(popupContent, artworkService) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, artworkService) {
+    this.popupSurface = popupSurface;
     this.artworkFrame = null;
     this.artworkImage = null;
     this.artworkLoadGeneration = 0;
@@ -52,19 +52,19 @@ export default class PopupArtwork {
   }
 
   get settings() {
-    return this.popupContent.settings;
+    return this.popupSurface.settings;
   }
 
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
 
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
 
   get playerSelectorActor() {
-    return this.popupContent.playerSelector.actor;
+    return this.popupSurface.playerSelector.actor;
   }
 
   get actor() {
@@ -72,7 +72,7 @@ export default class PopupArtwork {
   }
 
   getArtworkWidth() {
-    return this.popupContent.getArtworkWidth();
+    return this.popupSurface.getArtworkWidth();
   }
 
   getArtworkGeometry() {
@@ -327,6 +327,6 @@ export default class PopupArtwork {
     this.remove();
     this.artworkService = null;
     this.fallbackArtworkIcon = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

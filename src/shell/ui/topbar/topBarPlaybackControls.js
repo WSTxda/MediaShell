@@ -4,7 +4,7 @@
  *
  * Renders configurable playback controls inside the top bar.
  *
- * TopBarContent owns surface visibility. This renderer owns top-bar actors and
+ * TopBarSurface owns surface visibility. This renderer owns top-bar actors and
  * delegates state and execution to the shared playback-control domain.
  */
 
@@ -32,19 +32,19 @@ import {
 
 /** Renders configurable playback controls inside the top bar. */
 export default class TopBarPlaybackControls {
-  constructor(topBarContent, playbackController) {
-    this.topBarContent = topBarContent;
+  constructor(topBarSurface, playbackController) {
+    this.topBarSurface = topBarSurface;
     this.actor = null;
     this.controlButtons = new Map();
     this.playbackController = playbackController;
   }
 
   get settings() {
-    return this.topBarContent.settings;
+    return this.topBarSurface.settings;
   }
 
   get player() {
-    return this.topBarContent.player;
+    return this.topBarSurface.player;
   }
 
   render(dirtyRegions) {
@@ -166,8 +166,8 @@ export default class TopBarPlaybackControls {
   }
 
   attach() {
-    const topBarBox = this.topBarContent.topBarBox;
-    const afterActionBox = this.topBarContent.topBarActionBoxAfter;
+    const topBarBox = this.topBarSurface.topBarBox;
+    const afterActionBox = this.topBarSurface.topBarActionBoxAfter;
     const parent = this.actor.get_parent();
     const targetIndex = topBarBox.get_children().indexOf(afterActionBox);
     const currentIndex =
@@ -195,7 +195,7 @@ export default class TopBarPlaybackControls {
   destroy() {
     this.remove();
     this.playbackController = null;
-    this.topBarContent = null;
+    this.topBarSurface = null;
   }
 }
 

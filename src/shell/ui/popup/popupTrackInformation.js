@@ -4,7 +4,7 @@
  *
  * Renders configurable track information inside the popup.
  *
- * PopupContent delegates popup-specific track labels to this component so it
+ * PopupSurface delegates popup-specific track labels to this component so it
  * can keep title and artist styling while using the shared ordered metadata
  * model also used by the top bar. Missing fields are omitted before labels are created.
  */
@@ -21,37 +21,37 @@ import ScrollingLabel from "../components/scrollingLabel.js";
  * Renders configurable track information inside the popup.
  */
 export default class PopupTrackInformation {
-  constructor(popupContent) {
-    this.popupContent = popupContent;
+  constructor(popupSurface) {
+    this.popupSurface = popupSurface;
     this.renderKey = null;
     this.trackInformationLabels = [];
   }
 
   get settings() {
-    return this.popupContent.settings;
+    return this.popupSurface.settings;
   }
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
   get progressBarActor() {
-    return this.popupContent.progressBar.actor;
+    return this.popupSurface.progressBar.actor;
   }
   get playbackControlsActor() {
-    return this.popupContent.playbackControls.actor;
+    return this.popupSurface.playbackControls.actor;
   }
   get actor() {
     return this.trackInformationBox;
   }
 
   buildFixedWidthStyle(width) {
-    return this.popupContent.buildFixedWidthStyle(width);
+    return this.popupSurface.buildFixedWidthStyle(width);
   }
 
   getTrackInformationWidth() {
-    return this.popupContent.getTrackInformationWidth();
+    return this.popupSurface.getTrackInformationWidth();
   }
 
   render() {
@@ -186,6 +186,6 @@ export default class PopupTrackInformation {
     this.trackInformationBox = null;
     this.trackInformationLabels.length = 0;
     this.renderKey = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }

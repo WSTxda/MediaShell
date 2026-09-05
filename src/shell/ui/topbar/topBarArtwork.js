@@ -35,8 +35,8 @@ const logger = createLogger("TopBarArtwork");
 
 /** Displays configurable artwork in the GNOME top bar. */
 export default class TopBarArtwork {
-  constructor(topBarContent, artworkService) {
-    this.topBarContent = topBarContent;
+  constructor(topBarSurface, artworkService) {
+    this.topBarSurface = topBarSurface;
     this.artworkFrame = null;
     this.artworkImage = null;
     this.loadedArtworkKey = null;
@@ -55,11 +55,11 @@ export default class TopBarArtwork {
   }
 
   get settings() {
-    return this.topBarContent.settings;
+    return this.topBarSurface.settings;
   }
 
   get player() {
-    return this.topBarContent.player;
+    return this.topBarSurface.player;
   }
 
   get actor() {
@@ -310,6 +310,6 @@ export default class TopBarArtwork {
     this.remove();
     this.artworkService = null;
     this.fallbackArtworkIcon = null;
-    this.topBarContent = null;
+    this.topBarSurface = null;
   }
 }

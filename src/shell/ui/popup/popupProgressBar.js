@@ -4,7 +4,7 @@
  *
  * Owns the popup progress bar section.
  *
- * PopupContent delegates elapsed/duration labels, slider visibility, and seek
+ * PopupSurface delegates elapsed/duration labels, slider visibility, and seek
  * requests to this component. The class keeps progress-specific UI updates away
  * from artwork, track information, and playback control rendering.
  */
@@ -20,31 +20,31 @@ const logger = createLogger("PopupProgressBar");
  * Owns the popup progress bar section.
  */
 export default class PopupProgressBar {
-  constructor(popupContent, playbackController) {
-    this.popupContent = popupContent;
+  constructor(popupSurface, playbackController) {
+    this.popupSurface = popupSurface;
     this.playbackController = playbackController;
     this.view = null;
     this.positionRenderGeneration = 0;
   }
 
   get player() {
-    return this.popupContent.player;
+    return this.popupSurface.player;
   }
   get popupItem() {
-    return this.popupContent.popupItem;
+    return this.popupSurface.popupItem;
   }
   get trackInformationActor() {
-    return this.popupContent.trackInformation.actor;
+    return this.popupSurface.trackInformation.actor;
   }
   get playbackControlsActor() {
-    return this.popupContent.playbackControls.actor;
+    return this.popupSurface.playbackControls.actor;
   }
   get actor() {
     return this.view;
   }
 
   getPopupContentWidth() {
-    return this.popupContent.getPopupContentWidth();
+    return this.popupSurface.getPopupContentWidth();
   }
 
   setPlaybackRate(playbackRate) {
@@ -95,7 +95,7 @@ export default class PopupProgressBar {
       },
     );
     if (
-      !this.popupContent ||
+      !this.popupSurface ||
       renderGeneration !== this.positionRenderGeneration ||
       this.player !== player ||
       positionMicroseconds == null
@@ -169,6 +169,6 @@ export default class PopupProgressBar {
   destroy() {
     this.remove();
     this.playbackController = null;
-    this.popupContent = null;
+    this.popupSurface = null;
   }
 }
