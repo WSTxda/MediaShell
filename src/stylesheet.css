@@ -32,7 +32,7 @@
  * Shared visual treatment; each surface owns its layout and geometry.
  */
 .mediashell-artwork-frame {
-  background-color: rgba(128, 128, 128, 0.40);
+  background-color: rgba(128, 128, 128, 0.4);
 }
 
 .mediashell-artwork-image {
