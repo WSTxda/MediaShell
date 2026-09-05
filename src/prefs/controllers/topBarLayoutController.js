@@ -13,7 +13,7 @@ import {
   SettingsKeys,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../shared/settings/contract.js";
-import { arraysEqual } from "../../shared/collections.js";
+import { arraysEqual } from "../ui/collections.js";
 import { normalizeOrderedValues } from "../../shared/format.js";
 import {
   connectOwnedSignal,

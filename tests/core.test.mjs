@@ -9,11 +9,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { SUPPORTED_GNOME_SHELL_VERSIONS } from "../src/shared/project.js";
 import {
   MINIMUM_LIBADWAITA_VERSION,
-  SUPPORTED_GNOME_SHELL_VERSIONS,
-} from "../src/shared/platform/constants.js";
-import { isVersionAtLeast } from "../src/shared/platform/version.js";
+  isVersionAtLeast,
+} from "../src/prefs/platform/version.js";
 import {
   TOP_BAR_VISUALIZER_BAND_COUNT,
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
@@ -41,7 +41,7 @@ import {
   resolveChromiumPwaAppId,
   scoreBrowserIdentityCandidate,
 } from "../src/shared/identity/browser.js";
-import { arraysEqual, moveArrayItem } from "../src/shared/collections.js";
+import { arraysEqual, moveArrayItem } from "../src/prefs/ui/collections.js";
 import {
   enumValueByIndex,
   formatDurationMilliseconds,

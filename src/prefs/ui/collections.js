@@ -1,10 +1,10 @@
 /**
  * @file collections.js
- * @module shared.collections
+ * @module prefs.ui.collections
  *
- * Provides small, toolkit-independent collection mutations with explicit validation.
+ * Provides collection helpers owned by the Preferences process.
  *
- * Preferences reorderable widgets use the same index rules so drag-and-drop
+ * Reorderable preference widgets use the same index rules so drag-and-drop
  * behavior cannot drift between top bar elements and track-information content.
  */
 

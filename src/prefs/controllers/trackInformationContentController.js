@@ -14,7 +14,7 @@ import {
   SettingsKeys,
   TOP_BAR_TRACK_INFORMATION_CONTENT_DEFAULT,
 } from "../../shared/settings/contract.js";
-import { arraysEqual } from "../../shared/collections.js";
+import { arraysEqual } from "../ui/collections.js";
 import { normalizeTrackInformationContent } from "../../shared/ui/trackInformationContent.js";
 import {
   connectOwnedSignal,

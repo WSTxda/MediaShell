@@ -13,7 +13,7 @@ import {
   EXTENSION_UUID,
   PROJECT_URLS,
 } from "../../src/shared/project.js";
-import { SUPPORTED_GNOME_SHELL_VERSIONS } from "../../src/shared/platform/constants.js";
+import { SUPPORTED_GNOME_SHELL_VERSIONS } from "../../src/shared/project.js";
 
 const EXTENSION_SESSION_MODES = Object.freeze(["user", "unlock-dialog"]);
 
