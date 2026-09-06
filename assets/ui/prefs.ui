@@ -958,6 +958,17 @@
           <object class="AdwActionRow" id="ar-artwork-cache-clear">
             <property name="title" translatable="yes">Clear Cache</property>
             <child>
+              <object class="GtkButton" id="btn-artwork-cache-open">
+                <property name="icon-name">folder-open-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Open Cache Directory</property>
+                <property name="has-frame">false</property>
+                <property name="valign">center</property>
+                <accessibility>
+                  <property name="label" translatable="yes">Open Cache Directory</property>
+                </accessibility>
+              </object>
+            </child>
+            <child>
               <object class="GtkButton" id="btn-artwork-cache-clear">
                 <property name="halign">2</property>
                 <property name="valign">3</property>

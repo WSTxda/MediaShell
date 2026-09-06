@@ -5,13 +5,15 @@
  * Coordinates the preferences page for system integration and blocked apps.
  *
  * The controller owns rows that cannot be represented by a simple settings
- * binding, including the artwork cache action and the blocked-app list. The
+ * binding, including the artwork cache actions and the blocked-app list. The
  * GNOME media-control switches remain declarative bindings; page-specific
  * maintenance and confirmation flows stay out of PreferencesController.
  */
 
 import Adw from "gi://Adw";
+import Gio from "gi://Gio";
 import GLib from "gi://GLib";
+import Gtk from "gi://Gtk";
 
 import { SettingsKeys } from "../../shared/settings/contract.js";
 import { createLogger } from "../../shared/logging/logger.js";
@@ -23,6 +25,8 @@ import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../bindings/signalConnections.js";
+
+Gio._promisify(Gtk.FileLauncher.prototype, "launch", "launch_finish");
 
 const logger = createLogger("OthersPageController");
 
@@ -38,6 +42,8 @@ export default class OthersPageController {
     this.ownedSignalConnections = [];
     this.artworkCacheViewGeneration = 0;
     this.clearArtworkCachePromise = null;
+    this.openArtworkCachePromise = null;
+    this.openArtworkCacheCancellable = null;
     this.openDialogs = new Set();
   }
 
@@ -47,6 +53,9 @@ export default class OthersPageController {
     );
     this.clearArtworkCacheButton = this.builder.get_object(
       "btn-artwork-cache-clear",
+    );
+    this.openArtworkCacheButton = this.builder.get_object(
+      "btn-artwork-cache-open",
     );
     this.blockedAppsGroup = this.builder.get_object("gp-blocked-apps");
     this.resetGroup = this.builder.get_object("gp-reset-settings");
@@ -67,6 +76,9 @@ export default class OthersPageController {
     );
     this.connectOwnedSignal(this.clearArtworkCacheButton, "clicked", () =>
       this.presentClearArtworkCacheConfirmation(),
+    );
+    this.connectOwnedSignal(this.openArtworkCacheButton, "clicked", () =>
+      this.openArtworkCacheDirectory(),
     );
     this.connectOwnedSignal(
       this.settings,
@@ -128,6 +140,53 @@ export default class OthersPageController {
       _("Clear Cache"),
       () => this.clearArtworkCache(),
     );
+  }
+
+  openArtworkCacheDirectory() {
+    if (this.openArtworkCachePromise) return this.openArtworkCachePromise;
+    if (!this.openArtworkCacheButton || !this.preferencesWindow) return null;
+
+    const openArtworkCacheButton = this.openArtworkCacheButton;
+    const cancellable = new Gio.Cancellable();
+    this.openArtworkCacheCancellable = cancellable;
+    openArtworkCacheButton.sensitive = false;
+
+    const openPromise = this.performArtworkCacheOpen(cancellable).finally(
+      () => {
+        if (this.openArtworkCachePromise === openPromise)
+          this.openArtworkCachePromise = null;
+        if (this.openArtworkCacheCancellable === cancellable)
+          this.openArtworkCacheCancellable = null;
+        if (this.openArtworkCacheButton === openArtworkCacheButton)
+          openArtworkCacheButton.sensitive = true;
+      },
+    );
+    this.openArtworkCachePromise = openPromise;
+    return openPromise;
+  }
+
+  async performArtworkCacheOpen(cancellable) {
+    try {
+      const launcher = Gtk.FileLauncher.new(
+        this.artworkCacheService.cacheDirectory,
+      );
+      await launcher.launch(this.preferencesWindow, cancellable);
+    } catch (error) {
+      if (
+        cancellable.is_cancelled() ||
+        error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED) ||
+        !this.preferencesWindow
+      )
+        return;
+
+      logger.warn("Failed to open the artwork cache directory", error);
+      this.preferencesWindow.add_toast(
+        new Adw.Toast({
+          title: _("Could not open the cache directory"),
+          timeout: TOAST_TIMEOUT_SECONDS,
+        }),
+      );
+    }
   }
 
   presentDestructiveConfirmation(heading, body, confirmLabel, confirm) {
@@ -235,13 +294,17 @@ export default class OthersPageController {
 
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.blockedAppsGroup?.destroy();
+    this.openArtworkCacheCancellable?.cancel();
     this.artworkCacheService.destroy();
     this.artworkCacheService = null;
     this.clearArtworkCachePromise = null;
+    this.openArtworkCachePromise = null;
+    this.openArtworkCacheCancellable = null;
     this.settings = null;
     this.builder = null;
     this.clearArtworkCacheRow = null;
     this.clearArtworkCacheButton = null;
+    this.openArtworkCacheButton = null;
     this.blockedAppsGroup = null;
     this.resetGroup = null;
     this.resetSettingsRow = null;

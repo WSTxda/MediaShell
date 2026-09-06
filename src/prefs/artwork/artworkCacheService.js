@@ -28,8 +28,12 @@ Gio._promisify(
 );
 Gio._promisify(Gio.FileEnumerator.prototype, "close_async", "close_finish");
 
+function matchesIoError(error, code) {
+  return Boolean(error?.matches?.(Gio.IOErrorEnum, code));
+}
+
 function isFileNotFoundError(error) {
-  return Boolean(error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND));
+  return matchesIoError(error, Gio.IOErrorEnum.NOT_FOUND);
 }
 
 async function deleteCacheFile(file, cancellable) {
