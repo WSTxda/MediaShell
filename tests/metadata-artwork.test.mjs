@@ -487,6 +487,15 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           buildOnlineArtworkSearchUrl("Song Title"),
           "https://itunes.apple.com/search?term=Song%20Title&entity=song&limit=1",
         );
+        // Special characters and symbols in artist and title
+        assert.equal(
+          buildOnlineArtworkSearchUrl("THANK GOD", "Travis Scott"),
+          "https://itunes.apple.com/search?term=Travis%20Scott%20THANK%20GOD&entity=song&limit=1",
+        );
+        assert.equal(
+          buildOnlineArtworkSearchUrl("Rock & Roll", "AC/DC"),
+          "https://itunes.apple.com/search?term=AC%2FDC%20Rock%20%26%20Roll&entity=song&limit=1",
+        );
         // Empty or noise-only titles return null
         assert.equal(buildOnlineArtworkSearchUrl(""), null);
         assert.equal(

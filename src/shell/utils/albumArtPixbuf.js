@@ -33,7 +33,7 @@ export function cropPixbufToSquare(pixbuf, size) {
   const scaled = pixbuf.scale_simple(
     scaledWidth,
     scaledHeight,
-    GdkPixbuf.InterpType.HYPER,
+    GdkPixbuf.InterpType.BILINEAR,
   );
   if (!scaled) return pixbuf;
 

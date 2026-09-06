@@ -108,7 +108,10 @@ function concatenateByteChunks(chunks, totalBytes) {
 
 function parseAlbumArtUri(albumArtUri) {
   try {
-    return GLib.Uri.parse(albumArtUri, GLib.UriFlags.NONE);
+    return GLib.Uri.parse(
+      albumArtUri,
+      GLib.UriFlags.ENCODED_QUERY | GLib.UriFlags.ENCODED_PATH,
+    );
   } catch (error) {
     logger.debugOnce(
       `invalid-uri:${albumArtUri}`,
@@ -849,7 +852,6 @@ export default class AlbumArtLoader {
       const settle = (value) => {
         if (settled) return;
         settled = true;
-        disconnectCancellationSignal();
         releaseConsumer();
         resolve(value);
       };
@@ -862,7 +864,16 @@ export default class AlbumArtLoader {
       cancellationSignalId =
         consumerCancellable?.connect(() => settle(null)) ?? null;
 
-      request.promise.then(settle, () => settle(null));
+      request.promise.then(
+        (value) => {
+          disconnectCancellationSignal();
+          settle(value);
+        },
+        () => {
+          disconnectCancellationSignal();
+          settle(null);
+        },
+      );
     });
   }
 
