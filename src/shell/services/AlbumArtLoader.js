@@ -800,12 +800,18 @@ export default class AlbumArtLoader {
       this.#onlineArtworkSearchRequests.delete(request.searchUrl);
 
       if (
-        this.#onlineArtworkUrlCache.size >= ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES
+        this.#cacheWriteCancellable &&
+        (highResUrl || !request.cancellable.is_cancelled())
       ) {
-        const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
-        this.#onlineArtworkUrlCache.delete(oldestKey);
+        if (
+          this.#onlineArtworkUrlCache.size >=
+          ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES
+        ) {
+          const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
+          this.#onlineArtworkUrlCache.delete(oldestKey);
+        }
+        this.#onlineArtworkUrlCache.set(request.searchUrl, highResUrl);
       }
-      this.#onlineArtworkUrlCache.set(request.searchUrl, highResUrl);
     }
   }
 

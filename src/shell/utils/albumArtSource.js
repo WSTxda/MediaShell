@@ -36,14 +36,13 @@ export async function resolveAlbumArtSource({
   artist,
   cacheEnabled,
   fetchHighRes = true,
-  fetchHighResEnabled = fetchHighRes,
   loadCancellable,
 }) {
   let fallbackIcon = null;
   let effectiveArtUri = albumArtUri;
-  const isHighResAllowed = Boolean(fetchHighResEnabled);
+  const shouldFetchHighRes = Boolean(fetchHighRes);
 
-  if (isHighResAllowed && effectiveArtUri?.startsWith("http")) {
+  if (shouldFetchHighRes) {
     effectiveArtUri = rewriteCdnArtworkUrl(effectiveArtUri);
   }
 
@@ -54,7 +53,12 @@ export async function resolveAlbumArtSource({
   const isBrowserOrTempArt =
     isBrowserBusName(busName) || isTempThumbnailUri(effectiveArtUri);
 
-  if (isHighResAllowed && title && isLocalOrMissingArt && isBrowserOrTempArt) {
+  if (
+    shouldFetchHighRes &&
+    title &&
+    isLocalOrMissingArt &&
+    isBrowserOrTempArt
+  ) {
     const onlineUrl = await albumArtLoader.searchOnlineArtwork(
       title,
       artist,

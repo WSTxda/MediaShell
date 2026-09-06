@@ -86,27 +86,18 @@ export function rewriteCdnArtworkUrl(url) {
     }
 
     // Google image sizing parameters: =w60-h60, =s120-c, etc.
-    if (GOOGLE_USERCONTENT_SIZE_PATTERN.test(url)) {
-      return url.replace(
-        GOOGLE_USERCONTENT_SIZE_PATTERN,
-        "=w800-h800-l90-rj$2",
-      );
-    }
+    return url.replace(GOOGLE_USERCONTENT_SIZE_PATTERN, "=w800-h800-l90-rj$2");
   }
 
   // 2. Spotify CDN: i.scdn.co/image/ab67616d0000<size><id>
   // 4851 = 64x64, 1e02 = 300x300, b273 = 640x640
   if (url.includes("i.scdn.co/image/")) {
-    if (SPOTIFY_IMAGE_SIZE_PATTERN.test(url)) {
-      return url.replace(SPOTIFY_IMAGE_SIZE_PATTERN, "/ab67616d0000b273$1");
-    }
+    return url.replace(SPOTIFY_IMAGE_SIZE_PATTERN, "/ab67616d0000b273$1");
   }
 
   // 3. SoundCloud: *-large.jpg or *-t<size>x<size>.jpg -> *-t500x500.jpg
   if (url.includes("sndcdn.com")) {
-    if (SOUNDCLOUD_IMAGE_SIZE_PATTERN.test(url)) {
-      return url.replace(SOUNDCLOUD_IMAGE_SIZE_PATTERN, "-t500x500.$1$2");
-    }
+    return url.replace(SOUNDCLOUD_IMAGE_SIZE_PATTERN, "-t500x500.$1$2");
   }
 
   // 4. Bandcamp: f4.bcbits.com/img/a<id>_<number>.jpg -> _10.jpg (original size)
@@ -134,8 +125,8 @@ export function cleanTrackTitleForSearch(title, artist = "") {
   let clean = title.trim();
 
   // If title has "Artist - Song", strip the redundant artist prefix
-  if (artist && typeof artist === "string" && artist.trim()) {
-    const trimmedArtist = artist.trim();
+  const trimmedArtist = typeof artist === "string" ? artist.trim() : "";
+  if (trimmedArtist) {
     const artistPrefix = `${trimmedArtist} - `;
     if (clean.toLowerCase().startsWith(artistPrefix.toLowerCase())) {
       clean = clean.slice(artistPrefix.length).trim();
@@ -175,7 +166,7 @@ export function buildOnlineArtworkSearchUrl(title, artist = "") {
  * @returns {string|null} 1000x1000 artwork URL or null if not found.
  */
 export function extractHighResArtworkUrlFromSearchResult(jsonString) {
-  if (typeof jsonString !== "string" || !jsonString.trim()) return null;
+  if (typeof jsonString !== "string") return null;
 
   try {
     const data = JSON.parse(jsonString);
