@@ -179,12 +179,21 @@ test("album-art requests snapshot ownership and reject stale-equivalent ambiguit
       [MprisMetadataKeys.TITLE]: "New Song",
     },
   });
+  const differentArtist = createAlbumArtRequest({
+    ...first,
+    metadata: {
+      [MprisMetadataKeys.ART_URL]: first.albumArtUri,
+      [MprisMetadataKeys.URL]: first.trackUri,
+      [MprisMetadataKeys.ARTIST]: ["Different Artist"],
+    },
+  });
 
   assert.equal(first.key, equivalent.key);
   assert.notEqual(first.key, nextTrack.key);
   assert.notEqual(first.key, otherApp.key);
   assert.notEqual(first.key, highResToggled.key);
   assert.notEqual(first.key, differentTitle.key);
+  assert.notEqual(first.key, differentArtist.key);
   assert.equal(first.radius, 125);
   assert.equal(Object.isFrozen(first), true);
   assert.equal(first.fetchHighRes, false);
@@ -282,95 +291,151 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
 test("online artwork resolution utilities rewrite CDNs, sanitize titles, and parse search results", async () => {
   await runCases([
     [
-      "bus name and temp thumbnail detection",
+      "browser bus name detection",
       () => {
-        assert.equal(
-          isBrowserBusName("org.mpris.MediaPlayer2.chromium.instance123"),
-          true,
-        );
-        assert.equal(
-          isBrowserBusName("org.mpris.MediaPlayer2.firefox.instance456"),
-          true,
-        );
-        assert.equal(
-          isBrowserBusName("org.mpris.MediaPlayer2.google-chrome.instance789"),
-          true,
-        );
-        assert.equal(
-          isBrowserBusName("org.mpris.MediaPlayer2.brave.instance1"),
-          true,
-        );
-        assert.equal(isBrowserBusName("org.mpris.MediaPlayer2.Amberol"), false);
-        assert.equal(isBrowserBusName("org.mpris.MediaPlayer2.spotify"), false);
-        assert.equal(isBrowserBusName(""), false);
-
-        assert.equal(
-          isTempThumbnailUri("file:///tmp/.org.chromium.Chromium.abc123"),
-          true,
-        );
-        assert.equal(isTempThumbnailUri("file:///var/tmp/thumb.png"), true);
-        assert.equal(
-          isTempThumbnailUri("file:///home/user/Music/cover.jpg"),
-          false,
-        );
-        assert.equal(
-          isTempThumbnailUri("https://example.com/cover.jpg"),
-          false,
-        );
+        const cases = [
+          ["org.mpris.MediaPlayer2.chromium.instance123", true],
+          ["org.mpris.MediaPlayer2.firefox.instance456", true],
+          ["org.mpris.MediaPlayer2.google-chrome.instance789", true],
+          ["org.mpris.MediaPlayer2.brave.instance1", true],
+          ["org.mpris.MediaPlayer2.edge.instance1", true],
+          ["org.mpris.MediaPlayer2.microsoft-edge.instance2", true],
+          ["org.mpris.MediaPlayer2.opera.instance1", true],
+          ["org.mpris.MediaPlayer2.vivaldi.instance1", true],
+          ["org.mpris.MediaPlayer2.zen.instance1", true],
+          ["org.mpris.MediaPlayer2.Amberol", false],
+          ["org.mpris.MediaPlayer2.spotify", false],
+          ["", false],
+          [null, false],
+          [undefined, false],
+          [123, false],
+        ];
+        for (const [busName, expected] of cases) {
+          assert.equal(
+            isBrowserBusName(busName),
+            expected,
+            `failed for bus name: ${busName}`,
+          );
+        }
+      },
+    ],
+    [
+      "temporary thumbnail URI detection",
+      () => {
+        const cases = [
+          ["file:///tmp/.org.chromium.Chromium.abc123", true],
+          ["file:///var/tmp/thumb.png", true],
+          ["file:///home/user/Music/cover.jpg", false],
+          ["https://example.com/cover.jpg", false],
+          ["", false],
+          [null, false],
+          [undefined, false],
+          [456, false],
+        ];
+        for (const [uri, expected] of cases) {
+          assert.equal(
+            isTempThumbnailUri(uri),
+            expected,
+            `failed for URI: ${uri}`,
+          );
+        }
       },
     ],
     [
       "CDN artwork URL rewriting",
       () => {
-        // YouTube Music / Google UserContent
-        assert.equal(
-          rewriteCdnArtworkUrl(
+        const cases = [
+          // YouTube Music / Google UserContent
+          [
+            "Google UserContent w60-h60",
             "https://lh3.googleusercontent.com/abc=w60-h60-l90-rj",
-          ),
-          "https://lh3.googleusercontent.com/abc=w800-h800-l90-rj",
-        );
-        assert.equal(
-          rewriteCdnArtworkUrl("https://lh3.googleusercontent.com/abc=s120-c"),
-          "https://lh3.googleusercontent.com/abc=w800-h800-l90-rj",
-        );
-        assert.equal(
-          rewriteCdnArtworkUrl("https://i.ytimg.com/vi/xyz123/hqdefault.jpg"),
-          "https://i.ytimg.com/vi/xyz123/maxresdefault.jpg",
-        );
-        // Spotify
-        assert.equal(
-          rewriteCdnArtworkUrl(
+            "https://lh3.googleusercontent.com/abc=w800-h800-l90-rj",
+          ],
+          [
+            "Google UserContent s120-c",
+            "https://lh3.googleusercontent.com/abc=s120-c",
+            "https://lh3.googleusercontent.com/abc=w800-h800-l90-rj",
+          ],
+          [
+            "Google UserContent with query params",
+            "https://lh3.googleusercontent.com/abc=s120-c?authuser=0",
+            "https://lh3.googleusercontent.com/abc=w800-h800-l90-rj?authuser=0",
+          ],
+          [
+            "YouTube hqdefault thumbnail",
+            "https://i.ytimg.com/vi/xyz123/hqdefault.jpg",
+            "https://i.ytimg.com/vi/xyz123/maxresdefault.jpg",
+          ],
+          [
+            "YouTube mqdefault thumbnail",
+            "https://i.ytimg.com/vi/xyz123/mqdefault.jpg",
+            "https://i.ytimg.com/vi/xyz123/maxresdefault.jpg",
+          ],
+          [
+            "YouTube thumbnail with query params",
+            "https://i.ytimg.com/vi/xyz123/hqdefault.jpg?sqp=abc",
+            "https://i.ytimg.com/vi/xyz123/maxresdefault.jpg?sqp=abc",
+          ],
+          // Spotify
+          [
+            "Spotify 64x64 (4851)",
             "https://i.scdn.co/image/ab67616d00004851abcdef0123456789abcdef01",
-          ),
-          "https://i.scdn.co/image/ab67616d0000b273abcdef0123456789abcdef01",
-        );
-        assert.equal(
-          rewriteCdnArtworkUrl(
+            "https://i.scdn.co/image/ab67616d0000b273abcdef0123456789abcdef01",
+          ],
+          [
+            "Spotify 300x300 (1e02)",
             "https://i.scdn.co/image/ab67616d00001e02abcdef0123456789abcdef01",
-          ),
-          "https://i.scdn.co/image/ab67616d0000b273abcdef0123456789abcdef01",
-        );
-        // SoundCloud
-        assert.equal(
-          rewriteCdnArtworkUrl(
+            "https://i.scdn.co/image/ab67616d0000b273abcdef0123456789abcdef01",
+          ],
+          // SoundCloud
+          [
+            "SoundCloud large",
             "https://i1.sndcdn.com/artworks-000123456789-abcdef-large.jpg",
-          ),
-          "https://i1.sndcdn.com/artworks-000123456789-abcdef-t500x500.jpg",
-        );
-        // Bandcamp
-        assert.equal(
-          rewriteCdnArtworkUrl("https://f4.bcbits.com/img/a1234567890_7.jpg"),
-          "https://f4.bcbits.com/img/a1234567890_10.jpg",
-        );
-        // Unrecognized or already high-res
-        assert.equal(
-          rewriteCdnArtworkUrl("https://f4.bcbits.com/img/a1234567890_10.jpg"),
-          "https://f4.bcbits.com/img/a1234567890_10.jpg",
-        );
-        assert.equal(
-          rewriteCdnArtworkUrl("https://example.com/regular_cover.jpg"),
-          "https://example.com/regular_cover.jpg",
-        );
+            "https://i1.sndcdn.com/artworks-000123456789-abcdef-t500x500.jpg",
+          ],
+          [
+            "SoundCloud t300x300",
+            "https://i1.sndcdn.com/artworks-000123456789-abcdef-t300x300.jpg",
+            "https://i1.sndcdn.com/artworks-000123456789-abcdef-t500x500.jpg",
+          ],
+          // Bandcamp
+          [
+            "Bandcamp _7 size",
+            "https://f4.bcbits.com/img/a1234567890_7.jpg",
+            "https://f4.bcbits.com/img/a1234567890_10.jpg",
+          ],
+          [
+            "Bandcamp _16 size",
+            "https://f4.bcbits.com/img/a1234567890_16.jpg",
+            "https://f4.bcbits.com/img/a1234567890_10.jpg",
+          ],
+          // Passthrough / Unrecognized / Non-HTTP
+          [
+            "Bandcamp already full size (_10)",
+            "https://f4.bcbits.com/img/a1234567890_10.jpg",
+            "https://f4.bcbits.com/img/a1234567890_10.jpg",
+          ],
+          [
+            "Regular HTTP artwork URL",
+            "https://example.com/regular_cover.jpg",
+            "https://example.com/regular_cover.jpg",
+          ],
+          [
+            "Local file URI ignored",
+            "file:///tmp/cover.jpg",
+            "file:///tmp/cover.jpg",
+          ],
+          ["Empty string", "", ""],
+          ["Null input", null, null],
+          ["Undefined input", undefined, undefined],
+        ];
+        for (const [label, input, expected] of cases) {
+          assert.equal(
+            rewriteCdnArtworkUrl(input),
+            expected,
+            `failed for ${label}`,
+          );
+        }
       },
     ],
     [
@@ -396,6 +461,12 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           ),
           "Song Title",
         );
+        assert.equal(cleanTrackTitleForSearch("(Official Music Video)"), "");
+        assert.equal(cleanTrackTitleForSearch(""), "");
+        assert.equal(cleanTrackTitleForSearch(null), "");
+        assert.equal(cleanTrackTitleForSearch(undefined), "");
+
+        // Search URL construction with artist and title
         assert.equal(
           buildOnlineArtworkSearchUrl(
             "Never Gonna Give You Up (Official Video)",
@@ -403,13 +474,26 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           ),
           "https://itunes.apple.com/search?term=Rick%20Astley%20Never%20Gonna%20Give%20You%20Up&entity=song&limit=1",
         );
+        // Title only (no artist specified)
+        assert.equal(
+          buildOnlineArtworkSearchUrl("Song Title"),
+          "https://itunes.apple.com/search?term=Song%20Title&entity=song&limit=1",
+        );
+        // Empty or noise-only titles return null
         assert.equal(buildOnlineArtworkSearchUrl(""), null);
+        assert.equal(
+          buildOnlineArtworkSearchUrl("(Official Music Video)"),
+          null,
+        );
+        assert.equal(buildOnlineArtworkSearchUrl(null), null);
+        assert.equal(buildOnlineArtworkSearchUrl(undefined), null);
       },
     ],
     [
       "iTunes search result high-res extraction",
       () => {
-        const payload = JSON.stringify({
+        // Standard artworkUrl100
+        const payload100 = JSON.stringify({
           resultCount: 1,
           results: [
             {
@@ -419,9 +503,26 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           ],
         });
         assert.equal(
-          extractHighResArtworkUrlFromSearchResult(payload),
+          extractHighResArtworkUrlFromSearchResult(payload100),
           "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/1000x1000bb.jpg",
         );
+
+        // Fallback to artworkUrl60 when artworkUrl100 is absent
+        const payload60 = JSON.stringify({
+          resultCount: 1,
+          results: [
+            {
+              artworkUrl60:
+                "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/60x60bb.jpg",
+            },
+          ],
+        });
+        assert.equal(
+          extractHighResArtworkUrlFromSearchResult(payload60),
+          "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/1000x1000bb.jpg",
+        );
+
+        // Query parameters preservation
         const payloadWithQuery = JSON.stringify({
           resultCount: 1,
           results: [
@@ -435,9 +536,17 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           extractHighResArtworkUrlFromSearchResult(payloadWithQuery),
           "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/1000x1000bb.jpg",
         );
+
+        // Empty and invalid inputs
         assert.equal(
           extractHighResArtworkUrlFromSearchResult(
             JSON.stringify({ resultCount: 0, results: [] }),
+          ),
+          null,
+        );
+        assert.equal(
+          extractHighResArtworkUrlFromSearchResult(
+            JSON.stringify({ resultCount: 1, results: [{}] }),
           ),
           null,
         );
@@ -446,6 +555,9 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           null,
         );
         assert.equal(extractHighResArtworkUrlFromSearchResult(""), null);
+        assert.equal(extractHighResArtworkUrlFromSearchResult("   "), null);
+        assert.equal(extractHighResArtworkUrlFromSearchResult(null), null);
+        assert.equal(extractHighResArtworkUrlFromSearchResult(undefined), null);
       },
     ],
   ]);
