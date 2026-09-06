@@ -4,9 +4,10 @@
  *
  * Owns the optional track-change feedback surface for the user session.
  *
- * Transition detection belongs to TrackTransitionTracker and native OSD
- * compatibility belongs to the Shell OSD integration. This surface only decides
- * whether a natural completed transition should be presented.
+ * Transition detection and metadata stabilization belong to
+ * TrackTransitionTracker, while native OSD compatibility belongs to the Shell
+ * OSD integration. This surface only decides whether a completed transition
+ * should be presented.
  */
 
 import Gio from "gi://Gio";
@@ -70,10 +71,14 @@ export default class TrackChangeToastSurface {
   }
 
   handleTransition(transition) {
-    if (!this.enabled || transition.reason !== TrackTransitionReasons.COMPLETED)
+    if (
+      !this.enabled ||
+      transition.reason !== TrackTransitionReasons.COMPLETED ||
+      transition.command
+    )
       return;
 
-    const track = transition.player.track ?? transition.track;
+    const track = transition.track;
     const title = typeof track?.title === "string" ? track.title.trim() : "";
     if (!title) return;
 

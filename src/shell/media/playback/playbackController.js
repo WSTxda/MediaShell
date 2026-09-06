@@ -7,7 +7,8 @@
  * MprisPlayer remains responsible for endpoint capability checks and D-Bus
  * calls. This controller resolves MediaShell control IDs, relative seek policy,
  * playback-rate cycling, volume deltas, and active-player targeting so every
- * surface executes the same semantics.
+ * surface executes the same semantics. A generic command lifecycle lets semantic
+ * observers correlate resulting state without adding presentation to this owner.
  */
 
 import {
@@ -23,6 +24,11 @@ import {
   normalizeMprisOperationResult,
 } from "../../mpris/operationResult.js";
 import { resolveNextPlaybackRate } from "../../mpris/playbackRate.js";
+
+export const PlaybackCommandPhases = Object.freeze({
+  STARTED: "started",
+  COMPLETED: "completed",
+});
 
 const LOOP_STATUS_ORDER = Object.freeze([
   LoopStatus.NONE,
@@ -154,14 +160,58 @@ export async function executePlaybackControlAction(player, action) {
 export default class PlaybackController {
   constructor(getActivePlayer) {
     this.getActivePlayer = getActivePlayer;
+    this.commandListeners = new Map();
+    this.nextCommandListenerId = 1;
+    this.nextCommandId = 1;
   }
 
   get activePlayer() {
     return this.getActivePlayer();
   }
 
-  execute(action, player = this.activePlayer) {
-    return executePlaybackControlAction(player, action);
+  onCommand(callback) {
+    if (typeof callback !== "function")
+      throw new TypeError("Playback command callback must be a function");
+
+    const listenerId = this.nextCommandListenerId++;
+    this.commandListeners.set(listenerId, callback);
+    return () => this.commandListeners.delete(listenerId);
+  }
+
+  emitCommand(phase, command, result = null) {
+    const event = Object.freeze({ phase, command, result });
+    for (const callback of [...this.commandListeners.values()]) {
+      try {
+        callback(event);
+      } catch (error) {
+        logger.errorOnce(
+          "command-listener",
+          "Playback command listener failed",
+          error,
+        );
+      }
+    }
+  }
+
+  execute(action, player = this.activePlayer, origin = null) {
+    const command = Object.freeze({
+      id: this.nextCommandId++,
+      action,
+      player,
+      origin,
+    });
+    this.emitCommand(PlaybackCommandPhases.STARTED, command);
+
+    return executePlaybackControlAction(player, action).then(
+      (result) => {
+        this.emitCommand(PlaybackCommandPhases.COMPLETED, command, result);
+        return result;
+      },
+      (error) => {
+        this.emitCommand(PlaybackCommandPhases.COMPLETED, command);
+        throw error;
+      },
+    );
   }
 
   setPosition(
@@ -209,6 +259,7 @@ export default class PlaybackController {
   }
 
   destroy() {
+    this.commandListeners.clear();
     this.getActivePlayer = null;
   }
 }

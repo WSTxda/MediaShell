@@ -14,7 +14,10 @@
 import GLib from "gi://GLib";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import { VOLUME_STEP } from "../../../shared/input/actions.js";
+import {
+  PLAYBACK_ACTION_BY_INPUT_ACTION,
+  VOLUME_STEP,
+} from "../../../shared/input/actions.js";
 import { InputActions } from "../../../shared/input/types.js";
 import {
   PlaybackControlDefinitions,
@@ -113,9 +116,15 @@ function resolveImmediatePresentation(inputAction, player) {
 
 function resolveTrackAction(inputAction) {
   if (inputAction === InputActions.PREVIOUS_TRACK)
-    return { iconName: PlaybackControlDefinitions.PREVIOUS.icons.DEFAULT };
+    return {
+      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      iconName: PlaybackControlDefinitions.PREVIOUS.icons.DEFAULT,
+    };
   if (inputAction === InputActions.NEXT_TRACK)
-    return { iconName: PlaybackControlDefinitions.NEXT.icons.DEFAULT };
+    return {
+      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      iconName: PlaybackControlDefinitions.NEXT.icons.DEFAULT,
+    };
   return null;
 }
 
@@ -123,9 +132,7 @@ function resolveTrackAction(inputAction) {
 export default class MediaActionFeedback {
   constructor({ transitionTracker, showOsd } = {}) {
     if (!transitionTracker)
-      throw new TypeError(
-        "MediaActionFeedback requires TrackTransitionTracker",
-      );
+      throw new TypeError("MediaActionFeedback requires TrackTransitionTracker");
     if (typeof showOsd !== "function")
       throw new TypeError("MediaActionFeedback requires showOsd");
 
@@ -148,11 +155,12 @@ export default class MediaActionFeedback {
     this.generation++;
   }
 
-  begin(inputAction, player) {
+  begin(inputAction, player, commandOrigin = null) {
     if (!player || player !== this.player) return null;
 
     const trackAction = resolveTrackAction(inputAction);
-    if (trackAction) return this.createTrackActionContext(player, trackAction);
+    if (trackAction)
+      return this.createTrackActionContext(player, trackAction, commandOrigin);
 
     if (inputAction === InputActions.PLAY_PAUSE)
       return this.createPlaybackStatusContext(player);
@@ -168,10 +176,16 @@ export default class MediaActionFeedback {
       : null;
   }
 
-  createTrackActionContext(player, { iconName }) {
+  createTrackActionContext(
+    player,
+    { playbackAction, iconName },
+    commandOrigin,
+  ) {
     const context = {
       kind: "track",
       player,
+      playbackAction,
+      commandOrigin,
       iconName,
       generation: this.generation,
       operationSucceeded: false,
@@ -261,11 +275,15 @@ export default class MediaActionFeedback {
   }
 
   handleTransition(transition) {
+    if (!transition.command) return;
+
     const context = this.pendingTrackActions.find(
       (candidate) =>
         candidate.active &&
         !candidate.transition &&
-        candidate.player === transition?.player,
+        candidate.player === transition.player &&
+        candidate.playbackAction === transition.command.action &&
+        candidate.commandOrigin === transition.command.origin,
     );
     if (!context) return;
 

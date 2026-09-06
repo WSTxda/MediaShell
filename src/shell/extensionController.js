@@ -298,7 +298,9 @@ export default class ExtensionController {
       return;
 
     if (!this.trackTransitionTracker)
-      this.trackTransitionTracker = new TrackTransitionTracker();
+      this.trackTransitionTracker = new TrackTransitionTracker({
+        playbackCommands: this.mediaRuntime.playback,
+      });
 
     if (!this.trackChangeToastSurface)
       this.trackChangeToastSurface = new TrackChangeToastSurface({
