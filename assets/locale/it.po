@@ -292,6 +292,7 @@ msgstr "Disco"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
+#: src/shell/ui/feedback/mediaActionFeedback.js:90
 msgid "Track"
 msgstr "Brano"
 
@@ -316,6 +317,7 @@ msgid "Stop"
 msgstr "Interrompi"
 
 #: src/shell/media/playback/accessibility.js:60
+#: src/shell/ui/feedback/mediaActionFeedback.js:92
 msgid "Playlist"
 msgstr "Playlist"
 
@@ -781,3 +783,23 @@ msgstr "Aggiungi campo"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add Text"
 msgstr "Aggiungi testo"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:51
+msgid "Paused"
+msgstr "In pausa"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:59
+msgid "Playing"
+msgstr "In riproduzione"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Enabled"
+msgstr "Attivato"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Disabled"
+msgstr "Disattivato"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:93
+msgid "Off"
+msgstr "Disattivato"

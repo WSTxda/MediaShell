@@ -294,6 +294,7 @@ msgstr "Диск"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
+#: src/shell/ui/feedback/mediaActionFeedback.js:90
 msgid "Track"
 msgstr "Композиция"
 
@@ -318,6 +319,7 @@ msgid "Stop"
 msgstr "Остановить"
 
 #: src/shell/media/playback/accessibility.js:60
+#: src/shell/ui/feedback/mediaActionFeedback.js:92
 msgid "Playlist"
 msgstr "Список воспроизведения"
 
@@ -785,3 +787,23 @@ msgstr "Добавить поле"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add Text"
 msgstr "Добавить текст"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:51
+msgid "Paused"
+msgstr "Приостановлено"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:59
+msgid "Playing"
+msgstr "Воспроизведение"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Enabled"
+msgstr "Включено"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Disabled"
+msgstr "Отключено"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:93
+msgid "Off"
+msgstr "Выключено"

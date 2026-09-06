@@ -293,6 +293,7 @@ msgstr "Disk"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
+#: src/shell/ui/feedback/mediaActionFeedback.js:90
 msgid "Track"
 msgstr "Skladba"
 
@@ -317,6 +318,7 @@ msgid "Stop"
 msgstr "Zastaviť"
 
 #: src/shell/media/playback/accessibility.js:60
+#: src/shell/ui/feedback/mediaActionFeedback.js:92
 msgid "Playlist"
 msgstr "Zoznam skladieb"
 
@@ -777,3 +779,23 @@ msgstr "Pridať pole"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add Text"
 msgstr "Pridať text"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:51
+msgid "Paused"
+msgstr "Pozastavené"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:59
+msgid "Playing"
+msgstr "Prehrávanie"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Enabled"
+msgstr "Zapnuté"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Disabled"
+msgstr "Vypnuté"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:93
+msgid "Off"
+msgstr "Vypnuté"

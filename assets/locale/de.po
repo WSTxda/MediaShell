@@ -293,6 +293,7 @@ msgstr "CD"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
+#: src/shell/ui/feedback/mediaActionFeedback.js:90
 msgid "Track"
 msgstr "Titel"
 
@@ -317,6 +318,7 @@ msgid "Stop"
 msgstr "Stopp"
 
 #: src/shell/media/playback/accessibility.js:60
+#: src/shell/ui/feedback/mediaActionFeedback.js:92
 msgid "Playlist"
 msgstr "Wiedergabeliste"
 
@@ -784,3 +786,23 @@ msgstr "Feld hinzufügen"
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add Text"
 msgstr "Text hinzufügen"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:51
+msgid "Paused"
+msgstr "Pausiert"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:59
+msgid "Playing"
+msgstr "Wiedergabe"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Enabled"
+msgstr "Aktiviert"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:93
+msgid "Off"
+msgstr "Aus"

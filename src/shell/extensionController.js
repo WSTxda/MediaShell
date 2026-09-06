@@ -23,6 +23,7 @@ import OsdIntegration from "./integrations/osd.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
+import MediaActionFeedback from "./ui/feedback/mediaActionFeedback.js";
 import TrackChangeToastSurface from "./ui/feedback/trackChangeToastSurface.js";
 import { clearIconCache } from "./ui/icons.js";
 
@@ -308,11 +309,18 @@ export default class ExtensionController {
         enabled: this.settings.panel.trackChangeToastShow,
       });
 
+    if (!this.mediaActionFeedback)
+      this.mediaActionFeedback = new MediaActionFeedback({
+        transitionTracker: this.trackTransitionTracker,
+        osdIntegration: this.osdIntegration,
+      });
+
     this.trackTransitionTracker.setPlayer(this.mediaRuntime.activePlayer);
 
     if (!this.inputActionDispatcher)
       this.inputActionDispatcher = new InputActionDispatcher({
         mediaRuntime: this.mediaRuntime,
+        mediaActionFeedback: this.mediaActionFeedback,
         onTogglePopup: () => this.indicator?.menu.toggle(),
         onOpenPreferences: () => this.openPreferences(),
       });
@@ -402,6 +410,9 @@ export default class ExtensionController {
     this.globalShortcuts = null;
 
     this.destroyIndicator();
+
+    this.mediaActionFeedback?.destroy();
+    this.mediaActionFeedback = null;
 
     this.trackChangeToastSurface?.destroy();
     this.trackChangeToastSurface = null;

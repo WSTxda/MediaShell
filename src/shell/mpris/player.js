@@ -92,12 +92,7 @@ import MprisPositionTracker from "./positionTracker.js";
 Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 
 const logger = createLogger("MprisPlayer");
-const LOOP_STATUS_ORDER = Object.freeze([
-  LoopStatus.NONE,
-  LoopStatus.PLAYLIST,
-  LoopStatus.TRACK,
-]);
-const LOOP_STATUS_VALUES = new Set(LOOP_STATUS_ORDER);
+const LOOP_STATUS_VALUES = new Set(Object.values(LoopStatus));
 
 /**
  * Models one MPRIS player endpoint owned by a session-bus service.
@@ -1010,24 +1005,6 @@ export default class MprisPlayer {
     const guardResult = this.#guardRootOperation(this.canQuit);
     if (guardResult) return guardResult;
     return this.#callRoot(MprisRootMethods.QUIT);
-  }
-
-  async toggleLoop() {
-    const guardResult = this.#guardPlayerOperation(this.canSetLoopStatus);
-    if (guardResult) return guardResult;
-
-    const current = LOOP_STATUS_ORDER.indexOf(this.loopStatus);
-    return this.setLoopStatus(
-      LOOP_STATUS_ORDER[
-        (current + 1 + LOOP_STATUS_ORDER.length) % LOOP_STATUS_ORDER.length
-      ],
-    );
-  }
-
-  async toggleShuffle() {
-    const guardResult = this.#guardPlayerOperation(this.canSetShuffle);
-    if (guardResult) return guardResult;
-    return this.setShuffle(!this.shuffle);
   }
 
   onPositionChanged(callback) {

@@ -15,6 +15,7 @@ import {
   RELATIVE_SEEK_SECONDS,
 } from "../../../shared/playback/controls.js";
 import { createLogger } from "../../../shared/logging/logger.js";
+import { LoopStatus } from "../../mpris/protocol.js";
 import {
   MprisOperationReasons,
   mprisOperationFailed,
@@ -23,15 +24,41 @@ import {
 } from "../../mpris/operationResult.js";
 import { resolveNextPlaybackRate } from "../../mpris/playbackRate.js";
 
+const LOOP_STATUS_ORDER = Object.freeze([
+  LoopStatus.NONE,
+  LoopStatus.PLAYLIST,
+  LoopStatus.TRACK,
+]);
+
+/** Resolves the next MediaShell repeat mode without touching endpoint state. */
+export function resolveNextLoopStatus(loopStatus) {
+  const currentIndex = LOOP_STATUS_ORDER.indexOf(loopStatus);
+  return LOOP_STATUS_ORDER[
+    (currentIndex + 1 + LOOP_STATUS_ORDER.length) % LOOP_STATUS_ORDER.length
+  ];
+}
+
+/** Resolves the target player volume for one signed MediaShell volume step. */
+export function resolveVolumeTarget(currentVolume, delta) {
+  const volume = Number(currentVolume);
+  const step = Number(delta);
+  if (!Number.isFinite(volume) || !Number.isFinite(step)) return null;
+
+  const target = volume + step;
+  return step >= 0 ? Math.min(target, 1) : Math.max(target, 0);
+}
+
 const PLAYER_OPERATION_BY_ACTION = Object.freeze({
-  [PlaybackControlActions.TOGGLE_SHUFFLE]: (player) => player.toggleShuffle(),
+  [PlaybackControlActions.TOGGLE_SHUFFLE]: (player) =>
+    player.setShuffle(!player.shuffle),
   [PlaybackControlActions.PREVIOUS]: (player) => player.previous(),
   [PlaybackControlActions.PLAY]: (player) => player.play(),
   [PlaybackControlActions.PAUSE]: (player) => player.pause(),
   [PlaybackControlActions.PLAY_PAUSE]: (player) => player.playPause(),
   [PlaybackControlActions.STOP]: (player) => player.stop(),
   [PlaybackControlActions.NEXT]: (player) => player.next(),
-  [PlaybackControlActions.TOGGLE_REPEAT]: (player) => player.toggleLoop(),
+  [PlaybackControlActions.TOGGLE_REPEAT]: (player) =>
+    player.setLoopStatus(resolveNextLoopStatus(player.loopStatus)),
 });
 
 const SEEK_DIRECTION_BY_ACTION = Object.freeze({
@@ -154,7 +181,9 @@ export default class PlaybackController {
   increaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    const volume = Math.min(player.volume + step, 1);
+    const volume = resolveVolumeTarget(player.volume, step);
+    if (volume === null)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
     return executePlayerOperation(player, "setVolume", (target) =>
       target.setVolume(volume),
     );
@@ -163,7 +192,9 @@ export default class PlaybackController {
   decreaseVolume(step, player = this.activePlayer) {
     if (!player)
       return mprisOperationUnsupported(MprisOperationReasons.MISSING_TARGET);
-    const volume = Math.max(player.volume - step, 0);
+    const volume = resolveVolumeTarget(player.volume, -step);
+    if (volume === null)
+      return mprisOperationUnsupported(MprisOperationReasons.INVALID_ARGUMENT);
     return executePlayerOperation(player, "setVolume", (target) =>
       target.setVolume(volume),
     );

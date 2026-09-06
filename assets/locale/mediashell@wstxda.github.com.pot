@@ -297,6 +297,7 @@ msgstr ""
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
+#: src/shell/ui/feedback/mediaActionFeedback.js:90
 msgid "Track"
 msgstr ""
 
@@ -321,6 +322,7 @@ msgid "Stop"
 msgstr ""
 
 #: src/shell/media/playback/accessibility.js:60
+#: src/shell/ui/feedback/mediaActionFeedback.js:92
 msgid "Playlist"
 msgstr ""
 
@@ -770,4 +772,24 @@ msgstr ""
 
 #: assets/ui/track-information-content-row.ui:48
 msgid "Add Text"
+msgstr ""
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:51
+msgid "Paused"
+msgstr ""
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:59
+msgid "Playing"
+msgstr ""
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Enabled"
+msgstr ""
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:71
+msgid "Disabled"
+msgstr ""
+
+#: src/shell/ui/feedback/mediaActionFeedback.js:93
+msgid "Off"
 msgstr ""
