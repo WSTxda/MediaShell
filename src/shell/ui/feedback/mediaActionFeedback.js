@@ -21,12 +21,8 @@ import {
 import { InputActions } from "../../../shared/input/types.js";
 import {
   PlaybackControlDefinitions,
-  PlaybackControlIds,
   RELATIVE_SEEK_SECONDS,
 } from "../../../shared/playback/controls.js";
-import {
-  resolvePlaybackControlState,
-} from "../../media/playback/controlState.js";
 import {
   resolveNextLoopStatus,
   resolveVolumeTarget,
@@ -60,10 +56,10 @@ function resolvePlaybackStatusPresentation(player) {
     return null;
 
   return {
-    iconName: resolvePlaybackControlState(
-      player,
-      PlaybackControlIds.PLAY_PAUSE,
-    ).iconName,
+    iconName:
+      playbackStatus === PlaybackStatus.PLAYING
+        ? PlaybackControlDefinitions.PLAY_PAUSE.icons.PLAY
+        : PlaybackControlDefinitions.PLAY_PAUSE.icons.PAUSE,
     label:
       playbackStatus === PlaybackStatus.PLAYING ? _("Playing") : _("Paused"),
   };

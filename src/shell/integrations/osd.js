@@ -6,8 +6,9 @@
  *
  * Independent feedback features share this capability instead of owning Shell
  * internals or duplicating OSD presentation policy. Consumers provide simple
- * icon/label/level values; this integration creates the GIcon and contains
- * private Shell compatibility behind the adapter below. Presentation failures
+ * icon/label/level values; this integration accepts either a resolved GIcon or
+ * a themed icon name and contains private Shell compatibility behind the adapter
+ * below. Presentation failures
  * are non-fatal and never affect media state.
  */
 
@@ -20,21 +21,26 @@ const logger = createLogger("Osd");
 
 /** Presents transient feedback through GNOME Shell's native OSD manager. */
 export function showOsd({
-  iconName,
+  gicon = null,
+  iconName = null,
   label = null,
   level = null,
   maxLevel = 1,
 } = {}) {
   const normalizedIconName =
     typeof iconName === "string" ? iconName.trim() : "";
-  if (!normalizedIconName) return false;
+  const icon =
+    gicon ??
+    (normalizedIconName
+      ? Gio.ThemedIcon.new_from_names([
+          normalizedIconName,
+          "image-missing-symbolic",
+        ])
+      : null);
+  if (!icon) return false;
 
   const normalizedLabel =
     typeof label === "string" && label.trim() ? label.trim() : null;
-  const icon = Gio.ThemedIcon.new_from_names([
-    normalizedIconName,
-    "image-missing-symbolic",
-  ]);
 
   try {
     const shown = showOsdOnAllMonitors(icon, normalizedLabel, level, maxLevel);

@@ -305,6 +305,7 @@ export default class ExtensionController {
     if (!this.trackChangeToastSurface)
       this.trackChangeToastSurface = new TrackChangeToastSurface({
         transitionTracker: this.trackTransitionTracker,
+        desktopAppResolver: this.mediaRuntime.identity,
         showOsd,
         enabled: this.settings.panel.trackChangeToastShow,
       });

@@ -9,19 +9,55 @@
  * whether a natural completed transition should be presented.
  */
 
+import Gio from "gi://Gio";
+
 import { TrackTransitionReasons } from "../../media/playback/trackTransitionTracker.js";
+
+function preferSymbolicAppIcon(appIcon) {
+  const names = appIcon?.get_names?.();
+  if (!names) {
+    return (
+      appIcon ??
+      Gio.ThemedIcon.new_from_names([
+        "application-x-executable-symbolic",
+        "application-x-executable",
+        "image-missing-symbolic",
+      ])
+    );
+  }
+
+  return Gio.ThemedIcon.new_from_names([
+    ...names
+      .filter((name) => !name.endsWith("-symbolic"))
+      .map((name) => `${name}-symbolic`),
+    ...names,
+    "application-x-executable-symbolic",
+    "application-x-executable",
+    "image-missing-symbolic",
+  ]);
+}
 
 /** Presents natural completed track transitions as a native GNOME Shell OSD. */
 export default class TrackChangeToastSurface {
-  constructor({ transitionTracker, showOsd, enabled = false } = {}) {
+  constructor({
+    transitionTracker,
+    desktopAppResolver,
+    showOsd,
+    enabled = false,
+  } = {}) {
     if (!transitionTracker)
       throw new TypeError(
         "TrackChangeToastSurface requires TrackTransitionTracker",
+      );
+    if (!desktopAppResolver)
+      throw new TypeError(
+        "TrackChangeToastSurface requires DesktopAppResolver",
       );
     if (typeof showOsd !== "function")
       throw new TypeError("TrackChangeToastSurface requires showOsd");
 
     this.transitionTracker = transitionTracker;
+    this.desktopAppResolver = desktopAppResolver;
     this.showOsd = showOsd;
     this.enabled = Boolean(enabled);
     this.unsubscribeTransition = transitionTracker.onTransition((transition) =>
@@ -45,8 +81,21 @@ export default class TrackChangeToastSurface {
     const title = typeof track?.title === "string" ? track.title.trim() : "";
     if (!title) return;
 
+    const player = transition.player;
+    const desktopApp = this.desktopAppResolver.resolveDesktopApp(
+      player.identity,
+      player.desktopEntry,
+      player.busName,
+    );
+
+    const appIcon =
+      desktopApp &&
+      this.desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
+        ? this.desktopAppResolver.resolveDesktopAppIcon(desktopApp)
+        : null;
+
     this.showOsd({
-      iconName: "audio-x-generic-symbolic",
+      gicon: preferSymbolicAppIcon(appIcon),
       label: title,
     });
   }
@@ -55,6 +104,7 @@ export default class TrackChangeToastSurface {
     this.unsubscribeTransition();
     this.unsubscribeTransition = null;
     this.transitionTracker = null;
+    this.desktopAppResolver = null;
     this.showOsd = null;
   }
 }
