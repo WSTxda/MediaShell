@@ -34,10 +34,10 @@ import {
 import {
   NUMERIC_SETTING_CONSTRAINTS,
   ORDERED_SETTING_DEFAULTS,
+  SettingsKeys,
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../src/shared/settings/contract.js";
 import { InputActions } from "../../src/shared/input/types.js";
-import { PanelPositions } from "../../src/shell/ui/indicator/panelPosition.js";
 import { TopBarElementIds } from "../../src/shared/ui/topBar.js";
 import { VisualizerStyles } from "../../src/shell/ui/components/visualizer/types.js";
 import { RUNTIME_SETTING_CONTRACT } from "../../src/shell/settings/settings.js";
@@ -221,7 +221,10 @@ export function validateSettingContractTables({
     const schemaKey = schema.keys[key];
     if (!schemaKey) continue;
     const schemaType = schemaKey.enum ? "enum" : schemaKey.type;
-    const expectedRead = EXPECTED_READ_METHODS[schemaType];
+    const expectedRead =
+      key === SettingsKeys.PANEL_POSITION
+        ? "get_string"
+        : EXPECTED_READ_METHODS[schemaType];
     if (spec.read !== expectedRead)
       errors.push(
         `${key}: runtime settings read method ${spec.read} must be ${expectedRead}`,
@@ -326,7 +329,11 @@ export async function checkSettingsContracts() {
     errors,
     `${schemaPrefix}.panel-positions`,
     schema.enums[`${schemaPrefix}.panel-positions`],
-    enumEntriesFromObject(PanelPositions),
+    [
+      { nick: "left", value: 0 },
+      { nick: "center", value: 1 },
+      { nick: "right", value: 2 },
+    ],
   );
   fail("Settings and UI contract validation", errors);
   console.log(

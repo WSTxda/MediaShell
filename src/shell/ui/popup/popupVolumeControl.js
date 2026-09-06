@@ -27,11 +27,6 @@ import { POPUP_VOLUME_CONTROL_HORIZONTAL_INSET } from "./presentation.js";
 
 const UNMUTE_DEFAULT_VOLUME = 0.25;
 const VOLUME_UP_STEP = 0.1;
-const VOLUME_ICON_NAMES = Object.freeze({
-  MUTED: "audio-volume-muted-symbolic",
-  LOW: "audio-volume-low-symbolic",
-  HIGH: "audio-volume-high-symbolic",
-});
 
 /** Owns the popup volume row. */
 export default class PopupVolumeControl {
@@ -88,7 +83,7 @@ export default class PopupVolumeControl {
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.muteIcon = new St.Icon({
-      iconName: VOLUME_ICON_NAMES.MUTED,
+      iconName: "audio-volume-muted-symbolic",
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.muteIcon.set_icon_size(16);
@@ -126,7 +121,7 @@ export default class PopupVolumeControl {
     );
 
     this.volumeUpIcon = new St.Icon({
-      iconName: VOLUME_ICON_NAMES.HIGH,
+      iconName: "audio-volume-high-symbolic",
       yAlign: Clutter.ActorAlign.CENTER,
     });
     this.volumeUpIcon.set_icon_size(16);
@@ -167,8 +162,8 @@ export default class PopupVolumeControl {
   syncVolumePresentation(volume) {
     const isMuted = volume <= 0;
     this.muteIcon.iconName = isMuted
-      ? VOLUME_ICON_NAMES.MUTED
-      : VOLUME_ICON_NAMES.LOW;
+      ? "audio-volume-muted-symbolic"
+      : "audio-volume-low-symbolic";
     this.muteButton.set_accessible_name(isMuted ? _("Unmute") : _("Mute"));
   }
 

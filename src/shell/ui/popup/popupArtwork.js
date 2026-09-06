@@ -10,7 +10,6 @@ import Gio from "gi://Gio";
 import St from "gi://St";
 
 import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
-import { IconNames } from "../../../shared/icons.js";
 import { POPUP_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
@@ -36,8 +35,8 @@ export default class PopupArtwork {
     this.popupSurface = popupSurface;
     this.artworkService = artworkService;
     this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
+      "audio-x-generic-symbolic",
+      "image-missing-symbolic",
     ]);
     this.artworkFrame = null;
     this.artworkImage = null;
@@ -127,7 +126,7 @@ export default class PopupArtwork {
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
       },
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkFrame = new St.Bin({
       styleClass: MediaShellStyleClasses.ARTWORK_FRAME,
@@ -255,7 +254,7 @@ export default class PopupArtwork {
     this.artworkImage.remove_style_class_name(
       MediaShellStyleClasses.ARTWORK_FALLBACK,
     );
-    setGIcon(this.artworkImage, renderPixbuf, IconNames.MEDIA);
+    setGIcon(this.artworkImage, renderPixbuf, "audio-x-generic-symbolic");
     this.artworkImage.set_icon_size(imageSize);
     this.artworkFrame.opacity = 255;
   }
@@ -274,7 +273,7 @@ export default class PopupArtwork {
     setGIcon(
       this.artworkImage,
       icon ?? this.fallbackArtworkIcon,
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkImage.set_icon_size(fallbackIconSize);
     this.artworkImage.set_size(imageSize, imageSize);

@@ -14,7 +14,6 @@ import {
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import { IconNames } from "../../../shared/icons.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import { createIcon, setGIcon } from "../icons.js";
 
@@ -60,7 +59,7 @@ export default class TopBarAppIcon {
       setGIcon(
         this.actor,
         this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),
-        IconNames.MEDIA,
+        "audio-x-generic-symbolic",
       );
       // Do not memoize a transient miss: Shell may associate a browser
       // window with its desktop app shortly after MPRIS appears.
@@ -89,7 +88,7 @@ export default class TopBarAppIcon {
             : MediaShellStyleClasses.APP_ICON_SYMBOLIC,
         ),
       },
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.iconKey = null;
     this.usesColoredIcon = useColoredIcon;

@@ -9,7 +9,6 @@
  * completed transition should be presented and supplies canonical Track data.
  */
 
-import { IconNames } from "../../../shared/icons.js";
 import { TrackTransitionReasons } from "../../media/playback/trackTransitionTracker.js";
 
 /** Presents completed track transitions as a native GNOME Shell OSD. */
@@ -46,7 +45,7 @@ export default class TrackChangeToastSurface {
     if (!title) return;
 
     this.osdIntegration?.show({
-      iconName: IconNames.MEDIA,
+      iconName: "audio-x-generic-symbolic",
       label: title,
     });
   }

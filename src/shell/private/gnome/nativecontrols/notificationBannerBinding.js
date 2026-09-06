@@ -18,7 +18,6 @@ import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.j
 import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 
 import { MediaShellStyleClasses, styleClassNames } from "../../../ui/style.js";
-import { IconNames } from "../../../../shared/icons.js";
 import { MprisPlayerProperties } from "../../../mpris/protocol.js";
 import { MprisOperationStatuses } from "../../../mpris/operationResult.js";
 import { PlaybackControlIds } from "../../../../shared/playback/controls.js";
@@ -148,8 +147,8 @@ export default class EnhanceNotificationBannerBinding {
     this.loadedFallbackIcon = null;
     this.preparedArtwork = null;
     this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
+      "audio-x-generic-symbolic",
+      "image-missing-symbolic",
     ]);
 
     this.nativeIconWasVisible = Boolean(bannerContext.nativeIcon.visible);
@@ -208,7 +207,7 @@ export default class EnhanceNotificationBannerBinding {
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
       },
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkFrame = new St.Bin({
       styleClass: styleClassNames(
@@ -839,7 +838,11 @@ export default class EnhanceNotificationBannerBinding {
     this.artworkFallbackActive = false;
     this.syncArtworkGeometry();
     this.artworkImage.content = null;
-    setGIcon(this.artworkImage, this.preparedArtwork.pixbuf, IconNames.MEDIA);
+    setGIcon(
+      this.artworkImage,
+      this.preparedArtwork.pixbuf,
+      "audio-x-generic-symbolic",
+    );
     this.artworkImage.set_icon_size(imageSize);
     this.artworkFrame.opacity = ACTIVE_OPACITY;
   }
@@ -856,7 +859,7 @@ export default class EnhanceNotificationBannerBinding {
     setGIcon(
       this.artworkImage,
       icon ?? this.fallbackArtworkIcon,
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkImage.set_icon_size(fallbackIconSize);
     this.artworkImage.set_size(imageSize, imageSize);

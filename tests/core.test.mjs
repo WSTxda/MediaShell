@@ -43,7 +43,6 @@ import {
 } from "../src/shared/identity/browser.js";
 import { arraysEqual, moveArrayItem } from "../src/prefs/ui/collections.js";
 import {
-  enumValueByIndex,
   formatDurationMilliseconds,
   normalizeOrderedValues,
   normalizeUniqueStrings,
@@ -118,10 +117,6 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
         assert.equal(formatDurationMilliseconds(0), "00:00");
         assert.equal(formatDurationMilliseconds(65_999), "01:05");
         assert.equal(formatDurationMilliseconds(3_661_000), "01:01:01");
-        assert.equal(
-          enumValueByIndex({ FIRST: "first", SECOND: "second" }, 1),
-          "second",
-        );
         assert.deepEqual(normalizeUniqueStrings([" a ", "", "a", null, "b"]), [
           "a",
           "b",

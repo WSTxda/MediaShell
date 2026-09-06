@@ -8,9 +8,12 @@
  * surface still owns its region values, queue, reconciliation, and lifecycle.
  */
 
-import { createSurfaceUpdate } from "../reconciliation/surfaceUpdate.js";
 import { PopupRegions } from "../popup/regions.js";
 import { TopBarRegions } from "../topbar/regions.js";
+
+function createSurfaceUpdate({ popup = 0, topBar = 0 } = {}) {
+  return Object.freeze({ popup, topBar });
+}
 
 export const PlayerSurfaceUpdates = Object.freeze({
   ALL: createSurfaceUpdate({

@@ -7,8 +7,10 @@
  * layout policy.
  */
 
-import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "./popup.js";
 import { POPUP_WIDTH_CONSTRAINTS } from "../settings/contract.js";
+
+/** Minimum popup width preserving full-size transport controls with seek visible. */
+export const POPUP_SEEK_CONTROLS_MIN_WIDTH = 350;
 
 /**
  * Resolves the effective popup width for the configured transport controls.

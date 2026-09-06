@@ -14,11 +14,7 @@ import Adw from "gi://Adw";
 import Gdk from "gi://Gdk";
 import Gtk from "gi://Gtk";
 
-import {
-  EXTENSION_ICON_NAME,
-  EXTENSION_NAME,
-  PROJECT_URLS,
-} from "../../shared/project.js";
+import { EXTENSION_NAME, PROJECT_URLS } from "../../shared/project.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { gettext as _ } from "../translations.js";
 import { PreferencesStyleClasses } from "../ui/style.js";
@@ -91,7 +87,7 @@ export default class AboutDialogController {
     const fallbackVersion = this.preferencesInstance.metadata.version;
     const aboutDialog = new Adw.AboutDialog({
       application_name: EXTENSION_NAME,
-      application_icon: EXTENSION_ICON_NAME,
+      application_icon: "mediashell",
       developer_name: "WSTxda",
       version: String(metadataVersion ?? fallbackVersion ?? ""),
       comments: _(

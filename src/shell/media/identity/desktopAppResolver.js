@@ -16,7 +16,6 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Shell from "gi://Shell";
 
-import { IconNames } from "../../../shared/icons.js";
 import {
   DESKTOP_APP_RESOLVER_CACHE_LIMIT,
   DESKTOP_APP_RESOLVER_MISS_CACHE_TTL_MS,
@@ -394,8 +393,8 @@ export default class DesktopAppResolver {
 
   #ensureFallbackDesktopAppIcon() {
     this.#fallbackDesktopAppIcon ??= Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
+      "audio-x-generic-symbolic",
+      "image-missing-symbolic",
     ]);
     return this.#fallbackDesktopAppIcon;
   }

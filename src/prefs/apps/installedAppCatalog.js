@@ -12,7 +12,6 @@
 
 import Gio from "gi://Gio";
 
-import { IconNames } from "../../shared/icons.js";
 import { buildBrowserIdentityAliases } from "../../shared/identity/browser.js";
 import { createLogger } from "../../shared/logging/logger.js";
 
@@ -20,7 +19,10 @@ const logger = createLogger("InstalledAppCatalog");
 
 /** Creates the themed fallback owned by one catalog consumer. */
 export function createFallbackAppIcon() {
-  return Gio.ThemedIcon.new_from_names([IconNames.APP, IconNames.MISSING]);
+  return Gio.ThemedIcon.new_from_names([
+    "application-x-executable-symbolic",
+    "image-missing-symbolic",
+  ]);
 }
 
 function readAppString(app, getterName) {

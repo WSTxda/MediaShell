@@ -12,29 +12,30 @@
 import Gio from "gi://Gio";
 import St from "gi://St";
 
-import { IconNames } from "../../shared/icons.js";
-
 const fallbackIcons = new Map();
 
 function ensureFallbackIcon(primaryName) {
-  const fallbackName = primaryName || IconNames.MISSING;
+  const fallbackName = primaryName || "image-missing-symbolic";
   if (fallbackIcons.has(fallbackName)) return fallbackIcons.get(fallbackName);
 
   const names =
-    fallbackName === IconNames.MISSING
-      ? [IconNames.MISSING]
-      : [fallbackName, IconNames.MISSING];
+    fallbackName === "image-missing-symbolic"
+      ? ["image-missing-symbolic"]
+      : [fallbackName, "image-missing-symbolic"];
   const icon = Gio.ThemedIcon.new_from_names(names);
   fallbackIcons.set(fallbackName, icon);
   return icon;
 }
 
-function setIconFallback(icon, fallbackIconName = IconNames.MISSING) {
+function setIconFallback(icon, fallbackIconName = "image-missing-symbolic") {
   icon.set_fallback_gicon(ensureFallbackIcon(fallbackIconName));
   return icon;
 }
 
-export function createIcon(params = {}, fallbackIconName = IconNames.MISSING) {
+export function createIcon(
+  params = {},
+  fallbackIconName = "image-missing-symbolic",
+) {
   const { gicon = null, iconName = null, ...actorParams } = params;
   const icon = setIconFallback(new St.Icon(actorParams), fallbackIconName);
 
@@ -50,13 +51,17 @@ export function createIcon(params = {}, fallbackIconName = IconNames.MISSING) {
 export function setIconName(
   icon,
   iconName,
-  fallbackIconName = IconNames.MISSING,
+  fallbackIconName = "image-missing-symbolic",
 ) {
   setIconFallback(icon, fallbackIconName);
   icon.set_icon_name(iconName || fallbackIconName);
 }
 
-export function setGIcon(icon, gicon, fallbackIconName = IconNames.MISSING) {
+export function setGIcon(
+  icon,
+  gicon,
+  fallbackIconName = "image-missing-symbolic",
+) {
   setIconFallback(icon, fallbackIconName);
   icon.set_gicon(gicon ?? ensureFallbackIcon(fallbackIconName));
 }

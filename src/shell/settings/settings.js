@@ -28,11 +28,9 @@ import { normalizeInputAction } from "../../shared/input/normalization.js";
 import { InputActions } from "../../shared/input/types.js";
 import { normalizeTrackInformationContent } from "../../shared/ui/trackInformationContent.js";
 import {
-  enumValueByIndex,
   normalizeOrderedValues,
   normalizeUniqueStrings,
 } from "../../shared/format.js";
-import { PanelPositions } from "../ui/indicator/panelPosition.js";
 
 function createNumericConstraint({ MIN, MAX, DEFAULT }) {
   return (value) =>
@@ -242,9 +240,7 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
 });
 
 const PANEL_DEFINITIONS = Object.freeze({
-  position: defineSetting(SettingsKeys.PANEL_POSITION, "get_enum", (value) =>
-    enumValueByIndex(PanelPositions, value),
-  ),
+  position: defineSetting(SettingsKeys.PANEL_POSITION, "get_string"),
   index: defineSetting(
     SettingsKeys.PANEL_INDEX,
     "get_uint",

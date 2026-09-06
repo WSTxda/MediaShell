@@ -26,17 +26,6 @@ export function finiteNumberOr(value, fallback, { minimum = -Infinity } = {}) {
 }
 
 /**
- * Reads an enum value by the order used in preference combo rows.
- *
- * @param {Record<string, unknown>} enumObject - Frozen enum-like object.
- * @param {number} index - Selected combo-row index.
- * @returns {unknown} The enum value at the requested index.
- */
-export function enumValueByIndex(enumObject, index) {
-  return Object.values(enumObject)[index];
-}
-
-/**
  * Formats milliseconds as `MM:SS` or `HH:MM:SS` for the popup progress bar.
  *
  * Invalid or negative inputs are clamped to zero because progress labels should

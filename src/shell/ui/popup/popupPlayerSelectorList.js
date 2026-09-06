@@ -20,7 +20,6 @@ import {
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import { IconNames } from "../../../shared/icons.js";
 import {
   ACTIVE_OPACITY,
   HIDDEN_OPACITY,
@@ -315,7 +314,7 @@ export default class PopupPlayerSelectorList {
           ),
           yAlign: Clutter.ActorAlign.CENTER,
         },
-        IconNames.MEDIA,
+        "audio-x-generic-symbolic",
       ),
     );
     playerContent.add_child(

@@ -16,7 +16,6 @@ import {
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import { IconNames } from "../../../shared/icons.js";
 import { TOP_BAR_ARTWORK_CORNER_RADIUS_PERCENT_CONSTRAINTS } from "../../../shared/settings/contract.js";
 import { createArtworkRequest } from "../../media/artwork/request.js";
 import {
@@ -40,8 +39,8 @@ export default class TopBarArtwork {
     this.topBarSurface = topBarSurface;
     this.artworkService = artworkService;
     this.fallbackArtworkIcon = Gio.ThemedIcon.new_from_names([
-      IconNames.MEDIA,
-      IconNames.MISSING,
+      "audio-x-generic-symbolic",
+      "image-missing-symbolic",
     ]);
     this.artworkFrame = null;
     this.artworkImage = null;
@@ -130,7 +129,7 @@ export default class TopBarArtwork {
         xAlign: Clutter.ActorAlign.CENTER,
         yAlign: Clutter.ActorAlign.CENTER,
       },
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkFrame = new St.Bin({
       styleClass: styleClassNames(
@@ -250,7 +249,7 @@ export default class TopBarArtwork {
     this.artworkImage.remove_style_class_name(
       MediaShellStyleClasses.ARTWORK_FALLBACK,
     );
-    setGIcon(this.artworkImage, renderPixbuf, IconNames.MEDIA);
+    setGIcon(this.artworkImage, renderPixbuf, "audio-x-generic-symbolic");
     this.artworkImage.set_icon_size(imageSize);
     this.artworkFrame.opacity = 255;
   }
@@ -269,7 +268,7 @@ export default class TopBarArtwork {
     setGIcon(
       this.artworkImage,
       icon ?? this.fallbackArtworkIcon,
-      IconNames.MEDIA,
+      "audio-x-generic-symbolic",
     );
     this.artworkImage.set_icon_size(fallbackIconSize);
     this.artworkImage.set_size(imageSize, imageSize);

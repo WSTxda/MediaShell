@@ -13,7 +13,6 @@
 
 import Gio from "gi://Gio";
 
-import { IconNames } from "../../shared/icons.js";
 import { createLogger } from "../../shared/logging/logger.js";
 import { showOsdOnAllMonitors } from "../private/gnome/osd/compatibility.js";
 
@@ -30,7 +29,7 @@ export default class OsdIntegration {
       typeof label === "string" && label.trim() ? label.trim() : null;
     const icon = Gio.ThemedIcon.new_from_names([
       normalizedIconName,
-      IconNames.MISSING,
+      "image-missing-symbolic",
     ]);
 
     try {

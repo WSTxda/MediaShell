@@ -19,7 +19,6 @@ import {
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import { IconNames } from "../../../shared/icons.js";
 import { createIcon, setGIcon } from "../icons.js";
 import { installPrimaryClickAction } from "../input/pointerActions.js";
 
@@ -92,7 +91,7 @@ export default class PopupPlayerSelectorButton {
       setGIcon(
         this.icon,
         this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),
-        IconNames.MEDIA,
+        "audio-x-generic-symbolic",
       );
       this.icon.set_style_class_name(
         styleClassNames(

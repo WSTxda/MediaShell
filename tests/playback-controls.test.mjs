@@ -24,7 +24,6 @@ import {
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
 } from "../src/shared/playback/surfaces.js";
-import { POPUP_SEEK_CONTROLS_MIN_WIDTH } from "../src/shared/ui/popup.js";
 import {
   POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
@@ -38,7 +37,10 @@ import {
 import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
 import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../src/shell/media/playback/surfaceState.js";
-import { resolvePopupWidth } from "../src/shared/ui/popupLayout.js";
+import {
+  POPUP_SEEK_CONTROLS_MIN_WIDTH,
+  resolvePopupWidth,
+} from "../src/shared/ui/popupLayout.js";
 import {
   canChangePlaybackRate,
   formatPlaybackRate,
