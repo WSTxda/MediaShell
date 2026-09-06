@@ -19,7 +19,7 @@ import TrackTransitionTracker from "./media/playback/trackTransitionTracker.js";
 import InputActionDispatcher from "./input/actionDispatcher.js";
 import GlobalShortcuts from "./input/globalShortcuts.js";
 import NativeControlsIntegration from "./integrations/nativeControls.js";
-import OsdIntegration from "./integrations/osd.js";
+import { showOsd } from "./integrations/osd.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
@@ -298,24 +298,25 @@ export default class ExtensionController {
       return;
 
     if (!this.trackTransitionTracker)
-      this.trackTransitionTracker = new TrackTransitionTracker();
-
-    if (!this.osdIntegration) this.osdIntegration = new OsdIntegration();
+      this.trackTransitionTracker = new TrackTransitionTracker({
+        playbackCommands: this.mediaRuntime.playback,
+      });
 
     if (!this.trackChangeToastSurface)
       this.trackChangeToastSurface = new TrackChangeToastSurface({
         transitionTracker: this.trackTransitionTracker,
-        osdIntegration: this.osdIntegration,
+        showOsd,
         enabled: this.settings.panel.trackChangeToastShow,
       });
 
     if (!this.mediaActionFeedback)
       this.mediaActionFeedback = new MediaActionFeedback({
         transitionTracker: this.trackTransitionTracker,
-        osdIntegration: this.osdIntegration,
+        showOsd,
       });
 
     this.trackTransitionTracker.setPlayer(this.mediaRuntime.activePlayer);
+    this.mediaActionFeedback.setPlayer(this.mediaRuntime.activePlayer);
 
     if (!this.inputActionDispatcher)
       this.inputActionDispatcher = new InputActionDispatcher({
@@ -366,6 +367,7 @@ export default class ExtensionController {
     }
 
     this.trackTransitionTracker?.setPlayer(player);
+    this.mediaActionFeedback?.setPlayer(player);
 
     if (!player) {
       this.destroyIndicator();
@@ -419,7 +421,6 @@ export default class ExtensionController {
 
     this.trackTransitionTracker?.destroy();
     this.trackTransitionTracker = null;
-    this.osdIntegration = null;
 
     this.inputActionDispatcher?.destroy();
     this.inputActionDispatcher = null;

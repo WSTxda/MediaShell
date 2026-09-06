@@ -22,12 +22,14 @@ import { InputActions } from "../../shared/input/types.js";
 export default class InputActionDispatcher {
   constructor({
     mediaRuntime,
-    mediaActionFeedback = null,
+    mediaActionFeedback,
     onTogglePopup,
     onOpenPreferences,
   } = {}) {
     if (!mediaRuntime)
       throw new TypeError("InputActionDispatcher requires MediaRuntime");
+    if (!mediaActionFeedback)
+      throw new TypeError("InputActionDispatcher requires MediaActionFeedback");
 
     this.mediaRuntime = mediaRuntime;
     this.mediaActionFeedback = mediaActionFeedback;
@@ -39,15 +41,22 @@ export default class InputActionDispatcher {
     if (!this.mediaRuntime) return;
 
     const player = this.mediaRuntime.playback.activePlayer;
-    const feedbackContext = this.mediaActionFeedback?.begin(
+    const mediaActionFeedback = this.mediaActionFeedback;
+    const commandOrigin = {};
+    const feedbackContext = mediaActionFeedback.begin(
       inputAction,
       player,
+      commandOrigin,
     );
     let result;
 
     const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
     if (playbackAction)
-      result = this.mediaRuntime.playback.execute(playbackAction, player);
+      result = this.mediaRuntime.playback.execute(
+        playbackAction,
+        player,
+        commandOrigin,
+      );
     else {
       switch (inputAction) {
         case InputActions.VOLUME_UP:
@@ -81,17 +90,19 @@ export default class InputActionDispatcher {
 
     if (!feedbackContext) return result;
     if (!result || typeof result.then !== "function") {
-      this.mediaActionFeedback?.complete(feedbackContext, result);
+      mediaActionFeedback.complete(feedbackContext, result);
       return result;
     }
 
     return result.then(
       (operationResult) => {
-        this.mediaActionFeedback?.complete(feedbackContext, operationResult);
+        if (this.mediaActionFeedback === mediaActionFeedback)
+          mediaActionFeedback.complete(feedbackContext, operationResult);
         return operationResult;
       },
       (error) => {
-        this.mediaActionFeedback?.complete(feedbackContext, null);
+        if (this.mediaActionFeedback === mediaActionFeedback)
+          mediaActionFeedback.complete(feedbackContext, null);
         throw error;
       },
     );

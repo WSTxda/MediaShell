@@ -6,29 +6,39 @@
  *
  * Only actions routed through InputActionDispatcher reach this owner, so global
  * shortcuts and Top Bar pointer gestures receive feedback while Popup, Top Bar
- * playback buttons, and private native controls keep their existing direct
- * PlaybackController path. The owner contains transient Next/Previous
- * correlation state and delegates all drawing, timing, and Shell compatibility
- * to the shared OSD integration.
+ * playback buttons, and private native controls keep their direct
+ * PlaybackController path. Track actions correlate against semantic transitions;
+ * PlayPause waits for canonical PlaybackStatus instead of predicting the result.
  */
 
 import GLib from "gi://GLib";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
+import {
+  PLAYBACK_ACTION_BY_INPUT_ACTION,
+  VOLUME_STEP,
+} from "../../../shared/input/actions.js";
 import { InputActions } from "../../../shared/input/types.js";
-import { VOLUME_STEP } from "../../../shared/input/actions.js";
 import {
   PlaybackControlDefinitions,
+  PlaybackControlIds,
   RELATIVE_SEEK_SECONDS,
 } from "../../../shared/playback/controls.js";
-import { MprisOperationStatuses } from "../../mpris/operationResult.js";
-import { LoopStatus, PlaybackStatus } from "../../mpris/protocol.js";
+import {
+  resolvePlaybackControlState,
+} from "../../media/playback/controlState.js";
 import {
   resolveNextLoopStatus,
   resolveVolumeTarget,
 } from "../../media/playback/playbackController.js";
+import { MprisOperationStatuses } from "../../mpris/operationResult.js";
+import {
+  LoopStatus,
+  MprisPlayerProperties,
+  PlaybackStatus,
+} from "../../mpris/protocol.js";
 
-const TRACK_ACTION_TIMEOUT_MS = 2000;
+const FEEDBACK_CONFIRMATION_TIMEOUT_MS = 2500;
 
 function resolveVolumePresentationLevel(volume) {
   return Math.min(1, Math.max(0, Number(volume) || 0));
@@ -41,22 +51,21 @@ function resolveVolumeIconName(level) {
   return "audio-volume-high-symbolic";
 }
 
-function resolvePlayPausePresentation(player) {
-  const control = PlaybackControlDefinitions.PLAY_PAUSE;
-  const willPlay = player.playbackStatus !== PlaybackStatus.PLAYING;
-
-  if (!willPlay)
-    return {
-      iconName: control.icons.PLAY,
-      label: _("Paused"),
-    };
+function resolvePlaybackStatusPresentation(player) {
+  const playbackStatus = player.playbackStatus;
+  if (
+    playbackStatus !== PlaybackStatus.PLAYING &&
+    playbackStatus !== PlaybackStatus.PAUSED
+  )
+    return null;
 
   return {
-    iconName:
-      player.canControl && !player.canPause
-        ? control.icons.STOP
-        : control.icons.PAUSE,
-    label: _("Playing"),
+    iconName: resolvePlaybackControlState(
+      player,
+      PlaybackControlIds.PLAY_PAUSE,
+    ).iconName,
+    label:
+      playbackStatus === PlaybackStatus.PLAYING ? _("Playing") : _("Paused"),
   };
 }
 
@@ -76,8 +85,6 @@ function resolveImmediatePresentation(inputAction, player) {
         iconName: PlaybackControlDefinitions.SEEK_BACKWARD.icons.DEFAULT,
         label: `−${RELATIVE_SEEK_SECONDS}`,
       };
-    case InputActions.PLAY_PAUSE:
-      return resolvePlayPausePresentation(player);
     case InputActions.SEEK_FORWARD:
       return {
         iconName: PlaybackControlDefinitions.SEEK_FORWARD.icons.DEFAULT,
@@ -111,70 +118,143 @@ function resolveImmediatePresentation(inputAction, player) {
   }
 }
 
-function resolveTrackActionIconName(inputAction) {
+function resolveTrackAction(inputAction) {
   if (inputAction === InputActions.PREVIOUS_TRACK)
-    return PlaybackControlDefinitions.PREVIOUS.icons.DEFAULT;
+    return {
+      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      iconName: PlaybackControlDefinitions.PREVIOUS.icons.DEFAULT,
+    };
   if (inputAction === InputActions.NEXT_TRACK)
-    return PlaybackControlDefinitions.NEXT.icons.DEFAULT;
+    return {
+      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      iconName: PlaybackControlDefinitions.NEXT.icons.DEFAULT,
+    };
   return null;
 }
 
 /** Owns transient visual feedback for keyboard and Top Bar pointer actions. */
 export default class MediaActionFeedback {
-  constructor({ transitionTracker, osdIntegration } = {}) {
+  constructor({ transitionTracker, showOsd } = {}) {
     if (!transitionTracker)
       throw new TypeError("MediaActionFeedback requires TrackTransitionTracker");
-    if (!osdIntegration)
-      throw new TypeError("MediaActionFeedback requires OsdIntegration");
+    if (typeof showOsd !== "function")
+      throw new TypeError("MediaActionFeedback requires showOsd");
 
     this.transitionTracker = transitionTracker;
-    this.osdIntegration = osdIntegration;
+    this.showOsd = showOsd;
+    this.player = null;
+    this.generation = 0;
     this.pendingTrackActions = [];
+    this.pendingPlaybackStatusActions = [];
     this.unsubscribeTransition = transitionTracker.onTransition((transition) =>
       this.handleTransition(transition),
     );
   }
 
-  begin(inputAction, player) {
-    if (!player) return null;
+  setPlayer(player) {
+    const nextPlayer = player ?? null;
+    if (nextPlayer === this.player) return;
+    this.reset();
+    this.player = nextPlayer;
+    this.generation++;
+  }
 
-    const trackIconName = resolveTrackActionIconName(inputAction);
-    if (trackIconName) {
-      const context = {
-        kind: "track",
-        player,
-        iconName: trackIconName,
-        operationSucceeded: false,
-        transition: null,
-        timeoutId: null,
-        active: true,
-      };
-      context.timeoutId = GLib.timeout_add(
-        GLib.PRIORITY_DEFAULT,
-        TRACK_ACTION_TIMEOUT_MS,
-        () => {
-          context.timeoutId = null;
-          this.removeTrackAction(context);
-          return GLib.SOURCE_REMOVE;
-        },
-      );
-      this.pendingTrackActions.push(context);
-      return context;
-    }
+  begin(inputAction, player, commandOrigin = null) {
+    if (!player || player !== this.player) return null;
+
+    const trackAction = resolveTrackAction(inputAction);
+    if (trackAction)
+      return this.createTrackActionContext(player, trackAction, commandOrigin);
+
+    if (inputAction === InputActions.PLAY_PAUSE)
+      return this.createPlaybackStatusContext(player);
 
     const presentation = resolveImmediatePresentation(inputAction, player);
-    return presentation ? { kind: "immediate", presentation } : null;
+    return presentation
+      ? {
+          kind: "immediate",
+          player,
+          generation: this.generation,
+          presentation,
+        }
+      : null;
+  }
+
+  createTrackActionContext(
+    player,
+    { playbackAction, iconName },
+    commandOrigin,
+  ) {
+    const context = {
+      kind: "track",
+      player,
+      playbackAction,
+      commandOrigin,
+      iconName,
+      generation: this.generation,
+      operationSucceeded: false,
+      transition: null,
+      timeoutId: null,
+      active: true,
+    };
+    context.timeoutId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      FEEDBACK_CONFIRMATION_TIMEOUT_MS,
+      () => {
+        context.timeoutId = null;
+        this.removeTrackAction(context);
+        return GLib.SOURCE_REMOVE;
+      },
+    );
+    this.pendingTrackActions.push(context);
+    return context;
+  }
+
+  createPlaybackStatusContext(player) {
+    const context = {
+      kind: "playback-status",
+      player,
+      initialPlaybackStatus: player.playbackStatus,
+      generation: this.generation,
+      statusChanged: false,
+      operationSucceeded: false,
+      listenerId: 0,
+      timeoutId: null,
+      active: true,
+    };
+    context.listenerId = player.onPropertyChanged(
+      MprisPlayerProperties.PLAYBACK_STATUS,
+      () => {
+        if (!context.active) return;
+        context.statusChanged = true;
+        if (context.operationSucceeded) this.showPlaybackStatus(context);
+      },
+    );
+    context.timeoutId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      FEEDBACK_CONFIRMATION_TIMEOUT_MS,
+      () => {
+        context.timeoutId = null;
+        this.removePlaybackStatusAction(context);
+        return GLib.SOURCE_REMOVE;
+      },
+    );
+    this.pendingPlaybackStatusActions.push(context);
+    return context;
   }
 
   complete(context, operationResult) {
     if (!context) return;
+    if (
+      context.player !== this.player ||
+      context.generation !== this.generation
+    ) {
+      this.removeContext(context);
+      return;
+    }
 
     if (operationResult?.status !== MprisOperationStatuses.SUCCESS) {
-      if (context.kind === "track") {
-        const transition = context.transition;
-        this.removeTrackAction(context);
-        if (transition) this.handleTransition(transition);
-      }
+      this.removeContext(context);
       return;
     }
 
@@ -183,17 +263,31 @@ export default class MediaActionFeedback {
       return;
     }
 
-    if (context.kind !== "track" || !context.active) return;
+    if (!context.active) return;
     context.operationSucceeded = true;
-    if (context.transition) this.showTrackAction(context);
+
+    if (context.kind === "track") {
+      if (context.transition) this.showTrackAction(context);
+      return;
+    }
+
+    if (context.kind === "playback-status") {
+      if (context.player.playbackStatus !== context.initialPlaybackStatus)
+        context.statusChanged = true;
+      if (context.statusChanged) this.showPlaybackStatus(context);
+    }
   }
 
   handleTransition(transition) {
+    if (!transition.command) return;
+
     const context = this.pendingTrackActions.find(
       (candidate) =>
         candidate.active &&
         !candidate.transition &&
-        candidate.player === transition?.player,
+        candidate.player === transition.player &&
+        candidate.playbackAction === transition.command.action &&
+        candidate.commandOrigin === transition.command.origin,
     );
     if (!context) return;
 
@@ -217,9 +311,22 @@ export default class MediaActionFeedback {
     this.removeTrackAction(context);
   }
 
+  showPlaybackStatus(context) {
+    if (!context.active) return;
+    const presentation = resolvePlaybackStatusPresentation(context.player);
+    if (presentation) this.show(presentation);
+    this.removePlaybackStatusAction(context);
+  }
+
   show(presentation) {
     if (!presentation?.iconName) return;
-    this.osdIntegration.show(presentation);
+    this.showOsd(presentation);
+  }
+
+  removeContext(context) {
+    if (context?.kind === "track") this.removeTrackAction(context);
+    else if (context?.kind === "playback-status")
+      this.removePlaybackStatusAction(context);
   }
 
   removeTrackAction(context) {
@@ -233,13 +340,39 @@ export default class MediaActionFeedback {
     if (index >= 0) this.pendingTrackActions.splice(index, 1);
   }
 
-  destroy() {
-    if (this.unsubscribeTransition) this.unsubscribeTransition();
-    this.unsubscribeTransition = null;
+  removePlaybackStatusAction(context) {
+    if (!context || !context.active) return;
+    context.active = false;
+    if (context.timeoutId !== null) {
+      GLib.Source.remove(context.timeoutId);
+      context.timeoutId = null;
+    }
+    if (context.listenerId)
+      context.player.removePropertyChangeListener(
+        MprisPlayerProperties.PLAYBACK_STATUS,
+        context.listenerId,
+      );
+    context.listenerId = 0;
+    const index = this.pendingPlaybackStatusActions.indexOf(context);
+    if (index >= 0) this.pendingPlaybackStatusActions.splice(index, 1);
+  }
+
+  reset() {
     for (const context of [...this.pendingTrackActions])
       this.removeTrackAction(context);
+    for (const context of [...this.pendingPlaybackStatusActions])
+      this.removePlaybackStatusAction(context);
     this.pendingTrackActions = [];
+    this.pendingPlaybackStatusActions = [];
+  }
+
+  destroy() {
+    this.unsubscribeTransition();
+    this.unsubscribeTransition = null;
+    this.reset();
+    this.player = null;
+    this.generation++;
     this.transitionTracker = null;
-    this.osdIntegration = null;
+    this.showOsd = null;
   }
 }

@@ -1016,11 +1016,6 @@ export default class MprisPlayer {
     return this.positionTracker?.snapshotPlaybackState() ?? null;
   }
 
-  /** Subscribes to protocol `Seeked` discontinuities normalized by PositionTracker. */
-  onSeeked(callback) {
-    return this.positionTracker?.onSeeked(callback) ?? (() => {});
-  }
-
   onTrackChanged(callback) {
     if (this.isDestroyed) return 0;
     const listenerId = this.nextTrackChangeListenerId++;

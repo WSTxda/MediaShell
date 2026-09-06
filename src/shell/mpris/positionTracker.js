@@ -59,8 +59,6 @@ export default class MprisPositionTracker {
     this.anchorRealMicroseconds = clockSnapshot.realMicroseconds;
     this.positionChangeListeners = new Map();
     this.nextPositionChangeListenerId = 1;
-    this.seekedListeners = new Map();
-    this.nextSeekedListenerId = 1;
     this.positionRefreshGeneration = 0;
     this.positionRefreshPromise = null;
   }
@@ -198,10 +196,7 @@ export default class MprisPositionTracker {
 
   handleSeeked(positionMicroseconds) {
     if (!this.propertiesProxy) return;
-    const normalizedPosition = this.setPositionAnchor(positionMicroseconds, {
-      emit: true,
-    });
-    this.emitSeeked(normalizedPosition);
+    this.setPositionAnchor(positionMicroseconds, { emit: true });
   }
 
   resolveEstimatedPositionMicroseconds() {
@@ -296,15 +291,6 @@ export default class MprisPositionTracker {
     return () => this.positionChangeListeners.delete(listenerId);
   }
 
-  onSeeked(callback) {
-    if (!this.propertiesProxy) return () => {};
-    if (typeof callback !== "function")
-      throw new TypeError("Seeked callback must be a function");
-    const listenerId = this.nextSeekedListenerId++;
-    this.seekedListeners.set(listenerId, callback);
-    return () => this.seekedListeners.delete(listenerId);
-  }
-
   emitPositionChanged(positionMicroseconds) {
     for (const callback of [...this.positionChangeListeners.values()]) {
       try {
@@ -319,21 +305,10 @@ export default class MprisPositionTracker {
     }
   }
 
-  emitSeeked(positionMicroseconds) {
-    for (const callback of [...this.seekedListeners.values()]) {
-      try {
-        callback(positionMicroseconds);
-      } catch (error) {
-        logger.errorOnce("seeked-listener", "Seeked listener failed", error);
-      }
-    }
-  }
-
   destroy() {
     if (!this.propertiesProxy) return;
     this.positionRefreshGeneration++;
     this.positionChangeListeners.clear();
-    this.seekedListeners.clear();
     this.positionRefreshPromise = null;
     this.operationCancellable = null;
     this.propertiesProxy = null;

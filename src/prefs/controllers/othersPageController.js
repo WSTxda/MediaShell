@@ -174,7 +174,7 @@ export default class OthersPageController {
     } catch (error) {
       if (
         cancellable.is_cancelled() ||
-        error?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED) ||
+        error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED) ||
         !this.preferencesWindow
       )
         return;

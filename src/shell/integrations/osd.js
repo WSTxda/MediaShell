@@ -16,42 +16,40 @@ import Gio from "gi://Gio";
 import { createLogger } from "../../shared/logging/logger.js";
 import { showOsdOnAllMonitors } from "../private/gnome/osd/compatibility.js";
 
-const logger = createLogger("OsdIntegration");
+const logger = createLogger("Osd");
 
 /** Presents transient feedback through GNOME Shell's native OSD manager. */
-export default class OsdIntegration {
-  show({ iconName, label = null, level = null, maxLevel = 1 } = {}) {
-    const normalizedIconName =
-      typeof iconName === "string" ? iconName.trim() : "";
-    if (!normalizedIconName) return false;
+export function showOsd({
+  iconName,
+  label = null,
+  level = null,
+  maxLevel = 1,
+} = {}) {
+  const normalizedIconName =
+    typeof iconName === "string" ? iconName.trim() : "";
+  if (!normalizedIconName) return false;
 
-    const normalizedLabel =
-      typeof label === "string" && label.trim() ? label.trim() : null;
-    const icon = Gio.ThemedIcon.new_from_names([
-      normalizedIconName,
-      "image-missing-symbolic",
-    ]);
+  const normalizedLabel =
+    typeof label === "string" && label.trim() ? label.trim() : null;
+  const icon = Gio.ThemedIcon.new_from_names([
+    normalizedIconName,
+    "image-missing-symbolic",
+  ]);
 
-    try {
-      const shown = showOsdOnAllMonitors(
-        icon,
-        normalizedLabel,
-        level,
-        maxLevel,
-      );
-      if (!shown)
-        logger.warnOnce(
-          "unavailable",
-          "GNOME Shell OSD integration is unavailable; feedback will be skipped",
-        );
-      return shown;
-    } catch (error) {
+  try {
+    const shown = showOsdOnAllMonitors(icon, normalizedLabel, level, maxLevel);
+    if (!shown)
       logger.warnOnce(
-        `show:${error?.name ?? "Error"}`,
-        "GNOME Shell OSD presentation failed; feedback will be skipped",
-        error,
+        "unavailable",
+        "GNOME Shell OSD integration is unavailable; feedback will be skipped",
       );
-      return false;
-    }
+    return shown;
+  } catch (error) {
+    logger.warnOnce(
+      `show:${error?.name ?? "Error"}`,
+      "GNOME Shell OSD presentation failed; feedback will be skipped",
+      error,
+    );
+    return false;
   }
 }
