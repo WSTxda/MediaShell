@@ -188,6 +188,9 @@
       <range min="0" max="100" />
       <default>0</default>
     </key>
+    <key name="panel-track-change-toast-show" type="b">
+      <default>false</default>
+    </key>
 
     <!-- Interactions -->
     <key name="interactions-shortcut-toggle-shuffle" type="as">

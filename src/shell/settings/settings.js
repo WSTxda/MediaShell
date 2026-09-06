@@ -250,6 +250,10 @@ const PANEL_DEFINITIONS = Object.freeze({
     "get_uint",
     createNumericConstraint(PANEL_INDEX_CONSTRAINTS),
   ),
+  trackChangeToastShow: defineSetting(
+    SettingsKeys.PANEL_TRACK_CHANGE_TOAST_SHOW,
+    "get_boolean",
+  ),
 });
 
 const INTERACTIONS_DEFINITIONS = Object.freeze({

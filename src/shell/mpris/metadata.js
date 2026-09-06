@@ -165,6 +165,12 @@ export function normalizeMprisMetadata(metadataValue) {
   return normalized;
 }
 
+function normalizeIdentityValue(value) {
+  if (Array.isArray(value))
+    return value.map(normalizeIdentityValue).join("\u0000");
+  return String(value ?? "").trim();
+}
+
 function cloneTextList(value) {
   return Object.freeze(Array.isArray(value) ? [...value] : []);
 }
@@ -204,6 +210,54 @@ export function createMprisTrack(metadata = {}) {
       normalizeProtocolInteger(safeMetadata[MprisMetadataKeys.TRACK_NUMBER]) ??
       null,
   });
+}
+
+/**
+ * Builds the stable identity evidence used to compare MPRIS tracks.
+ *
+ * A concrete TrackId is authoritative when both snapshots provide one. Sparse
+ * or temporarily incomplete endpoints can still be compared through URL, title,
+ * and artists so later artwork/album enrichment does not look like a new track.
+ */
+export function createMprisTrackIdentity(metadata = {}) {
+  const safeMetadata =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? metadata
+      : {};
+  const trackId = normalizeMprisTrackId(
+    safeMetadata[MprisMetadataKeys.TRACK_ID],
+  );
+  const fallbackParts = [
+    safeMetadata[MprisMetadataKeys.URL],
+    safeMetadata[MprisMetadataKeys.TITLE],
+    safeMetadata[MprisMetadataKeys.ARTIST],
+  ].map(normalizeIdentityValue);
+  const fallback = fallbackParts.some(Boolean)
+    ? fallbackParts.join("\u0001")
+    : null;
+
+  return Object.freeze({ trackId, fallback });
+}
+
+/** Returns whether an identity snapshot contains usable track evidence. */
+export function hasMprisTrackIdentity(identity) {
+  return Boolean(identity?.trackId || identity?.fallback);
+}
+
+/** Returns whether two identity snapshots represent the same current track. */
+export function areMprisTrackIdentitiesEqual(first, second) {
+  if (!first || !second) return false;
+  if (first.trackId && second.trackId) return first.trackId === second.trackId;
+  return Boolean(
+    first.fallback && second.fallback && first.fallback === second.fallback,
+  );
+}
+
+/** Returns the position-tracker key for one identity snapshot. */
+export function createMprisTrackIdentityKey(identity) {
+  if (!identity) return null;
+  if (identity.trackId) return `track-id:${identity.trackId}`;
+  return identity.fallback ? `metadata:${identity.fallback}` : null;
 }
 
 /** Builds the stable revision used to suppress equivalent Metadata updates. */

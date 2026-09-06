@@ -61,8 +61,11 @@ import {
 } from "./clientPolicy.js";
 import { finiteNumberOr } from "../../shared/format.js";
 import {
+  areMprisTrackIdentitiesEqual,
   createMprisMetadataRevision,
   createMprisTrack,
+  createMprisTrackIdentity,
+  hasMprisTrackIdentity,
   metadataContainsTrack,
   normalizeMprisMetadata,
   normalizeMprisTrackId,
@@ -107,6 +110,8 @@ export default class MprisPlayer {
     this.isInvalid = true;
     this.propertyChangeListeners = new Map();
     this.nextPropertyChangeListenerId = 1;
+    this.trackChangeListeners = new Map();
+    this.nextTrackChangeListenerId = 1;
     this.proxySignalConnections = [];
     this.operationCancellable = new Gio.Cancellable();
     this.pollSourceId = null;
@@ -458,11 +463,30 @@ export default class MprisPlayer {
       return false;
     }
 
+    const previousTrack = this.track;
+    const previousIdentity = createMprisTrackIdentity(this.metadata);
+    const nextIdentity = createMprisTrackIdentity(metadata);
+    const trackChanged =
+      hasMprisTrackIdentity(previousIdentity) &&
+      hasMprisTrackIdentity(nextIdentity) &&
+      !areMprisTrackIdentitiesEqual(previousIdentity, nextIdentity);
+    const previousPlaybackState = trackChanged
+      ? this.positionTracker?.snapshotPlaybackState() ?? null
+      : null;
+
     this.storeNormalizedMetadata(metadata, revision);
     this.positionTracker?.updateTrackContext(
       resolvePlaybackPositionTrackContext(metadata),
     );
     this.emitPropertyChanged(MprisPlayerProperties.METADATA, metadata);
+    if (trackChanged)
+      this.emitTrackChanged(
+        Object.freeze({
+          previousTrack,
+          track: this.track,
+          previousPlaybackState,
+        }),
+      );
     this.reconcileValidity();
     return true;
   }
@@ -1010,6 +1034,42 @@ export default class MprisPlayer {
     return this.positionTracker?.onPositionChanged(callback) ?? (() => {});
   }
 
+  /** Returns one synchronous snapshot of the canonical playback clock state. */
+  snapshotPlaybackState() {
+    return this.positionTracker?.snapshotPlaybackState() ?? null;
+  }
+
+  /** Subscribes to protocol `Seeked` discontinuities normalized by PositionTracker. */
+  onSeeked(callback) {
+    return this.positionTracker?.onSeeked(callback) ?? (() => {});
+  }
+
+  onTrackChanged(callback) {
+    if (this.isDestroyed) return 0;
+    const listenerId = this.nextTrackChangeListenerId++;
+    this.trackChangeListeners.set(listenerId, callback);
+    return listenerId;
+  }
+
+  removeTrackChangeListener(listenerId) {
+    this.trackChangeListeners.delete(listenerId);
+  }
+
+  emitTrackChanged(transition) {
+    for (const callback of [...this.trackChangeListeners.values()]) {
+      try {
+        callback(transition);
+      } catch (error) {
+        logger.errorOnce(
+          `track-listener:${this.busName}`,
+          "Track change listener failed",
+          this.busName,
+          error,
+        );
+      }
+    }
+  }
+
   onPropertyChanged(property, callback) {
     if (this.isDestroyed) return 0;
     const listenerId = this.nextPropertyChangeListenerId++;
@@ -1068,6 +1128,7 @@ export default class MprisPlayer {
     this.proxySignalConnections.length = 0;
     this.positionTracker?.destroy();
     this.propertyChangeListeners.clear();
+    this.trackChangeListeners.clear();
     this.state = null;
     this.track = null;
     this.metadataRefreshPromise = null;

@@ -8,20 +8,17 @@
  * performs deterministic calculations that remain testable outside GNOME Shell.
  */
 
-import { MPRIS_NO_TRACK_PATH, MprisMetadataKeys } from "./protocol.js";
-import { PlaybackStatus } from "./protocol.js";
+import { MprisMetadataKeys, PlaybackStatus } from "./protocol.js";
+import {
+  createMprisTrackIdentity,
+  createMprisTrackIdentityKey,
+} from "./metadata.js";
 
 /** Maximum age of a local projection before an exact Position refresh is requested. */
 export const POSITION_ESTIMATE_MAX_AGE_MICROSECONDS = 30 * 1000 * 1000;
 
 /** Maximum tolerated monotonic/wall-clock divergence before re-anchoring. */
 export const POSITION_CLOCK_DRIFT_TOLERANCE_MICROSECONDS = 2 * 1000 * 1000;
-
-function normalizeIdentityValue(value) {
-  if (Array.isArray(value))
-    return value.map(normalizeIdentityValue).join("\u0000");
-  return String(value ?? "").trim();
-}
 
 /**
  * Returns a valid track duration or null when the endpoint publishes no usable length.
@@ -115,25 +112,11 @@ export function resolvePlaybackPositionTrackContext(metadata) {
     metadata && typeof metadata === "object" && !Array.isArray(metadata)
       ? metadata
       : {};
-  const trackId = normalizeIdentityValue(
-    safeMetadata[MprisMetadataKeys.TRACK_ID],
-  );
-
-  let identity = null;
-  if (trackId && trackId !== MPRIS_NO_TRACK_PATH) {
-    identity = `track-id:${trackId}`;
-  } else {
-    const fallbackParts = [
-      safeMetadata[MprisMetadataKeys.URL],
-      safeMetadata[MprisMetadataKeys.TITLE],
-      safeMetadata[MprisMetadataKeys.ARTIST],
-    ].map(normalizeIdentityValue);
-    if (fallbackParts.some(Boolean))
-      identity = `metadata:${fallbackParts.join("\u0001")}`;
-  }
 
   return Object.freeze({
-    identity,
+    identity: createMprisTrackIdentityKey(
+      createMprisTrackIdentity(safeMetadata),
+    ),
     durationMicroseconds: normalizeTrackDurationMicroseconds(
       safeMetadata[MprisMetadataKeys.LENGTH],
     ),

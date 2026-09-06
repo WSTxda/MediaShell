@@ -571,6 +571,17 @@
       </object>
     </child>
     <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Feedback</property>
+        <child>
+          <object class="AdwSwitchRow" id="sr-panel-track-change-toast-show">
+            <property name="title" translatable="yes">Track Change Toast</property>
+            <property name="subtitle" translatable="yes">Show a toast when a track ends and the next one starts playing</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
       <object class="MediaShellTopBarElementOrderGroup" id="gp-panel-top-bar-element-order"/>
     </child>
   </object>

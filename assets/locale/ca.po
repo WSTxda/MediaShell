@@ -32,79 +32,79 @@ msgstr "Desenvolupat per"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:31
-#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:591 assets/ui/prefs.ui:1001
+#: assets/ui/prefs.ui:276 assets/ui/prefs.ui:602 assets/ui/prefs.ui:1012
 msgid "Shuffle"
 msgstr "Aleatori"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:41
-#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:608 assets/ui/prefs.ui:1002
+#: assets/ui/prefs.ui:286 assets/ui/prefs.ui:619 assets/ui/prefs.ui:1013
 msgid "Seek Backward"
 msgstr "Retrocedeix"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:51
-#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:625 assets/ui/prefs.ui:1003
+#: assets/ui/prefs.ui:296 assets/ui/prefs.ui:636 assets/ui/prefs.ui:1014
 msgid "Previous Track"
 msgstr "Pista anterior"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:61
-#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:642 assets/ui/prefs.ui:1004
+#: assets/ui/prefs.ui:306 assets/ui/prefs.ui:653 assets/ui/prefs.ui:1015
 msgid "Play / Pause"
 msgstr "Reprodueix / Pausa"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:71
-#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:659 assets/ui/prefs.ui:1005
+#: assets/ui/prefs.ui:316 assets/ui/prefs.ui:670 assets/ui/prefs.ui:1016
 msgid "Next Track"
 msgstr "Pista següent"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:81
-#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:676 assets/ui/prefs.ui:1006
+#: assets/ui/prefs.ui:326 assets/ui/prefs.ui:687 assets/ui/prefs.ui:1017
 msgid "Seek Forward"
 msgstr "Avança"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:91
-#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:693 assets/ui/prefs.ui:1007
+#: assets/ui/prefs.ui:336 assets/ui/prefs.ui:704 assets/ui/prefs.ui:1018
 msgid "Repeat"
 msgstr "Repetició"
 
 #: src/prefs/controllers/interactionsPageController.js:73
-#: src/shell/ui/popup/popupVolumeControl.js:143 assets/ui/prefs.ui:710
-#: assets/ui/prefs.ui:1008
+#: src/shell/ui/popup/popupVolumeControl.js:143 assets/ui/prefs.ui:721
+#: assets/ui/prefs.ui:1019
 msgid "Volume Up"
 msgstr "Apuja el volum"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:727 assets/ui/prefs.ui:1009
+#: assets/ui/prefs.ui:738 assets/ui/prefs.ui:1020
 msgid "Volume Down"
 msgstr "Abaixa el volum"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:744 assets/ui/prefs.ui:1010
+#: assets/ui/prefs.ui:755 assets/ui/prefs.ui:1021
 msgid "Popup"
 msgstr "Finestra emergent"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:761 assets/ui/prefs.ui:1011
+#: assets/ui/prefs.ui:772 assets/ui/prefs.ui:1022
 msgid "Preferences"
 msgstr "Preferències"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:778 assets/ui/prefs.ui:1012
+#: assets/ui/prefs.ui:789 assets/ui/prefs.ui:1023
 msgid "Open App"
 msgstr "Obre l'aplicació"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:795 assets/ui/prefs.ui:1013
+#: assets/ui/prefs.ui:806 assets/ui/prefs.ui:1024
 msgid "Quit App"
 msgstr "Tanca l'aplicació"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:812 assets/ui/prefs.ui:1014
+#: assets/ui/prefs.ui:823 assets/ui/prefs.ui:1025
 msgid "Switch App"
 msgstr "Canvia d'aplicació"
 
@@ -139,11 +139,11 @@ msgid "Cancel"
 msgstr "Cancel·la"
 
 #: src/prefs/controllers/interactionsPageController.js:187
-#: assets/ui/prefs.ui:599 assets/ui/prefs.ui:616 assets/ui/prefs.ui:633
-#: assets/ui/prefs.ui:650 assets/ui/prefs.ui:667 assets/ui/prefs.ui:684
-#: assets/ui/prefs.ui:701 assets/ui/prefs.ui:718 assets/ui/prefs.ui:735
-#: assets/ui/prefs.ui:752 assets/ui/prefs.ui:769 assets/ui/prefs.ui:786
-#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:820
+#: assets/ui/prefs.ui:610 assets/ui/prefs.ui:627 assets/ui/prefs.ui:644
+#: assets/ui/prefs.ui:661 assets/ui/prefs.ui:678 assets/ui/prefs.ui:695
+#: assets/ui/prefs.ui:712 assets/ui/prefs.ui:729 assets/ui/prefs.ui:746
+#: assets/ui/prefs.ui:763 assets/ui/prefs.ui:780 assets/ui/prefs.ui:797
+#: assets/ui/prefs.ui:814 assets/ui/prefs.ui:831
 msgid "Set"
 msgstr "Defineix"
 
@@ -162,7 +162,7 @@ msgid "Shortcut already used by %s"
 msgstr "La drecera ja la fa servir %s"
 
 #: src/prefs/controllers/interactionsPageController.js:360
-#: assets/ui/prefs.ui:582
+#: assets/ui/prefs.ui:593
 msgid "Keyboard Shortcuts"
 msgstr "Dreceres de teclat"
 
@@ -203,7 +203,7 @@ msgstr "Netejar la memòria cau?"
 msgid "Cached content will be downloaded again when needed"
 msgstr "El contingut en memòria cau es tornarà a baixar quan sigui necessari"
 
-#: src/prefs/controllers/othersPageController.js:140 assets/ui/prefs.ui:959
+#: src/prefs/controllers/othersPageController.js:140 assets/ui/prefs.ui:970
 msgid "Clear Cache"
 msgstr "Neteja la memòria cau"
 
@@ -320,7 +320,7 @@ msgstr "Atura"
 msgid "Playlist"
 msgstr "Llista de reproducció"
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1000
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1011
 msgid "None"
 msgstr "Cap"
 
@@ -595,97 +595,109 @@ msgstr "Ordre"
 msgid "Order among items in the same top bar section"
 msgstr "Ordre entre els elements de la mateixa secció de la barra superior"
 
+#: assets/ui/prefs.ui:575
+msgid "Feedback"
+msgstr "Comentaris"
+
 #: assets/ui/prefs.ui:578
+msgid "Track Change Toast"
+msgstr "Avís de canvi de pista"
+
+#: assets/ui/prefs.ui:579
+msgid "Show a toast when a track ends and the next one starts playing"
+msgstr "Mostra un avís quan acabi una pista i comenci a reproduir-se la següent"
+
+#: assets/ui/prefs.ui:589
 msgid "Interactions"
 msgstr "Interaccions"
 
-#: assets/ui/prefs.ui:583
+#: assets/ui/prefs.ui:594
 msgid "Assign global keyboard shortcuts to media actions"
 msgstr "Assigna dreceres globals de teclat a les accions multimèdia"
 
-#: assets/ui/prefs.ui:586
+#: assets/ui/prefs.ui:597
 msgid "Shortcut Assignments"
 msgstr "Assignacions de dreceres"
 
-#: assets/ui/prefs.ui:587
+#: assets/ui/prefs.ui:598
 msgid "Configure each keyboard action"
 msgstr "Configura cada acció del teclat"
 
-#: assets/ui/prefs.ui:830
+#: assets/ui/prefs.ui:841
 msgid "Shortcut Overview"
 msgstr "Resum de dreceres"
 
-#: assets/ui/prefs.ui:831
+#: assets/ui/prefs.ui:842
 msgid "View all assigned shortcuts"
 msgstr "Visualitza totes les dreceres assignades"
 
-#: assets/ui/prefs.ui:836
+#: assets/ui/prefs.ui:847
 msgid "View"
 msgstr "Visualitza"
 
-#: assets/ui/prefs.ui:844
+#: assets/ui/prefs.ui:855
 msgid "Reset Keyboard Shortcuts"
 msgstr "Restableix les dreceres de teclat"
 
-#: assets/ui/prefs.ui:855
+#: assets/ui/prefs.ui:866
 msgid "Mouse Actions"
 msgstr "Accions del ratolí"
 
-#: assets/ui/prefs.ui:856
+#: assets/ui/prefs.ui:867
 msgid "Assign actions to clicks and scrolling on the top bar indicator"
 msgstr ""
 "Assigna accions als clics i al desplaçament de l'indicador de la barra "
 "superior"
 
-#: assets/ui/prefs.ui:859
+#: assets/ui/prefs.ui:870
 msgid "Left click / tap"
 msgstr "Clic esquerre / Toc"
 
-#: assets/ui/prefs.ui:865
+#: assets/ui/prefs.ui:876
 msgid "Middle click"
 msgstr "Clic del mig"
 
-#: assets/ui/prefs.ui:871
+#: assets/ui/prefs.ui:882
 msgid "Right click"
 msgstr "Clic dret"
 
-#: assets/ui/prefs.ui:877
+#: assets/ui/prefs.ui:888
 msgid "Double click / tap"
 msgstr "Doble clic / Toc"
 
-#: assets/ui/prefs.ui:883
+#: assets/ui/prefs.ui:894
 msgid "Scroll up"
 msgstr "Desplaça amunt"
 
-#: assets/ui/prefs.ui:889
+#: assets/ui/prefs.ui:900
 msgid "Scroll down"
 msgstr "Desplaça avall"
 
-#: assets/ui/prefs.ui:897
+#: assets/ui/prefs.ui:908
 msgid "Others"
 msgstr "Altres"
 
-#: assets/ui/prefs.ui:901
+#: assets/ui/prefs.ui:912
 msgid "System"
 msgstr "Sistema"
 
-#: assets/ui/prefs.ui:902
+#: assets/ui/prefs.ui:913
 msgid "Control how MediaShell integrates with GNOME"
 msgstr "Controla com s'integra MediaShell amb GNOME"
 
-#: assets/ui/prefs.ui:905
+#: assets/ui/prefs.ui:916
 msgid "Media Controls"
 msgstr "Controls multimèdia"
 
-#: assets/ui/prefs.ui:906
+#: assets/ui/prefs.ui:917
 msgid "Customize system media controls"
 msgstr "Personalitza els controls multimèdia del sistema"
 
-#: assets/ui/prefs.ui:911
+#: assets/ui/prefs.ui:922
 msgid "Private API Integration"
 msgstr "Integració amb API privada"
 
-#: assets/ui/prefs.ui:918
+#: assets/ui/prefs.ui:929
 msgid ""
 "These options rely on private GNOME Shell APIs. GNOME Shell updates or "
 "distribution customizations may cause them to stop working."
@@ -694,19 +706,19 @@ msgstr ""
 "del GNOME Shell o les personalitzacions de la distribució poden fer que "
 "deixin de funcionar."
 
-#: assets/ui/prefs.ui:934
+#: assets/ui/prefs.ui:945
 msgid "Hide Media Controls"
 msgstr "Amaga els controls multimèdia"
 
-#: assets/ui/prefs.ui:935
+#: assets/ui/prefs.ui:946
 msgid "Hide media control banners from the notification center"
 msgstr "Amaga els bàners dels controls multimèdia del centre de notificacions"
 
-#: assets/ui/prefs.ui:940
+#: assets/ui/prefs.ui:951
 msgid "Enhance Media Controls"
 msgstr "Millora els controls multimèdia"
 
-#: assets/ui/prefs.ui:941
+#: assets/ui/prefs.ui:952
 msgid ""
 "Enhance media control banners in the notification center and on the lock "
 "screen"
@@ -714,27 +726,27 @@ msgstr ""
 "Millora els bàners dels controls multimèdia del centre de notificacions i de "
 "la pantalla de bloqueig"
 
-#: assets/ui/prefs.ui:950
+#: assets/ui/prefs.ui:961
 msgid "Cache"
 msgstr "Memòria cau"
 
-#: assets/ui/prefs.ui:951
+#: assets/ui/prefs.ui:962
 msgid "Store content on disk to load it faster"
 msgstr "Desa el contingut al disc perquè es carregui més ràpid"
 
-#: assets/ui/prefs.ui:954
+#: assets/ui/prefs.ui:965
 msgid "Store Album Art"
 msgstr "Desa les caràtules d'àlbum"
 
-#: assets/ui/prefs.ui:964 assets/ui/prefs.ui:966
+#: assets/ui/prefs.ui:975 assets/ui/prefs.ui:977
 msgid "Open Cache Directory"
 msgstr "Obre el directori de la memòria cau"
 
-#: assets/ui/prefs.ui:979
+#: assets/ui/prefs.ui:990
 msgid "Clear"
 msgstr "Buida"
 
-#: assets/ui/prefs.ui:994
+#: assets/ui/prefs.ui:1005
 msgid "Extension Settings"
 msgstr "Configuració de l'extensió"
 

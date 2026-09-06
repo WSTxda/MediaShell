@@ -59,6 +59,8 @@ export default class MprisPositionTracker {
     this.anchorRealMicroseconds = clockSnapshot.realMicroseconds;
     this.positionChangeListeners = new Map();
     this.nextPositionChangeListenerId = 1;
+    this.seekedListeners = new Map();
+    this.nextSeekedListenerId = 1;
     this.positionRefreshGeneration = 0;
     this.positionRefreshPromise = null;
   }
@@ -81,6 +83,24 @@ export default class MprisPositionTracker {
       currentMonotonicMicroseconds: clockSnapshot.monotonicMicroseconds,
       anchorRealMicroseconds: this.anchorRealMicroseconds,
       currentRealMicroseconds: clockSnapshot.realMicroseconds,
+    });
+  }
+
+  /**
+   * Captures the current playback/position state without performing D-Bus I/O.
+   *
+   * Consumers that need to reason about a track replacement can retain this
+   * snapshot before updateTrackContext() resets the position anchor.
+   */
+  snapshotPlaybackState() {
+    const estimate = this.resolveCurrentEstimate();
+    return Object.freeze({
+      trackIdentity: this.trackIdentity,
+      positionMicroseconds: estimate.positionMicroseconds,
+      durationMicroseconds: this.durationMicroseconds,
+      playbackStatus: this.playbackStatus,
+      playbackRate: this.playbackRate,
+      clockDiscontinuity: estimate.clockDiscontinuity,
     });
   }
 
@@ -178,7 +198,10 @@ export default class MprisPositionTracker {
 
   handleSeeked(positionMicroseconds) {
     if (!this.propertiesProxy) return;
-    this.setPositionAnchor(positionMicroseconds, { emit: true });
+    const normalizedPosition = this.setPositionAnchor(positionMicroseconds, {
+      emit: true,
+    });
+    this.emitSeeked(normalizedPosition);
   }
 
   resolveEstimatedPositionMicroseconds() {
@@ -273,6 +296,15 @@ export default class MprisPositionTracker {
     return () => this.positionChangeListeners.delete(listenerId);
   }
 
+  onSeeked(callback) {
+    if (!this.propertiesProxy) return () => {};
+    if (typeof callback !== "function")
+      throw new TypeError("Seeked callback must be a function");
+    const listenerId = this.nextSeekedListenerId++;
+    this.seekedListeners.set(listenerId, callback);
+    return () => this.seekedListeners.delete(listenerId);
+  }
+
   emitPositionChanged(positionMicroseconds) {
     for (const callback of [...this.positionChangeListeners.values()]) {
       try {
@@ -287,10 +319,21 @@ export default class MprisPositionTracker {
     }
   }
 
+  emitSeeked(positionMicroseconds) {
+    for (const callback of [...this.seekedListeners.values()]) {
+      try {
+        callback(positionMicroseconds);
+      } catch (error) {
+        logger.errorOnce("seeked-listener", "Seeked listener failed", error);
+      }
+    }
+  }
+
   destroy() {
     if (!this.propertiesProxy) return;
     this.positionRefreshGeneration++;
     this.positionChangeListeners.clear();
+    this.seekedListeners.clear();
     this.positionRefreshPromise = null;
     this.operationCancellable = null;
     this.propertiesProxy = null;

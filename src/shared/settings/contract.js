@@ -87,6 +87,7 @@ export const SettingsKeys = Object.freeze({
 
   PANEL_POSITION: "panel-position",
   PANEL_INDEX: "panel-index",
+  PANEL_TRACK_CHANGE_TOAST_SHOW: "panel-track-change-toast-show",
 
   INTERACTIONS_SHORTCUT_TOGGLE_SHUFFLE: "interactions-shortcut-toggle-shuffle",
   INTERACTIONS_SHORTCUT_SEEK_BACKWARD: "interactions-shortcut-seek-backward",

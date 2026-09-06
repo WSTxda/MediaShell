@@ -15,12 +15,15 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import { PopupRegions } from "./ui/popup/regions.js";
 import { createLogger } from "../shared/logging/logger.js";
 import MediaRuntime from "./runtime/mediaRuntime.js";
+import TrackTransitionTracker from "./media/playback/trackTransitionTracker.js";
 import InputActionDispatcher from "./input/actionDispatcher.js";
 import GlobalShortcuts from "./input/globalShortcuts.js";
 import NativeControlsIntegration from "./integrations/nativeControls.js";
+import OsdIntegration from "./integrations/osd.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
+import TrackChangeToastSurface from "./ui/feedback/trackChangeToastSurface.js";
 import { clearIconCache } from "./ui/icons.js";
 
 const logger = createLogger("ExtensionController");
@@ -246,6 +249,10 @@ export default class ExtensionController {
         ["position", "index"],
         rebuildPanelPlacement,
       ),
+      this.settings.panel.subscribe(["trackChangeToastShow"], (enabled) => {
+        if (this.sessionProfile === SessionProfiles.USER)
+          this.trackChangeToastSurface?.setEnabled(enabled);
+      }),
       this.settings.nativeControls.subscribe(["hide"], () => {
         if (this.sessionProfile === SessionProfiles.USER)
           this.reconcileNativeControls();
@@ -289,6 +296,20 @@ export default class ExtensionController {
     )
       return;
 
+    if (!this.trackTransitionTracker)
+      this.trackTransitionTracker = new TrackTransitionTracker();
+
+    if (!this.osdIntegration) this.osdIntegration = new OsdIntegration();
+
+    if (!this.trackChangeToastSurface)
+      this.trackChangeToastSurface = new TrackChangeToastSurface({
+        transitionTracker: this.trackTransitionTracker,
+        osdIntegration: this.osdIntegration,
+        enabled: this.settings.panel.trackChangeToastShow,
+      });
+
+    this.trackTransitionTracker.setPlayer(this.mediaRuntime.activePlayer);
+
     if (!this.inputActionDispatcher)
       this.inputActionDispatcher = new InputActionDispatcher({
         mediaRuntime: this.mediaRuntime,
@@ -331,9 +352,12 @@ export default class ExtensionController {
       resolveSessionProfile() !== SessionProfiles.USER ||
       !this.inputActionDispatcher
     ) {
+      this.trackTransitionTracker?.setPlayer(null);
       this.destroyIndicator();
       return;
     }
+
+    this.trackTransitionTracker?.setPlayer(player);
 
     if (!player) {
       this.destroyIndicator();
@@ -378,6 +402,13 @@ export default class ExtensionController {
     this.globalShortcuts = null;
 
     this.destroyIndicator();
+
+    this.trackChangeToastSurface?.destroy();
+    this.trackChangeToastSurface = null;
+
+    this.trackTransitionTracker?.destroy();
+    this.trackTransitionTracker = null;
+    this.osdIntegration = null;
 
     this.inputActionDispatcher?.destroy();
     this.inputActionDispatcher = null;
