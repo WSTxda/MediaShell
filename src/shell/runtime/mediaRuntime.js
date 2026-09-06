@@ -4,13 +4,14 @@
  *
  * Composes the MediaShell media domain for one enabled Shell lifecycle.
  *
- * The runtime owns MPRIS discovery/lifecycle, desktop-identity resolution, and
- * canonical playback execution, artwork acquisition/cache, and desktop identity.
+ * The runtime owns MPRIS discovery/lifecycle and composes canonical playback,
+ * application/window actions, artwork acquisition/cache, and desktop identity.
  * UI surfaces consume these capabilities instead of constructing protocol services
  * or reaching through ExtensionController.
  */
 
 import { createLogger } from "../../shared/logging/logger.js";
+import ApplicationController from "../media/application/applicationController.js";
 import ArtworkService from "../media/artwork/artworkService.js";
 import DesktopAppResolver from "../media/identity/desktopAppResolver.js";
 import PlaybackController from "../media/playback/playbackController.js";
@@ -35,6 +36,7 @@ export default class MediaRuntime {
     this.proxyFactory = null;
     this.registry = null;
     this.playback = new PlaybackController(() => this.activePlayer);
+    this.application = null;
     this.unsubscribeBlockedAppsSetting = mediaSettings.subscribe(
       "blockedAppIds",
       (blockedAppIds) => {
@@ -60,6 +62,14 @@ export default class MediaRuntime {
     try {
       this.proxyFactory = new MprisProxyFactory();
       await this.proxyFactory.init();
+
+      this.application = new ApplicationController({
+        getActivePlayer: () => this.activePlayer,
+        desktopAppResolver: this.identity,
+        playbackController: this.playback,
+        createBusDaemonProxy: (cancellable) =>
+          this.proxyFactory.createBusDaemonProxy(cancellable),
+      });
 
       this.registry = new MprisPlayerRegistry(
         this.proxyFactory,
@@ -116,6 +126,9 @@ export default class MediaRuntime {
 
     this.registry?.destroy();
     this.registry = null;
+
+    this.application?.destroy();
+    this.application = null;
 
     this.proxyFactory?.destroy();
     this.proxyFactory = null;

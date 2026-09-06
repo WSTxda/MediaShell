@@ -29,6 +29,7 @@ import {
   SettingsKeys,
 } from "../src/shared/settings/contract.js";
 import { InputActions } from "../src/shared/input/types.js";
+import InputActionDispatcher from "../src/shell/input/actionDispatcher.js";
 import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
 import {
   PopupPlaybackControlRegions,
@@ -203,6 +204,33 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
       },
     ],
   ]);
+});
+
+test("application input actions use the MediaRuntime application capability", async () => {
+  const calls = [];
+  const activePlayer = { id: "active" };
+  const mediaRuntime = {
+    playback: {
+      activePlayer,
+      raise() {
+        calls.push("playback-raise");
+      },
+    },
+    application: {
+      raise(player) {
+        calls.push(["application-raise", player]);
+        return Promise.resolve("raised");
+      },
+    },
+    switchPlayer() {
+      return false;
+    },
+  };
+  const dispatcher = new InputActionDispatcher({ mediaRuntime });
+
+  assert.equal(await dispatcher.execute(InputActions.RAISE_APP), "raised");
+  assert.deepEqual(calls, [["application-raise", activePlayer]]);
+  dispatcher.destroy();
 });
 
 test("surface policies and popup layout stay consistent", async () => {

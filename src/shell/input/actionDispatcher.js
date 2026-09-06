@@ -111,7 +111,7 @@ export default class InputActionDispatcher {
           this.emitAction(InputActionPhases.COMPLETED, action);
           return;
         case InputActions.RAISE_APP:
-          result = this.mediaRuntime.playback.raise(player);
+          result = this.mediaRuntime.application.raise(player);
           break;
         case InputActions.QUIT_APP:
           result = this.mediaRuntime.playback.quit(player);
