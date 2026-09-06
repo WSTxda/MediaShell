@@ -574,9 +574,38 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Feedback</property>
         <child>
-          <object class="AdwSwitchRow" id="sr-panel-track-change-toast-show">
+          <object class="AdwActionRow" id="ar-panel-track-change-toast-show">
             <property name="title" translatable="yes">Track Change Toast</property>
             <property name="subtitle" translatable="yes">Show a toast when a track ends and the next one starts playing</property>
+            <child type="suffix">
+              <object class="GtkMenuButton" id="mb-panel-track-change-toast-info">
+                <property name="icon-name">info-outline-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Metadata Limitations</property>
+                <property name="has-frame">false</property>
+                <property name="valign">center</property>
+                <property name="popover">
+                  <object class="GtkPopover">
+                    <property name="child">
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">Some browsers and apps may update metadata late or incompletely. Feedback may be delayed, show stale information, or not appear.</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">42</property>
+                        <property name="xalign">0</property>
+                        <property name="margin-top">12</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin-start">12</property>
+                        <property name="margin-end">12</property>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child type="suffix">
+              <object class="GtkSwitch" id="sw-panel-track-change-toast-show">
+                <property name="valign">center</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

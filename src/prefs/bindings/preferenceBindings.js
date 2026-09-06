@@ -175,7 +175,7 @@ const PANEL_BINDINGS = Object.freeze([
   [SettingsKeys.PANEL_INDEX, "sp-panel-index", "value"],
   [
     SettingsKeys.PANEL_TRACK_CHANGE_TOAST_SHOW,
-    "sr-panel-track-change-toast-show",
+    "sw-panel-track-change-toast-show",
     "active",
   ],
 ]);

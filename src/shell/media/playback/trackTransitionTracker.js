@@ -175,8 +175,8 @@ function createCompletionEvidence(
 function isNearEndEvidenceExpired(evidence, nowMicroseconds) {
   return Boolean(
     evidence?.level === TrackCompletionEvidence.NEAR_END &&
-      Number.isFinite(evidence.expiresAtMicroseconds) &&
-      Number(nowMicroseconds) >= evidence.expiresAtMicroseconds,
+    Number.isFinite(evidence.expiresAtMicroseconds) &&
+    Number(nowMicroseconds) >= evidence.expiresAtMicroseconds,
   );
 }
 
@@ -187,9 +187,9 @@ function hasDescriptiveTrackMetadata(track) {
   const lengthMicroseconds = Number(track?.lengthMicroseconds);
   return Boolean(
     (Number.isFinite(lengthMicroseconds) && lengthMicroseconds > 0) ||
-      track?.artists?.length > 0 ||
-      track?.album ||
-      track?.albumArtists?.length > 0,
+    track?.artists?.length > 0 ||
+    track?.album ||
+    track?.albumArtists?.length > 0,
   );
 }
 
@@ -615,7 +615,8 @@ export default class TrackTransitionTracker {
     }
 
     context.latestTrack = player.track ?? context.latestTrack;
-    if (context.deadlineTimeoutId !== null) this.scheduleMetadataSettle(context);
+    if (context.deadlineTimeoutId !== null)
+      this.scheduleMetadataSettle(context);
   }
 
   isCurrentMetadataTrack() {
@@ -638,7 +639,8 @@ export default class TrackTransitionTracker {
     const player = this.player;
     if (!context || !context.active || context !== this.pendingTransition)
       return;
-    if (!player || player !== context.player || !context.metadataSettled) return;
+    if (!player || player !== context.player || !context.metadataSettled)
+      return;
 
     const currentIdentity = createMprisTrackIdentity(player.metadata);
     if (!areMprisTrackIdentitiesEqual(context.identity, currentIdentity)) {
