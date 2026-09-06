@@ -5,6 +5,10 @@
     <method name="ListNames">
       <arg direction="out" type="as"/>
     </method>
+    <method name="GetConnectionUnixProcessID">
+      <arg direction="in" type="s"/>
+      <arg direction="out" type="u"/>
+    </method>
     <signal name="NameOwnerChanged">
       <arg type="s"/>
       <arg type="s"/>

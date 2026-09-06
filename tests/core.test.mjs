@@ -33,6 +33,11 @@ import {
 } from "../src/shell/media/identity/appIdentity.js";
 import { readCachedResolvedApp } from "../src/shell/media/identity/appInfo.js";
 import {
+  PlayerWindowEvidence,
+  chooseRecentPwaWindowCandidate,
+  resolvePwaWindowEvidence,
+} from "../src/shell/media/application/windowIdentity.js";
+import {
   buildBrowserIdentityAliases,
   extractChromiumPwaAppIds,
   extractChromiumPwaCommandLineAppIds,
@@ -421,6 +426,62 @@ test("identity and search stay generic, normalized, and service-agnostic", async
             },
           ]),
           null,
+        );
+      },
+    ],
+    [
+      "PWA window identity",
+      () => {
+        assert.equal(
+          resolvePwaWindowEvidence(PWA_ID, {
+            trackedDesktopId: `org.example.Browser-${PWA_ID}-Default.desktop`,
+          }),
+          PlayerWindowEvidence.TRACKED_APP,
+        );
+        assert.equal(
+          resolvePwaWindowEvidence(PWA_ID, {
+            wmClassInstance: `crx_${PWA_ID}`,
+          }),
+          PlayerWindowEvidence.WINDOW_CLASS,
+        );
+        assert.equal(
+          resolvePwaWindowEvidence(PWA_ID, {
+            gtkApplicationId: `org.example.${PWA_ID}`,
+          }),
+          PlayerWindowEvidence.GTK_APPLICATION_ID,
+        );
+        assert.equal(
+          resolvePwaWindowEvidence(PWA_ID, {
+            wmClass: `crx_${PWA_ID}`,
+            trackedDesktopId:
+              "org.example.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.desktop",
+          }),
+          null,
+        );
+        assert.equal(
+          resolvePwaWindowEvidence(PWA_ID, {
+            wmClass: "Chromium",
+            gtkApplicationId: "org.chromium.Chromium",
+          }),
+          null,
+        );
+
+        const newest = { id: "new", userTime: 200, stableSequence: 1 };
+        assert.equal(
+          chooseRecentPwaWindowCandidate([
+            { id: "old", userTime: 100, stableSequence: 9 },
+            newest,
+          ]),
+          newest,
+        );
+        const stableTieBreaker = {
+          id: "later",
+          userTime: 200,
+          stableSequence: 3,
+        };
+        assert.equal(
+          chooseRecentPwaWindowCandidate([newest, stableTieBreaker]),
+          stableTieBreaker,
         );
       },
     ],
