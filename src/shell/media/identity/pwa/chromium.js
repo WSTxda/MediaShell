@@ -63,7 +63,7 @@ function resolveBrowserIdentityApp(mediaIdentity, desktopApps) {
   );
 }
 
-/** Resolves a Chromium PWA to Shell.App/Gio.AppInfo without fuzzy matching. */
+/** Resolves a Chromium PWA to an exact Shell.App without fuzzy matching. */
 export function resolveChromiumShellApp(
   appSystem,
   identity,
@@ -104,7 +104,12 @@ export function resolveChromiumShellApp(
   const appId = readAppStringSafely(() => match?.get_id?.());
   if (!appId) return null;
 
-  return appSystem.lookup_app(appId) ?? desktopAppsById.get(appId) ?? null;
+  // `resolveShellApp()` is a Shell.App contract. An installed Gio.AppInfo can
+  // identify the correct desktop file before Shell.AppSystem has associated it,
+  // but it must not masquerade as a running Shell.App. The presentation path can
+  // still use resolveChromiumAppInfo() while a later bounded retry resolves the
+  // real Shell.App.
+  return appSystem.lookup_app(appId) ?? null;
 }
 
 /** Resolves a Chromium PWA to Gio.AppInfo when Shell.App lookup misses. */

@@ -38,6 +38,7 @@ import {
   resolveChromiumAppInfo,
   resolveChromiumShellApp,
 } from "./pwa/chromium.js";
+import { resolveChromiumPwaAppId } from "../../../shared/identity/browser.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 
 const logger = createLogger("DesktopAppResolver");
@@ -174,18 +175,30 @@ export default class DesktopAppResolver {
     try {
       const appSystem = Shell.AppSystem.get_default();
       let runningApps = null;
-      const chromiumPwaApp = resolveChromiumShellApp(
-        appSystem,
+      const chromiumPwaAppId = resolveChromiumPwaAppId({
         identity,
         desktopEntry,
         busName,
-      );
-      if (chromiumPwaApp)
-        return storeBoundedCacheValue(
-          this.#shellAppCache,
-          appCacheKey,
-          chromiumPwaApp,
+      });
+      if (chromiumPwaAppId) {
+        const chromiumPwaApp = resolveChromiumShellApp(
+          appSystem,
+          identity,
+          desktopEntry,
+          busName,
         );
+        if (chromiumPwaApp)
+          return storeBoundedCacheValue(
+            this.#shellAppCache,
+            appCacheKey,
+            chromiumPwaApp,
+          );
+
+        // An unambiguous PWA identity must not be downgraded into the host
+        // browser and cached as if it were the same application. Shell.App may
+        // legitimately appear slightly later than its desktop metadata.
+        return null;
+      }
 
       const appIdCandidates = buildDesktopAppIdCandidates(
         identity,
