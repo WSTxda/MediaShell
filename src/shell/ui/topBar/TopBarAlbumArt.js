@@ -76,6 +76,7 @@ export default class TopBarAlbumArt {
       metadata: this.mediaApp.metadata,
       ...geometry,
       cacheEnabled: this.extensionController.albumArtCacheEnabled,
+      fetchHighRes: this.extensionController.albumArtFetchHighRes,
     });
 
     this.syncAlbumArtGeometry(geometry.width, geometry.radius);
@@ -186,6 +187,7 @@ export default class TopBarAlbumArt {
       const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
         albumArtLoader: this.albumArtLoader,
         ...request,
+        fetchHighResEnabled: request.fetchHighRes,
         loadCancellable,
       });
       const pixbuf = await decodeAlbumArtSource({

@@ -11,6 +11,11 @@ import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 
 import { createLogger } from "../../shared/utils/log.js";
+import {
+  isBrowserBusName,
+  isTempThumbnailUri,
+  rewriteCdnArtworkUrl,
+} from "../../shared/utils/onlineArtwork.js";
 import { isCancellationError } from "./errors.js";
 
 const logger = createLogger("albumArtSource");
@@ -27,13 +32,54 @@ export async function resolveAlbumArtSource({
   albumArtUri,
   trackUri,
   busName,
+  title,
+  artist,
   cacheEnabled,
+  fetchHighResEnabled = true,
   loadCancellable,
 }) {
   let fallbackIcon = null;
+  let effectiveArtUri = albumArtUri;
+
+  if (effectiveArtUri?.startsWith("http")) {
+    effectiveArtUri = rewriteCdnArtworkUrl(effectiveArtUri);
+  }
+
+  // When high-res fetching is enabled, look up high-res artwork for browser
+  // temporary thumbnails (e.g. Chromium 150px /tmp files) or missing MPRIS artwork.
+  if (
+    fetchHighResEnabled &&
+    title &&
+    (isBrowserBusName(busName) || isTempThumbnailUri(effectiveArtUri))
+  ) {
+    const isLocalOrTemp =
+      !effectiveArtUri ||
+      effectiveArtUri.startsWith("file://") ||
+      isTempThumbnailUri(effectiveArtUri);
+
+    if (isLocalOrTemp) {
+      const onlineUrl = await albumArtLoader.searchOnlineArtwork(
+        title,
+        artist,
+        loadCancellable,
+      );
+      if (onlineUrl) {
+        const onlineSource = await tryLoadAlbumArt(
+          albumArtLoader,
+          onlineUrl,
+          cacheEnabled,
+          loadCancellable,
+          "online album art",
+          busName,
+        );
+        if (onlineSource) return { albumArtSource: onlineSource, fallbackIcon };
+      }
+    }
+  }
+
   let albumArtSource = await tryLoadAlbumArt(
     albumArtLoader,
-    albumArtUri,
+    effectiveArtUri,
     cacheEnabled,
     loadCancellable,
     "MPRIS album art",

@@ -289,6 +289,11 @@ const OTHERS_BINDINGS = Object.freeze([
     "active",
   ],
   [
+    SettingsKeys.ALBUM_ART_FETCH_HIGH_RES,
+    "sr-album-art-fetch-high-res",
+    "active",
+  ],
+  [
     SettingsKeys.ALBUM_ART_CACHE_ENABLED,
     "sr-album-art-cache-enabled",
     "active",

@@ -11,6 +11,7 @@
  */
 
 import { MprisMetadataKeys } from "../constants/mpris.js";
+import { formatArtistNames } from "./metadata.js";
 
 function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -48,7 +49,7 @@ export function calculateAlbumArtCornerRadius(size, percentage) {
  * Builds one immutable snapshot for an album-art source request.
  *
  * @param {object} input - Current app, metadata, presentation geometry, and cache state.
- * @returns {{key: string, busName: string, albumArtUri: string, trackUri: string, width: number, radius: number, cacheEnabled: boolean}}
+ * @returns {{key: string, busName: string, albumArtUri: string, trackUri: string, title: string, artist: string, width: number, radius: number, cacheEnabled: boolean, fetchHighRes: boolean}}
  *   Immutable request descriptor.
  */
 export function createAlbumArtRequest({
@@ -57,6 +58,7 @@ export function createAlbumArtRequest({
   width,
   radius,
   cacheEnabled,
+  fetchHighRes = false,
 }) {
   const safeBusName = normalizeText(busName);
   const safeMetadata =
@@ -70,20 +72,33 @@ export function createAlbumArtRequest({
   );
   const albumArtUri = normalizeText(safeMetadata[MprisMetadataKeys.ART_URL]);
   const trackUri = normalizeText(safeMetadata[MprisMetadataKeys.URL]);
+  const title = normalizeText(safeMetadata[MprisMetadataKeys.TITLE]);
+  const artist = formatArtistNames(safeMetadata[MprisMetadataKeys.ARTIST]);
   const isCacheEnabled = Boolean(cacheEnabled);
+  const isFetchHighRes = Boolean(fetchHighRes);
   // Source identity is intentionally independent from presentation geometry and
   // persistent-cache policy. Radius, panel geometry, or cache changes can then
   // reuse an already decoded image instead of restarting source I/O.
-  const key = [safeBusName, albumArtUri, trackUri].join("\u0000");
+  const key = [
+    safeBusName,
+    albumArtUri,
+    trackUri,
+    title,
+    artist,
+    isFetchHighRes ? "1" : "0",
+  ].join("\u0000");
 
   return Object.freeze({
     key,
     busName: safeBusName,
     albumArtUri,
     trackUri,
+    title,
+    artist,
     width: safeWidth,
     radius: safeRadius,
     cacheEnabled: isCacheEnabled,
+    fetchHighRes: isFetchHighRes,
   });
 }
 

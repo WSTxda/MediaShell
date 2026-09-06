@@ -107,6 +107,7 @@ export const SettingsKeys = Object.freeze({
 
   GNOME_SHELL_HIDE_MEDIA_CONTROLS: "gnome-shell-hide-media-controls",
   ALBUM_ART_CACHE_ENABLED: "album-art-cache-enabled",
+  ALBUM_ART_FETCH_HIGH_RES: "album-art-fetch-high-res",
   BLOCKED_APPS: "blocked-apps",
 });
 

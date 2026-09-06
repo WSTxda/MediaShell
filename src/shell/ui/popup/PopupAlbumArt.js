@@ -99,6 +99,7 @@ export default class PopupAlbumArt {
       metadata: this.mediaApp.metadata,
       ...geometry,
       cacheEnabled: this.extensionController.albumArtCacheEnabled,
+      fetchHighRes: this.extensionController.albumArtFetchHighRes,
     });
 
     this.ensureActor();
@@ -130,6 +131,7 @@ export default class PopupAlbumArt {
       const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
         albumArtLoader: this.albumArtLoader,
         ...request,
+        fetchHighResEnabled: request.fetchHighRes,
         loadCancellable,
       });
       const pixbuf = await decodeAlbumArtSource({

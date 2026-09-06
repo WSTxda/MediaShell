@@ -333,6 +333,11 @@ export const SETTINGS_SPEC = Object.freeze({
     property: "albumArtCacheEnabled",
     read: "get_boolean",
   },
+  [SettingsKeys.ALBUM_ART_FETCH_HIGH_RES]: {
+    property: "albumArtFetchHighRes",
+    read: "get_boolean",
+    impact: WidgetFlags.POPUP_ALBUM_ART | WidgetFlags.TOP_BAR_ALBUM_ART,
+  },
   [SettingsKeys.BLOCKED_APPS]: {
     property: "blockedAppIds",
     read: "get_strv",

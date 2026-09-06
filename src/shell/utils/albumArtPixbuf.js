@@ -25,6 +25,7 @@ export function cropPixbufToSquare(pixbuf, size) {
   const sourceWidth = pixbuf.get_width();
   const sourceHeight = pixbuf.get_height();
   if (sourceWidth <= 0 || sourceHeight <= 0) return pixbuf;
+  if (sourceWidth === targetSize && sourceHeight === targetSize) return pixbuf;
 
   const scale = Math.max(targetSize / sourceWidth, targetSize / sourceHeight);
   const scaledWidth = Math.max(targetSize, Math.round(sourceWidth * scale));
@@ -32,7 +33,7 @@ export function cropPixbufToSquare(pixbuf, size) {
   const scaled = pixbuf.scale_simple(
     scaledWidth,
     scaledHeight,
-    GdkPixbuf.InterpType.BILINEAR,
+    GdkPixbuf.InterpType.HYPER,
   );
   if (!scaled) return pixbuf;
 

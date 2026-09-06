@@ -910,6 +910,18 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Artwork</property>
+        <property name="description" translatable="yes">Configure cover art resolution and retrieval</property>
+        <child>
+          <object class="AdwSwitchRow" id="sr-album-art-fetch-high-res">
+            <property name="title" translatable="yes">Fetch high-resolution artwork</property>
+            <property name="subtitle" translatable="yes">Look up sharp album covers for web browsers and low-resolution sources</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Cache</property>
         <property name="description" translatable="yes">Store content on disk to load it faster</property>
         <child>

@@ -27,6 +27,10 @@ import {
 import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { selectAlbumArtCacheEvictions } from "../../shared/utils/albumArt.js";
 import { createLogger } from "../../shared/utils/log.js";
+import {
+  buildOnlineArtworkSearchUrl,
+  extractHighResArtworkUrlFromSearchResult,
+} from "../../shared/utils/onlineArtwork.js";
 import { isCancellationError } from "../utils/errors.js";
 
 Gio._promisify(Gio.File.prototype, "read_async", "read_finish");
@@ -138,6 +142,8 @@ export default class AlbumArtLoader {
   #cacheTouchGeneration = 0;
   #cacheTouchPromises = new Map();
   #cacheWriteCancellable = new Gio.Cancellable();
+  #onlineArtworkUrlCache = new Map();
+  #onlineArtworkSearchRequests = new Map();
   #remoteAlbumArtRequests = new Map();
   #session = null;
 
@@ -696,6 +702,99 @@ export default class AlbumArtLoader {
     };
   }
 
+  async searchOnlineArtwork(title, artist, cancellable = null) {
+    if (!this.#cacheWriteCancellable) return null;
+    const searchUrl = buildOnlineArtworkSearchUrl(title, artist);
+    if (!searchUrl) return null;
+
+    if (this.#onlineArtworkUrlCache.has(searchUrl)) {
+      return this.#onlineArtworkUrlCache.get(searchUrl);
+    }
+
+    const existingRequest = this.#onlineArtworkSearchRequests.get(searchUrl);
+    if (existingRequest) {
+      return existingRequest;
+    }
+
+    const searchPromise = (async () => {
+      const searchCancellable = new Gio.Cancellable();
+      let parentSignalId = null;
+      if (cancellable) {
+        if (cancellable.is_cancelled()) return null;
+        parentSignalId = cancellable.connect(() => searchCancellable.cancel());
+      }
+      const timeoutId = GLib.timeout_add_seconds(
+        GLib.PRIORITY_DEFAULT,
+        3,
+        () => {
+          searchCancellable.cancel();
+          return GLib.SOURCE_REMOVE;
+        },
+      );
+
+      let responseStream = null;
+      try {
+        const uri = parseAlbumArtUri(searchUrl);
+        if (!uri) return null;
+
+        const message = new Soup.Message({ method: "GET", uri });
+        responseStream = await this.#getSession().send_async(
+          message,
+          GLib.PRIORITY_DEFAULT,
+          searchCancellable,
+        );
+        const status = message.get_status();
+        if (status < 200 || status >= 300) return null;
+
+        const chunks = [];
+        let totalBytes = 0;
+        while (totalBytes < 65536) {
+          const bytes = await responseStream.read_bytes_async(
+            8192,
+            GLib.PRIORITY_DEFAULT,
+            searchCancellable,
+          );
+          const size = bytes.get_size();
+          if (size === 0) break;
+          totalBytes += size;
+          chunks.push(bytes);
+        }
+
+        if (totalBytes === 0) return null;
+        const gbytes = concatenateByteChunks(chunks, totalBytes);
+        const jsonText = new TextDecoder().decode(gbytes.get_data());
+        const highResUrl = extractHighResArtworkUrlFromSearchResult(jsonText);
+
+        if (highResUrl) {
+          if (this.#onlineArtworkUrlCache.size > 100) {
+            const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
+            this.#onlineArtworkUrlCache.delete(oldestKey);
+          }
+          this.#onlineArtworkUrlCache.set(searchUrl, highResUrl);
+        }
+        return highResUrl;
+      } catch (error) {
+        if (cancellable?.is_cancelled()) throw error;
+        logger.debugOnce(
+          `online-search:${searchUrl}`,
+          "Online artwork search did not complete",
+          error,
+        );
+        return null;
+      } finally {
+        GLib.source_remove(timeoutId);
+        if (parentSignalId !== null && cancellable) {
+          cancellable.disconnect(parentSignalId);
+        }
+        await this.#closeInputStreamAsync(responseStream);
+        this.#onlineArtworkSearchRequests.delete(searchUrl);
+      }
+    })();
+
+    this.#onlineArtworkSearchRequests.set(searchUrl, searchPromise);
+    return searchPromise;
+  }
+
   async removeCachedAlbumArt(albumArtUri, cancellable = null) {
     if (!albumArtUri) return;
 
@@ -720,6 +819,8 @@ export default class AlbumArtLoader {
     for (const request of this.#remoteAlbumArtRequests.values())
       request.cancellable.cancel();
     this.#remoteAlbumArtRequests.clear();
+    this.#onlineArtworkSearchRequests.clear();
+    this.#onlineArtworkUrlCache.clear();
     this.#session?.abort();
     this.#session = null;
     cacheWriteCancellable.cancel();
