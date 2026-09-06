@@ -1,13 +1,13 @@
 /**
- * @file trackChangeToastSurface.js
- * @module shell.ui.feedback.trackChangeToastSurface
+ * @file trackChangeToast.js
+ * @module shell.ui.toast.trackChangeToast
  *
- * Owns the optional track-change feedback surface for the user session.
+ * Presents natural track-change feedback through the native Shell OSD.
  *
- * Transition detection and metadata stabilization belong to
- * TrackTransitionTracker, while native OSD compatibility belongs to the Shell
- * OSD integration. This surface only decides whether a completed transition
- * should be presented.
+ * Track-transition classification and Metadata stabilization belong to the
+ * reusable TrackTransitionTracker. This UI owner applies the feature setting,
+ * filters MediaShell-commanded replacements, and builds the OSD payload from
+ * the immutable Track snapshot carried by a completed transition.
  */
 
 import Gio from "gi://Gio";
@@ -38,8 +38,8 @@ function preferSymbolicAppIcon(appIcon) {
   ]);
 }
 
-/** Presents natural completed track transitions as a native GNOME Shell OSD. */
-export default class TrackChangeToastSurface {
+/** Owns the optional natural track-change OSD for one user session. */
+export default class TrackChangeToast {
   constructor({
     transitionTracker,
     desktopAppResolver,
@@ -47,15 +47,11 @@ export default class TrackChangeToastSurface {
     enabled = false,
   } = {}) {
     if (!transitionTracker)
-      throw new TypeError(
-        "TrackChangeToastSurface requires TrackTransitionTracker",
-      );
+      throw new TypeError("TrackChangeToast requires TrackTransitionTracker");
     if (!desktopAppResolver)
-      throw new TypeError(
-        "TrackChangeToastSurface requires DesktopAppResolver",
-      );
+      throw new TypeError("TrackChangeToast requires DesktopAppResolver");
     if (typeof showOsd !== "function")
-      throw new TypeError("TrackChangeToastSurface requires showOsd");
+      throw new TypeError("TrackChangeToast requires showOsd");
 
     this.transitionTracker = transitionTracker;
     this.desktopAppResolver = desktopAppResolver;
@@ -78,7 +74,11 @@ export default class TrackChangeToastSurface {
     )
       return;
 
-    const track = transition.track;
+    this.show(transition);
+  }
+
+  show(transition) {
+    const track = transition?.track;
     const title = typeof track?.title === "string" ? track.title.trim() : "";
     if (!title) return;
 

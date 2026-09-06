@@ -1,28 +1,26 @@
 /**
- * @file mediaActionFeedback.js
- * @module shell.ui.feedback.mediaActionFeedback
+ * @file mediaActionToast.js
+ * @module shell.ui.toast.mediaActionToast
  *
- * Presents native OSD feedback for MediaShell input actions.
+ * Presents MediaShell InputAction feedback through the native Shell OSD.
  *
- * Only actions routed through InputActionDispatcher reach this owner, so global
- * shortcuts and Top Bar pointer gestures receive feedback while Popup, Top Bar
- * playback buttons, and private native controls keep their direct
- * PlaybackController path. Track actions correlate against semantic transitions;
- * PlayPause waits for canonical PlaybackStatus instead of predicting the result.
+ * Only InputActionDispatcher events reach this owner, so global shortcuts and
+ * Top Bar pointer gestures receive feedback while Popup playback buttons and
+ * private native controls keep their direct PlaybackController path. Track
+ * actions correlate against semantic transitions; PlayPause waits for canonical
+ * PlaybackStatus instead of predicting the result.
  */
 
 import GLib from "gi://GLib";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
-import {
-  PLAYBACK_ACTION_BY_INPUT_ACTION,
-  VOLUME_STEP,
-} from "../../../shared/input/actions.js";
+import { VOLUME_STEP } from "../../../shared/input/actions.js";
 import { InputActions } from "../../../shared/input/types.js";
 import {
   PlaybackControlDefinitions,
   RELATIVE_SEEK_SECONDS,
 } from "../../../shared/playback/controls.js";
+import { InputActionPhases } from "../../input/actionDispatcher.js";
 import {
   resolveNextLoopStatus,
   resolveVolumeTarget,
@@ -114,36 +112,43 @@ function resolveImmediatePresentation(inputAction, player) {
   }
 }
 
-function resolveTrackAction(inputAction) {
+function resolveTrackAction(inputAction, playbackAction) {
   if (inputAction === InputActions.PREVIOUS_TRACK)
     return {
-      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      playbackAction,
       iconName: PlaybackControlDefinitions.PREVIOUS.icons.DEFAULT,
     };
   if (inputAction === InputActions.NEXT_TRACK)
     return {
-      playbackAction: PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction],
+      playbackAction,
       iconName: PlaybackControlDefinitions.NEXT.icons.DEFAULT,
     };
   return null;
 }
 
-/** Owns transient visual feedback for keyboard and Top Bar pointer actions. */
-export default class MediaActionFeedback {
-  constructor({ transitionTracker, showOsd } = {}) {
+/** Owns native OSD feedback for keyboard and Top Bar pointer InputActions. */
+export default class MediaActionToast {
+  constructor({ transitionTracker, inputActions, showOsd } = {}) {
     if (!transitionTracker)
-      throw new TypeError("MediaActionFeedback requires TrackTransitionTracker");
+      throw new TypeError("MediaActionToast requires TrackTransitionTracker");
+    if (!inputActions)
+      throw new TypeError("MediaActionToast requires InputActionDispatcher");
     if (typeof showOsd !== "function")
-      throw new TypeError("MediaActionFeedback requires showOsd");
+      throw new TypeError("MediaActionToast requires showOsd");
 
     this.transitionTracker = transitionTracker;
+    this.inputActions = inputActions;
     this.showOsd = showOsd;
     this.player = null;
     this.generation = 0;
+    this.pendingImmediateActions = [];
     this.pendingTrackActions = [];
     this.pendingPlaybackStatusActions = [];
     this.unsubscribeTransition = transitionTracker.onTransition((transition) =>
       this.handleTransition(transition),
+    );
+    this.unsubscribeInputAction = inputActions.onAction((event) =>
+      this.handleInputAction(event),
     );
   }
 
@@ -155,37 +160,64 @@ export default class MediaActionFeedback {
     this.generation++;
   }
 
-  begin(inputAction, player, commandOrigin = null) {
+  handleInputAction({ phase, action, result }) {
+    if (phase === InputActionPhases.STARTED) {
+      this.begin(action);
+      return;
+    }
+    if (phase !== InputActionPhases.COMPLETED) return;
+
+    const context = this.findContextByInputAction(action);
+    if (context) this.complete(context, result);
+  }
+
+  begin(action) {
+    const inputAction = action?.inputAction;
+    const player = action?.player;
     if (!player || player !== this.player) return null;
 
-    const trackAction = resolveTrackAction(inputAction);
+    const trackAction = resolveTrackAction(inputAction, action.playbackAction);
     if (trackAction)
-      return this.createTrackActionContext(player, trackAction, commandOrigin);
+      return this.createTrackActionContext(player, trackAction, action.origin);
 
     if (inputAction === InputActions.PLAY_PAUSE)
-      return this.createPlaybackStatusContext(player);
+      return this.createPlaybackStatusContext(player, action.origin);
 
     const presentation = resolveImmediatePresentation(inputAction, player);
     return presentation
-      ? {
-          kind: "immediate",
-          player,
-          generation: this.generation,
-          presentation,
-        }
+      ? this.createImmediateContext(player, presentation, action.origin)
       : null;
   }
 
-  createTrackActionContext(
-    player,
-    { playbackAction, iconName },
-    commandOrigin,
-  ) {
+  createImmediateContext(player, presentation, origin) {
+    const context = {
+      kind: "immediate",
+      player,
+      origin,
+      generation: this.generation,
+      presentation,
+      timeoutId: null,
+      active: true,
+    };
+    context.timeoutId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      FEEDBACK_CONFIRMATION_TIMEOUT_MS,
+      () => {
+        context.timeoutId = null;
+        this.removeImmediateAction(context);
+        return GLib.SOURCE_REMOVE;
+      },
+    );
+    this.pendingImmediateActions.push(context);
+    return context;
+  }
+
+  createTrackActionContext(player, { playbackAction, iconName }, origin) {
     const context = {
       kind: "track",
       player,
+      origin,
       playbackAction,
-      commandOrigin,
       iconName,
       generation: this.generation,
       operationSucceeded: false,
@@ -206,10 +238,11 @@ export default class MediaActionFeedback {
     return context;
   }
 
-  createPlaybackStatusContext(player) {
+  createPlaybackStatusContext(player, origin) {
     const context = {
       kind: "playback-status",
       player,
+      origin,
       initialPlaybackStatus: player.playbackStatus,
       generation: this.generation,
       statusChanged: false,
@@ -256,6 +289,7 @@ export default class MediaActionFeedback {
 
     if (context.kind === "immediate") {
       this.show(context.presentation);
+      this.removeImmediateAction(context);
       return;
     }
 
@@ -283,7 +317,7 @@ export default class MediaActionFeedback {
         !candidate.transition &&
         candidate.player === transition.player &&
         candidate.playbackAction === transition.command.action &&
-        candidate.commandOrigin === transition.command.origin,
+        candidate.origin === transition.command.origin,
     );
     if (!context) return;
 
@@ -315,14 +349,40 @@ export default class MediaActionFeedback {
   }
 
   show(presentation) {
-    if (!presentation?.iconName) return;
     this.showOsd(presentation);
   }
 
+  findContextByInputAction(action) {
+    return (
+      this.pendingImmediateActions.find(
+        (context) => context.active && context.origin === action?.origin,
+      ) ??
+      this.pendingTrackActions.find(
+        (context) => context.active && context.origin === action?.origin,
+      ) ??
+      this.pendingPlaybackStatusActions.find(
+        (context) => context.active && context.origin === action?.origin,
+      ) ??
+      null
+    );
+  }
+
   removeContext(context) {
-    if (context?.kind === "track") this.removeTrackAction(context);
+    if (context?.kind === "immediate") this.removeImmediateAction(context);
+    else if (context?.kind === "track") this.removeTrackAction(context);
     else if (context?.kind === "playback-status")
       this.removePlaybackStatusAction(context);
+  }
+
+  removeImmediateAction(context) {
+    if (!context || !context.active) return;
+    context.active = false;
+    if (context.timeoutId !== null) {
+      GLib.Source.remove(context.timeoutId);
+      context.timeoutId = null;
+    }
+    const index = this.pendingImmediateActions.indexOf(context);
+    if (index >= 0) this.pendingImmediateActions.splice(index, 1);
   }
 
   removeTrackAction(context) {
@@ -354,20 +414,26 @@ export default class MediaActionFeedback {
   }
 
   reset() {
+    for (const context of [...this.pendingImmediateActions])
+      this.removeImmediateAction(context);
     for (const context of [...this.pendingTrackActions])
       this.removeTrackAction(context);
     for (const context of [...this.pendingPlaybackStatusActions])
       this.removePlaybackStatusAction(context);
+    this.pendingImmediateActions = [];
     this.pendingTrackActions = [];
     this.pendingPlaybackStatusActions = [];
   }
 
   destroy() {
+    this.unsubscribeInputAction();
+    this.unsubscribeInputAction = null;
     this.unsubscribeTransition();
     this.unsubscribeTransition = null;
     this.reset();
     this.player = null;
     this.generation++;
+    this.inputActions = null;
     this.transitionTracker = null;
     this.showOsd = null;
   }

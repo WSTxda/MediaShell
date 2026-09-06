@@ -6,10 +6,9 @@
  *
  * Keyboard shortcuts and indicator pointer gestures share this dispatcher so
  * neither UI surface nor ExtensionController needs to duplicate playback,
- * volume, player-switching, popup, or preferences routing. Input-only visual
- * feedback is injected here so direct Popup, Top Bar playback-control, and
- * native-control calls to PlaybackController remain unaffected. The dispatcher
- * does not own MediaRuntime; its owner must destroy it before runtime teardown.
+ * volume, player-switching, popup, or preferences routing. The dispatcher emits
+ * a generic input-action lifecycle that optional consumers can observe without
+ * making input routing depend on any feedback feature.
  */
 
 import {
@@ -17,45 +16,77 @@ import {
   VOLUME_STEP,
 } from "../../shared/input/actions.js";
 import { InputActions } from "../../shared/input/types.js";
+import { createLogger } from "../../shared/logging/logger.js";
+
+const logger = createLogger("InputActionDispatcher");
+
+export const InputActionPhases = Object.freeze({
+  STARTED: "started",
+  COMPLETED: "completed",
+});
 
 /** Executes canonical input actions against one MediaRuntime and UI host. */
 export default class InputActionDispatcher {
-  constructor({
-    mediaRuntime,
-    mediaActionFeedback,
-    onTogglePopup,
-    onOpenPreferences,
-  } = {}) {
+  constructor({ mediaRuntime, onTogglePopup, onOpenPreferences } = {}) {
     if (!mediaRuntime)
       throw new TypeError("InputActionDispatcher requires MediaRuntime");
-    if (!mediaActionFeedback)
-      throw new TypeError("InputActionDispatcher requires MediaActionFeedback");
 
     this.mediaRuntime = mediaRuntime;
-    this.mediaActionFeedback = mediaActionFeedback;
     this.onTogglePopup = onTogglePopup;
     this.onOpenPreferences = onOpenPreferences;
+    this.actionListeners = new Map();
+    this.nextActionListenerId = 1;
+    this.nextActionId = 1;
+  }
+
+  onAction(callback) {
+    if (typeof callback !== "function")
+      throw new TypeError("Input action callback must be a function");
+
+    const listenerId = this.nextActionListenerId++;
+    this.actionListeners.set(listenerId, callback);
+    return () => this.actionListeners.delete(listenerId);
+  }
+
+  emitAction(phase, action, result = null) {
+    const event = Object.freeze({ phase, action, result });
+    for (const callback of [...this.actionListeners.values()]) {
+      try {
+        callback(event);
+      } catch (error) {
+        logger.errorOnce(
+          "action-listener",
+          "Input action listener failed",
+          error,
+        );
+      }
+    }
+  }
+
+  createAction(inputAction, player, playbackAction = null) {
+    return Object.freeze({
+      id: this.nextActionId++,
+      inputAction,
+      playbackAction,
+      player,
+      origin: {},
+    });
   }
 
   execute(inputAction) {
     if (!this.mediaRuntime) return;
 
     const player = this.mediaRuntime.playback.activePlayer;
-    const mediaActionFeedback = this.mediaActionFeedback;
-    const commandOrigin = {};
-    const feedbackContext = mediaActionFeedback.begin(
-      inputAction,
-      player,
-      commandOrigin,
-    );
-    let result;
+    const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction] ?? null;
+    const action = this.createAction(inputAction, player, playbackAction);
+    this.emitAction(InputActionPhases.STARTED, action);
 
-    const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
+    let result;
     if (playbackAction)
       result = this.mediaRuntime.playback.execute(
         playbackAction,
         player,
-        commandOrigin,
+        action.origin,
       );
     else {
       switch (inputAction) {
@@ -73,44 +104,47 @@ export default class InputActionDispatcher {
           break;
         case InputActions.TOGGLE_POPUP:
           this.onTogglePopup?.();
+          this.emitAction(InputActionPhases.COMPLETED, action);
           return;
         case InputActions.OPEN_PREFERENCES:
           this.onOpenPreferences?.();
+          this.emitAction(InputActionPhases.COMPLETED, action);
           return;
         case InputActions.RAISE_APP:
-          return this.mediaRuntime.playback.raise(player);
+          result = this.mediaRuntime.playback.raise(player);
+          break;
         case InputActions.QUIT_APP:
-          return this.mediaRuntime.playback.quit(player);
+          result = this.mediaRuntime.playback.quit(player);
+          break;
         case InputActions.SWITCH_APP:
-          return this.mediaRuntime.switchPlayer();
+          result = this.mediaRuntime.switchPlayer();
+          break;
         default:
+          this.emitAction(InputActionPhases.COMPLETED, action);
           return;
       }
     }
 
-    if (!feedbackContext) return result;
     if (!result || typeof result.then !== "function") {
-      mediaActionFeedback.complete(feedbackContext, result);
+      this.emitAction(InputActionPhases.COMPLETED, action, result);
       return result;
     }
 
     return result.then(
       (operationResult) => {
-        if (this.mediaActionFeedback === mediaActionFeedback)
-          mediaActionFeedback.complete(feedbackContext, operationResult);
+        this.emitAction(InputActionPhases.COMPLETED, action, operationResult);
         return operationResult;
       },
       (error) => {
-        if (this.mediaActionFeedback === mediaActionFeedback)
-          mediaActionFeedback.complete(feedbackContext, null);
+        this.emitAction(InputActionPhases.COMPLETED, action, null);
         throw error;
       },
     );
   }
 
   destroy() {
+    this.actionListeners.clear();
     this.mediaRuntime = null;
-    this.mediaActionFeedback = null;
     this.onTogglePopup = null;
     this.onOpenPreferences = null;
   }

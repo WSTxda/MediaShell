@@ -292,7 +292,7 @@ msgstr "Disco"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
-#: src/shell/ui/feedback/mediaActionFeedback.js:90
+#: src/shell/ui/toast/mediaActionToast.js:91
 msgid "Track"
 msgstr "Brano"
 
@@ -317,7 +317,7 @@ msgid "Stop"
 msgstr "Interrompi"
 
 #: src/shell/media/playback/accessibility.js:60
-#: src/shell/ui/feedback/mediaActionFeedback.js:92
+#: src/shell/ui/toast/mediaActionToast.js:93
 msgid "Playlist"
 msgstr "Playlist"
 
@@ -784,22 +784,22 @@ msgstr "Aggiungi campo"
 msgid "Add Text"
 msgstr "Aggiungi testo"
 
-#: src/shell/ui/feedback/mediaActionFeedback.js:51
+#: src/shell/ui/toast/mediaActionToast.js:62
 msgid "Paused"
 msgstr "In pausa"
 
-#: src/shell/ui/feedback/mediaActionFeedback.js:59
+#: src/shell/ui/toast/mediaActionToast.js:62
 msgid "Playing"
 msgstr "In riproduzione"
 
-#: src/shell/ui/feedback/mediaActionFeedback.js:71
+#: src/shell/ui/toast/mediaActionToast.js:74
 msgid "Enabled"
 msgstr "Attivato"
 
-#: src/shell/ui/feedback/mediaActionFeedback.js:71
+#: src/shell/ui/toast/mediaActionToast.js:74
 msgid "Disabled"
 msgstr "Disattivato"
 
-#: src/shell/ui/feedback/mediaActionFeedback.js:93
+#: src/shell/ui/toast/mediaActionToast.js:94
 msgid "Off"
 msgstr "Disattivato"

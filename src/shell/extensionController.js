@@ -23,8 +23,8 @@ import { showOsd } from "./integrations/osd.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
 import MediaShellSettings from "./settings/settings.js";
 import MediaShellIndicator from "./ui/indicator/mediaShellIndicator.js";
-import MediaActionFeedback from "./ui/feedback/mediaActionFeedback.js";
-import TrackChangeToastSurface from "./ui/feedback/trackChangeToastSurface.js";
+import MediaActionToast from "./ui/toast/mediaActionToast.js";
+import TrackChangeToast from "./ui/toast/trackChangeToast.js";
 import { clearIconCache } from "./ui/icons.js";
 
 const logger = createLogger("ExtensionController");
@@ -252,7 +252,7 @@ export default class ExtensionController {
       ),
       this.settings.panel.subscribe(["trackChangeToastShow"], (enabled) => {
         if (this.sessionProfile === SessionProfiles.USER)
-          this.trackChangeToastSurface?.setEnabled(enabled);
+          this.trackChangeToast?.setEnabled(enabled);
       }),
       this.settings.nativeControls.subscribe(["hide"], () => {
         if (this.sessionProfile === SessionProfiles.USER)
@@ -302,30 +302,30 @@ export default class ExtensionController {
         playbackCommands: this.mediaRuntime.playback,
       });
 
-    if (!this.trackChangeToastSurface)
-      this.trackChangeToastSurface = new TrackChangeToastSurface({
+    if (!this.inputActionDispatcher)
+      this.inputActionDispatcher = new InputActionDispatcher({
+        mediaRuntime: this.mediaRuntime,
+        onTogglePopup: () => this.indicator?.menu.toggle(),
+        onOpenPreferences: () => this.openPreferences(),
+      });
+
+    if (!this.mediaActionToast)
+      this.mediaActionToast = new MediaActionToast({
+        transitionTracker: this.trackTransitionTracker,
+        inputActions: this.inputActionDispatcher,
+        showOsd,
+      });
+
+    if (!this.trackChangeToast)
+      this.trackChangeToast = new TrackChangeToast({
         transitionTracker: this.trackTransitionTracker,
         desktopAppResolver: this.mediaRuntime.identity,
         showOsd,
         enabled: this.settings.panel.trackChangeToastShow,
       });
 
-    if (!this.mediaActionFeedback)
-      this.mediaActionFeedback = new MediaActionFeedback({
-        transitionTracker: this.trackTransitionTracker,
-        showOsd,
-      });
-
     this.trackTransitionTracker.setPlayer(this.mediaRuntime.activePlayer);
-    this.mediaActionFeedback.setPlayer(this.mediaRuntime.activePlayer);
-
-    if (!this.inputActionDispatcher)
-      this.inputActionDispatcher = new InputActionDispatcher({
-        mediaRuntime: this.mediaRuntime,
-        mediaActionFeedback: this.mediaActionFeedback,
-        onTogglePopup: () => this.indicator?.menu.toggle(),
-        onOpenPreferences: () => this.openPreferences(),
-      });
+    this.mediaActionToast.setPlayer(this.mediaRuntime.activePlayer);
 
     if (!this.globalShortcuts) {
       this.globalShortcuts = new GlobalShortcuts(
@@ -368,7 +368,7 @@ export default class ExtensionController {
     }
 
     this.trackTransitionTracker?.setPlayer(player);
-    this.mediaActionFeedback?.setPlayer(player);
+    this.mediaActionToast?.setPlayer(player);
 
     if (!player) {
       this.destroyIndicator();
@@ -414,11 +414,11 @@ export default class ExtensionController {
 
     this.destroyIndicator();
 
-    this.mediaActionFeedback?.destroy();
-    this.mediaActionFeedback = null;
+    this.mediaActionToast?.destroy();
+    this.mediaActionToast = null;
 
-    this.trackChangeToastSurface?.destroy();
-    this.trackChangeToastSurface = null;
+    this.trackChangeToast?.destroy();
+    this.trackChangeToast = null;
 
     this.trackTransitionTracker?.destroy();
     this.trackTransitionTracker = null;
