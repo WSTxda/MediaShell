@@ -41,7 +41,7 @@ export async function resolveAlbumArtSource({
   let fallbackIcon = null;
   let effectiveArtUri = albumArtUri;
 
-  if (effectiveArtUri?.startsWith("http")) {
+  if (fetchHighResEnabled && effectiveArtUri?.startsWith("http")) {
     effectiveArtUri = rewriteCdnArtworkUrl(effectiveArtUri);
   }
 
@@ -85,6 +85,16 @@ export async function resolveAlbumArtSource({
     "MPRIS album art",
     busName,
   );
+  if (!albumArtSource && effectiveArtUri !== albumArtUri) {
+    albumArtSource = await tryLoadAlbumArt(
+      albumArtLoader,
+      albumArtUri,
+      cacheEnabled,
+      loadCancellable,
+      "original MPRIS album art",
+      busName,
+    );
+  }
   if (albumArtSource || !trackUri) return { albumArtSource, fallbackIcon };
 
   let parsedTrackUri;

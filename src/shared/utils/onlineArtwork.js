@@ -174,7 +174,10 @@ export function extractHighResArtworkUrlFromSearchResult(jsonString) {
     if (typeof rawArtworkUrl !== "string" || !rawArtworkUrl) return null;
 
     // iTunes artwork URLs end with e.g. /100x100bb.jpg or /60x60bb.jpg
-    return rawArtworkUrl.replace(/\/\d+x\d+bb\.([a-z]+)$/i, "/1000x1000bb.$1");
+    return rawArtworkUrl.replace(
+      /\/\d+x\d+bb\.([a-z]+)(?:\?.*)?$/i,
+      "/1000x1000bb.$1",
+    );
   } catch {
     return null;
   }

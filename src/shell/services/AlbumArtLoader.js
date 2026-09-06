@@ -704,6 +704,8 @@ export default class AlbumArtLoader {
 
   async searchOnlineArtwork(title, artist, cancellable = null) {
     if (!this.#cacheWriteCancellable) return null;
+    if (cancellable?.is_cancelled()) return null;
+
     const searchUrl = buildOnlineArtworkSearchUrl(title, artist);
     if (!searchUrl) return null;
 
@@ -711,18 +713,9 @@ export default class AlbumArtLoader {
       return this.#onlineArtworkUrlCache.get(searchUrl);
     }
 
-    const existingRequest = this.#onlineArtworkSearchRequests.get(searchUrl);
-    if (existingRequest) {
-      return existingRequest;
-    }
-
-    const searchPromise = (async () => {
+    let request = this.#onlineArtworkSearchRequests.get(searchUrl);
+    if (!request) {
       const searchCancellable = new Gio.Cancellable();
-      let parentSignalId = null;
-      if (cancellable) {
-        if (cancellable.is_cancelled()) return null;
-        parentSignalId = cancellable.connect(() => searchCancellable.cancel());
-      }
       const timeoutId = GLib.timeout_add_seconds(
         GLib.PRIORITY_DEFAULT,
         3,
@@ -732,67 +725,144 @@ export default class AlbumArtLoader {
         },
       );
 
-      let responseStream = null;
-      try {
-        const uri = parseAlbumArtUri(searchUrl);
-        if (!uri) return null;
+      request = {
+        searchUrl,
+        cancellable: searchCancellable,
+        timeoutId,
+        consumerCount: 0,
+        searchSettled: false,
+        promise: null,
+      };
 
-        const message = new Soup.Message({ method: "GET", uri });
-        responseStream = await this.#getSession().send_async(
-          message,
+      request.promise = this.#executeOnlineArtworkSearch(request);
+      this.#onlineArtworkSearchRequests.set(searchUrl, request);
+    }
+
+    return this.#waitForOnlineArtworkSearch(request, cancellable);
+  }
+
+  async #executeOnlineArtworkSearch(request) {
+    let responseStream = null;
+    let highResUrl = null;
+    try {
+      const uri = parseAlbumArtUri(request.searchUrl);
+      if (!uri) return null;
+
+      const message = new Soup.Message({ method: "GET", uri });
+      responseStream = await this.#getSession().send_async(
+        message,
+        GLib.PRIORITY_DEFAULT,
+        request.cancellable,
+      );
+      const status = message.get_status();
+      if (status < 200 || status >= 300) return null;
+
+      const chunks = [];
+      let totalBytes = 0;
+      while (totalBytes < 65536) {
+        const bytes = await responseStream.read_bytes_async(
+          8192,
           GLib.PRIORITY_DEFAULT,
-          searchCancellable,
+          request.cancellable,
         );
-        const status = message.get_status();
-        if (status < 200 || status >= 300) return null;
+        const size = bytes.get_size();
+        if (size === 0) break;
+        totalBytes += size;
+        chunks.push(bytes);
+      }
 
-        const chunks = [];
-        let totalBytes = 0;
-        while (totalBytes < 65536) {
-          const bytes = await responseStream.read_bytes_async(
-            8192,
-            GLib.PRIORITY_DEFAULT,
-            searchCancellable,
-          );
-          const size = bytes.get_size();
-          if (size === 0) break;
-          totalBytes += size;
-          chunks.push(bytes);
-        }
-
-        if (totalBytes === 0) return null;
+      if (totalBytes > 0) {
         const gbytes = concatenateByteChunks(chunks, totalBytes);
         const jsonText = new TextDecoder().decode(gbytes.get_data());
-        const highResUrl = extractHighResArtworkUrlFromSearchResult(jsonText);
-
-        if (highResUrl) {
-          if (this.#onlineArtworkUrlCache.size > 100) {
-            const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
-            this.#onlineArtworkUrlCache.delete(oldestKey);
-          }
-          this.#onlineArtworkUrlCache.set(searchUrl, highResUrl);
-        }
-        return highResUrl;
-      } catch (error) {
-        if (cancellable?.is_cancelled()) throw error;
+        highResUrl = extractHighResArtworkUrlFromSearchResult(jsonText);
+      }
+      return highResUrl;
+    } catch (error) {
+      if (!request.cancellable.is_cancelled()) {
         logger.debugOnce(
-          `online-search:${searchUrl}`,
+          `online-search:${request.searchUrl}`,
           "Online artwork search did not complete",
           error,
         );
-        return null;
-      } finally {
-        GLib.source_remove(timeoutId);
-        if (parentSignalId !== null && cancellable) {
-          cancellable.disconnect(parentSignalId);
-        }
-        await this.#closeInputStreamAsync(responseStream);
-        this.#onlineArtworkSearchRequests.delete(searchUrl);
       }
-    })();
+      return null;
+    } finally {
+      request.searchSettled = true;
+      if (request.timeoutId) {
+        GLib.source_remove(request.timeoutId);
+        request.timeoutId = 0;
+      }
+      await this.#closeInputStreamAsync(responseStream);
+      this.#onlineArtworkSearchRequests.delete(request.searchUrl);
 
-    this.#onlineArtworkSearchRequests.set(searchUrl, searchPromise);
-    return searchPromise;
+      if (this.#onlineArtworkUrlCache.size >= 100) {
+        const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
+        this.#onlineArtworkUrlCache.delete(oldestKey);
+      }
+      this.#onlineArtworkUrlCache.set(request.searchUrl, highResUrl);
+    }
+  }
+
+  #waitForOnlineArtworkSearch(request, consumerCancellable) {
+    request.consumerCount += 1;
+
+    return new Promise((resolve) => {
+      let settled = false;
+      let released = false;
+      let cancellationSignalId = null;
+
+      const releaseConsumer = () => {
+        if (released) return;
+        released = true;
+        request.consumerCount = Math.max(0, request.consumerCount - 1);
+        if (
+          request.consumerCount === 0 &&
+          !request.searchSettled &&
+          !request.cancellable.is_cancelled()
+        ) {
+          request.cancellable.cancel();
+          if (request.timeoutId) {
+            GLib.source_remove(request.timeoutId);
+            request.timeoutId = 0;
+          }
+        }
+      };
+
+      const settle = (value) => {
+        if (settled) return;
+        settled = true;
+        releaseConsumer();
+        resolve(value);
+      };
+
+      const disconnectCancellationSignal = () => {
+        if (cancellationSignalId === null || !consumerCancellable) return;
+        consumerCancellable.disconnect(cancellationSignalId);
+        cancellationSignalId = null;
+      };
+
+      if (consumerCancellable?.is_cancelled()) {
+        settle(null);
+        return;
+      }
+
+      cancellationSignalId =
+        consumerCancellable?.connect(() => {
+          disconnectCancellationSignal();
+          settle(null);
+        }) ?? null;
+
+      request.promise.then(
+        (result) => {
+          disconnectCancellationSignal();
+          settle(result);
+        },
+        () => {
+          disconnectCancellationSignal();
+          settle(null);
+        },
+      );
+    });
   }
 
   async removeCachedAlbumArt(albumArtUri, cancellable = null) {
@@ -819,6 +889,13 @@ export default class AlbumArtLoader {
     for (const request of this.#remoteAlbumArtRequests.values())
       request.cancellable.cancel();
     this.#remoteAlbumArtRequests.clear();
+    for (const request of this.#onlineArtworkSearchRequests.values()) {
+      request.cancellable.cancel();
+      if (request.timeoutId) {
+        GLib.source_remove(request.timeoutId);
+        request.timeoutId = 0;
+      }
+    }
     this.#onlineArtworkSearchRequests.clear();
     this.#onlineArtworkUrlCache.clear();
     this.#session?.abort();

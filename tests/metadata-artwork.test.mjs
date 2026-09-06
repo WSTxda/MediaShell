@@ -422,6 +422,19 @@ test("online artwork resolution utilities rewrite CDNs, sanitize titles, and par
           extractHighResArtworkUrlFromSearchResult(payload),
           "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/1000x1000bb.jpg",
         );
+        const payloadWithQuery = JSON.stringify({
+          resultCount: 1,
+          results: [
+            {
+              artworkUrl100:
+                "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/100x100bb.jpg?uo=4",
+            },
+          ],
+        });
+        assert.equal(
+          extractHighResArtworkUrlFromSearchResult(payloadWithQuery),
+          "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ab/cd/ef/1000x1000bb.jpg",
+        );
         assert.equal(
           extractHighResArtworkUrlFromSearchResult(
             JSON.stringify({ resultCount: 0, results: [] }),
