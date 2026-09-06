@@ -13,6 +13,10 @@ import { MprisMetadataKeys } from "../src/shared/constants/mpris.js";
 import {
   ALBUM_ART_CACHE_MAX_BYTES,
   ALBUM_ART_MAX_BYTES,
+  ONLINE_ARTWORK_SEARCH_MAX_BYTES,
+  ONLINE_ARTWORK_SEARCH_READ_CHUNK_BYTES,
+  ONLINE_ARTWORK_SEARCH_TIMEOUT_SECONDS,
+  ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES,
 } from "../src/shell/constants/albumArt.js";
 import { normalizeAppIdentityHint } from "../src/shared/utils/appIdentity.js";
 import {
@@ -283,6 +287,10 @@ test("album-art cache and payload limits remain deterministic and bounded", asyn
       () => {
         assert.equal(ALBUM_ART_MAX_BYTES, 16 * 1024 * 1024);
         assert.equal(ALBUM_ART_CACHE_MAX_BYTES, 128 * 1024 * 1024);
+        assert.equal(ONLINE_ARTWORK_SEARCH_TIMEOUT_SECONDS, 3);
+        assert.equal(ONLINE_ARTWORK_SEARCH_MAX_BYTES, 64 * 1024);
+        assert.equal(ONLINE_ARTWORK_SEARCH_READ_CHUNK_BYTES, 8192);
+        assert.equal(ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES, 100);
       },
     ],
   ]);

@@ -35,45 +35,41 @@ export async function resolveAlbumArtSource({
   title,
   artist,
   cacheEnabled,
-  fetchHighResEnabled = true,
+  fetchHighRes = true,
+  fetchHighResEnabled = fetchHighRes,
   loadCancellable,
 }) {
   let fallbackIcon = null;
   let effectiveArtUri = albumArtUri;
+  const isHighResAllowed = Boolean(fetchHighResEnabled);
 
-  if (fetchHighResEnabled && effectiveArtUri?.startsWith("http")) {
+  if (isHighResAllowed && effectiveArtUri?.startsWith("http")) {
     effectiveArtUri = rewriteCdnArtworkUrl(effectiveArtUri);
   }
 
   // When high-res fetching is enabled, look up high-res artwork for browser
   // temporary thumbnails (e.g. Chromium 150px /tmp files) or missing MPRIS artwork.
-  if (
-    fetchHighResEnabled &&
-    title &&
-    (isBrowserBusName(busName) || isTempThumbnailUri(effectiveArtUri))
-  ) {
-    const isLocalOrTemp =
-      !effectiveArtUri ||
-      effectiveArtUri.startsWith("file://") ||
-      isTempThumbnailUri(effectiveArtUri);
+  const isLocalOrMissingArt =
+    !effectiveArtUri || effectiveArtUri.startsWith("file://");
+  const isBrowserOrTempArt =
+    isBrowserBusName(busName) || isTempThumbnailUri(effectiveArtUri);
 
-    if (isLocalOrTemp) {
-      const onlineUrl = await albumArtLoader.searchOnlineArtwork(
-        title,
-        artist,
+  if (isHighResAllowed && title && isLocalOrMissingArt && isBrowserOrTempArt) {
+    const onlineUrl = await albumArtLoader.searchOnlineArtwork(
+      title,
+      artist,
+      loadCancellable,
+    );
+    if (onlineUrl) {
+      const onlineSource = await tryLoadAlbumArt(
+        albumArtLoader,
+        onlineUrl,
+        cacheEnabled,
         loadCancellable,
+        "online album art",
+        busName,
       );
-      if (onlineUrl) {
-        const onlineSource = await tryLoadAlbumArt(
-          albumArtLoader,
-          onlineUrl,
-          cacheEnabled,
-          loadCancellable,
-          "online album art",
-          busName,
-        );
-        if (onlineSource) return { albumArtSource: onlineSource, fallbackIcon };
-      }
+      if (onlineSource) return { albumArtSource: onlineSource, fallbackIcon };
     }
   }
 

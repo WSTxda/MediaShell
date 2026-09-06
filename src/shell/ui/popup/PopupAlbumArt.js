@@ -131,7 +131,6 @@ export default class PopupAlbumArt {
       const { albumArtSource, fallbackIcon } = await resolveAlbumArtSource({
         albumArtLoader: this.albumArtLoader,
         ...request,
-        fetchHighResEnabled: request.fetchHighRes,
         loadCancellable,
       });
       const pixbuf = await decodeAlbumArtSource({

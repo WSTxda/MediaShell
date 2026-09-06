@@ -23,6 +23,10 @@ import {
   ALBUM_ART_MAX_BYTES,
   ALBUM_ART_READ_CHUNK_BYTES,
   ALBUM_ART_REQUEST_TIMEOUT_SECONDS,
+  ONLINE_ARTWORK_SEARCH_MAX_BYTES,
+  ONLINE_ARTWORK_SEARCH_READ_CHUNK_BYTES,
+  ONLINE_ARTWORK_SEARCH_TIMEOUT_SECONDS,
+  ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES,
 } from "../constants/albumArt.js";
 import { EXTENSION_UUID } from "../../shared/constants/project.js";
 import { selectAlbumArtCacheEvictions } from "../../shared/utils/albumArt.js";
@@ -718,7 +722,7 @@ export default class AlbumArtLoader {
       const searchCancellable = new Gio.Cancellable();
       const timeoutId = GLib.timeout_add_seconds(
         GLib.PRIORITY_DEFAULT,
-        3,
+        ONLINE_ARTWORK_SEARCH_TIMEOUT_SECONDS,
         () => {
           searchCancellable.cancel();
           return GLib.SOURCE_REMOVE;
@@ -759,9 +763,9 @@ export default class AlbumArtLoader {
 
       const chunks = [];
       let totalBytes = 0;
-      while (totalBytes < 65536) {
+      while (totalBytes < ONLINE_ARTWORK_SEARCH_MAX_BYTES) {
         const bytes = await responseStream.read_bytes_async(
-          8192,
+          ONLINE_ARTWORK_SEARCH_READ_CHUNK_BYTES,
           GLib.PRIORITY_DEFAULT,
           request.cancellable,
         );
@@ -795,7 +799,9 @@ export default class AlbumArtLoader {
       await this.#closeInputStreamAsync(responseStream);
       this.#onlineArtworkSearchRequests.delete(request.searchUrl);
 
-      if (this.#onlineArtworkUrlCache.size >= 100) {
+      if (
+        this.#onlineArtworkUrlCache.size >= ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES
+      ) {
         const oldestKey = this.#onlineArtworkUrlCache.keys().next().value;
         this.#onlineArtworkUrlCache.delete(oldestKey);
       }
@@ -828,17 +834,18 @@ export default class AlbumArtLoader {
         }
       };
 
-      const settle = (value) => {
-        if (settled) return;
-        settled = true;
-        releaseConsumer();
-        resolve(value);
-      };
-
       const disconnectCancellationSignal = () => {
         if (cancellationSignalId === null || !consumerCancellable) return;
         consumerCancellable.disconnect(cancellationSignalId);
         cancellationSignalId = null;
+      };
+
+      const settle = (value) => {
+        if (settled) return;
+        settled = true;
+        disconnectCancellationSignal();
+        releaseConsumer();
+        resolve(value);
       };
 
       if (consumerCancellable?.is_cancelled()) {
@@ -847,21 +854,9 @@ export default class AlbumArtLoader {
       }
 
       cancellationSignalId =
-        consumerCancellable?.connect(() => {
-          disconnectCancellationSignal();
-          settle(null);
-        }) ?? null;
+        consumerCancellable?.connect(() => settle(null)) ?? null;
 
-      request.promise.then(
-        (result) => {
-          disconnectCancellationSignal();
-          settle(result);
-        },
-        () => {
-          disconnectCancellationSignal();
-          settle(null);
-        },
-      );
+      request.promise.then(settle, () => settle(null));
     });
   }
 

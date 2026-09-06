@@ -25,3 +25,15 @@ export const ALBUM_ART_READ_CHUNK_BYTES = 64 * 1024;
 
 /** HTTP timeout for remote album-art requests, in seconds. */
 export const ALBUM_ART_REQUEST_TIMEOUT_SECONDS = 15;
+
+/** Timeout for online artwork search requests, in seconds. */
+export const ONLINE_ARTWORK_SEARCH_TIMEOUT_SECONDS = 3;
+
+/** Maximum accepted payload size for an online artwork search response, in bytes. */
+export const ONLINE_ARTWORK_SEARCH_MAX_BYTES = 64 * 1024;
+
+/** Chunk size used while reading an online artwork search response, in bytes. */
+export const ONLINE_ARTWORK_SEARCH_READ_CHUNK_BYTES = 8192;
+
+/** Maximum number of resolved online artwork URLs retained in memory. */
+export const ONLINE_ARTWORK_URL_CACHE_MAX_ENTRIES = 100;

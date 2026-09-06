@@ -20,6 +20,21 @@ const YOUTUBE_TITLE_NOISE_PATTERNS = [
   /\s*[\(\[](?:feat\.|ft\.)\s+[^\)\]]+[\)\]]/gi,
 ];
 
+const GOOGLE_USERCONTENT_SIZE_PATTERN =
+  /=(?:w\d+-h\d+|s\d+)(-[a-z0-9-]+)?(\?.*)?$/i;
+
+const YOUTUBE_THUMBNAIL_FILENAME_PATTERN =
+  /\/(?:hqdefault|mqdefault)\.jpg(\?.*)?$/i;
+
+const SPOTIFY_IMAGE_SIZE_PATTERN = /\/ab67616d0000(?:4851|1e02)([0-9a-f]{24})/i;
+
+const SOUNDCLOUD_IMAGE_SIZE_PATTERN =
+  /-(?:large|t\d+x\d+)\.(jpg|png|webp)(\?.*)?$/i;
+
+const BANDCAMP_IMAGE_SIZE_PATTERN = /_(\d+)\.(jpg|png)(\?.*)?$/i;
+
+const ITUNES_ARTWORK_DIMENSION_PATTERN = /\/\d+x\d+bb\.([a-z]+)(?:\?.*)?$/i;
+
 /**
  * Detects whether an MPRIS bus name belongs to a web browser.
  *
@@ -65,41 +80,40 @@ export function rewriteCdnArtworkUrl(url) {
     // YouTube video thumbnails: hqdefault.jpg -> maxresdefault.jpg
     if (url.includes("/hqdefault.jpg") || url.includes("/mqdefault.jpg")) {
       return url.replace(
-        /\/(?:hqdefault|mqdefault)\.jpg(\?.*)?$/i,
+        YOUTUBE_THUMBNAIL_FILENAME_PATTERN,
         "/maxresdefault.jpg$1",
       );
     }
 
     // Google image sizing parameters: =w60-h60, =s120-c, etc.
-    const googleSizeRegex = /=(?:w\d+-h\d+|s\d+)(-[a-z0-9-]+)?(\?.*)?$/i;
-    if (googleSizeRegex.test(url)) {
-      return url.replace(googleSizeRegex, "=w800-h800-l90-rj$2");
+    if (GOOGLE_USERCONTENT_SIZE_PATTERN.test(url)) {
+      return url.replace(
+        GOOGLE_USERCONTENT_SIZE_PATTERN,
+        "=w800-h800-l90-rj$2",
+      );
     }
   }
 
   // 2. Spotify CDN: i.scdn.co/image/ab67616d0000<size><id>
   // 4851 = 64x64, 1e02 = 300x300, b273 = 640x640
   if (url.includes("i.scdn.co/image/")) {
-    const spotifyRegex = /\/ab67616d0000(?:4851|1e02)([0-9a-f]{24})/i;
-    if (spotifyRegex.test(url)) {
-      return url.replace(spotifyRegex, "/ab67616d0000b273$1");
+    if (SPOTIFY_IMAGE_SIZE_PATTERN.test(url)) {
+      return url.replace(SPOTIFY_IMAGE_SIZE_PATTERN, "/ab67616d0000b273$1");
     }
   }
 
   // 3. SoundCloud: *-large.jpg or *-t<size>x<size>.jpg -> *-t500x500.jpg
   if (url.includes("sndcdn.com")) {
-    const soundcloudRegex = /-(?:large|t\d+x\d+)\.(jpg|png|webp)(\?.*)?$/i;
-    if (soundcloudRegex.test(url)) {
-      return url.replace(soundcloudRegex, "-t500x500.$1$2");
+    if (SOUNDCLOUD_IMAGE_SIZE_PATTERN.test(url)) {
+      return url.replace(SOUNDCLOUD_IMAGE_SIZE_PATTERN, "-t500x500.$1$2");
     }
   }
 
   // 4. Bandcamp: f4.bcbits.com/img/a<id>_<number>.jpg -> _10.jpg (original size)
   if (url.includes("bcbits.com/img/")) {
-    const bandcampRegex = /_(\d+)\.(jpg|png)(\?.*)?$/i;
-    const match = url.match(bandcampRegex);
+    const match = url.match(BANDCAMP_IMAGE_SIZE_PATTERN);
     if (match && match[1] !== "10") {
-      return url.replace(bandcampRegex, "_10.$2$3");
+      return url.replace(BANDCAMP_IMAGE_SIZE_PATTERN, "_10.$2$3");
     }
   }
 
@@ -175,7 +189,7 @@ export function extractHighResArtworkUrlFromSearchResult(jsonString) {
 
     // iTunes artwork URLs end with e.g. /100x100bb.jpg or /60x60bb.jpg
     return rawArtworkUrl.replace(
-      /\/\d+x\d+bb\.([a-z]+)(?:\?.*)?$/i,
+      ITUNES_ARTWORK_DIMENSION_PATTERN,
       "/1000x1000bb.$1",
     );
   } catch {
