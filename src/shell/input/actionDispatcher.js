@@ -42,21 +42,12 @@ export default class InputActionDispatcher {
 
     const player = this.mediaRuntime.playback.activePlayer;
     const mediaActionFeedback = this.mediaActionFeedback;
-    const commandOrigin = {};
-    const feedbackContext = mediaActionFeedback.begin(
-      inputAction,
-      player,
-      commandOrigin,
-    );
+    const feedbackContext = mediaActionFeedback.begin(inputAction, player);
     let result;
 
     const playbackAction = PLAYBACK_ACTION_BY_INPUT_ACTION[inputAction];
     if (playbackAction)
-      result = this.mediaRuntime.playback.execute(
-        playbackAction,
-        player,
-        commandOrigin,
-      );
+      result = this.mediaRuntime.playback.execute(playbackAction, player);
     else {
       switch (inputAction) {
         case InputActions.VOLUME_UP:

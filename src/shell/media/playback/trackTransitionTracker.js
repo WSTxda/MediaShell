@@ -2,139 +2,110 @@
  * @file trackTransitionTracker.js
  * @module shell.media.playback.trackTransitionTracker
  *
- * Classifies canonical track replacements using playback evidence already owned
- * by MprisPlayer. Consumers can distinguish likely natural queue advancement from
- * arbitrary replacement without knowing MPRIS metadata, position math, or UI.
- *
- * MPRIS exposes no transition-cause property, so natural completion remains a
- * conservative inference. MediaShell command lifecycle is correlated separately
- * through PlaybackController, allowing consumers to distinguish a replacement
- * caused by MediaShell without coupling command execution to presentation.
+ * Classifies canonical track replacements from the MPRIS playback timeline.
+ * Natural completion is inferred only from coherent position, duration, rate,
+ * playback status, and monotonic time. Command origin is intentionally irrelevant.
  */
 
 import GLib from "gi://GLib";
 
-import { PlaybackControlActions } from "../../../shared/playback/controls.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import {
   areMprisTrackIdentitiesEqual,
   createMprisTrackIdentity,
   hasMprisTrackIdentity,
 } from "../../mpris/metadata.js";
-import { MprisOperationStatuses } from "../../mpris/operationResult.js";
 import {
+  LoopStatus,
   MprisPlayerProperties,
   PlaybackStatus,
 } from "../../mpris/protocol.js";
-import {
-  PlaybackCommandPhases,
-  resolveSeekOffsetMicroseconds,
-} from "./playbackController.js";
 
 const logger = createLogger("TrackTransitionTracker");
 
-/** Small tolerance for Metadata delivered just before the nominal track end. */
-const TRACK_COMPLETION_TOLERANCE_MICROSECONDS = 2 * 1000 * 1000;
-const COMMAND_TRANSITION_TIMEOUT_MS = 2000;
-
-function canCommandReplaceTrack(command) {
-  if (!command.player) return false;
-  if (
-    command.action === PlaybackControlActions.PREVIOUS ||
-    command.action === PlaybackControlActions.NEXT
-  )
-    return true;
-
-  if (command.action === PlaybackControlActions.SEEK_FORWARD) {
-    const playbackState = command.player.snapshotPlaybackState();
-    const seekOffsetMicroseconds = resolveSeekOffsetMicroseconds(
-      command.action,
-    );
-    const positionMicroseconds = Number(playbackState?.positionMicroseconds);
-    const durationMicroseconds = Number(playbackState?.durationMicroseconds);
-    return (
-      Number.isFinite(positionMicroseconds) &&
-      Number.isFinite(durationMicroseconds) &&
-      durationMicroseconds > 0 &&
-      positionMicroseconds + seekOffsetMicroseconds >= durationMicroseconds
-    );
-  }
-
-  return (
-    (command.action === PlaybackControlActions.PLAY ||
-      command.action === PlaybackControlActions.PLAY_PAUSE) &&
-    command.player.playbackStatus === PlaybackStatus.STOPPED
-  );
-}
+/** Last 10% of a track is eligible, capped so long-form media stays bounded. */
+const COMPLETION_WINDOW_RATIO = 0.1;
+const MAX_COMPLETION_WINDOW_MICROSECONDS = 60 * 1000 * 1000;
 
 export const TrackTransitionReasons = Object.freeze({
   COMPLETED: "completed",
   REPLACED: "replaced",
 });
 
-function resolveTrackTransitionReason(previousPlaybackState) {
-  const positionMicroseconds = Number(
-    previousPlaybackState?.positionMicroseconds,
-  );
-  const durationMicroseconds = Number(
-    previousPlaybackState?.durationMicroseconds,
-  );
+function createCompletionTimeline(playbackState, nowMicroseconds) {
+  const positionMicroseconds = Number(playbackState?.positionMicroseconds);
+  const durationMicroseconds = Number(playbackState?.durationMicroseconds);
+  const playbackRate = Number(playbackState?.playbackRate);
+  const now = Number(nowMicroseconds);
 
   if (
-    previousPlaybackState?.playbackStatus !== PlaybackStatus.PLAYING ||
-    previousPlaybackState?.clockDiscontinuity === true ||
+    playbackState?.playbackStatus !== PlaybackStatus.PLAYING ||
+    playbackState?.clockDiscontinuity === true ||
     !Number.isFinite(positionMicroseconds) ||
     !Number.isFinite(durationMicroseconds) ||
+    !Number.isFinite(playbackRate) ||
+    !Number.isFinite(now) ||
     positionMicroseconds < 0 ||
-    durationMicroseconds <= 0
+    durationMicroseconds <= 0 ||
+    playbackRate <= 0
   )
-    return TrackTransitionReasons.REPLACED;
+    return null;
 
-  const remainingMicroseconds = Math.max(
-    0,
-    durationMicroseconds - positionMicroseconds,
+  const boundedPositionMicroseconds = Math.min(
+    positionMicroseconds,
+    durationMicroseconds,
   );
-  const toleranceMicroseconds = Math.min(
-    TRACK_COMPLETION_TOLERANCE_MICROSECONDS,
-    durationMicroseconds / 2,
+  const completionWindowMicroseconds = Math.min(
+    durationMicroseconds * COMPLETION_WINDOW_RATIO,
+    MAX_COMPLETION_WINDOW_MICROSECONDS,
   );
+  const armPositionMicroseconds =
+    durationMicroseconds - completionWindowMicroseconds;
 
-  return remainingMicroseconds <= toleranceMicroseconds
-    ? TrackTransitionReasons.COMPLETED
-    : TrackTransitionReasons.REPLACED;
+  return Object.freeze({
+    armAtMicroseconds:
+      now +
+      Math.max(0, armPositionMicroseconds - boundedPositionMicroseconds) /
+        playbackRate,
+    endAtMicroseconds:
+      now +
+      Math.max(0, durationMicroseconds - boundedPositionMicroseconds) /
+        playbackRate,
+  });
 }
 
-function createPlayingSnapshot(playbackState) {
-  if (!playbackState || typeof playbackState !== "object") return null;
-  return Object.freeze({
-    ...playbackState,
-    playbackStatus: PlaybackStatus.PLAYING,
-  });
+function timelineReachedCompletion(timeline, nowMicroseconds) {
+  const now = Number(nowMicroseconds);
+  return Boolean(
+    timeline &&
+    Number.isFinite(now) &&
+    now >= timeline.armAtMicroseconds &&
+    now >= timeline.endAtMicroseconds,
+  );
 }
 
 /**
  * Tracks one active MprisPlayer and emits semantic track-transition snapshots.
  *
- * The tracker owns only listeners, bounded command-correlation sources, and
- * transition state; it performs no polling, D-Bus calls, or presentation.
- * Switching players re-primes state and emits nothing.
+ * The tracker performs no polling or D-Bus calls. Position changes (including
+ * Seeked re-anchors), rate/status changes, and track replacement are consumed as
+ * timeline facts. Missing or incoherent timing data fails closed as `replaced`.
  */
 export default class TrackTransitionTracker {
-  constructor({ playbackCommands = null } = {}) {
+  constructor() {
     this.player = null;
     this.trackChangeListenerId = 0;
     this.playbackStatusListenerId = 0;
+    this.rateListenerId = 0;
+    this.disconnectPositionChange = null;
     this.currentTrackIdentity = null;
-    this.lastPlaybackStatus = PlaybackStatus.STOPPED;
-    this.lastStoppedPlaybackState = null;
+    this.timeline = null;
+    this.completedIdentity = null;
     this.pendingTransition = null;
     this.pendingEvaluationGeneration = 0;
-    this.pendingCommands = [];
+    this.timelineRefreshGeneration = 0;
     this.listeners = new Map();
     this.nextListenerId = 1;
-    this.unsubscribePlaybackCommands = playbackCommands
-      ? playbackCommands.onCommand((event) => this.handlePlaybackCommand(event))
-      : null;
   }
 
   setPlayer(player) {
@@ -147,7 +118,6 @@ export default class TrackTransitionTracker {
     this.currentTrackIdentity = createMprisTrackIdentity(
       observedPlayer.metadata,
     );
-    this.lastPlaybackStatus = observedPlayer.playbackStatus;
     this.trackChangeListenerId = observedPlayer.onTrackChanged((transition) => {
       if (this.player !== observedPlayer) return;
       this.handleTrackChanged(transition);
@@ -155,90 +125,66 @@ export default class TrackTransitionTracker {
     this.playbackStatusListenerId = observedPlayer.onPropertyChanged(
       MprisPlayerProperties.PLAYBACK_STATUS,
       (playbackStatus) => {
-        if (this.player !== observedPlayer) return;
-        this.handlePlaybackStatusChanged(playbackStatus);
+        if (playbackStatus === PlaybackStatus.STOPPED)
+          this.rememberCompletionIfReached();
+        this.deferTimelineRefresh(observedPlayer);
       },
     );
-  }
-
-  handlePlaybackCommand({ phase, command, result }) {
-    if (!command) return;
-    if (phase === PlaybackCommandPhases.STARTED) {
-      if (canCommandReplaceTrack(command)) this.beginPendingCommand(command);
-      return;
-    }
-    if (phase === PlaybackCommandPhases.COMPLETED)
-      this.completePendingCommand(command, result);
-  }
-
-  beginPendingCommand(command) {
-    if (
-      command.player !== this.player ||
-      !hasMprisTrackIdentity(this.currentTrackIdentity)
-    )
-      return;
-
-    const context = {
-      command,
-      sourceIdentity: this.currentTrackIdentity,
-      operationSucceeded: false,
-      transition: null,
-      timeoutId: null,
-      active: true,
-    };
-    context.timeoutId = GLib.timeout_add(
-      GLib.PRIORITY_DEFAULT,
-      COMMAND_TRANSITION_TIMEOUT_MS,
-      () => {
-        context.timeoutId = null;
-        this.removePendingCommand(context);
-        return GLib.SOURCE_REMOVE;
-      },
+    this.rateListenerId = observedPlayer.onPropertyChanged(
+      MprisPlayerProperties.RATE,
+      () => this.deferTimelineRefresh(observedPlayer),
     );
-    this.pendingCommands.push(context);
+    this.disconnectPositionChange = observedPlayer.onPositionChanged(() => {
+      if (this.player !== observedPlayer || !this.isCurrentMetadataTrack())
+        return;
+      this.refreshTimeline();
+    });
+    this.refreshTimeline();
   }
 
-  completePendingCommand(command, result) {
-    const context = this.pendingCommands.find(
-      (candidate) => candidate.active && candidate.command.id === command.id,
-    );
-    if (!context) return;
-
-    if (result?.status !== MprisOperationStatuses.SUCCESS) {
-      const transition = context.transition;
-      this.removePendingCommand(context);
-      if (transition) this.notifyTransition(transition);
-      return;
-    }
-
-    context.operationSucceeded = true;
-    if (context.transition) this.emitCommandTransition(context);
+  deferTimelineRefresh(player) {
+    const generation = ++this.timelineRefreshGeneration;
+    Promise.resolve().then(() => {
+      try {
+        if (
+          generation !== this.timelineRefreshGeneration ||
+          this.player !== player ||
+          !this.isCurrentMetadataTrack()
+        )
+          return;
+        this.refreshTimeline();
+        if (player.playbackStatus === PlaybackStatus.PLAYING)
+          this.emitPendingTransitionIfCurrent();
+      } catch (error) {
+        logger.errorOnce(
+          "timeline-refresh",
+          "Deferred track timeline refresh failed",
+          error,
+        );
+      }
+    });
   }
 
-  handlePlaybackStatusChanged(playbackStatus) {
+  refreshTimeline() {
     const player = this.player;
-    if (!player) return;
+    if (!player || !hasMprisTrackIdentity(this.currentTrackIdentity)) {
+      this.timeline = null;
+      return;
+    }
 
+    const playbackState = player.snapshotPlaybackState();
+    this.timeline = createCompletionTimeline(
+      playbackState,
+      GLib.get_monotonic_time(),
+    );
+  }
+
+  rememberCompletionIfReached() {
     if (
-      this.lastPlaybackStatus === PlaybackStatus.PLAYING &&
-      playbackStatus === PlaybackStatus.STOPPED &&
-      hasMprisTrackIdentity(this.currentTrackIdentity)
-    ) {
-      const playbackState = createPlayingSnapshot(
-        player.snapshotPlaybackState(),
-      );
-      if (playbackState)
-        this.lastStoppedPlaybackState = Object.freeze({
-          identity: this.currentTrackIdentity,
-          playbackState,
-        });
-    }
-
-    this.lastPlaybackStatus = playbackStatus;
-    if (playbackStatus === PlaybackStatus.PLAYING) {
-      this.lastStoppedPlaybackState = null;
-      this.emitPendingTransitionIfCurrent();
-    }
+      hasMprisTrackIdentity(this.currentTrackIdentity) &&
+      timelineReachedCompletion(this.timeline, GLib.get_monotonic_time())
+    )
+      this.completedIdentity = this.currentTrackIdentity;
   }
 
   handleTrackChanged(transition) {
@@ -247,48 +193,41 @@ export default class TrackTransitionTracker {
 
     const previousIdentity = this.currentTrackIdentity;
     const nextIdentity = createMprisTrackIdentity(player.metadata);
-    const stoppedPlaybackState = this.isStoppedPlaybackStateFor(
-      previousIdentity,
-    )
-      ? this.lastStoppedPlaybackState.playbackState
-      : null;
-    let reason = resolveTrackTransitionReason(transition.previousPlaybackState);
-
-    if (
-      reason !== TrackTransitionReasons.COMPLETED &&
-      player.playbackStatus === PlaybackStatus.STOPPED &&
-      stoppedPlaybackState
-    )
-      reason = resolveTrackTransitionReason(stoppedPlaybackState);
-
+    const previousPlaybackState = transition?.previousPlaybackState ?? null;
+    const now = GLib.get_monotonic_time();
+    const previousTimeline =
+      previousPlaybackState?.clockDiscontinuity === true ? null : this.timeline;
+    const reachedCompletion =
+      this.isCompletedIdentity(previousIdentity) ||
+      timelineReachedCompletion(previousTimeline, now);
+    const reason =
+      reachedCompletion && player.loopStatus !== LoopStatus.TRACK
+        ? TrackTransitionReasons.COMPLETED
+        : TrackTransitionReasons.REPLACED;
     const event = Object.freeze({
       player,
-      previousTrack: transition.previousTrack,
-      track: transition.track,
+      previousTrack: transition?.previousTrack ?? null,
+      track: transition?.track ?? null,
       reason,
-      command: null,
     });
 
     this.currentTrackIdentity = nextIdentity;
-    this.lastPlaybackStatus = player.playbackStatus;
-    this.lastStoppedPlaybackState = null;
+    this.timeline = null;
+    this.completedIdentity = null;
     this.pendingTransition = null;
     this.pendingEvaluationGeneration++;
+    this.timelineRefreshGeneration++;
 
     if (reason !== TrackTransitionReasons.COMPLETED) {
-      this.emitTransition(event, previousIdentity, nextIdentity);
+      this.notifyTransition(event);
+      this.refreshTimeline();
       return;
     }
 
-    this.pendingTransition = Object.freeze({
-      event,
-      previousIdentity,
-      identity: nextIdentity,
-    });
+    this.pendingTransition = Object.freeze({ event, identity: nextIdentity });
 
-    // Metadata and PlaybackStatus can arrive in the same PropertiesChanged
-    // batch. Evaluate after the batch has been applied so dictionary order
-    // cannot make a paused replacement look like a playing next track.
+    // Metadata and PlaybackStatus may share one PropertiesChanged batch. Wait
+    // until the batch is fully applied before requiring the new track to play.
     const evaluationGeneration = this.pendingEvaluationGeneration;
     Promise.resolve().then(() => {
       try {
@@ -297,7 +236,8 @@ export default class TrackTransitionTracker {
           this.player !== player
         )
           return;
-        this.handlePlaybackStatusChanged(player.playbackStatus);
+        this.refreshTimeline();
+        this.emitPendingTransitionIfCurrent();
       } catch (error) {
         logger.errorOnce(
           "pending-transition",
@@ -308,18 +248,24 @@ export default class TrackTransitionTracker {
     });
   }
 
-  isStoppedPlaybackStateFor(identity) {
+  isCurrentMetadataTrack() {
+    if (!this.player) return false;
+    return areMprisTrackIdentitiesEqual(
+      this.currentTrackIdentity,
+      createMprisTrackIdentity(this.player.metadata),
+    );
+  }
+
+  isCompletedIdentity(identity) {
     return Boolean(
-      this.lastStoppedPlaybackState &&
-        areMprisTrackIdentitiesEqual(
-          this.lastStoppedPlaybackState.identity,
-          identity,
-        ),
+      this.completedIdentity &&
+      areMprisTrackIdentitiesEqual(this.completedIdentity, identity),
     );
   }
 
   emitPendingTransitionIfCurrent() {
     if (!this.pendingTransition || !this.player) return;
+    if (this.player.playbackStatus !== PlaybackStatus.PLAYING) return;
 
     const currentIdentity = createMprisTrackIdentity(this.player.metadata);
     if (
@@ -332,79 +278,9 @@ export default class TrackTransitionTracker {
       return;
     }
 
-    const { event, previousIdentity, identity } = this.pendingTransition;
+    const { event } = this.pendingTransition;
     this.pendingTransition = null;
-    this.emitTransition(event, previousIdentity, identity);
-  }
-
-  findPendingCommand(player, previousIdentity) {
-    return (
-      this.pendingCommands.find(
-        (context) =>
-          context.active &&
-          !context.transition &&
-          context.command.player === player &&
-          areMprisTrackIdentitiesEqual(
-            context.sourceIdentity,
-            previousIdentity,
-          ),
-      ) ?? null
-    );
-  }
-
-  rebaseFollowingCommands(context, previousIdentity, nextIdentity) {
-    const contextIndex = this.pendingCommands.indexOf(context);
-    if (contextIndex < 0) return;
-
-    for (
-      let index = contextIndex + 1;
-      index < this.pendingCommands.length;
-      index++
-    ) {
-      const candidate = this.pendingCommands[index];
-      if (
-        candidate.active &&
-        !candidate.transition &&
-        candidate.command.player === context.command.player &&
-        areMprisTrackIdentitiesEqual(candidate.sourceIdentity, previousIdentity)
-      )
-        candidate.sourceIdentity = nextIdentity;
-    }
-  }
-
-  emitTransition(transition, previousIdentity, nextIdentity) {
-    const commandContext = this.findPendingCommand(
-      transition.player,
-      previousIdentity,
-    );
-    if (!commandContext) {
-      this.notifyTransition(transition);
-      return;
-    }
-
-    commandContext.transition = transition;
-    this.rebaseFollowingCommands(
-      commandContext,
-      previousIdentity,
-      nextIdentity,
-    );
-    if (commandContext.operationSucceeded)
-      this.emitCommandTransition(commandContext);
-  }
-
-  emitCommandTransition(context) {
-    if (!context.active || !context.transition) return;
-
-    const transition = Object.freeze({
-      ...context.transition,
-      command: Object.freeze({
-        id: context.command.id,
-        action: context.command.action,
-        origin: context.command.origin,
-      }),
-    });
-    this.removePendingCommand(context);
-    this.notifyTransition(transition);
+    this.notifyTransition(event);
   }
 
   onTransition(callback) {
@@ -429,23 +305,6 @@ export default class TrackTransitionTracker {
     }
   }
 
-  removePendingCommand(context) {
-    if (!context || !context.active) return;
-    context.active = false;
-    if (context.timeoutId !== null) {
-      GLib.Source.remove(context.timeoutId);
-      context.timeoutId = null;
-    }
-    const index = this.pendingCommands.indexOf(context);
-    if (index >= 0) this.pendingCommands.splice(index, 1);
-  }
-
-  clearPendingCommands() {
-    for (const context of [...this.pendingCommands])
-      this.removePendingCommand(context);
-    this.pendingCommands = [];
-  }
-
   disconnectPlayer() {
     const player = this.player;
     if (player) {
@@ -456,22 +315,29 @@ export default class TrackTransitionTracker {
           MprisPlayerProperties.PLAYBACK_STATUS,
           this.playbackStatusListenerId,
         );
+      if (this.rateListenerId)
+        player.removePropertyChangeListener(
+          MprisPlayerProperties.RATE,
+          this.rateListenerId,
+        );
     }
-    this.clearPendingCommands();
+    if (this.disconnectPositionChange) this.disconnectPositionChange();
+
     this.player = null;
     this.trackChangeListenerId = 0;
     this.playbackStatusListenerId = 0;
+    this.rateListenerId = 0;
+    this.disconnectPositionChange = null;
     this.currentTrackIdentity = null;
-    this.lastPlaybackStatus = PlaybackStatus.STOPPED;
-    this.lastStoppedPlaybackState = null;
+    this.timeline = null;
+    this.completedIdentity = null;
     this.pendingTransition = null;
     this.pendingEvaluationGeneration++;
+    this.timelineRefreshGeneration++;
   }
 
   destroy() {
     this.disconnectPlayer();
-    if (this.unsubscribePlaybackCommands) this.unsubscribePlaybackCommands();
-    this.unsubscribePlaybackCommands = null;
     this.listeners.clear();
   }
 }

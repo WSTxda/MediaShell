@@ -466,7 +466,7 @@ export default class MprisPlayer {
       hasMprisTrackIdentity(nextIdentity) &&
       !areMprisTrackIdentitiesEqual(previousIdentity, nextIdentity);
     const previousPlaybackState = trackChanged
-      ? this.positionTracker?.snapshotPlaybackState() ?? null
+      ? (this.positionTracker?.snapshotPlaybackState() ?? null)
       : null;
 
     this.storeNormalizedMetadata(metadata, revision);

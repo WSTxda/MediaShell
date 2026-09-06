@@ -70,11 +70,7 @@ export default class TrackChangeToastSurface {
   }
 
   handleTransition(transition) {
-    if (
-      !this.enabled ||
-      transition.reason !== TrackTransitionReasons.COMPLETED ||
-      transition.command
-    )
+    if (!this.enabled || transition.reason !== TrackTransitionReasons.COMPLETED)
       return;
 
     const track = transition.player.track ?? transition.track;
