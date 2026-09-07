@@ -1,147 +1,114 @@
 # Development
 
-[Contributing](../CONTRIBUTING.md) defines contribution requirements, including translations and review expectations. [Architecture](ARCHITECTURE.md) defines ownership, dependency boundaries, and runtime flows. This document covers the project-specific tools and implementation practices needed to work within those contracts.
+[Architecture](ARCHITECTURE.md) defines ownership and process boundaries. [Contributing](../CONTRIBUTING.md) defines contribution requirements. This document covers the practical workflow for working on the current source tree.
 
-## Environment and commands
+## Environment
 
-Use the Node.js and pnpm versions declared in `package.json`. GNOME development requires GJS, GNOME Shell, `gnome-extensions`, GNU gettext, and the GLib schema/resource tools; release verification additionally requires `shexli`.
+Use the Node.js and pnpm versions declared in `package.json`. GNOME development also requires the native tools used by the project for Shell, schemas/resources, translations, and packaging.
 
 ```bash
 pnpm install
-pnpm run env:doctor
+pnpm env:doctor
 ```
 
-`env:doctor` verifies the supported Shell and Libadwaita baseline and reports missing native tools. `pnpm run shell:debug` starts the supported nested development session for the installed GNOME version.
+`env:doctor` checks the local development baseline, including the supported GNOME Shell range and Preferences requirements.
 
-The commands normally used directly are:
+## Commands
 
-| Command                  | Purpose                                                                  |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `pnpm test`              | Run toolkit-independent behavior and contract tests.                     |
-| `pnpm run check:runtime` | Validate source, tests, declarative contracts, assets, and translations. |
-| `pnpm check`             | Run the runtime gate and formatting verification.                        |
-| `pnpm format`            | Format maintained project files with Prettier.                           |
-| `pnpm run check:native`  | Validate schemas, resources, extraction, and catalogs with native tools. |
-| `pnpm run check:package` | Validate the generated extension archive against the current checkout.   |
-| `pnpm build`             | Run runtime/native gates, build the extension, and validate its archive. |
-| `pnpm verify`            | Run the complete release gate, including `shexli`.                       |
-| `pnpm run ext:reinstall` | Build, install, and enable the local package.                            |
-| `pnpm run ext:prefs`     | Open the installed extension preferences.                                |
+`package.json` is the authoritative command inventory. The commands normally used directly are:
 
-`package.json` is the authoritative command inventory. The `build:*` scripts are pipeline stages; invoke them directly only when diagnosing that stage.
+| Command              | Purpose                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `pnpm test`          | Run behavioral and contract tests.                                                 |
+| `pnpm lint`          | Validate JavaScript syntax, imports, boundaries, entrypoints, and runtime API use. |
+| `pnpm check`         | Run the normal development gate, including tests and formatting.                   |
+| `pnpm check:all`     | Add dependency and native validation to the development gate.                      |
+| `pnpm format`        | Format maintained files with Prettier.                                             |
+| `pnpm build:debug`   | Validate and build a development package.                                          |
+| `pnpm build:force`   | Package without the normal validation gates.                                       |
+| `pnpm build:release` | Run release validation and build the release package.                              |
+| `pnpm ext:install`   | Install the current package.                                                       |
+| `pnpm ext:reinstall` | Build the debug profile and reinstall it.                                          |
+| `pnpm ext:prefs`     | Open the installed Preferences window.                                             |
+| `pnpm shell:debug`   | Start the supported nested Shell development session.                              |
+| `pnpm translations`  | Update translation catalogs after source-string changes.                           |
 
-## Validation model
+Build profiles write the canonical package under `dist/builds/`. `build:debug`, `build:force`, and `build:release` also accept `--install` when building and installing should be one operation.
 
-The gates validate deterministic project facts rather than approximating architecture or UI behavior:
+## Source conventions
 
-- JavaScript under `src/`, `scripts/`, and `tests/` is parsed as ECMAScript modules with the shared Acorn configuration.
-- Runtime imports are resolved against real files and exports. The source graph rejects cycles, missing bindings, imports outside the packaged source tree, and Shell/Preferences/shared boundary violations.
-- Extension and Preferences entrypoints are resolved through AST bindings and inheritance, so equivalent valid export syntax is accepted without textual source matching.
-- Runtime API checks cover explicitly unsupported or removed APIs; they do not infer ownership or lifecycle from method names.
-- Declarative checks parse metadata, schemas, GtkBuilder resources, D-Bus XML, settings definitions, and playback contracts and compare their actual values across representations.
-- Asset checks parse resource manifests and images. Translation checks compare extracted source messages with the template and locale catalogs.
-- Native validation runs the real GLib and gettext compilers.
-- Package validation reads the ZIP with bounded expansion, rejects duplicate, unsafe, non-canonical, symlink, and special entries, verifies CRC/readability, parses packaged modules, resolves their imports, and compares every file digest with source or a freshly compiled artifact from the same checkout.
+- JavaScript files use lower camel case; classes and imported class/module values use PascalCase.
+- Keep code with the domain that owns it. Do not introduce generic `utils`, `services`, or `constants` buckets when ownership is more specific.
+- `src/shared/` remains toolkit-independent; Shell and Preferences remain separate processes.
+- The creator of a signal, timeout, cancellable, cache, actor, or private override owns its cleanup.
+- Prefer asynchronous APIs for I/O and D-Bus operations that can block the Shell main loop.
+- Reject stale asynchronous results after owner, endpoint, actor, or lifecycle replacement.
+- Preserve protocol spelling at MPRIS/D-Bus boundaries and normalize external values before downstream use.
+- Keep Popup and Top Bar presentation independent unless the full ownership and teardown contract is genuinely shared.
+- Comments should explain non-obvious protocol, lifecycle, compatibility, or ownership reasons rather than narrating code.
 
-Regex is used only where the input itself has a lexical grammar, such as gettext directives, placeholders, version output, or a documented API/URI family. It is not used to decide JavaScript structure, ownership, or lifecycle.
+## Working in core areas
 
-Passing these gates establishes source and package integrity. It does not establish visual correctness, Shell actor lifecycle reachability, performance, real D-Bus behavior, or compatibility with private GNOME Shell internals.
+### MPRIS and playback
 
-## Integration map
+Start in `src/shell/mpris/` when behavior belongs to the MPRIS endpoint or D-Bus protocol. MediaShell control semantics live under `src/shell/media/playback/`. Surfaces consume these capabilities instead of calling proxies directly.
 
-Prepare the integration map required by [Contributing](../CONTRIBUTING.md) before a structural or cross-surface change. Trace current imports, settings flow, event flow, resource ownership, teardown, and compatibility-sensitive identifiers before choosing new files or abstractions.
+### Identity and application actions
 
-The map is a review artifact, not a runtime layer. Its purpose is to identify the existing owner, the smallest valid integration point, code that will be reused, obsolete paths that will be removed, and the evidence needed to show that behavior was preserved.
+Desktop identity is presentation/action context, not MPRIS endpoint lifetime. Browser/PWA handling must be based on structural identity evidence and remain conservative when the endpoint cannot be mapped safely.
 
-## Modules and ownership
+### Artwork
 
-Use PascalCase filenames when the primary export is an owning class of the same name. Use camelCase for functional modules, policies, declarative tables, enums, and pure helpers. Keep a controller with the other controllers unless it owns a substantial subdomain; avoid one-file category directories.
-
-Group constants by a cohesive domain contract, not merely by surface or directory. Constant modules contain pure values and frozen declarative data. Do not place `GObject` instances, toolkit objects, caches, mutable runtime state, or one-use implementation values in them. Move behavior to a utility only when it is stateless and genuinely reused; move it to `shared` only when both processes can consume it without toolkit coupling.
-
-Use lifecycle verbs consistently:
-
-| Verb         | Contract                                                       |
-| ------------ | -------------------------------------------------------------- |
-| `create*`    | Always creates a new owned value or object.                    |
-| `ensure*`    | Creates only when the owned value is absent.                   |
-| `build*`     | Composes and returns a value.                                  |
-| `render*`    | Presents current component state and may reuse owned actors.   |
-| `resolve*`   | Derives a decision without taking ownership.                   |
-| `sync*`      | Updates an existing value or object.                           |
-| `reconcile*` | Moves owned state toward a target and may create or remove it. |
-| `schedule*`  | Owns deferred work.                                            |
-| `attach*`    | Places an existing actor or object.                            |
-| `remove*`    | Detaches state while leaving the owner reusable.               |
-| `destroy*`   | Performs final teardown.                                       |
-
-Popup and Top Bar intentionally use separate actor owners. Align method names when operations have the same semantics, but do not introduce inheritance or a shared renderer merely because two components look similar. Surface geometry, actor placement, signals, animation, and teardown remain local unless their complete contracts are identical.
-
-The creator of a signal connection, GLib source, cancellable, asynchronous generation, actor, private API override, or cache owns its cleanup. Invalidate or cancel work that can complete after an endpoint, component, window, or extension lifecycle is replaced.
-
-## Project vocabulary
-
-- `MediaApp` is the runtime entity discovered, selected, displayed, and controlled by MediaShell.
-- `Player` refers to the `org.mpris.MediaPlayer2.Player` interface or proxy context, not to the generic runtime entity.
-- `desktopApp` and `shellApp` distinguish installed application identity from an MPRIS endpoint when plain `app` would be ambiguous.
-
-## High-risk change paths
+Use the shared artwork service/cache for acquisition. Surface components own only their actors, geometry, request generation, and presentation lifecycle.
 
 ### Settings and Preferences
 
-A setting can span the GSettings schema, shared key/enum definitions, Shell `settingsSpec`, Preferences bindings or controllers, GtkBuilder objects, visible strings, translations, and tests. Trace and update every representation that actually participates in that setting.
-
-### MPRIS and D-Bus
-
-Keep endpoint discovery and lifetime in `MediaAppRegistry`, endpoint state and operations in `MprisMediaApp`, selection in its policy module, and surface actions on the shared control-definition/state/executor path. Capabilities and confirmed endpoint properties are authoritative; UI state is not.
-
-Normalize endpoint metadata before identity or presentation decisions. Application-specific exceptions require a protocol or platform reason.
-
-### Artwork and asynchronous work
-
-Keep source access, shared requests, and cache policy in the loading service; keep decoding and stateless presentation calculations in utilities; keep actors, geometry, request generations, and cancellation in each surface owner. A late result must be rejected when its request, active endpoint, actor, or lifecycle is no longer current.
+Trace a setting through the schema, shared definitions, Shell consumers, Preferences bindings/controllers, GtkBuilder resources, translations, and tests that actually represent it. Opening Preferences must not mutate settings except through an explicit migration or user action.
 
 ### Private Shell APIs
 
-Private GNOME Shell access stays isolated in its compatibility adapter, capability-checked, reversible, and scoped to the feature that needs it.
+Keep private GNOME Shell access behind the existing integration/private boundary. Private changes require capability checks, reversible lifecycle handling, and live testing on every supported Shell version they affect.
 
-## Tests, comments, and diagnostics
+## Validation
 
-Prefer tests for pure decisions, normalization, persisted or external contracts, cross-file build/runtime integrity, owner replacement, cancellation, stale-result rejection, and reproducible package corruption.
+For normal work:
 
-Do not count methods, lock incidental source layout, duplicate constants without exercising behavior, or infer lifecycle correctness from names or source patterns. Add coverage only when an important behavior or compatibility contract is otherwise unprotected.
+```bash
+pnpm check
+```
 
-Comments should preserve non-obvious intent, ownership, protocol constraints, compatibility decisions, or lifecycle hazards. Use the shared logger for failures that help diagnosis and bounded logging for repeated failure paths; routine success, cleanup, and expected capability absence do not need logs.
+For runtime, resource, schema, translation, or packaging changes:
 
-## Live validation and debugging
+```bash
+pnpm build:debug
+```
 
-Choose live scenarios from the changed ownership and contract:
+For a release candidate:
 
-- lifecycle changes: enable, disable, reload, and owner replacement;
-- MPRIS changes: representative endpoint capabilities and more than one implementation when relevant;
-- Preferences changes: opening the window must not write settings; explicit actions must write only their intended keys;
-- UI changes: exercise the affected surface, state transitions, and supported GNOME versions;
-- private API changes: test every supported GNOME release.
+```bash
+pnpm build:release
+```
+
+Automated gates verify source/package contracts but cannot prove visual correctness, real MPRIS behavior, Shell actor lifecycle, performance, or compatibility with private GNOME Shell internals. Test those paths live.
 
 Useful diagnostics:
 
 ```bash
-pnpm run shell:debug
+pnpm shell:debug
 journalctl --user -f -o cat /usr/bin/gnome-shell
 dconf watch /org/gnome/shell/extensions/mediashell/
 ```
 
-Record only the environment and output needed to reproduce the result.
+## Translations
 
-## Release
-
-From a clean tree:
+After changing user-visible strings:
 
 ```bash
-pnpm verify
+pnpm translations
+pnpm check
 ```
 
-The validated archive is written under `dist/builds/`. Install it and exercise the affected runtime paths before publishing or submitting it.
+Review the `.pot` and `.po` changes rather than replacing existing reviewed translations with placeholders.
 
 ## References
 
@@ -150,3 +117,4 @@ The validated archive is written under `dist/builds/`. Install it and exercise t
 - [GNOME extension preferences](https://gjs.guide/extensions/development/preferences.html)
 - [`Gio.Settings` API](https://docs.gtk.org/gio/class.Settings.html)
 - [GNOME extension review guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html)
+- [GNOME extension best practices](https://gjs.guide/extensions/review-guidelines/best-practices.html)

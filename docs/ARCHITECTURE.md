@@ -1,124 +1,95 @@
 # Architecture
 
-MediaShell is organized by process boundary and resource ownership. GNOME Shell owns runtime integration, MPRIS state, and Shell actors. Preferences runs separately with GTK4/Libadwaita. Shared modules contain toolkit-independent contracts and pure behavior used by either process.
+MediaShell is organized around process boundaries and resource ownership. This document describes the durable structure of the project, not individual feature behavior. Development conventions belong in [Development](DEVELOPMENT.md), and contribution requirements belong in [Contributing](../CONTRIBUTING.md).
 
-This document describes durable boundaries, owners, and flows. Implementation conventions and validation mechanics belong in [Development](DEVELOPMENT.md); contributor obligations belong in [Contributing](../CONTRIBUTING.md).
+## Repository boundaries
 
-## Repository and process boundaries
+| Path                 | Responsibility                                                                  |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `src/extension.js`   | GNOME Shell entrypoint.                                                         |
+| `src/prefs.js`       | Preferences entrypoint.                                                         |
+| `src/shared/`        | Toolkit-independent contracts and pure helpers shared by Shell and Preferences. |
+| `src/shell/`         | GNOME Shell runtime, MPRIS, media capabilities, integrations, and Shell UI.     |
+| `src/prefs/`         | GTK4/Libadwaita preferences UI and controllers.                                 |
+| `assets/`            | Metadata, schemas, resources, translations, and bundled assets.                 |
+| `scripts/`, `tests/` | Development, validation, packaging, and behavioral/contract checks.             |
 
-| Path                    | Responsibility                                                          |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `src/extension.js`      | GNOME Shell entrypoint.                                                 |
-| `src/prefs.js`          | Preferences entrypoint.                                                 |
-| `src/shared/`           | Toolkit-independent contracts, enums, constants, and pure helpers.      |
-| `src/shell/`            | GNOME Shell, MPRIS, panel, popup, and extension-lifetime owners.        |
-| `src/prefs/`            | GTK4/Libadwaita window, bindings, controllers, and widgets.             |
-| `assets/`               | Schemas, GtkBuilder UI, D-Bus XML, translations, and bundled images.    |
-| `scripts/` and `tests/` | Development-time validation, packaging, and behavior/contract coverage. |
+`src/shared/` does not import Shell, GTK, Libadwaita, or other process-specific APIs. Shell and Preferences do not import each other; GSettings, compiled resources, and shared contracts are their common boundary.
 
-`src/shared/` does not import GNOME Shell, GTK, or other process-specific APIs. Shell and Preferences do not import each other. Their common boundary is the schema, compiled resources, and shared toolkit-independent modules.
+## Lifecycle and ownership
 
-The installable extension contains runtime files and compiled artifacts only. Documentation, tests, source catalogs, screenshots, and development tooling are not part of the runtime package.
+`extension.js` creates one `ExtensionController` for an enabled extension lifecycle. The controller composes extension-owned resources and the Shell runtime; it does not become the owner of domain behavior that belongs below it.
 
-## Entrypoints and lifecycle roots
+The component that creates a signal connection, GLib source, cancellable, asynchronous generation, actor, cache, or private API override owns its cleanup. Work that can finish after its owner is replaced must be cancelled or rejected as stale.
 
-`extension.js` owns no runtime service or UI. It creates one `ExtensionController` per enabled lifecycle and delegates teardown to that controller. `ExtensionController` constructs dependencies before consumers, rejects stale startup work through a lifecycle generation, and tears down owned resources in dependency-safe order.
+The canonical media runtime survives session-profile changes such as lock/unlock while user-facing Shell integrations are reconciled for the active profile.
 
-`prefs.js` validates the Preferences runtime, initializes translation dispatch, and delegates window construction to `PreferencesController`. The controller owns the window composition, settings bindings, page/dialog controllers, and window-scoped teardown.
+## Shell media runtime
 
-Module scope is limited to immutable data, pure functions, and state explicitly valid for the whole process. Extension-lifetime resources must have an owner and cleanup path. Process-lifetime adapters are allowed only when their behavior is intentionally idempotent; Preferences resource registration and translation dispatch use that model.
-
-The component that creates a signal connection, GLib source, cancellable, asynchronous generation, actor, or private API override owns its cleanup.
-
-## Shell ownership
-
-| Owner                              | Architectural responsibility                                                                                                                  |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ExtensionController`              | Extension lifecycle, dependency construction, settings impact dispatch, global shortcuts, optional Shell patching, and top-level UI mounting. |
-| `SettingsStore`                    | Typed runtime settings reads and change subscriptions.                                                                                        |
-| `MprisProxyFactory`                | Construction of the D-Bus proxies used by MPRIS owners.                                                                                       |
-| `MediaAppRegistry`                 | Endpoint discovery, lifetime tracking, blocked-app filtering, and active-media-app selection.                                                 |
-| `MprisMediaApp`                    | One MPRIS endpoint: proxies, confirmed state, capabilities, operations, writes, and endpoint signals.                                         |
-| `PlaybackPositionTracker`          | Playback-position projection from confirmed endpoint state and monotonic time.                                                                |
-| `DesktopAppResolver`               | Mapping endpoint identity to installed desktop/browser/PWA identity; it does not own endpoint lifetime.                                       |
-| `MediaShellIndicator`              | Panel actor, popup-menu boundary, active-endpoint bindings, and coalesced surface updates.                                                    |
-| `TopBarContent` and `PopupContent` | Independent coordination and teardown of their surface components.                                                                            |
-| `AlbumArtLoader`                   | Shared local/remote artwork access, in-flight request reuse, and bounded cache ownership.                                                     |
-
-Long-lived asynchronous owners use cancellables, generation checks, active-owner checks, or equivalent tokens. A result created for an old endpoint, actor, window, or extension lifecycle cannot update its replacement.
-
-## MPRIS state and control flow
-
-D-Bus ownership of `org.mpris.MediaPlayer2.*` names is authoritative for endpoint lifetime. Desktop identity, browser/PWA identity, metadata, blocked applications, and user pinning affect filtering, presentation, or selection without replacing D-Bus ownership as the lifetime source.
-
-Discovery and endpoint ownership remain separate from active-app selection. The registry delegates selection decisions to deterministic policy functions, allowing discovery, selection, and presentation to evolve independently.
-
-Playback actions use one path:
+`MediaRuntime` is the capability boundary shared by Shell consumers. It composes MPRIS discovery and selection with playback, artwork, desktop identity, and application actions so UI surfaces do not create their own protocol or media services.
 
 ```text
-control definition and state decision
-  -> surface component
-  -> playbackControlExecutor
-  -> MprisMediaApp
-  -> MPRIS endpoint
+MPRIS / D-Bus
+    ↓
+MprisPlayerRegistry
+    ↓
+MediaRuntime
+    ├── playback
+    ├── artwork
+    ├── identity
+    └── application
+         ↓
+Shell consumers
 ```
 
-Surface code does not call endpoint proxies directly. Endpoint capabilities and confirmed properties determine whether an operation is available and which state is presented. UI components consume `PlaybackPositionTracker` instead of maintaining independent playback clocks.
+A capability may depend on another capability, but presentation code must not become authoritative for media state.
 
-## Shell surfaces and sharing
+## MPRIS and D-Bus
 
-Popup and Top Bar have different actor trees, geometry, interaction, visibility, and teardown. `PopupContent` can defer work while its menu is closed; `TopBarContent` reconciles ordered panel elements. `MediaShellIndicator` binds both to the same active `MediaApp` and coalesces invalidations before dispatching surface updates.
+Ownership of `org.mpris.MediaPlayer2.*` names on the session bus is authoritative for player lifetime. `MprisPlayer` owns the proxies and confirmed state of one endpoint; the registry owns endpoint discovery, lifetime, filtering, and active-player selection.
 
-Their parallel components are intentional:
+MPRIS metadata is normalized at the protocol boundary into the canonical Track representation used downstream. Capabilities and confirmed endpoint properties determine whether controls are available. Desktop application or browser/PWA identity may improve presentation and application actions, but it never replaces D-Bus ownership as the source of player lifetime.
 
-- Popup and Top Bar playback controls consume common definitions, state decisions, accessibility data, and execution, but own their buttons and lifecycle independently.
-- Track-information components share normalization and ordering contracts while retaining surface-specific presentation and layout.
-- Artwork components share loading, decoding, and stateless presentation helpers while separately owning actors, request generations, cancellation, geometry, and animation.
+Playback position uses confirmed MPRIS state and monotonic time rather than an independent polling clock in each surface. Discontinuities are reconciled from the endpoint before projected state is exposed again.
 
-Shared appearance or method names alone do not justify a base class or shared actor renderer. Implementation is shared only when inputs, outputs, side effects, ownership, teardown, and expected evolution are all the same.
+## Media capabilities
+
+Playback commands use the shared playback capability rather than calling MPRIS proxies from surfaces. This keeps command semantics and operation results consistent across Popup, Top Bar, shortcuts, and other consumers.
+
+Artwork acquisition and persistent caching are shared capabilities. Surface artwork components own only presentation state, request generations, geometry, and actor lifecycle.
+
+Desktop identity resolves an MPRIS endpoint to installed application identity for presentation and supported application actions. Window resolution is conservative: exact application/PWA evidence may improve Raise behavior, while ambiguous cases fall back to the normal MPRIS action instead of redefining player identity.
+
+## Shell UI
+
+Popup and Top Bar consume the same media runtime but own separate actor trees, geometry, visibility, interaction, reconciliation, and teardown. Shared domain decisions and stateless primitives may be reused; actors and lifecycle are shared only when their complete ownership contract is the same.
+
+Transient feedback uses the native GNOME OSD integration. Feature code supplies presentation data while GNOME-specific compatibility stays behind the integration boundary.
 
 ## Settings and Preferences
 
-GSettings is the persisted contract between Shell and Preferences. Schema keys, defaults, ranges, and enum values are represented by shared definitions and consumed through process-specific owners.
+GSettings is the persisted contract between Shell and Preferences. Shared settings definitions describe stable keys and values; Shell and Preferences use process-specific owners to consume them.
 
-Shell reads and subscribes through `SettingsStore`; settings impact metadata determines which runtime region is updated or rebuilt. Preferences uses `PreferenceBinder` for direct and converted widget bindings and page controllers for behavior that is not a simple binding. Initial synchronization is read-only unless an explicit migration owns a write.
+Preferences uses GTK4/Libadwaita and GtkBuilder resources. Schema keys, resource paths, GtkBuilder IDs, custom `GTypeName` values, CSS classes, and other declarative identifiers are compatibility-sensitive contracts and require deliberate migration when changed.
 
-GtkBuilder resource paths, object IDs, widget classes, custom `GTypeName` values, CSS classes, and schema identifiers are compatibility-sensitive boundaries between declarative assets and JavaScript.
+## Private GNOME Shell APIs
 
-## Metadata and artwork
+Private Shell access is isolated under `src/shell/private/gnome/` and reached through public MediaShell integration boundaries. Private integrations must be capability-checked, reversible, and fail safely when a supported Shell version does not provide the expected internal contract.
 
-MPRIS metadata is untrusted input and is normalized before identity, selection, or presentation logic uses it. Track identity prefers the strongest endpoint-provided identity and falls back conservatively when implementations are incomplete.
+Private API details must not leak into MPRIS, shared media capabilities, or general surface ownership.
 
-Artwork is divided by ownership:
+## Stable contracts
 
-- `AlbumArtLoader` owns source access, shared in-flight work, cache reads/writes, pruning, and extension-lifetime cancellation;
-- utilities own source normalization, decoding, and stateless presentation calculations;
-- Popup and Top Bar artwork components own presentation actors, request generations, cancellation, geometry, and teardown.
+Changes to these areas require explicit compatibility analysis:
 
-This separation allows source/cache reuse without sharing surface actors or accepting stale results.
+- extension UUID, metadata, supported GNOME versions, and package layout;
+- GSettings keys, types, ranges, defaults, and persisted enum/action values;
+- MPRIS/D-Bus interface names and protocol values;
+- resource paths, GtkBuilder IDs/classes, CSS classes, and `GTypeName` strings.
 
-## Visualizer
+## References
 
-The visualizer follows the same separation between portable decisions, Shell presentation, drawing, and lifecycle:
-
-- shared visualizer modules define style values, normalization, and frame calculations without importing Shell APIs;
-- Shell visualizer constants define renderer mappings, geometry, and timing used by the panel implementation;
-- `TopBarVisualizer` is the sole owner of actors, playback/animation state, the `Clutter.Timeline`, repaint callbacks, attachment, and teardown;
-- `topBarVisualizerDrawing.js` performs stateless Cairo drawing from complete frame data and owns no actor, signal, timer, or animation clock.
-
-`TopBarContent` creates the visualizer only when enabled and destroys that owner when disabled. A visualizer style may add drawing or frame behavior, but it must not add another scheduler, settings path, or lifecycle root.
-
-## Stable external boundaries
-
-Changes to the following require explicit compatibility or migration analysis:
-
-- extension identity and supported GNOME versions;
-- GSettings keys, types, defaults, ranges, and enum values;
-- MPRIS and D-Bus interface members;
-- resource paths, GtkBuilder IDs/classes, CSS classes, and `GTypeName` strings;
-- persisted input-action values and playback-control IDs;
-- package layout expected by GNOME installation and review tooling.
-
-## Private GNOME Shell API
-
-`GnomeShellMediaControlsPatch` is the isolated compatibility boundary for the optional integration with GNOME Shell internals. Private API access must remain capability-checked, reversible, and limited to that feature. It must not leak into general MPRIS or UI ownership.
+- [MPRIS specification](https://specifications.freedesktop.org/mpris/latest/)
+- [GNOME Shell extension development](https://gjs.guide/extensions/)
+- [GNOME extension review guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html)
+- [GNOME extension best practices](https://gjs.guide/extensions/review-guidelines/best-practices.html)
