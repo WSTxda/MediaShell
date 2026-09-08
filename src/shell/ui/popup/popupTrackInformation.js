@@ -5,7 +5,7 @@
  * Renders configurable track information inside the popup.
  *
  * PopupSurface delegates popup-specific track labels to this component so it
- * can keep title and artist styling while using the shared ordered metadata
+ * can keep popup metadata hierarchy while using the shared ordered metadata
  * model also used by the top bar. Missing fields are omitted before labels are created.
  */
 
@@ -119,7 +119,7 @@ export default class PopupTrackInformation {
       scrollPauseMilliseconds:
         this.settings.trackInformationScrollPauseMilliseconds,
     });
-    label.label.add_style_class_name(styleClass);
+    if (styleClass) label.label.add_style_class_name(styleClass);
     const widthStyle = this.buildFixedWidthStyle(width);
     label.width = width;
     label.style = widthStyle;
@@ -135,8 +135,7 @@ export default class PopupTrackInformation {
   resolveFieldStyleClass(field) {
     if (field === TrackInformationFields.TITLE)
       return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_TITLE;
-    if (field === TrackInformationFields.ARTIST)
-      return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_ARTIST;
+    if (field === TrackInformationFields.ARTIST) return null;
     return MediaShellStyleClasses.POPUP_TRACK_INFORMATION_ALBUM;
   }
 

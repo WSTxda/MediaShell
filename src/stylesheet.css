@@ -79,11 +79,6 @@
   margin-right: 6px;
 }
 
-/* Top Bar — Track information --------------------------------------- */
-.mediashell-top-bar-track-information {
-  -st-hfade-offset: 12px;
-}
-
 /* Top Bar — Visualizer ----------------------------------------------- */
 .mediashell-top-bar-visualizer {
   spacing: 0;
@@ -151,7 +146,6 @@
 
 .mediashell-top-bar-control-label {
   margin: 0;
-  font-feature-settings: "tnum";
 }
 
 /* Popup structure ------------------------------------------------------
@@ -189,9 +183,12 @@
 .mediashell-popup-player-selector-button {
   border-radius: 999px;
   padding: 4px 8px;
-  spacing: 6px;
   min-height: 24px;
   max-height: 28px;
+}
+
+.mediashell-popup-player-selector-button-content {
+  spacing: 6px;
 }
 
 .mediashell-popup-player-selector-button-icon {
@@ -215,7 +212,6 @@
 
 .mediashell-popup-player-selector-button-label {
   font-weight: bold;
-  font-size: 100%;
 }
 
 /* Popup — Player selector list -----------------------------------------
@@ -272,10 +268,6 @@
   icon-size: 18px;
 }
 
-.mediashell-popup-player-selector-row-label {
-  font-size: 100%;
-}
-
 .mediashell-popup-player-selector-row-check-icon {
   icon-size: 16px;
 }
@@ -287,23 +279,6 @@
   width: 30px;
   height: 30px;
   padding: 0;
-}
-
-.mediashell-popup-player-selector-row-pin-button:checked {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-}
-
-.mediashell-popup-player-selector-row-pin-button:checked:hover {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
-}
-
-.mediashell-popup-player-selector-row-pin-button:checked:active {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.2);
 }
 
 .mediashell-popup-player-selector-row-pin-icon {
@@ -318,17 +293,17 @@
   spacing: 4px;
 }
 
+/* Match GNOME Shell's Quick Settings type scale: the menu header uses
+ * %title_3 (15pt/700), metadata body text inherits the stage font, and
+ * secondary metadata follows the Shell caption scale (9pt/400). */
 .mediashell-popup-track-information-title {
-  font-weight: bold;
-  font-size: 140%;
-}
-
-.mediashell-popup-track-information-artist {
-  font-size: 100%;
+  font-weight: 700;
+  font-size: 15pt;
 }
 
 .mediashell-popup-track-information-album {
-  font-size: 90%;
+  font-weight: 400;
+  font-size: 9pt;
 }
 
 /* Popup — Progress bar -----------------------------------------------
@@ -361,7 +336,6 @@
   min-width: 28px;
   min-height: 28px;
   padding: 0;
-  border-radius: 100px;
 }
 
 /* Popup — Playback controls -----------------------------------------
@@ -381,16 +355,12 @@
   spacing: 12px;
 }
 
-.mediashell-popup-control-button {
-  border-radius: 100px;
-  min-height: 48px;
-  min-width: 48px;
-  padding: 0;
-}
-
 .mediashell-popup-control-button-circular {
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
 }
 
 .mediashell-popup-control-button-adjacent {
@@ -398,67 +368,25 @@
   height: 42px;
   min-width: 42px;
   min-height: 42px;
+  padding: 0;
 }
 
+/* Color/state styling comes from the native .button.default role so the
+ * active Shell theme can provide its accent while MediaShell owns geometry. */
 .mediashell-popup-control-button-primary {
+  border-radius: 100px;
   min-width: 96px;
+  min-height: 48px;
   width: 96px;
   height: 48px;
-  transition-duration: 100ms;
-  box-shadow: none;
-}
-
-/* Primary playback button uses the Shell accent color for stock styling. */
-.mediashell-popup-control-button-primary,
-.mediashell-popup-control-button-primary:checked {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-}
-
-.mediashell-popup-control-button-primary:hover {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.1);
-}
-
-.mediashell-popup-control-button-primary:active {
-  background-color: -st-accent-color;
-  color: -st-accent-fg-color;
-  box-shadow: inset 0 0 0 9998px rgba(0, 0, 0, 0.2);
-}
-
-.mediashell-popup-control-button-state {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-}
-
-.mediashell-popup-control-button-text {
-  min-width: 52px;
-  height: 38px;
-  min-height: 38px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 0;
 }
 
 .mediashell-popup-control-label {
   font-feature-settings: "tnum";
 }
 
-.mediashell-popup-control-icon {
-  icon-size: 14px;
-}
-
 .mediashell-popup-control-button-primary .mediashell-popup-control-icon {
-  icon-size: 16px;
-}
-
-.mediashell-popup-control-button-primary:focus {
-  box-shadow: inset 0 0 0 2px -st-accent-fg-color;
-}
-
-.mediashell-popup-control-button-state .mediashell-popup-control-icon {
   icon-size: 16px;
 }
 
@@ -491,6 +419,5 @@
 .mediashell-enhance-media-progress {
   min-width: 72px;
   min-height: 24px;
-  -barlevel-height: 4px;
   -slider-handle-radius: 7px;
 }

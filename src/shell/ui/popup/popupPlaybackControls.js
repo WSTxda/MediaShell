@@ -18,10 +18,7 @@ import {
   NativeStyleClasses,
   styleClassNames,
 } from "../style.js";
-import {
-  PlaybackControlContentKinds,
-  PlaybackControlGroups,
-} from "../../../shared/playback/controls.js";
+import { PlaybackControlGroups } from "../../../shared/playback/controls.js";
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { resolvePlaybackControlState } from "../../media/playback/controlState.js";
 import { resolvePlaybackControlSurfaceUpdates } from "../../media/playback/surfaceState.js";
@@ -113,33 +110,29 @@ export default class PopupPlaybackControls {
     let buttonState = this.controlButtons.get(controlDefinition.id);
     if (buttonState) return buttonState;
 
-    const isLabelControl =
-      controlDefinition.contentKind === PlaybackControlContentKinds.LABEL;
     const button = new St.Button({
       name: controlDefinition.actorName,
       styleClass: styleClassNames(
-        NativeStyleClasses.BUTTON,
-        MediaShellStyleClasses.POPUP_CONTROL_BUTTON,
+        controlDefinition.isPrimary
+          ? NativeStyleClasses.BUTTON
+          : NativeStyleClasses.ICON_BUTTON,
+        controlDefinition.isPrimary ? NativeStyleClasses.DEFAULT : null,
         controlDefinition.isPrimary
           ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_PRIMARY
           : controlDefinition.isAdjacent
             ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_ADJACENT
-            : isLabelControl
-              ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_TEXT
+            : controlDefinition.group === PlaybackControlGroups.SECONDARY
+              ? null
               : MediaShellStyleClasses.POPUP_CONTROL_BUTTON_CIRCULAR,
-        controlDefinition.isStateControl
-          ? MediaShellStyleClasses.POPUP_CONTROL_BUTTON_STATE
-          : null,
       ),
       xAlign: Clutter.ActorAlign.CENTER,
       yAlign: Clutter.ActorAlign.CENTER,
       toggleMode: controlDefinition.isStateControl,
     });
     const content = createPlaybackControlContent(controlDefinition, {
-      iconStyleClass: styleClassNames(
-        NativeStyleClasses.POPUP_MENU_ICON,
-        MediaShellStyleClasses.POPUP_CONTROL_ICON,
-      ),
+      iconStyleClass: controlDefinition.isPrimary
+        ? MediaShellStyleClasses.POPUP_CONTROL_ICON
+        : null,
       labelStyleClass: MediaShellStyleClasses.POPUP_CONTROL_LABEL,
     });
     buttonState = { button, content, signalId: 0, action: null };

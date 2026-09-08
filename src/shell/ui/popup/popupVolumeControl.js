@@ -86,7 +86,6 @@ export default class PopupVolumeControl {
       iconName: "audio-volume-muted-symbolic",
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.muteIcon.set_icon_size(16);
     this.muteButton = new St.Button({
       child: this.muteIcon,
       styleClass: styleClassNames(
@@ -124,7 +123,6 @@ export default class PopupVolumeControl {
       iconName: "audio-volume-high-symbolic",
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.volumeUpIcon.set_icon_size(16);
     this.volumeUpButton = new St.Button({
       child: this.volumeUpIcon,
       styleClass: styleClassNames(

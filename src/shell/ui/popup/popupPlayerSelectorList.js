@@ -320,7 +320,6 @@ export default class PopupPlayerSelectorList {
     playerContent.add_child(
       new St.Label({
         text: displayName,
-        styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_LABEL,
         yAlign: Clutter.ActorAlign.CENTER,
         xExpand: true,
       }),
@@ -343,6 +342,7 @@ export default class PopupPlayerSelectorList {
     const pinButton = new St.Button({
       styleClass: styleClassNames(
         NativeStyleClasses.BUTTON,
+        isPinned ? NativeStyleClasses.DEFAULT : null,
         MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_ROW_PIN_BUTTON,
       ),
       opacity: canSelect ? ACTIVE_OPACITY : INACTIVE_OPACITY,

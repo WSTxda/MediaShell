@@ -12,11 +12,11 @@
 
 export const NativeStyleClasses = Object.freeze({
   BUTTON: "button",
+  DEFAULT: "default",
   FLAT: "flat",
   ICON_BUTTON: "icon-button",
   POPUP_MENU_ICON: "popup-menu-icon",
   POPUP_MENU_ITEM: "popup-menu-item",
-  QUICK_MENU_TOGGLE: "quick-menu-toggle",
   SYSTEM_STATUS_ICON: "system-status-icon",
 });
 
@@ -41,7 +41,6 @@ export const MediaShellStyleClasses = Object.freeze({
   TOP_BAR_CONTROL_ICON: "mediashell-top-bar-control-icon",
   TOP_BAR_CONTROL_LABEL: "mediashell-top-bar-control-label",
   TOP_BAR_PLAYBACK_CONTROLS: "mediashell-top-bar-playback-controls",
-  TOP_BAR_TRACK_INFORMATION: "mediashell-top-bar-track-information",
   TOP_BAR_VISUALIZER: "mediashell-top-bar-visualizer",
   TOP_BAR_VISUALIZER_BEATS: "mediashell-top-bar-visualizer-beats",
   TOP_BAR_VISUALIZER_BEATS_BAR: "mediashell-top-bar-visualizer-beats-bar",
@@ -58,6 +57,8 @@ export const MediaShellStyleClasses = Object.freeze({
   POPUP_CONTAINER: "mediashell-popup-container",
   POPUP_PLAYER_SELECTOR: "mediashell-popup-player-selector",
   POPUP_PLAYER_SELECTOR_BUTTON: "mediashell-popup-player-selector-button",
+  POPUP_PLAYER_SELECTOR_BUTTON_CONTENT:
+    "mediashell-popup-player-selector-button-content",
   POPUP_PLAYER_SELECTOR_BUTTON_EXPAND_ICON:
     "mediashell-popup-player-selector-button-expand-icon",
   POPUP_PLAYER_SELECTOR_BUTTON_ICON:
@@ -74,14 +75,12 @@ export const MediaShellStyleClasses = Object.freeze({
   POPUP_PLAYER_SELECTOR_ROW_CHECK_ICON:
     "mediashell-popup-player-selector-row-check-icon",
   POPUP_PLAYER_SELECTOR_ROW_ITEM: "mediashell-popup-player-selector-row-item",
-  POPUP_PLAYER_SELECTOR_ROW_LABEL: "mediashell-popup-player-selector-row-label",
   POPUP_PLAYER_SELECTOR_ROW_PIN_BUTTON:
     "mediashell-popup-player-selector-row-pin-button",
   POPUP_PLAYER_SELECTOR_ROW_PIN_ICON:
     "mediashell-popup-player-selector-row-pin-icon",
   POPUP_TRACK_INFORMATION: "mediashell-popup-track-information",
   POPUP_TRACK_INFORMATION_ALBUM: "mediashell-popup-track-information-album",
-  POPUP_TRACK_INFORMATION_ARTIST: "mediashell-popup-track-information-artist",
   POPUP_TRACK_INFORMATION_TITLE: "mediashell-popup-track-information-title",
   POPUP_PROGRESS_BAR: "mediashell-popup-progress-bar",
   POPUP_PROGRESS_BAR_TIME: "mediashell-popup-progress-bar-time",
@@ -91,12 +90,9 @@ export const MediaShellStyleClasses = Object.freeze({
   POPUP_PLAYBACK_CONTROLS: "mediashell-popup-playback-controls",
   POPUP_PRIMARY_CONTROLS: "mediashell-popup-primary-controls",
   POPUP_SECONDARY_CONTROLS: "mediashell-popup-secondary-controls",
-  POPUP_CONTROL_BUTTON: "mediashell-popup-control-button",
   POPUP_CONTROL_BUTTON_ADJACENT: "mediashell-popup-control-button-adjacent",
   POPUP_CONTROL_BUTTON_CIRCULAR: "mediashell-popup-control-button-circular",
   POPUP_CONTROL_BUTTON_PRIMARY: "mediashell-popup-control-button-primary",
-  POPUP_CONTROL_BUTTON_STATE: "mediashell-popup-control-button-state",
-  POPUP_CONTROL_BUTTON_TEXT: "mediashell-popup-control-button-text",
   POPUP_CONTROL_ICON: "mediashell-popup-control-icon",
   POPUP_CONTROL_LABEL: "mediashell-popup-control-label",
 });

@@ -10,7 +10,6 @@
  * component preserves the original track-information width and Lock width contract.
  */
 
-import { MediaShellStyleClasses } from "../style.js";
 import { buildTrackInformationText } from "../../media/track/presentation.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import ScrollingLabel from "../components/scrollingLabel.js";
@@ -63,10 +62,6 @@ export default class TopBarTrackInformation {
       scrollPauseMilliseconds:
         this.settings.trackInformationScrollPauseMilliseconds,
     });
-
-    label.add_style_class_name(
-      MediaShellStyleClasses.TOP_BAR_TRACK_INFORMATION,
-    );
 
     const oldLabel = this.actor;
     this.actor = label;

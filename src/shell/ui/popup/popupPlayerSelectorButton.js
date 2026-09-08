@@ -5,7 +5,7 @@
  * Renders the popup player selector button for the active player.
  *
  * The button displays the active player and opens PopupPlayerSelectorList when
- * multiple players are available. It owns its actors and click action; row
+ * multiple players are available. It owns its actors and activation signal; row
  * selection and pinning remain owned by the selector list.
  */
 
@@ -20,7 +20,6 @@ import {
   styleClassNames,
 } from "../style.js";
 import { createIcon, setGIcon } from "../icons.js";
-import { installPrimaryClickAction } from "../input/pointerActions.js";
 
 /**
  * Renders the popup player selector button for the active player.
@@ -36,7 +35,6 @@ export default class PopupPlayerSelectorButton {
     this.expandIcon = null;
     this.renderKey = null;
     this.hasMultiplePlayers = null;
-    this.disconnectButtonClickAction = null;
     this.desktopAppResolver = desktopAppResolver;
   }
 
@@ -88,6 +86,7 @@ export default class PopupPlayerSelectorButton {
         desktopApp,
         identity || _("Unknown app"),
       );
+      this.button.set_accessible_name(this.label.text);
       setGIcon(
         this.icon,
         this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),
@@ -120,14 +119,15 @@ export default class PopupPlayerSelectorButton {
       styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR,
       xAlign: Clutter.ActorAlign.CENTER,
     });
-    this.button = new St.BoxLayout({
-      styleClass: styleClassNames(
-        NativeStyleClasses.QUICK_MENU_TOGGLE,
-        MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON,
-      ),
+    this.button = new St.Button({
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON,
       xAlign: Clutter.ActorAlign.CENTER,
       reactive: true,
       trackHover: true,
+    });
+    const buttonContent = new St.BoxLayout({
+      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_BUTTON_CONTENT,
+      xAlign: Clutter.ActorAlign.CENTER,
     });
     this.icon = createIcon({
       styleClass: styleClassNames(
@@ -151,27 +151,15 @@ export default class PopupPlayerSelectorButton {
       ),
       yAlign: Clutter.ActorAlign.CENTER,
     });
-    this.installClickAction();
-    this.button.add_child(this.icon);
-    this.button.add_child(this.label);
-    this.button.add_child(this.expandIcon);
+    buttonContent.add_child(this.icon);
+    buttonContent.add_child(this.label);
+    buttonContent.add_child(this.expandIcon);
+    this.button.set_child(buttonContent);
+    this.button.connect("clicked", () => this.onActivate?.());
     this.container.add_child(this.button);
   }
 
-  installClickAction() {
-    this.disconnectButtonClickAction = installPrimaryClickAction(
-      this.button,
-      () => this.onActivate?.(),
-      () =>
-        (this.popupSurface.mediaRuntime?.getAvailablePlayers() ?? []).length >
-        1,
-    );
-  }
-
   destroy() {
-    this.disconnectButtonClickAction?.();
-    this.disconnectButtonClickAction = null;
-
     this.container?.destroy();
     this.container = null;
     this.button = null;
