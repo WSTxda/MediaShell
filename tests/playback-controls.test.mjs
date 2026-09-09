@@ -21,13 +21,11 @@ import {
   PlaybackControlIds,
 } from "../src/shared/playback/controls.js";
 import {
+  PlaybackControlModes,
   PlaybackControlSurfaceDefinitions,
   PlaybackControlSurfaces,
 } from "../src/shared/playback/surfaces.js";
-import {
-  POPUP_WIDTH_CONSTRAINTS,
-  SettingsKeys,
-} from "../src/shared/settings/contract.js";
+import { POPUP_WIDTH_CONSTRAINTS } from "../src/shared/settings/contract.js";
 import { InputActions } from "../src/shared/input/types.js";
 import InputActionDispatcher from "../src/shell/input/actionDispatcher.js";
 import { LoopStatus, PlaybackStatus } from "../src/shell/mpris/protocol.js";
@@ -37,9 +35,12 @@ import {
 } from "../src/shell/ui/popup/regions.js";
 import { resolvePlaybackControlAccessibleName } from "../src/shell/media/playback/accessibility.js";
 import { resolvePlaybackControlState } from "../src/shell/media/playback/controlState.js";
-import { resolvePlaybackControlSurfaceUpdates } from "../src/shell/media/playback/surfaceState.js";
 import {
-  POPUP_SEEK_CONTROLS_MIN_WIDTH,
+  isPlaybackControlVisible,
+  resolvePlaybackControlSurfaceUpdates,
+} from "../src/shell/media/playback/surfaceState.js";
+import {
+  POPUP_WIDE_TRANSPORT_MIN_WIDTH,
   resolvePopupWidth,
 } from "../src/shared/ui/popupLayout.js";
 import {
@@ -53,7 +54,6 @@ import {
   POPUP_SECONDARY_PLAYBACK_CONTROL_ORDER,
   TOP_BAR_PLAYBACK_CONTROL_ORDER,
 } from "../src/shell/ui/components/playback/order.js";
-import PopupLayoutController from "../src/prefs/controllers/popupLayoutController.js";
 import { reconcileActorOrder } from "../src/shell/ui/components/actorOrder.js";
 import { runCases } from "./helpers.mjs";
 
@@ -234,6 +234,39 @@ test("application input actions use the MediaRuntime application capability", as
 });
 
 test("surface policies and popup layout stay consistent", async () => {
+  const transportControlIds = [
+    PlaybackControlIds.SEEK_BACKWARD,
+    PlaybackControlIds.PREVIOUS,
+    PlaybackControlIds.PLAY_PAUSE,
+    PlaybackControlIds.NEXT,
+    PlaybackControlIds.SEEK_FORWARD,
+  ];
+  const visibility = (settingsTarget, activePlayer, controlIds) =>
+    controlIds.map((controlId) =>
+      isPlaybackControlVisible(
+        settingsTarget,
+        activePlayer,
+        PlaybackControlSurfaces.POPUP,
+        controlId,
+      ),
+    );
+  const popupVisibility = (settingsTarget, activePlayer) => {
+    const [
+      showSeekBackward,
+      showPreviousTrack,
+      showPlayPause,
+      showNextTrack,
+      showSeekForward,
+    ] = visibility(settingsTarget, activePlayer, transportControlIds);
+    return {
+      showSeekBackward,
+      showPreviousTrack,
+      showPlayPause,
+      showNextTrack,
+      showSeekForward,
+    };
+  };
+
   await runCases([
     [
       "surface ownership",
@@ -251,13 +284,19 @@ test("surface policies and popup layout stay consistent", async () => {
         assert.deepEqual(popupIds, Object.values(PlaybackControlIds));
         assert.equal(topBarIds.includes(PlaybackControlIds.SPEED), false);
         assert.deepEqual(topBarIds, TOP_BAR_PLAYBACK_CONTROL_ORDER);
+        assert.deepEqual(PlaybackControlModes, {
+          MANUAL: 0,
+          ADAPTIVE: 1,
+          FULL: 2,
+        });
       },
     ],
     [
-      "targeted updates",
+      "manual mode preserves configured controls",
       () => {
         const target = {
           playbackControlsShow: true,
+          playbackControlsMode: PlaybackControlModes.MANUAL,
           playbackControlsSeekBackwardShow: true,
           playbackControlsSeekForwardShow: false,
           playbackControlsSpeedShow: true,
@@ -265,6 +304,7 @@ test("surface policies and popup layout stay consistent", async () => {
         assert.deepEqual(
           resolvePlaybackControlSurfaceUpdates(
             target,
+            player({ canSeek: false }),
             PlaybackControlSurfaces.POPUP,
             PopupPlaybackControlRegions,
             PopupRegions.PLAYBACK_SEEK_BACKWARD,
@@ -275,6 +315,7 @@ test("surface policies and popup layout stay consistent", async () => {
         assert.deepEqual(
           resolvePlaybackControlSurfaceUpdates(
             target,
+            player(),
             PlaybackControlSurfaces.POPUP,
             PopupPlaybackControlRegions,
             PopupRegions.PLAYBACK_CONTROLS,
@@ -284,96 +325,117 @@ test("surface policies and popup layout stay consistent", async () => {
       },
     ],
     [
-      "width policy",
+      "adaptive mode prefers track navigation and falls back to seek",
       () => {
-        assert.equal(POPUP_WIDTH_CONSTRAINTS.DEFAULT, 250);
-        assert.equal(POPUP_SEEK_CONTROLS_MIN_WIDTH, 350);
-        assert.equal(resolvePopupWidth(250, false, false), 250);
-        assert.equal(resolvePopupWidth(250, true, false), 350);
-        assert.equal(resolvePopupWidth(320, false, true), 350);
-        assert.equal(resolvePopupWidth(420, true, true), 420);
+        const adaptive = {
+          playbackControlsShow: true,
+          playbackControlsMode: PlaybackControlModes.ADAPTIVE,
+        };
+        const navigationIds = [
+          PlaybackControlIds.SEEK_BACKWARD,
+          PlaybackControlIds.PREVIOUS,
+          PlaybackControlIds.NEXT,
+          PlaybackControlIds.SEEK_FORWARD,
+        ];
+        assert.deepEqual(visibility(adaptive, player(), navigationIds), [
+          false,
+          true,
+          true,
+          false,
+        ]);
+        assert.deepEqual(
+          visibility(
+            adaptive,
+            player({ canGoPrevious: false, canGoNext: false }),
+            navigationIds,
+          ),
+          [true, false, false, true],
+        );
       },
     ],
     [
-      "width preference feedback",
-      async () => {
-        const createWidget = (state) => {
-          const callbacks = new Map();
-          return {
-            state,
-            connect(signal, callback) {
-              callbacks.set(signal, callback);
-              return callbacks.size;
-            },
-            disconnect() {},
-            emit(signal) {
-              callbacks.get(signal)?.();
-            },
-            get_enable_expansion() {
-              return this.state.enabled;
-            },
-            get_active() {
-              return this.state.active;
-            },
-          };
+      "full mode exposes every executable control",
+      () => {
+        const full = {
+          playbackControlsShow: true,
+          playbackControlsMode: PlaybackControlModes.FULL,
         };
-        const controls = createWidget({ enabled: false });
-        const seekBackward = createWidget({ active: false });
-        const seekForward = createWidget({ active: false });
-        const objects = new Map([
-          ["er-popup-playback-controls", controls],
-          ["sr-popup-playback-controls-seek-backward-show", seekBackward],
-          ["sr-popup-playback-controls-seek-forward-show", seekForward],
+        assert.deepEqual(visibility(full, player(), transportControlIds), [
+          true,
+          true,
+          true,
+          true,
+          true,
         ]);
-        let width = 250;
-        let writes = 0;
-        const settings = {
-          get_uint: () => width,
-          set_uint(key, value) {
-            assert.equal(key, SettingsKeys.POPUP_WIDTH);
-            width = value;
-            writes += 1;
-          },
-        };
-        const controller = new PopupLayoutController(settings, {
-          get_object: (id) => objects.get(id) ?? null,
-        });
-
-        controller.init();
-        assert.equal(writes, 0, "initialization must not rewrite settings");
-
-        seekBackward.state.active = true;
-        seekBackward.emit("notify::active");
-        await Promise.resolve();
-        assert.equal(writes, 0, "disabled controls must not change width");
-
-        controls.state.enabled = true;
-        seekBackward.state.active = false;
-        controls.emit("notify::enable-expansion");
-        seekBackward.emit("notify::active");
-        await Promise.resolve();
-        assert.equal(
-          writes,
-          0,
-          "batched changes must use the final preference state",
+        assert.deepEqual(
+          visibility(full, player({ canSeek: false }), transportControlIds),
+          [false, true, true, true, false],
         );
+      },
+    ],
+    [
+      "width policy consumes effective transport visibility",
+      () => {
+        const controls = {
+          showPreviousTrack: true,
+          showPlayPause: true,
+          showNextTrack: true,
+        };
+        const adaptive = {
+          playbackControlsShow: true,
+          playbackControlsMode: PlaybackControlModes.ADAPTIVE,
+        };
+        const full = {
+          playbackControlsShow: true,
+          playbackControlsMode: PlaybackControlModes.FULL,
+        };
 
-        seekBackward.state.active = true;
-        seekBackward.emit("notify::active");
-        await Promise.resolve();
-        assert.equal(width, 350);
-        assert.equal(writes, 1);
-
-        seekForward.state.active = true;
-        seekForward.emit("notify::active");
-        await Promise.resolve();
-        assert.equal(writes, 1, "the minimum must not be written twice");
-
-        width = 250;
-        seekForward.emit("notify::active");
-        controller.destroy();
-        await Promise.resolve();
-        assert.equal(width, 250, "destroy must invalidate pending feedback");
+        assert.equal(POPUP_WIDTH_CONSTRAINTS.DEFAULT, 250);
+        assert.equal(POPUP_WIDE_TRANSPORT_MIN_WIDTH, 350);
+        assert.equal(resolvePopupWidth(250, controls), 250);
+        assert.equal(
+          resolvePopupWidth(250, { ...controls, showSeekForward: true }),
+          350,
+        );
+        assert.equal(
+          resolvePopupWidth(250, {
+            showSeekBackward: true,
+            showPlayPause: true,
+            showSeekForward: true,
+          }),
+          250,
+        );
+        assert.equal(
+          resolvePopupWidth(250, {
+            showSeekBackward: true,
+            showPreviousTrack: true,
+            showNextTrack: true,
+            showSeekForward: true,
+          }),
+          250,
+        );
+        assert.equal(
+          resolvePopupWidth(250, popupVisibility(adaptive, player())),
+          250,
+        );
+        assert.equal(
+          resolvePopupWidth(250, popupVisibility(full, player())),
+          350,
+        );
+        assert.equal(
+          resolvePopupWidth(
+            250,
+            popupVisibility(
+              adaptive,
+              player({ canGoPrevious: false, canGoNext: false }),
+            ),
+          ),
+          250,
+        );
+        assert.equal(
+          resolvePopupWidth(420, popupVisibility(full, player())),
+          420,
+        );
       },
     ],
   ]);

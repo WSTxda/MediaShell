@@ -58,7 +58,6 @@ const TOP_BAR_PLAYBACK_CONTROL_BINDINGS = createPlaybackControlBindingSet(
 );
 
 const POPUP_BINDINGS = Object.freeze([
-  [SettingsKeys.POPUP_WIDTH, "sp-popup-width", "value"],
   POPUP_PLAYBACK_CONTROL_BINDINGS.show,
   ...Object.values(POPUP_PLAYBACK_CONTROL_BINDINGS.controls),
   [

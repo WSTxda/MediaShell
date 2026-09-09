@@ -317,13 +317,19 @@ export default class PopupSurface {
 
   getPopupOuterWidth() {
     const showTransportControls = this.settings.playbackControlsShow;
-    return resolvePopupWidth(
-      this.settings.width,
-      showTransportControls && this.settings.playbackControlsSeekBackwardShow,
-      showTransportControls && this.settings.playbackControlsSeekForwardShow,
-      showTransportControls && this.settings.playbackControlsPreviousTrackShow,
-      showTransportControls && this.settings.playbackControlsNextTrackShow,
-    );
+    return resolvePopupWidth(this.settings.width, {
+      showSeekBackward:
+        showTransportControls && this.settings.playbackControlsSeekBackwardShow,
+      showPreviousTrack:
+        showTransportControls &&
+        this.settings.playbackControlsPreviousTrackShow,
+      showPlayPause:
+        showTransportControls && this.settings.playbackControlsPlayPauseShow,
+      showNextTrack:
+        showTransportControls && this.settings.playbackControlsNextTrackShow,
+      showSeekForward:
+        showTransportControls && this.settings.playbackControlsSeekForwardShow,
+    });
   }
 
   getPopupContentWidth() {

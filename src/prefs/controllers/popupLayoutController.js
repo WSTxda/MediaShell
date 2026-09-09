@@ -2,15 +2,19 @@
  * @file popupLayoutController.js
  * @module prefs.controllers.popupLayoutController
  *
- * Keeps the stored popup width aligned with transport controls changed in Preferences.
- *
- * Runtime sizing remains defensive through resolvePopupWidth(). This controller
- * adds visible settings feedback only after a preference widget changes; opening
- * Preferences never rewrites the user's configuration.
+ * Keeps popup-width feedback aligned with the configured transport controls
+ * without overwriting the user's preferred width when a wider runtime minimum
+ * is temporarily required.
  */
 
-import { SettingsKeys } from "../../shared/settings/contract.js";
-import { resolvePopupWidth } from "../../shared/ui/popupLayout.js";
+import {
+  POPUP_WIDTH_CONSTRAINTS,
+  SettingsKeys,
+} from "../../shared/settings/contract.js";
+import {
+  resolvePopupMinimumWidth,
+  resolvePopupWidth,
+} from "../../shared/ui/popupLayout.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
@@ -21,6 +25,7 @@ const POPUP_LAYOUT_WIDGETS = Object.freeze({
   controls: "er-popup-playback-controls",
   seekBackward: "sr-popup-playback-controls-seek-backward-show",
   previousTrack: "sr-popup-playback-controls-previous-track-show",
+  playPause: "sr-popup-playback-controls-play-pause-show",
   nextTrack: "sr-popup-playback-controls-next-track-show",
   seekForward: "sr-popup-playback-controls-seek-forward-show",
 });
@@ -31,11 +36,11 @@ function getRequiredObject(builder, id) {
   return object;
 }
 
-/** Keeps popup-width feedback aligned with visible transport controls. */
+/** Owns popup-width preference feedback and its transient layout minimum. */
 export default class PopupLayoutController {
   constructor(settings, builder) {
     this.settings = settings;
-    this.widthRow = builder.get_object(POPUP_LAYOUT_WIDGETS.width);
+    this.widthRow = getRequiredObject(builder, POPUP_LAYOUT_WIDGETS.width);
     this.controlsRow = getRequiredObject(
       builder,
       POPUP_LAYOUT_WIDGETS.controls,
@@ -44,64 +49,116 @@ export default class PopupLayoutController {
       builder,
       POPUP_LAYOUT_WIDGETS.seekBackward,
     );
-    this.previousTrackRow = builder.get_object(
+    this.previousTrackRow = getRequiredObject(
+      builder,
       POPUP_LAYOUT_WIDGETS.previousTrack,
     );
-    this.nextTrackRow = builder.get_object(POPUP_LAYOUT_WIDGETS.nextTrack);
+    this.playPauseRow = getRequiredObject(
+      builder,
+      POPUP_LAYOUT_WIDGETS.playPause,
+    );
+    this.nextTrackRow = getRequiredObject(
+      builder,
+      POPUP_LAYOUT_WIDGETS.nextTrack,
+    );
     this.seekForwardRow = getRequiredObject(
       builder,
       POPUP_LAYOUT_WIDGETS.seekForward,
     );
     this.ownedSignalConnections = [];
     this.syncGeneration = 0;
+    this.syncingWidthRow = false;
   }
 
   init() {
+    connectOwnedSignal(
+      this.ownedSignalConnections,
+      this.widthRow,
+      "notify::value",
+      () => this.syncConfiguredWidthFromRow(),
+    );
+    connectOwnedSignal(
+      this.ownedSignalConnections,
+      this.settings,
+      `changed::${SettingsKeys.POPUP_WIDTH}`,
+      () => this.scheduleWidthFeedback(),
+    );
+
     for (const [widget, signal] of [
-      [this.widthRow, "notify::value"],
       [this.controlsRow, "notify::enable-expansion"],
       [this.seekBackwardRow, "notify::active"],
       [this.previousTrackRow, "notify::active"],
+      [this.playPauseRow, "notify::active"],
       [this.nextTrackRow, "notify::active"],
       [this.seekForwardRow, "notify::active"],
     ]) {
-      if (!widget) continue;
       connectOwnedSignal(this.ownedSignalConnections, widget, signal, () =>
         this.scheduleWidthFeedback(),
       );
     }
+
+    this.syncWidthFeedback();
   }
 
   scheduleWidthFeedback() {
     const syncGeneration = ++this.syncGeneration;
     void Promise.resolve().then(() => {
       if (syncGeneration !== this.syncGeneration || !this.settings) return;
-      this.syncWidthAfterPreferenceChange();
+      this.syncWidthFeedback();
     });
   }
 
-  syncWidthAfterPreferenceChange() {
-    if (!this.controlsRow.get_enable_expansion()) return;
+  getTransportControlVisibility() {
+    const showTransportControls = this.controlsRow.get_enable_expansion();
+    return {
+      showSeekBackward:
+        showTransportControls && this.seekBackwardRow.get_active(),
+      showPreviousTrack:
+        showTransportControls && this.previousTrackRow.get_active(),
+      showPlayPause: showTransportControls && this.playPauseRow.get_active(),
+      showNextTrack: showTransportControls && this.nextTrackRow.get_active(),
+      showSeekForward:
+        showTransportControls && this.seekForwardRow.get_active(),
+    };
+  }
 
+  syncWidthFeedback() {
     const configuredWidth = this.settings.get_uint(SettingsKeys.POPUP_WIDTH);
-    const effectiveWidth = resolvePopupWidth(
-      configuredWidth,
-      this.seekBackwardRow.get_active(),
-      this.seekForwardRow.get_active(),
-      this.previousTrackRow?.get_active() ?? true,
-      this.nextTrackRow?.get_active() ?? true,
-    );
-    if (effectiveWidth !== configuredWidth)
-      this.settings.set_uint(SettingsKeys.POPUP_WIDTH, effectiveWidth);
+    const controls = this.getTransportControlVisibility();
+    const minimumWidth = resolvePopupMinimumWidth(controls);
+    const effectiveWidth = resolvePopupWidth(configuredWidth, controls);
+
+    this.syncingWidthRow = true;
+    try {
+      this.widthRow.get_adjustment().set_lower(minimumWidth);
+      if (this.widthRow.get_value() !== effectiveWidth)
+        this.widthRow.set_value(effectiveWidth);
+    } finally {
+      this.syncingWidthRow = false;
+    }
+  }
+
+  syncConfiguredWidthFromRow() {
+    if (this.syncingWidthRow || !this.settings) return;
+
+    const width = Math.trunc(this.widthRow.get_value());
+    const configuredWidth = this.settings.get_uint(SettingsKeys.POPUP_WIDTH);
+    if (width !== configuredWidth)
+      this.settings.set_uint(SettingsKeys.POPUP_WIDTH, width);
   }
 
   destroy() {
     this.syncGeneration++;
     disconnectOwnedSignals(this.ownedSignalConnections);
+
+    const adjustment = this.widthRow?.get_adjustment();
+    if (adjustment) adjustment.set_lower(POPUP_WIDTH_CONSTRAINTS.MIN);
+
     this.widthRow = null;
     this.controlsRow = null;
     this.seekBackwardRow = null;
     this.previousTrackRow = null;
+    this.playPauseRow = null;
     this.nextTrackRow = null;
     this.seekForwardRow = null;
     this.settings = null;
