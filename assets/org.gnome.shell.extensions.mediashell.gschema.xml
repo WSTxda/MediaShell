@@ -19,6 +19,12 @@
     <value nick="seek-forward"     value="14" />
   </enum>
 
+  <enum id="org.gnome.shell.extensions.mediashell.playback-control-modes">
+    <value nick="manual"   value="0" />
+    <value nick="adaptive" value="1" />
+    <value nick="full"     value="2" />
+  </enum>
+
   <enum id="org.gnome.shell.extensions.mediashell.panel-positions">
     <value nick="left"   value="0" />
     <value nick="center" value="1" />
@@ -59,6 +65,10 @@
     </key>
     <key name="popup-playback-controls-show" type="b">
       <default>true</default>
+    </key>
+    <key name="popup-playback-controls-mode"
+         enum="org.gnome.shell.extensions.mediashell.playback-control-modes">
+      <default>'manual'</default>
     </key>
     <key name="popup-playback-controls-shuffle-show" type="b">
       <default>true</default>
@@ -153,6 +163,10 @@
     </key>
     <key name="top-bar-playback-controls-show" type="b">
       <default>true</default>
+    </key>
+    <key name="top-bar-playback-controls-mode"
+         enum="org.gnome.shell.extensions.mediashell.playback-control-modes">
+      <default>'manual'</default>
     </key>
     <key name="top-bar-playback-controls-shuffle-show" type="b">
       <default>false</default>

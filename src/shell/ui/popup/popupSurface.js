@@ -15,11 +15,15 @@ import Clutter from "gi://Clutter";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 import { MediaShellStyleClasses, NativeStyleClasses } from "../style.js";
+import { PlaybackControlIds } from "../../../shared/playback/controls.js";
 import { PlaybackControlSurfaces } from "../../../shared/playback/surfaces.js";
 import { PlaybackStatus } from "../../mpris/protocol.js";
 import { createLogger } from "../../../shared/logging/logger.js";
 import { resolvePopupWidth } from "../../../shared/ui/popupLayout.js";
-import { isPlaybackControlSurfaceVisible } from "../../media/playback/surfaceState.js";
+import {
+  isPlaybackControlSurfaceVisible,
+  isPlaybackControlVisible,
+} from "../../media/playback/surfaceState.js";
 import { POPUP_CONTAINER_PADDING } from "./presentation.js";
 import CoalescedUpdateQueue from "../reconciliation/coalescedUpdateQueue.js";
 import PopupArtwork from "./popupArtwork.js";
@@ -117,7 +121,10 @@ export default class PopupSurface {
       [["progressBarShow"], PopupRegions.PROGRESS],
       [["volumeControlShow"], PopupRegions.VOLUME],
       [["playerSelectorAppIconUseColor"], PopupRegions.PLAYER_SELECTOR],
-      [["playbackControlsShow"], PopupRegions.PLAYBACK_CONTROLS],
+      [
+        ["playbackControlsShow", "playbackControlsMode"],
+        PopupRegions.PLAYBACK_CONTROLS,
+      ],
       [["playbackControlsShuffleShow"], PopupRegions.PLAYBACK_SHUFFLE],
       [
         ["playbackControlsSeekBackwardShow"],
@@ -199,6 +206,7 @@ export default class PopupSurface {
         if (
           isPlaybackControlSurfaceVisible(
             this.settings,
+            this.player,
             PlaybackControlSurfaces.POPUP,
           )
         )
@@ -316,19 +324,20 @@ export default class PopupSurface {
   }
 
   getPopupOuterWidth() {
-    const showTransportControls = this.settings.playbackControlsShow;
+    const isVisible = (controlId) =>
+      isPlaybackControlVisible(
+        this.settings,
+        this.player,
+        PlaybackControlSurfaces.POPUP,
+        controlId,
+      );
+
     return resolvePopupWidth(this.settings.width, {
-      showSeekBackward:
-        showTransportControls && this.settings.playbackControlsSeekBackwardShow,
-      showPreviousTrack:
-        showTransportControls &&
-        this.settings.playbackControlsPreviousTrackShow,
-      showPlayPause:
-        showTransportControls && this.settings.playbackControlsPlayPauseShow,
-      showNextTrack:
-        showTransportControls && this.settings.playbackControlsNextTrackShow,
-      showSeekForward:
-        showTransportControls && this.settings.playbackControlsSeekForwardShow,
+      showSeekBackward: isVisible(PlaybackControlIds.SEEK_BACKWARD),
+      showPreviousTrack: isVisible(PlaybackControlIds.PREVIOUS),
+      showPlayPause: isVisible(PlaybackControlIds.PLAY_PAUSE),
+      showNextTrack: isVisible(PlaybackControlIds.NEXT),
+      showSeekForward: isVisible(PlaybackControlIds.SEEK_FORWARD),
     });
   }
 

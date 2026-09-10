@@ -52,6 +52,7 @@ export default class TopBarPlaybackControls {
     this.ensureActor();
     const updates = resolvePlaybackControlSurfaceUpdates(
       this.settings,
+      this.player,
       PlaybackControlSurfaces.TOP_BAR,
       TopBarPlaybackControlRegions,
       dirtyRegions,

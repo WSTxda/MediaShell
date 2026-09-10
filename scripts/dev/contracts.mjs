@@ -38,6 +38,7 @@ import {
   TOP_BAR_ELEMENT_ORDER_DEFAULT,
 } from "../../src/shared/settings/contract.js";
 import { InputActions } from "../../src/shared/input/types.js";
+import { PlaybackControlModes } from "../../src/shared/playback/surfaces.js";
 import { TopBarElementIds } from "../../src/shared/ui/topBar.js";
 import { VisualizerStyles } from "../../src/shell/ui/components/visualizer/types.js";
 import { RUNTIME_SETTING_CONTRACT } from "../../src/shell/settings/settings.js";
@@ -318,6 +319,12 @@ export async function checkSettingsContracts() {
     `${schemaPrefix}.input-actions`,
     schema.enums[`${schemaPrefix}.input-actions`],
     enumEntriesFromObject(InputActions),
+  );
+  compareEnum(
+    errors,
+    `${schemaPrefix}.playback-control-modes`,
+    schema.enums[`${schemaPrefix}.playback-control-modes`],
+    enumEntriesFromObject(PlaybackControlModes),
   );
   compareEnum(
     errors,

@@ -7,6 +7,7 @@
  * is temporarily required.
  */
 
+import { PlaybackControlModes } from "../../shared/playback/surfaces.js";
 import {
   POPUP_WIDTH_CONSTRAINTS,
   SettingsKeys,
@@ -23,6 +24,7 @@ import {
 const POPUP_LAYOUT_WIDGETS = Object.freeze({
   width: "sp-popup-width",
   controls: "er-popup-playback-controls",
+  controlsMode: "cr-popup-playback-controls-mode",
   seekBackward: "sr-popup-playback-controls-seek-backward-show",
   previousTrack: "sr-popup-playback-controls-previous-track-show",
   playPause: "sr-popup-playback-controls-play-pause-show",
@@ -44,6 +46,10 @@ export default class PopupLayoutController {
     this.controlsRow = getRequiredObject(
       builder,
       POPUP_LAYOUT_WIDGETS.controls,
+    );
+    this.controlsModeRow = getRequiredObject(
+      builder,
+      POPUP_LAYOUT_WIDGETS.controlsMode,
     );
     this.seekBackwardRow = getRequiredObject(
       builder,
@@ -86,6 +92,7 @@ export default class PopupLayoutController {
 
     for (const [widget, signal] of [
       [this.controlsRow, "notify::enable-expansion"],
+      [this.controlsModeRow, "notify::selected"],
       [this.seekBackwardRow, "notify::active"],
       [this.previousTrackRow, "notify::active"],
       [this.playPauseRow, "notify::active"],
@@ -109,7 +116,9 @@ export default class PopupLayoutController {
   }
 
   getTransportControlVisibility() {
-    const showTransportControls = this.controlsRow.get_enable_expansion();
+    const showTransportControls =
+      this.controlsRow.get_enable_expansion() &&
+      this.controlsModeRow.get_selected() === PlaybackControlModes.MANUAL;
     return {
       showSeekBackward:
         showTransportControls && this.seekBackwardRow.get_active(),
@@ -156,6 +165,7 @@ export default class PopupLayoutController {
 
     this.widthRow = null;
     this.controlsRow = null;
+    this.controlsModeRow = null;
     this.seekBackwardRow = null;
     this.previousTrackRow = null;
     this.playPauseRow = null;

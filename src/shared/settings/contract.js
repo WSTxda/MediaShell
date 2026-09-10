@@ -27,6 +27,7 @@ export const SettingsKeys = Object.freeze({
   POPUP_TRACK_INFORMATION_CONTENT: "popup-track-information-content",
   POPUP_PROGRESS_BAR_SHOW: "popup-progress-bar-show",
   POPUP_PLAYBACK_CONTROLS_SHOW: "popup-playback-controls-show",
+  POPUP_PLAYBACK_CONTROLS_MODE: "popup-playback-controls-mode",
   POPUP_PLAYBACK_CONTROLS_SHUFFLE_SHOW: "popup-playback-controls-shuffle-show",
   POPUP_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW:
     "popup-playback-controls-seek-backward-show",
@@ -69,6 +70,7 @@ export const SettingsKeys = Object.freeze({
   TOP_BAR_VISUALIZER_STYLE: "top-bar-visualizer-style",
   TOP_BAR_VISUALIZER_SPEED: "top-bar-visualizer-speed",
   TOP_BAR_PLAYBACK_CONTROLS_SHOW: "top-bar-playback-controls-show",
+  TOP_BAR_PLAYBACK_CONTROLS_MODE: "top-bar-playback-controls-mode",
   TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW:
     "top-bar-playback-controls-shuffle-show",
   TOP_BAR_PLAYBACK_CONTROLS_SEEK_BACKWARD_SHOW:

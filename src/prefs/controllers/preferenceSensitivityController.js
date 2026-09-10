@@ -9,10 +9,39 @@
  * persistent values; it only mirrors current settings into widget sensitivity.
  */
 
+import { PlaybackControlModes } from "../../shared/playback/surfaces.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../bindings/signalConnections.js";
+
+const PLAYBACK_CONTROL_SENSITIVITY_GROUPS = Object.freeze([
+  {
+    mode: "cr-popup-playback-controls-mode",
+    controls: Object.freeze([
+      "sr-popup-playback-controls-shuffle-show",
+      "sr-popup-playback-controls-seek-backward-show",
+      "sr-popup-playback-controls-previous-track-show",
+      "sr-popup-playback-controls-play-pause-show",
+      "sr-popup-playback-controls-next-track-show",
+      "sr-popup-playback-controls-seek-forward-show",
+      "sr-popup-playback-controls-repeat-show",
+      "sr-popup-playback-controls-speed-show",
+    ]),
+  },
+  {
+    mode: "cr-top-bar-playback-controls-mode",
+    controls: Object.freeze([
+      "sr-top-bar-playback-controls-shuffle-show",
+      "sr-top-bar-playback-controls-seek-backward-show",
+      "sr-top-bar-playback-controls-previous-track-show",
+      "sr-top-bar-playback-controls-play-pause-show",
+      "sr-top-bar-playback-controls-next-track-show",
+      "sr-top-bar-playback-controls-seek-forward-show",
+      "sr-top-bar-playback-controls-repeat-show",
+    ]),
+  },
+]);
 
 /**
  * Keeps dependent preferences sensitive only when their parent toggles allow them.
@@ -88,8 +117,19 @@ export default class PreferenceSensitivityController {
       () => this.updateVisualizerSensitivity(),
     );
 
+    this.playbackControlSensitivityGroups =
+      PLAYBACK_CONTROL_SENSITIVITY_GROUPS.map(({ mode, controls }) => {
+        const modeRow = this.builder.get_object(mode);
+        const controlRows = controls.map((id) => this.builder.get_object(id));
+        this.connectOwnedSignal(modeRow, "notify::selected", () =>
+          this.updatePlaybackControlSensitivity(),
+        );
+        return { modeRow, controlRows };
+      });
+
     this.updateScrollingSensitivity();
     this.updateVisualizerSensitivity();
+    this.updatePlaybackControlSensitivity();
   }
 
   updateScrollingSensitivity() {
@@ -117,6 +157,14 @@ export default class PreferenceSensitivityController {
     this.visualizerSpeedRow.sensitive = visualizerEnabled;
   }
 
+  updatePlaybackControlSensitivity() {
+    for (const { modeRow, controlRows } of this
+      .playbackControlSensitivityGroups) {
+      const isManual = modeRow.selected === PlaybackControlModes.MANUAL;
+      for (const controlRow of controlRows) controlRow.sensitive = isManual;
+    }
+  }
+
   connectOwnedSignal(object, signal, callback) {
     connectOwnedSignal(this.ownedSignalConnections, object, signal, callback);
   }
@@ -137,5 +185,6 @@ export default class PreferenceSensitivityController {
     this.visualizerRow = null;
     this.visualizerStyleRow = null;
     this.visualizerSpeedRow = null;
+    this.playbackControlSensitivityGroups = null;
   }
 }

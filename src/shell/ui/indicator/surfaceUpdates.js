@@ -42,12 +42,13 @@ export const PlayerSurfaceUpdates = Object.freeze({
       TopBarRegions.PLAYBACK_SEEK_FORWARD,
   }),
   NEXT_CAPABILITY: createSurfaceUpdate({
-    popup: PopupRegions.PLAYBACK_NEXT,
-    topBar: TopBarRegions.PLAYBACK_NEXT,
+    popup: PopupRegions.PLAYBACK_NEXT | PopupRegions.PLAYBACK_SEEK_FORWARD,
+    topBar: TopBarRegions.PLAYBACK_NEXT | TopBarRegions.PLAYBACK_SEEK_FORWARD,
   }),
   PREVIOUS_CAPABILITY: createSurfaceUpdate({
-    popup: PopupRegions.PLAYBACK_PREVIOUS,
-    topBar: TopBarRegions.PLAYBACK_PREVIOUS,
+    popup: PopupRegions.PLAYBACK_PREVIOUS | PopupRegions.PLAYBACK_SEEK_BACKWARD,
+    topBar:
+      TopBarRegions.PLAYBACK_PREVIOUS | TopBarRegions.PLAYBACK_SEEK_BACKWARD,
   }),
   CONTROL_CAPABILITY: createSurfaceUpdate({
     popup:

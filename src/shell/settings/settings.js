@@ -79,6 +79,10 @@ const POPUP_DEFINITIONS = Object.freeze({
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHOW,
     "get_boolean",
   ),
+  playbackControlsMode: defineSetting(
+    SettingsKeys.POPUP_PLAYBACK_CONTROLS_MODE,
+    "get_enum",
+  ),
   playbackControlsShuffleShow: defineSetting(
     SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHUFFLE_SHOW,
     "get_boolean",
@@ -203,6 +207,10 @@ const TOP_BAR_DEFINITIONS = Object.freeze({
   playbackControlsShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
     "get_boolean",
+  ),
+  playbackControlsMode: defineSetting(
+    SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_MODE,
+    "get_enum",
   ),
   playbackControlsShuffleShow: defineSetting(
     SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHUFFLE_SHOW,

@@ -58,6 +58,7 @@ export default class PopupPlaybackControls {
     this.ensureActor();
     const updates = resolvePlaybackControlSurfaceUpdates(
       this.settings,
+      this.player,
       PlaybackControlSurfaces.POPUP,
       PopupPlaybackControlRegions,
       dirtyRegions,

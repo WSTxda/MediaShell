@@ -86,7 +86,10 @@ export default class TopBarSurface {
         ["visualizerShow", "visualizerStyle", "visualizerSpeed"],
         TopBarRegions.VISUALIZER,
       ],
-      [["playbackControlsShow"], TopBarRegions.PLAYBACK_CONTROLS],
+      [
+        ["playbackControlsShow", "playbackControlsMode"],
+        TopBarRegions.PLAYBACK_CONTROLS,
+      ],
       [["playbackControlsShuffleShow"], TopBarRegions.PLAYBACK_SHUFFLE],
       [
         ["playbackControlsSeekBackwardShow"],
@@ -289,6 +292,7 @@ export default class TopBarSurface {
     if (elementId === TopBarElementIds.PLAYBACK_CONTROLS)
       return isPlaybackControlSurfaceVisible(
         this.settings,
+        this.player,
         PlaybackControlSurfaces.TOP_BAR,
       );
     return false;

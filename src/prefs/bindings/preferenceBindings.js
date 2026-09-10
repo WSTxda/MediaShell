@@ -28,12 +28,17 @@ const PLAYBACK_CONTROL_WIDGET_SUFFIXES = Object.freeze({
 });
 
 function createPlaybackControlBindingSet(surface) {
-  const { show, controls } = PlaybackControlSurfaceDefinitions[surface];
+  const { show, mode, controls } = PlaybackControlSurfaceDefinitions[surface];
   return Object.freeze({
     show: Object.freeze([
       show.settingKey,
       `er-${surface}-playback-controls`,
       "enable-expansion",
+    ]),
+    mode: Object.freeze([
+      mode.settingKey,
+      `cr-${surface}-playback-controls-mode`,
+      "selected",
     ]),
     controls: Object.freeze(
       Object.fromEntries(
@@ -59,6 +64,7 @@ const TOP_BAR_PLAYBACK_CONTROL_BINDINGS = createPlaybackControlBindingSet(
 
 const POPUP_BINDINGS = Object.freeze([
   POPUP_PLAYBACK_CONTROL_BINDINGS.show,
+  POPUP_PLAYBACK_CONTROL_BINDINGS.mode,
   ...Object.values(POPUP_PLAYBACK_CONTROL_BINDINGS.controls),
   [
     SettingsKeys.POPUP_PROGRESS_BAR_SHOW,
@@ -115,6 +121,7 @@ const TOP_BAR_BINDINGS = Object.freeze([
     "active",
   ],
   TOP_BAR_PLAYBACK_CONTROL_BINDINGS.show,
+  TOP_BAR_PLAYBACK_CONTROL_BINDINGS.mode,
   ...Object.values(TOP_BAR_PLAYBACK_CONTROL_BINDINGS.controls),
   [
     SettingsKeys.TOP_BAR_VISUALIZER_SHOW,

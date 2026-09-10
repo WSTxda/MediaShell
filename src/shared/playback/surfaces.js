@@ -5,10 +5,9 @@
  * Declares the settings policy shared by popup and top bar playback controls.
  *
  * The policy is static data only: stable GSettings keys and controller property
- * names. Shell and Preferences consume the same definitions
- * while retaining separate actors and GtkBuilder layouts. Keeping each control's
- * settings ownership beside each control avoids duplicated cross-process policy;
- * Shell-specific dirty-region mapping lives with each UI surface.
+ * names. Shell and Preferences consume the same definitions while retaining
+ * separate actors and GtkBuilder layouts. Shell-specific capability policy and
+ * dirty-region mapping remain outside this shared contract.
  */
 
 import { PlaybackControlIds } from "./controls.js";
@@ -20,13 +19,21 @@ export const PlaybackControlSurfaces = Object.freeze({
   TOP_BAR: "top-bar",
 });
 
+/** Persisted enum values controlling how each surface composes playback controls. */
+export const PlaybackControlModes = Object.freeze({
+  MANUAL: 0,
+  ADAPTIVE: 1,
+  FULL: 2,
+});
+
 function createControlSetting(controlId, settingKey, property) {
   return Object.freeze({ controlId, settingKey, property });
 }
 
-function createSurfaceDefinition(show, controls) {
+function createSurfaceDefinition(show, mode, controls) {
   return Object.freeze({
     show: Object.freeze(show),
+    mode: Object.freeze(mode),
     controls: Object.freeze(controls),
   });
 }
@@ -35,14 +42,18 @@ function createSurfaceDefinition(show, controls) {
  * Canonical settings ownership for each playback-control surface.
  *
  * Each surface declares cross-process visibility ownership once. Layout modules
- * retain their own row/order policy, while Shell-specific reconciliation remains
- * outside this shared contract.
+ * retain their own row/order policy, while Shell capability and reconciliation
+ * logic remains with the media and surface owners.
  */
 export const PlaybackControlSurfaceDefinitions = Object.freeze({
   [PlaybackControlSurfaces.POPUP]: createSurfaceDefinition(
     {
       settingKey: SettingsKeys.POPUP_PLAYBACK_CONTROLS_SHOW,
       property: "playbackControlsShow",
+    },
+    {
+      settingKey: SettingsKeys.POPUP_PLAYBACK_CONTROLS_MODE,
+      property: "playbackControlsMode",
     },
     [
       createControlSetting(
@@ -91,6 +102,10 @@ export const PlaybackControlSurfaceDefinitions = Object.freeze({
     {
       settingKey: SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_SHOW,
       property: "playbackControlsShow",
+    },
+    {
+      settingKey: SettingsKeys.TOP_BAR_PLAYBACK_CONTROLS_MODE,
+      property: "playbackControlsMode",
     },
     [
       createControlSetting(

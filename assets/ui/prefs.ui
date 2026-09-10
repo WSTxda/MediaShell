@@ -27,6 +27,24 @@
             <property name="subtitle" translatable="yes">Show playback controls</property>
             <property name="expanded">false</property>
             <child>
+              <object class="AdwComboRow" id="cr-popup-playback-controls-mode">
+                <property name="title" translatable="yes">Mode</property>
+                <property name="model">model-playback-control-modes</property>
+                <child type="suffix">
+                  <object class="GtkMenuButton" id="mb-popup-playback-controls-mode-info">
+                    <property name="icon-name">info-outline-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Playback Control Modes</property>
+                    <property name="has-frame">false</property>
+                    <property name="valign">center</property>
+                    <accessibility>
+                      <property name="label" translatable="yes">Playback Control Modes</property>
+                    </accessibility>
+                    <property name="popover">popover-popup-playback-control-modes</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="AdwSwitchRow" id="sr-popup-playback-controls-shuffle-show">
                 <property name="title" translatable="yes">Shuffle</property>
                 <child type="prefix">
@@ -271,6 +289,24 @@
             <property name="title" translatable="yes">Playback Controls</property>
             <property name="subtitle" translatable="yes">Show playback controls</property>
             <property name="expanded">false</property>
+            <child>
+              <object class="AdwComboRow" id="cr-top-bar-playback-controls-mode">
+                <property name="title" translatable="yes">Mode</property>
+                <property name="model">model-playback-control-modes</property>
+                <child type="suffix">
+                  <object class="GtkMenuButton" id="mb-top-bar-playback-controls-mode-info">
+                    <property name="icon-name">info-outline-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Playback Control Modes</property>
+                    <property name="has-frame">false</property>
+                    <property name="valign">center</property>
+                    <accessibility>
+                      <property name="label" translatable="yes">Playback Control Modes</property>
+                    </accessibility>
+                    <property name="popover">popover-top-bar-playback-control-modes</property>
+                  </object>
+                </child>
+              </object>
+            </child>
             <child>
               <object class="AdwSwitchRow" id="sr-top-bar-playback-controls-shuffle-show">
                 <property name="title" translatable="yes">Shuffle</property>
@@ -1035,6 +1071,175 @@
         <property name="title" translatable="yes">Extension Settings</property>
       </object>
     </child>
+  </object>
+  <object class="GtkPopover" id="popover-popup-playback-control-modes">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <property name="margin-top">12</property>
+        <property name="margin-bottom">12</property>
+        <property name="margin-start">12</property>
+        <property name="margin-end">12</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Manual</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show the playback controls selected below.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Adaptive</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show available playback controls, prioritizing the most appropriate ones.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Full</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show all playback controls available for the current app.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+  <object class="GtkPopover" id="popover-top-bar-playback-control-modes">
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <property name="margin-top">12</property>
+        <property name="margin-bottom">12</property>
+        <property name="margin-start">12</property>
+        <property name="margin-end">12</property>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Manual</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show the playback controls selected below.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Adaptive</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show available playback controls, prioritizing the most appropriate ones.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Full</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="heading"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Show all playback controls available for the current app.</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">42</property>
+                <property name="xalign">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+  <object class="GtkStringList" id="model-playback-control-modes">
+    <items>
+      <item translatable="yes">Manual</item>
+      <item translatable="yes">Adaptive</item>
+      <item translatable="yes">Full</item>
+    </items>
   </object>
   <object class="GtkStringList" id="model-input-actions">
     <items>
