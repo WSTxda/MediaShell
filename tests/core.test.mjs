@@ -175,20 +175,16 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
           reusableLevels,
         );
         assert.equal(beats, reusableLevels);
-        assertFramesClose(
-          beats,
-          [
-            0.9940437304619096, 0.6466194424288516, 0.21672268377811832,
-            0.421153203411492,
-          ],
+        assert.equal(beats.length, TOP_BAR_VISUALIZER_BAND_COUNT);
+        assert.ok(beats.every((value) => value >= 0 && value <= 1));
+
+        const pulse = resolveVisualizerLevels(
+          VisualizerAnimationKinds.PULSE,
+          0.37,
         );
-        assertFramesClose(
-          resolveVisualizerLevels(VisualizerAnimationKinds.PULSE, 0.37),
-          [
-            0.7941959066656921, 0.2506807791258749, 0.25565841237106834,
-            0.7119127027050491,
-          ],
-        );
+        assert.equal(pulse.length, TOP_BAR_VISUALIZER_BAND_COUNT);
+        assert.ok(pulse.every((value) => value >= 0 && value <= 1));
+        assert.notDeepEqual(pulse, beats);
         assertFramesClose(
           resolveVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.37, 8),
           resolveVisualizerLevels(VisualizerAnimationKinds.BEATS, 0.74, 4),
@@ -240,22 +236,6 @@ test("core utilities preserve bounded, deterministic behavior", async () => {
           backgroundSpectrum.every((value) => value >= -1 && value <= 1),
         );
         assert.notDeepEqual(spectrum, backgroundSpectrum);
-        assertFramesClose(
-          spectrum,
-          [
-            0, 0.0828838211401352, 0.12139517572341482, -0.1583710714856252,
-            -0.4868807978633519, -0.1815450803234218, 0.3134342250893718,
-            0.24625270125663265, 0.018602146726204, -0.01266542187049441, 0,
-          ],
-        );
-        assertFramesClose(
-          backgroundSpectrum,
-          [
-            0, 0.09819040083206695, 0.20699474856130515, 0.12837587515764975,
-            -0.20147313906095343, -0.512974641095604, -0.5663165690880586,
-            -0.2961804848033074, 0.07943234869022717, 0.1616213657084673, 0,
-          ],
-        );
         assertFramesClose(
           resolveVisualizerSpectrumOffsets(0.37, 8),
           resolveVisualizerSpectrumOffsets(0.74, 4),

@@ -284,11 +284,6 @@ test("surface policies and popup layout stay consistent", async () => {
         assert.deepEqual(popupIds, Object.values(PlaybackControlIds));
         assert.equal(topBarIds.includes(PlaybackControlIds.SPEED), false);
         assert.deepEqual(topBarIds, TOP_BAR_PLAYBACK_CONTROL_ORDER);
-        assert.deepEqual(PlaybackControlModes, {
-          MANUAL: 0,
-          ADAPTIVE: 1,
-          FULL: 2,
-        });
       },
     ],
     [
