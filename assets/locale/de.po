@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-09 23:24-0300\n"
+"POT-Creation-Date: 2026-09-16 16:12-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -32,79 +32,79 @@ msgstr "Entwickelt von"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:49
-#: assets/ui/prefs.ui:312 assets/ui/prefs.ui:667 assets/ui/prefs.ui:1247
+#: assets/ui/prefs.ui:312 assets/ui/prefs.ui:667 assets/ui/prefs.ui:1270
 msgid "Shuffle"
 msgstr "Zufall"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:59
-#: assets/ui/prefs.ui:322 assets/ui/prefs.ui:684 assets/ui/prefs.ui:1248
+#: assets/ui/prefs.ui:322 assets/ui/prefs.ui:684 assets/ui/prefs.ui:1271
 msgid "Seek Backward"
 msgstr "Zurückspulen"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:69
-#: assets/ui/prefs.ui:332 assets/ui/prefs.ui:701 assets/ui/prefs.ui:1249
+#: assets/ui/prefs.ui:332 assets/ui/prefs.ui:701 assets/ui/prefs.ui:1272
 msgid "Previous Track"
 msgstr "Vorheriger Titel"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:79
-#: assets/ui/prefs.ui:342 assets/ui/prefs.ui:718 assets/ui/prefs.ui:1250
+#: assets/ui/prefs.ui:342 assets/ui/prefs.ui:718 assets/ui/prefs.ui:1273
 msgid "Play / Pause"
 msgstr "Wiedergabe / Pause"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:89
-#: assets/ui/prefs.ui:352 assets/ui/prefs.ui:735 assets/ui/prefs.ui:1251
+#: assets/ui/prefs.ui:352 assets/ui/prefs.ui:735 assets/ui/prefs.ui:1274
 msgid "Next Track"
 msgstr "Nächster Titel"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:99
-#: assets/ui/prefs.ui:362 assets/ui/prefs.ui:752 assets/ui/prefs.ui:1252
+#: assets/ui/prefs.ui:362 assets/ui/prefs.ui:752 assets/ui/prefs.ui:1275
 msgid "Seek Forward"
 msgstr "Vorspulen"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:109
-#: assets/ui/prefs.ui:372 assets/ui/prefs.ui:769 assets/ui/prefs.ui:1253
+#: assets/ui/prefs.ui:372 assets/ui/prefs.ui:769 assets/ui/prefs.ui:1276
 msgid "Repeat"
 msgstr "Wiederholung"
 
 #: src/prefs/controllers/interactionsPageController.js:73
 #: src/shell/ui/popup/popupVolumeControl.js:136 assets/ui/prefs.ui:786
-#: assets/ui/prefs.ui:1254
+#: assets/ui/prefs.ui:1277
 msgid "Volume Up"
 msgstr "Lautstärke erhöhen"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:1255
+#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:1278
 msgid "Volume Down"
 msgstr "Lautstärke verringern"
 
 #: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:820 assets/ui/prefs.ui:1256
+#: assets/ui/prefs.ui:820 assets/ui/prefs.ui:1279
 msgid "Popup"
 msgstr "Pop-up"
 
 #: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:837 assets/ui/prefs.ui:1257
+#: assets/ui/prefs.ui:837 assets/ui/prefs.ui:1280
 msgid "Preferences"
 msgstr "Einstellungen"
 
 #: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:854 assets/ui/prefs.ui:1258
+#: assets/ui/prefs.ui:854 assets/ui/prefs.ui:1281
 msgid "Open App"
 msgstr "App öffnen"
 
 #: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:871 assets/ui/prefs.ui:1259
+#: assets/ui/prefs.ui:871 assets/ui/prefs.ui:1282
 msgid "Quit App"
 msgstr "App beenden"
 
 #: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:888 assets/ui/prefs.ui:1260
+#: assets/ui/prefs.ui:888 assets/ui/prefs.ui:1283
 msgid "Switch App"
 msgstr "App wechseln"
 
@@ -127,13 +127,14 @@ msgstr "Oberfläche"
 
 #: src/prefs/controllers/interactionsPageController.js:136
 #: src/prefs/controllers/interactionsPageController.js:416
-#: src/prefs/controllers/othersPageController.js:120
+#: src/prefs/controllers/othersPageController.js:327
 msgid "Reset"
 msgstr "Zurücksetzen"
 
 #: src/prefs/controllers/interactionsPageController.js:185
 #: src/prefs/controllers/interactionsPageController.js:415
-#: src/prefs/controllers/othersPageController.js:196
+#: src/prefs/controllers/othersPageController.js:238
+#: src/prefs/controllers/othersPageController.js:403
 #: src/prefs/widgets/blockedAppChooserDialog.js:67
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -178,48 +179,80 @@ msgstr "Alle Tastenkürzel werden deaktiviert"
 msgid "Keyboard shortcuts reset"
 msgstr "Tastenkürzel zurückgesetzt"
 
-#: src/prefs/controllers/othersPageController.js:104
-msgid "Reset All Settings"
-msgstr "Alle Einstellungen zurücksetzen"
+#: src/prefs/controllers/othersPageController.js:170 assets/ui/prefs.ui:1079
+msgid "Export Settings"
+msgstr ""
 
-#: src/prefs/controllers/othersPageController.js:118
+#: src/prefs/controllers/othersPageController.js:183
+msgid "Settings exported"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:187
+msgid "Could not export settings"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:194 assets/ui/prefs.ui:1074
+msgid "Import Settings"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:218
+msgid "Settings imported"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:222
+msgid "Could not import settings"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:233
+msgid "Import Settings?"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:239
+msgid "Import"
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:294
+msgid "Current settings will be replaced by the backup settings."
+msgstr ""
+
+#: src/prefs/controllers/othersPageController.js:325
 msgid "Reset all settings?"
 msgstr "Alle Einstellungen zurücksetzen?"
 
-#: src/prefs/controllers/othersPageController.js:119
+#: src/prefs/controllers/othersPageController.js:326
 msgid "Every MediaShell preference will return to its default value"
 msgstr ""
 "Alle MediaShell-Einstellungen werden auf ihre Standardwerte zurückgesetzt"
 
-#: src/prefs/controllers/othersPageController.js:130
+#: src/prefs/controllers/othersPageController.js:337
 msgid "Settings reset"
 msgstr "Einstellungen zurückgesetzt"
 
-#: src/prefs/controllers/othersPageController.js:138
+#: src/prefs/controllers/othersPageController.js:345
 msgid "Clear the cache?"
 msgstr "Zwischenspeicher leeren?"
 
-#: src/prefs/controllers/othersPageController.js:139
+#: src/prefs/controllers/othersPageController.js:346
 msgid "Cached content will be downloaded again when needed"
 msgstr "Der zwischengespeicherte Inhalt wird bei Bedarf erneut heruntergeladen"
 
-#: src/prefs/controllers/othersPageController.js:140 assets/ui/prefs.ui:1035
+#: src/prefs/controllers/othersPageController.js:347 assets/ui/prefs.ui:1035
 msgid "Clear Cache"
 msgstr "Zwischenspeicher leeren"
 
-#: src/prefs/controllers/othersPageController.js:185
+#: src/prefs/controllers/othersPageController.js:392
 msgid "Could not open the cache directory"
 msgstr "Das Cache-Verzeichnis konnte nicht geöffnet werden"
 
-#: src/prefs/controllers/othersPageController.js:239
+#: src/prefs/controllers/othersPageController.js:446
 msgid "Cache cleared"
 msgstr "Zwischenspeicher geleert"
 
-#: src/prefs/controllers/othersPageController.js:249
+#: src/prefs/controllers/othersPageController.js:456
 msgid "Could not clear the cache"
 msgstr "Zwischenspeicher konnte nicht geleert werden"
 
-#: src/prefs/controllers/othersPageController.js:259
+#: src/prefs/controllers/othersPageController.js:466
 #, javascript-format
 msgid "%d cached image — %s"
 msgid_plural "%d cached images — %s"
@@ -322,7 +355,7 @@ msgstr "Stopp"
 msgid "Playlist"
 msgstr "Wiedergabeliste"
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1246
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1269
 msgid "None"
 msgstr "Keine"
 
@@ -797,30 +830,34 @@ msgstr "Leeren"
 msgid "Extension Settings"
 msgstr "Erweiterungseinstellungen"
 
-#: assets/ui/prefs.ui:1090 assets/ui/prefs.ui:1171 assets/ui/prefs.ui:1239
+#: assets/ui/prefs.ui:1088
+msgid "Reset All Settings"
+msgstr "Alle Einstellungen zurücksetzen"
+
+#: assets/ui/prefs.ui:1113 assets/ui/prefs.ui:1194 assets/ui/prefs.ui:1262
 msgid "Manual"
 msgstr "Manuell"
 
-#: assets/ui/prefs.ui:1099 assets/ui/prefs.ui:1180
+#: assets/ui/prefs.ui:1122 assets/ui/prefs.ui:1203
 msgid "Show the playback controls selected below."
 msgstr "Die unten ausgewählten Wiedergabesteuerungen anzeigen."
 
-#: assets/ui/prefs.ui:1113 assets/ui/prefs.ui:1194 assets/ui/prefs.ui:1240
+#: assets/ui/prefs.ui:1136 assets/ui/prefs.ui:1217 assets/ui/prefs.ui:1263
 msgid "Adaptive"
 msgstr "Adaptiv"
 
-#: assets/ui/prefs.ui:1122 assets/ui/prefs.ui:1203
+#: assets/ui/prefs.ui:1145 assets/ui/prefs.ui:1226
 msgid ""
 "Show available playback controls, prioritizing the most appropriate ones."
 msgstr ""
 "Verfügbare Wiedergabesteuerungen anzeigen und die am besten geeigneten "
 "bevorzugen."
 
-#: assets/ui/prefs.ui:1136 assets/ui/prefs.ui:1217 assets/ui/prefs.ui:1241
+#: assets/ui/prefs.ui:1159 assets/ui/prefs.ui:1240 assets/ui/prefs.ui:1264
 msgid "Full"
 msgstr "Vollständig"
 
-#: assets/ui/prefs.ui:1145 assets/ui/prefs.ui:1226
+#: assets/ui/prefs.ui:1168 assets/ui/prefs.ui:1249
 msgid "Show all playback controls available for the current app."
 msgstr "Alle für die aktuelle App verfügbaren Wiedergabesteuerungen anzeigen."
 

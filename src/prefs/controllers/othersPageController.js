@@ -2,12 +2,13 @@
  * @file othersPageController.js
  * @module prefs.controllers.othersPageController
  *
- * Coordinates the preferences page for system integration and blocked apps.
+ * Coordinates the preferences page for system integration and maintenance.
  *
  * The controller owns rows that cannot be represented by a simple settings
- * binding, including the artwork cache actions and the blocked-app list. The
- * GNOME media-control switches remain declarative bindings; page-specific
- * maintenance and confirmation flows stay out of PreferencesController.
+ * binding, including artwork-cache actions, settings backup/restore, reset, and
+ * the blocked-app list. GNOME media-control switches remain declarative bindings;
+ * page-specific maintenance and confirmation flows stay out of
+ * PreferencesController.
  */
 
 import Adw from "gi://Adw";
@@ -21,17 +22,23 @@ import { gettext as _, ngettext } from "../translations.js";
 import { TOAST_TIMEOUT_SECONDS } from "../ui/presentation.js";
 import { PreferencesStyleClasses } from "../ui/style.js";
 import ArtworkCacheService from "../artwork/artworkCacheService.js";
+import SettingsBackupService, {
+  SETTINGS_BACKUP_FILENAME,
+} from "../settings/settingsBackupService.js";
 import {
   connectOwnedSignal,
   disconnectOwnedSignals,
 } from "../bindings/signalConnections.js";
 
 Gio._promisify(Gtk.FileLauncher.prototype, "launch", "launch_finish");
+Gio._promisify(Gtk.FileDialog.prototype, "open", "open_finish");
+Gio._promisify(Gtk.FileDialog.prototype, "save", "save_finish");
+Gio._promisify(Adw.AlertDialog.prototype, "choose", "choose_finish");
 
 const logger = createLogger("OthersPageController");
 
 /**
- * Coordinates the preferences page for system integration and blocked apps.
+ * Coordinates the preferences page for system integration and maintenance.
  */
 export default class OthersPageController {
   constructor(settings, builder, preferencesWindow) {
@@ -39,11 +46,14 @@ export default class OthersPageController {
     this.builder = builder;
     this.preferencesWindow = preferencesWindow;
     this.artworkCacheService = new ArtworkCacheService();
+    this.settingsBackupService = new SettingsBackupService(settings);
     this.ownedSignalConnections = [];
     this.artworkCacheViewGeneration = 0;
     this.clearArtworkCachePromise = null;
     this.openArtworkCachePromise = null;
     this.openArtworkCacheCancellable = null;
+    this.settingsBackupPromise = null;
+    this.settingsBackupCancellable = null;
     this.openDialogs = new Set();
   }
 
@@ -58,8 +68,9 @@ export default class OthersPageController {
       "btn-artwork-cache-open",
     );
     this.blockedAppsGroup = this.builder.get_object("gp-blocked-apps");
-    this.resetGroup = this.builder.get_object("gp-reset-settings");
-    this.createResetSettingsRow();
+    this.importSettingsRow = this.builder.get_object("br-settings-import");
+    this.exportSettingsRow = this.builder.get_object("br-settings-export");
+    this.resetSettingsRow = this.builder.get_object("br-settings-reset");
 
     this.blockedAppsGroup.setBlockedAppIds(
       this.settings.get_strv(SettingsKeys.MEDIA_BLOCKED_APPS),
@@ -80,6 +91,15 @@ export default class OthersPageController {
     this.connectOwnedSignal(this.openArtworkCacheButton, "clicked", () =>
       this.openArtworkCacheDirectory(),
     );
+    this.connectOwnedSignal(this.importSettingsRow, "activated", () =>
+      this.importSettings(),
+    );
+    this.connectOwnedSignal(this.exportSettingsRow, "activated", () =>
+      this.exportSettings(),
+    );
+    this.connectOwnedSignal(this.resetSettingsRow, "activated", () =>
+      this.presentResetSettingsConfirmation(),
+    );
     this.connectOwnedSignal(
       this.settings,
       `changed::${SettingsKeys.MEDIA_BLOCKED_APPS}`,
@@ -97,19 +117,206 @@ export default class OthersPageController {
     this.updateArtworkCacheStatsSubtitle();
   }
 
-  createResetSettingsRow() {
-    // Adw.ButtonRow requires Libadwaita 1.6 or later; MediaShell's 1.7 floor
-    // (enforced by assertSupportedLibadwaita() in prefs.js) already covers it.
-    this.resetSettingsRow = new Adw.ButtonRow({
-      title: _("Reset All Settings"),
-      start_icon_name: "edit-undo-symbolic",
-    });
-    this.resetSettingsRow.add_css_class(
-      PreferencesStyleClasses.DESTRUCTIVE_ACTION,
+  importSettings() {
+    return this.runSettingsBackupOperation((cancellable) =>
+      this.performSettingsImport(cancellable),
     );
-    this.resetGroup.add(this.resetSettingsRow);
-    this.connectOwnedSignal(this.resetSettingsRow, "activated", () =>
-      this.presentResetSettingsConfirmation(),
+  }
+
+  exportSettings() {
+    return this.runSettingsBackupOperation((cancellable) =>
+      this.performSettingsExport(cancellable),
+    );
+  }
+
+  runSettingsBackupOperation(operation) {
+    if (this.settingsBackupPromise) return this.settingsBackupPromise;
+    if (!this.preferencesWindow || !this.settingsBackupService) return null;
+
+    const cancellable = new Gio.Cancellable();
+    this.settingsBackupCancellable = cancellable;
+    this.setSettingsRowsSensitive(false);
+
+    const operationPromise = operation(cancellable).finally(() => {
+      if (this.settingsBackupPromise === operationPromise)
+        this.settingsBackupPromise = null;
+      if (this.settingsBackupCancellable === cancellable)
+        this.settingsBackupCancellable = null;
+      this.setSettingsRowsSensitive(true);
+    });
+    this.settingsBackupPromise = operationPromise;
+    return operationPromise;
+  }
+
+  setSettingsRowsSensitive(sensitive) {
+    if (this.importSettingsRow) this.importSettingsRow.sensitive = sensitive;
+    if (this.exportSettingsRow) this.exportSettingsRow.sensitive = sensitive;
+    if (this.resetSettingsRow) this.resetSettingsRow.sensitive = sensitive;
+  }
+
+  createSettingsBackupFileFilter() {
+    const filter = new Gtk.FileFilter();
+    filter.name = "JSON";
+    filter.add_pattern("*.json");
+
+    const filters = Gio.ListStore.new(Gtk.FileFilter);
+    filters.append(filter);
+    return { filter, filters };
+  }
+
+  async performSettingsExport(cancellable) {
+    const { filter, filters } = this.createSettingsBackupFileFilter();
+    const dialog = new Gtk.FileDialog({
+      title: _("Export Settings"),
+      initial_name: SETTINGS_BACKUP_FILENAME,
+      filters,
+      default_filter: filter,
+    });
+
+    try {
+      const file = await dialog.save(this.preferencesWindow, cancellable);
+      if (!this.preferencesWindow || cancellable.is_cancelled()) return;
+
+      await this.settingsBackupService.writeBackup(file, cancellable);
+      if (!this.preferencesWindow || cancellable.is_cancelled()) return;
+
+      this.showToast(_("Settings exported"));
+    } catch (error) {
+      if (this.isSettingsBackupCancellation(error, cancellable)) return;
+      logger.warn("Failed to export settings backup", error);
+      this.showToast(_("Could not export settings"));
+    }
+  }
+
+  async performSettingsImport(cancellable) {
+    const { filter, filters } = this.createSettingsBackupFileFilter();
+    const dialog = new Gtk.FileDialog({
+      title: _("Import Settings"),
+      filters,
+      default_filter: filter,
+    });
+
+    try {
+      const file = await dialog.open(this.preferencesWindow, cancellable);
+      if (!this.preferencesWindow || cancellable.is_cancelled()) return;
+
+      const backup = await this.settingsBackupService.readBackup(
+        file,
+        cancellable,
+      );
+      if (!this.preferencesWindow || cancellable.is_cancelled()) return;
+
+      const confirmed = await this.presentImportSettingsConfirmation(
+        file,
+        backup,
+        cancellable,
+      );
+      if (!confirmed || !this.preferencesWindow || cancellable.is_cancelled())
+        return;
+
+      this.settingsBackupService.restoreBackup(backup);
+      this.showToast(_("Settings imported"));
+    } catch (error) {
+      if (this.isSettingsBackupCancellation(error, cancellable)) return;
+      logger.warn("Failed to import settings backup", error);
+      this.showToast(_("Could not import settings"));
+    }
+  }
+
+  async presentImportSettingsConfirmation(file, backup, cancellable) {
+    if (!this.preferencesWindow) return false;
+
+    const createdAt = backup.createdAt.to_local();
+    const createdLabel = createdAt.format("%x - %H:%M");
+    const filename = file.get_basename() ?? SETTINGS_BACKUP_FILENAME;
+    const dialog = new Adw.AlertDialog({
+      heading: _("Import Settings?"),
+    });
+    dialog.set_extra_child(
+      this.buildImportSettingsConfirmationContent(filename, createdLabel),
+    );
+    dialog.add_response("cancel", _("Cancel"));
+    dialog.add_response("import", _("Import"));
+    dialog.set_response_appearance("import", Adw.ResponseAppearance.SUGGESTED);
+    dialog.default_response = "cancel";
+    dialog.close_response = "cancel";
+
+    const response = await dialog.choose(this.preferencesWindow, cancellable);
+    return response === "import";
+  }
+
+  buildImportSettingsConfirmationContent(filename, createdLabel) {
+    const content = new Gtk.Box({
+      orientation: Gtk.Orientation.VERTICAL,
+      spacing: 18,
+    });
+
+    const card = new Gtk.Box({
+      orientation: Gtk.Orientation.VERTICAL,
+      hexpand: true,
+      valign: Gtk.Align.CENTER,
+    });
+    card.add_css_class(PreferencesStyleClasses.CARD);
+
+    const backupInfo = new Gtk.Box({
+      orientation: Gtk.Orientation.VERTICAL,
+      spacing: 3,
+      margin_top: 12,
+      margin_bottom: 12,
+      margin_start: 12,
+      margin_end: 12,
+      halign: Gtk.Align.CENTER,
+      valign: Gtk.Align.CENTER,
+    });
+
+    const filenameLabel = new Gtk.Label({
+      label: filename,
+      wrap: true,
+      justify: Gtk.Justification.CENTER,
+      xalign: 0.5,
+    });
+    filenameLabel.add_css_class(PreferencesStyleClasses.HEADING);
+
+    const createdLabelWidget = new Gtk.Label({
+      label: createdLabel,
+      wrap: true,
+      justify: Gtk.Justification.CENTER,
+      xalign: 0.5,
+    });
+    createdLabelWidget.add_css_class(PreferencesStyleClasses.CAPTION);
+    createdLabelWidget.add_css_class(PreferencesStyleClasses.DIMMED);
+
+    backupInfo.append(filenameLabel);
+    backupInfo.append(createdLabelWidget);
+    card.append(backupInfo);
+
+    const warningLabel = new Gtk.Label({
+      label: _("Current settings will be replaced by the backup settings."),
+      wrap: true,
+      justify: Gtk.Justification.CENTER,
+      max_width_chars: 42,
+      xalign: 0.5,
+    });
+
+    content.append(card);
+    content.append(warningLabel);
+
+    return content;
+  }
+
+  isSettingsBackupCancellation(error, cancellable) {
+    if (cancellable.is_cancelled()) return true;
+    if (error.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+      return true;
+    if (error.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED))
+      return true;
+    return error.matches?.(Gtk.DialogError, Gtk.DialogError.CANCELLED) ?? false;
+  }
+
+  showToast(title) {
+    if (!this.preferencesWindow) return;
+    this.preferencesWindow.add_toast(
+      new Adw.Toast({ title, timeout: TOAST_TIMEOUT_SECONDS }),
     );
   }
 
@@ -289,24 +496,30 @@ export default class OthersPageController {
     this.artworkCacheViewGeneration++;
 
     const openDialogs = [...this.openDialogs];
-    this.openDialogs.clear();
     for (const dialog of openDialogs) dialog.force_close();
+    this.openDialogs.clear();
 
     disconnectOwnedSignals(this.ownedSignalConnections);
     this.blockedAppsGroup?.destroy();
     this.openArtworkCacheCancellable?.cancel();
+    this.settingsBackupCancellable?.cancel();
     this.artworkCacheService.destroy();
+    this.settingsBackupService.destroy();
     this.artworkCacheService = null;
+    this.settingsBackupService = null;
     this.clearArtworkCachePromise = null;
     this.openArtworkCachePromise = null;
     this.openArtworkCacheCancellable = null;
+    this.settingsBackupPromise = null;
+    this.settingsBackupCancellable = null;
     this.settings = null;
     this.builder = null;
     this.clearArtworkCacheRow = null;
     this.clearArtworkCacheButton = null;
     this.openArtworkCacheButton = null;
     this.blockedAppsGroup = null;
-    this.resetGroup = null;
+    this.importSettingsRow = null;
+    this.exportSettingsRow = null;
     this.resetSettingsRow = null;
   }
 }

@@ -1067,8 +1067,31 @@
       <object class="MediaShellBlockedAppsGroup" id="gp-blocked-apps"/>
     </child>
     <child>
-      <object class="AdwPreferencesGroup" id="gp-reset-settings">
+      <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Extension Settings</property>
+        <child>
+          <object class="AdwButtonRow" id="br-settings-import">
+            <property name="title" translatable="yes">Import Settings</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwButtonRow" id="br-settings-export">
+            <property name="title" translatable="yes">Export Settings</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <child>
+          <object class="AdwButtonRow" id="br-settings-reset">
+            <property name="title" translatable="yes">Reset All Settings</property>
+            <property name="start-icon-name">edit-undo-symbolic</property>
+            <style>
+              <class name="destructive-action"/>
+            </style>
+          </object>
+        </child>
       </object>
     </child>
   </object>

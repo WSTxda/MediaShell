@@ -10,10 +10,12 @@
 
 export const PreferencesStyleClasses = Object.freeze({
   BOXED_LIST: "boxed-list",
+  CARD: "card",
   CAPTION: "caption",
   CIRCULAR: "circular",
   DESTRUCTIVE_ACTION: "destructive-action",
   DIMMED: "dimmed",
   FLAT: "flat",
+  HEADING: "heading",
   SUGGESTED_ACTION: "suggested-action",
 });
