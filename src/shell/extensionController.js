@@ -197,6 +197,7 @@ export default class ExtensionController {
     this.mediaRuntime = new MediaRuntime({
       mediaSettings: this.settings.media,
       callbacks: {
+        onTrackedPlayersChanged: () => this.handleTrackedPlayersChanged(),
         onAvailablePlayersChanged: () => this.handleAvailablePlayersChanged(),
         onActivePlayerChanged: (player) =>
           this.handleActivePlayerChanged(player),
@@ -277,6 +278,9 @@ export default class ExtensionController {
       this.indicator?.requestSurfaceUpdate({
         popup: PopupRegions.PLAYER_SELECTOR,
       });
+  }
+
+  handleTrackedPlayersChanged() {
     this.reconcileNativeControls();
   }
 

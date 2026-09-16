@@ -105,7 +105,9 @@ export default class GnomeShellNativeControlsAdapter {
     return {
       artworkService: mediaRuntime.artwork,
       playbackController: mediaRuntime.playback,
-      getAvailablePlayers: () => mediaRuntime.getAvailablePlayers(),
+      // Enhance augments GNOME-owned banners, so bind them to the canonical
+      // tracked MPRIS endpoints rather than MediaShell's filtered surface view.
+      getTrackedPlayers: () => mediaRuntime.getTrackedPlayers(),
     };
   }
 

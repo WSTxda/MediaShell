@@ -63,12 +63,12 @@ export default class EnhanceNativeControls {
   }
 
   constructor(
-    { artworkService, playbackController, getAvailablePlayers },
+    { artworkService, playbackController, getTrackedPlayers },
     config,
   ) {
     this.artworkService = artworkService;
     this.playbackController = playbackController;
-    this.getAvailablePlayers = getAvailablePlayers;
+    this.getTrackedPlayers = getTrackedPlayers;
     this.config = config;
 
     this.context = null;
@@ -161,7 +161,7 @@ export default class EnhanceNativeControls {
     if (!this.context) return;
 
     const playersByBusName = new Map(
-      this.getAvailablePlayers()
+      this.getTrackedPlayers()
         .filter((player) => player?.busName)
         .map((player) => [player.busName, player]),
     );
@@ -340,6 +340,6 @@ export default class EnhanceNativeControls {
     this.config = null;
     this.artworkService = null;
     this.playbackController = null;
-    this.getAvailablePlayers = null;
+    this.getTrackedPlayers = null;
   }
 }

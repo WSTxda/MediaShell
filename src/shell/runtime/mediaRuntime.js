@@ -6,7 +6,9 @@
  *
  * The runtime owns MPRIS discovery/lifecycle and composes canonical playback,
  * application/window actions, artwork acquisition/cache, and desktop identity.
- * UI surfaces consume these capabilities instead of constructing protocol services
+ * It exposes both the tracked endpoint set and the blocked-app-filtered view
+ * consumed by MediaShell surfaces, without duplicating MPRIS clients. UI
+ * surfaces consume these capabilities instead of constructing protocol services
  * or reaching through ExtensionController.
  */
 
@@ -40,9 +42,11 @@ export default class MediaRuntime {
     this.unsubscribeBlockedAppsSetting = mediaSettings.subscribe(
       "blockedAppIds",
       (blockedAppIds) => {
-        this.setBlockedAppIds(blockedAppIds).catch((error) =>
-          logger.warn("Failed to apply the blocked-app list", error),
-        );
+        try {
+          this.setBlockedAppIds(blockedAppIds);
+        } catch (error) {
+          logger.warn("Failed to apply the blocked-app list", error);
+        }
       },
     );
     this.initialized = false;
@@ -54,6 +58,10 @@ export default class MediaRuntime {
 
   get availablePlayers() {
     return this.registry?.getAvailablePlayers() ?? [];
+  }
+
+  get trackedPlayers() {
+    return this.registry?.getTrackedPlayers() ?? [];
   }
 
   async init() {
@@ -75,6 +83,8 @@ export default class MediaRuntime {
         this.proxyFactory,
         this.identity,
         {
+          onTrackedPlayersChanged: () =>
+            this.callbacks?.onTrackedPlayersChanged?.(),
           onAvailablePlayersChanged: () =>
             this.callbacks?.onAvailablePlayersChanged?.(),
           onActivePlayerChanged: (player) =>
@@ -100,6 +110,10 @@ export default class MediaRuntime {
     return this.availablePlayers;
   }
 
+  getTrackedPlayers() {
+    return this.trackedPlayers;
+  }
+
   selectPlayer(player) {
     return this.registry?.selectPlayer(player) ?? false;
   }
@@ -112,9 +126,9 @@ export default class MediaRuntime {
     return this.registry?.togglePlayerPin(player) ?? false;
   }
 
-  async setBlockedAppIds(blockedAppIds) {
+  setBlockedAppIds(blockedAppIds) {
     this.blockedAppIds = new Set(blockedAppIds ?? []);
-    await this.registry?.setBlockedAppIds(this.blockedAppIds);
+    this.registry?.setBlockedAppIds(this.blockedAppIds);
   }
 
   destroy() {

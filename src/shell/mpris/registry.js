@@ -2,14 +2,16 @@
  * @file registry.js
  * @module shell.mpris.registry
  *
- * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
- * and selects the active player.
+ * Discovers MPRIS bus names, owns MprisPlayer instances, derives the
+ * blocked-app-filtered player view used by MediaShell surfaces, and selects the
+ * active player.
  *
  * The registry watches NameOwnerChanged, creates MprisPlayer models through
  * MprisProxyFactory,
- * applies blocked-app filtering, and schedules grace-period removals when an
- * endpoint disappears. It is the source of truth for the active player shown by
- * MediaShellIndicator and PopupSurface.
+ * keeps valid endpoints tracked independently from presentation filtering,
+ * applies blocked-app filtering to the available-player view, and schedules
+ * grace-period removals when an endpoint disappears. It is the source of truth
+ * for the active player shown by MediaShellIndicator and PopupSurface.
  */
 
 import Gio from "gi://Gio";
@@ -41,16 +43,18 @@ Gio._promisify(Gio.DBusProxy.prototype, "call", "call_finish");
 const logger = createLogger("MprisPlayerRegistry");
 
 /**
- * Discovers MPRIS bus names, owns MprisPlayer instances, filters blocked apps,
- * and selects the active player.
+ * Discovers MPRIS bus names, owns MprisPlayer instances, derives filtered
+ * player views, and selects the active player.
  */
 export default class MprisPlayerRegistry {
   constructor(mprisProxyFactory, desktopAppResolver, callbacks = {}) {
     this.mprisProxyFactory = mprisProxyFactory;
     this.desktopAppResolver = desktopAppResolver;
+    this.onTrackedPlayersChanged = callbacks.onTrackedPlayersChanged;
     this.onAvailablePlayersChanged = callbacks.onAvailablePlayersChanged;
     this.onActivePlayerChanged = callbacks.onActivePlayerChanged;
     this.playersByBusName = new Map();
+    this.trackedPlayers = [];
     this.availablePlayers = [];
     this.pendingPlayersByBusName = new Map();
     this.pendingRemovalBusNames = new Set();
@@ -153,7 +157,7 @@ export default class MprisPlayerRegistry {
           error,
         );
     });
-    this.refreshAvailablePlayers();
+    this.refreshPlayerViews();
     this.reconcileActivePlayer();
   }
 
@@ -218,18 +222,6 @@ export default class MprisPlayerRegistry {
         return;
       }
 
-      if (
-        this.desktopAppResolver.isPlayerBlocked(
-          player.identity,
-          player.desktopEntry,
-          this.blockedAppIds,
-          player.busName,
-        )
-      ) {
-        player.destroy();
-        return;
-      }
-
       player.onPropertyChanged(MprisPlayerStateProperties.IS_PINNED, () =>
         this.reconcileActivePlayer(),
       );
@@ -237,24 +229,20 @@ export default class MprisPlayerRegistry {
         this.reconcileActivePlayer(),
       );
       player.onPropertyChanged(MprisPlayerStateProperties.IS_INVALID, () => {
-        this.refreshAvailablePlayers();
+        this.refreshPlayerViews();
         this.reconcileActivePlayer();
       });
       const revalidateIdentity = () => {
-        if (
-          this.desktopAppResolver.isPlayerBlocked(
-            player.identity,
-            player.desktopEntry,
-            this.blockedAppIds,
-            player.busName,
-          )
-        ) {
-          this.unregisterPlayer(player.busName);
-          return;
-        }
+        const isBlocked = this.isPlayerBlocked(player);
         // Identity changes can alter the resolved name or icon even
         // when the available proxy list itself is unchanged.
-        this.refreshAvailablePlayers(true);
+        this.refreshPlayerViews({
+          forceAvailableNotification: !isBlocked,
+        });
+        // Refresh first so the pin-change callback cannot reconcile against
+        // an available-player view that still contains a newly blocked player.
+        if (player.isPinned && isBlocked) player.unpin();
+        this.reconcileActivePlayer();
       };
       player.onPropertyChanged(
         MprisRootProperties.IDENTITY,
@@ -267,7 +255,7 @@ export default class MprisPlayerRegistry {
 
       this.playersByBusName.set(busName, player);
       adopted = true;
-      this.refreshAvailablePlayers();
+      this.refreshPlayerViews();
       this.reconcileActivePlayer();
     } catch (error) {
       if (!isCancellationError(error)) throw error;
@@ -292,7 +280,7 @@ export default class MprisPlayerRegistry {
     // D-Bus ownership is the lifecycle authority. Hide the ownerless
     // endpoint from the selector immediately, but retain the active player
     // for a bounded hand-off window so a replacement owner can reuse it.
-    this.refreshAvailablePlayers();
+    this.refreshPlayerViews();
     this.reconcileActivePlayer();
 
     // Shell.App state may only corroborate the D-Bus owner loss when MPRIS
@@ -378,31 +366,66 @@ export default class MprisPlayerRegistry {
 
     player.destroy();
     this.playersByBusName.delete(busName);
-    this.refreshAvailablePlayers();
+    this.refreshPlayerViews();
     this.reconcileActivePlayer();
   }
 
-  refreshAvailablePlayers(forceNotification = false) {
-    const nextAvailablePlayers = orderPlayersDeterministically(
+  isPlayerBlocked(player) {
+    return this.desktopAppResolver.isPlayerBlocked(
+      player.identity,
+      player.desktopEntry,
+      this.blockedAppIds,
+      player.busName,
+    );
+  }
+
+  refreshPlayerViews({ forceAvailableNotification = false } = {}) {
+    const nextTrackedPlayers = orderPlayersDeterministically(
       [...this.playersByBusName.values()].filter(
         (player) =>
           !player.isInvalid && !this.pendingRemovalBusNames.has(player.busName),
       ),
     );
-    const listChanged =
+    const trackedPlayersChanged =
+      nextTrackedPlayers.length !== this.trackedPlayers.length ||
+      nextTrackedPlayers.some(
+        (player, index) => player !== this.trackedPlayers[index],
+      );
+    const nextAvailablePlayers = nextTrackedPlayers.filter(
+      (player) => !this.isPlayerBlocked(player),
+    );
+    const availablePlayersChanged =
       nextAvailablePlayers.length !== this.availablePlayers.length ||
       nextAvailablePlayers.some(
         (player, index) => player !== this.availablePlayers[index],
       );
-    if (!listChanged && !forceNotification) return false;
 
-    this.availablePlayers = nextAvailablePlayers;
-    this.invokeCallbackSafely(
-      this.onAvailablePlayersChanged,
-      this.availablePlayers,
-      "available-players-changed",
-    );
-    return true;
+    // Publish both derived views before notifying either observer. Consumers
+    // can therefore query the registry from a callback without observing one
+    // view from the previous refresh cycle.
+    if (trackedPlayersChanged) this.trackedPlayers = nextTrackedPlayers;
+    if (availablePlayersChanged) this.availablePlayers = nextAvailablePlayers;
+
+    if (trackedPlayersChanged)
+      this.invokeCallbackSafely(
+        this.onTrackedPlayersChanged,
+        this.trackedPlayers,
+        "tracked-players-changed",
+      );
+
+    if (availablePlayersChanged || forceAvailableNotification) {
+      this.invokeCallbackSafely(
+        this.onAvailablePlayersChanged,
+        this.availablePlayers,
+        "available-players-changed",
+      );
+    }
+
+    return trackedPlayersChanged || availablePlayersChanged;
+  }
+
+  getTrackedPlayers() {
+    return this.trackedPlayers;
   }
 
   getAvailablePlayers() {
@@ -410,11 +433,7 @@ export default class MprisPlayerRegistry {
   }
 
   getPinnedPlayer() {
-    return (
-      orderPlayersDeterministically([...this.playersByBusName.values()]).find(
-        (player) => player.isPinned,
-      ) ?? null
-    );
+    return this.availablePlayers.find((player) => player.isPinned) ?? null;
   }
 
   isRegisteredPlayer(player) {
@@ -425,6 +444,10 @@ export default class MprisPlayerRegistry {
       !this.pendingRemovalBusNames.has(player.busName) &&
       this.playersByBusName.get(player.busName) === player,
     );
+  }
+
+  isAvailablePlayer(player) {
+    return this.availablePlayers.includes(player);
   }
 
   #setActivePlayer(player, { remember = true } = {}) {
@@ -441,7 +464,7 @@ export default class MprisPlayerRegistry {
   }
 
   selectPlayer(player) {
-    if (!this.isRegisteredPlayer(player)) return false;
+    if (!this.isAvailablePlayer(player)) return false;
 
     const pinnedPlayer = this.getPinnedPlayer();
     if (pinnedPlayer && pinnedPlayer !== player) return false;
@@ -461,7 +484,7 @@ export default class MprisPlayerRegistry {
   }
 
   pinPlayer(player) {
-    if (!this.isRegisteredPlayer(player)) return false;
+    if (!this.isAvailablePlayer(player)) return false;
 
     const pinnedPlayer = this.getPinnedPlayer();
     if (pinnedPlayer && pinnedPlayer !== player) {
@@ -523,31 +546,18 @@ export default class MprisPlayerRegistry {
     }
   }
 
-  async setBlockedAppIds(blockedAppIds) {
+  setBlockedAppIds(blockedAppIds) {
     this.blockedAppIds = new Set(normalizeUniqueStrings(blockedAppIds));
 
+    // Filtering is a presentation policy, so publish the new available view
+    // before pin changes emit callbacks that may reconcile the active player.
+    this.refreshPlayerViews();
+
     for (const player of [...this.playersByBusName.values()]) {
-      if (
-        this.desktopAppResolver.isPlayerBlocked(
-          player.identity,
-          player.desktopEntry,
-          this.blockedAppIds,
-          player.busName,
-        )
-      ) {
-        this.unregisterPlayer(player.busName);
-      }
+      if (player.isPinned && this.isPlayerBlocked(player)) player.unpin();
     }
 
-    try {
-      await this.discoverRunningPlayers();
-    } catch (error) {
-      if (!isCancellationError(error))
-        logger.warn(
-          "Failed to refresh players after blocked-app change",
-          error,
-        );
-    }
+    this.reconcileActivePlayer();
   }
 
   destroy() {
@@ -574,6 +584,7 @@ export default class MprisPlayerRegistry {
       player.destroy();
 
     this.playersByBusName.clear();
+    this.trackedPlayers = [];
     this.availablePlayers = [];
     this.pendingPlayersByBusName.clear();
     this.activePlayer = null;
@@ -582,6 +593,7 @@ export default class MprisPlayerRegistry {
     this.desktopAppResolver = null;
     this.nameOwnerChangedSignalId = null;
     this.busDaemonOwnerSignalId = null;
+    this.onTrackedPlayersChanged = null;
     this.onAvailablePlayersChanged = null;
     this.onActivePlayerChanged = null;
     this.mprisProxyFactory = null;
