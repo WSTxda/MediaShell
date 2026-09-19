@@ -264,11 +264,11 @@
     </key>
     <key name="interactions-mouse-action-right"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'raise-app'</default>
+      <default>'play-pause'</default>
     </key>
     <key name="interactions-mouse-action-double"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
-      <default>'none'</default>
+      <default>'raise-app'</default>
     </key>
     <key name="interactions-mouse-action-scroll-up"
          enum="org.gnome.shell.extensions.mediashell.input-actions">
