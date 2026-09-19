@@ -43,6 +43,8 @@ export default class MediaShellPreferences extends ExtensionPreferences {
       this.ngettext.bind(this),
     );
 
+    preferencesWindow.search_enabled = true;
+
     const preferencesController = new PreferencesController(
       this,
       preferencesWindow,

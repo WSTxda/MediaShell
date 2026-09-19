@@ -51,7 +51,7 @@ export default class AboutDialogController {
     this.aboutButtonSignalId = this.aboutButton.connect("clicked", () =>
       this.presentAboutDialog(),
     );
-    this.headerBar.pack_start(this.aboutButton);
+    this.headerBar.pack_end(this.aboutButton);
   }
 
   registerIconPath() {
