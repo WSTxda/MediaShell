@@ -233,6 +233,11 @@ const INTERACTIONS_BINDINGS = Object.freeze([
     "accelerator",
   ],
   [
+    SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_AUDIO_OUTPUT,
+    "sl-interactions-shortcut-switch-audio-output",
+    "accelerator",
+  ],
+  [
     SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,
     "sl-interactions-shortcut-toggle-popup",
     "accelerator",

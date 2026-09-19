@@ -72,6 +72,11 @@ export const INPUT_ACTION_DEFINITIONS = Object.freeze([
     SettingsKeys.INTERACTIONS_SHORTCUT_VOLUME_DOWN,
   ),
   createInputAction(
+    "switch-audio-output",
+    InputActions.SWITCH_AUDIO_OUTPUT,
+    SettingsKeys.INTERACTIONS_SHORTCUT_SWITCH_AUDIO_OUTPUT,
+  ),
+  createInputAction(
     "toggle-popup",
     InputActions.TOGGLE_POPUP,
     SettingsKeys.INTERACTIONS_SHORTCUT_TOGGLE_POPUP,

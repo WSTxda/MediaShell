@@ -72,6 +72,10 @@ function createActionCopy() {
     "toggle-loop": Object.freeze({ title: _("Repeat"), section: "playback" }),
     "volume-up": Object.freeze({ title: _("Volume Up"), section: "audio" }),
     "volume-down": Object.freeze({ title: _("Volume Down"), section: "audio" }),
+    "switch-audio-output": Object.freeze({
+      title: _("Switch Audio Output"),
+      section: "audio",
+    }),
     "toggle-popup": Object.freeze({ title: _("Popup"), section: "interface" }),
     "open-preferences": Object.freeze({
       title: _("Preferences"),

@@ -11,6 +11,7 @@
  * PlaybackStatus instead of predicting the result.
  */
 
+import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
@@ -33,6 +34,7 @@ import {
 } from "../../mpris/protocol.js";
 
 const FEEDBACK_CONFIRMATION_TIMEOUT_MS = 2500;
+const AUDIO_OUTPUT_FALLBACK_ICON_NAME = "audio-speakers-symbolic";
 
 function resolveVolumePresentationLevel(volume) {
   return Math.min(1, Math.max(0, Number(volume) || 0));
@@ -43,6 +45,31 @@ function resolveVolumeIconName(level) {
   if (level < 0.33) return "audio-volume-low-symbolic";
   if (level < 0.66) return "audio-volume-medium-symbolic";
   return "audio-volume-high-symbolic";
+}
+
+function preferSymbolicThemedIcon(gicon) {
+  if (!gicon || typeof gicon.get_names !== "function") return gicon ?? null;
+
+  const names = [...(gicon.get_names() ?? [])].filter(Boolean);
+  if (names.length === 0) return gicon;
+
+  const symbolicNames = names.map((name) =>
+    name.endsWith("-symbolic") ? name : `${name}-symbolic`,
+  );
+  return Gio.ThemedIcon.new_from_names([
+    ...new Set([...symbolicNames, ...names, AUDIO_OUTPUT_FALLBACK_ICON_NAME]),
+  ]);
+}
+
+function resolveAudioOutputPresentation(output) {
+  if (!output) return null;
+
+  const gicon = preferSymbolicThemedIcon(output.gicon);
+  return {
+    gicon,
+    iconName: gicon ? null : AUDIO_OUTPUT_FALLBACK_ICON_NAME,
+    label: output.label ?? null,
+  };
 }
 
 function resolvePlaybackStatusPresentation(player) {
@@ -166,6 +193,12 @@ export default class MediaActionToast {
       return;
     }
     if (phase !== InputActionPhases.COMPLETED) return;
+
+    if (action?.inputAction === InputActions.SWITCH_AUDIO_OUTPUT) {
+      const presentation = resolveAudioOutputPresentation(result);
+      if (presentation) this.show(presentation);
+      return;
+    }
 
     const context = this.findContextByInputAction(action);
     if (context) this.complete(context, result);

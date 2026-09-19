@@ -17,6 +17,8 @@
     <value nick="switch-app"       value="12" />
     <value nick="seek-backward"    value="13" />
     <value nick="seek-forward"     value="14" />
+    <!-- Values 15–17 are retired playback-rate actions and must not be reused. -->
+    <value nick="switch-audio-output" value="18" />
   </enum>
 
   <enum id="org.gnome.shell.extensions.mediashell.playback-control-modes">
@@ -232,6 +234,9 @@
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-volume-down" type="as">
+      <default><![CDATA[['']]]></default>
+    </key>
+    <key name="interactions-shortcut-switch-audio-output" type="as">
       <default><![CDATA[['']]]></default>
     </key>
     <key name="interactions-shortcut-toggle-popup" type="as">

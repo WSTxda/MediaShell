@@ -27,11 +27,17 @@ export const InputActionPhases = Object.freeze({
 
 /** Executes canonical input actions against one MediaRuntime and UI host. */
 export default class InputActionDispatcher {
-  constructor({ mediaRuntime, onTogglePopup, onOpenPreferences } = {}) {
+  constructor({
+    mediaRuntime,
+    audioOutput,
+    onTogglePopup,
+    onOpenPreferences,
+  } = {}) {
     if (!mediaRuntime)
       throw new TypeError("InputActionDispatcher requires MediaRuntime");
 
     this.mediaRuntime = mediaRuntime;
+    this.audioOutput = audioOutput ?? null;
     this.onTogglePopup = onTogglePopup;
     this.onOpenPreferences = onOpenPreferences;
     this.actionListeners = new Map();
@@ -102,6 +108,9 @@ export default class InputActionDispatcher {
             player,
           );
           break;
+        case InputActions.SWITCH_AUDIO_OUTPUT:
+          result = this.audioOutput?.switchToNext() ?? null;
+          break;
         case InputActions.TOGGLE_POPUP:
           this.onTogglePopup?.();
           this.emitAction(InputActionPhases.COMPLETED, action);
@@ -145,6 +154,7 @@ export default class InputActionDispatcher {
   destroy() {
     this.actionListeners.clear();
     this.mediaRuntime = null;
+    this.audioOutput = null;
     this.onTogglePopup = null;
     this.onOpenPreferences = null;
   }

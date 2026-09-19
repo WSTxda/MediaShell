@@ -206,7 +206,7 @@ test("playback catalog, semantic order, state, and accessibility stay canonical"
   ]);
 });
 
-test("application input actions use the MediaRuntime application capability", async () => {
+test("non-playback input actions use their injected capabilities", async () => {
   const calls = [];
   const activePlayer = { id: "active" };
   const mediaRuntime = {
@@ -226,10 +226,22 @@ test("application input actions use the MediaRuntime application capability", as
       return false;
     },
   };
-  const dispatcher = new InputActionDispatcher({ mediaRuntime });
+  const audioOutput = {
+    switchToNext() {
+      calls.push("switch-output");
+      return Promise.resolve({ id: 18 });
+    },
+  };
+  const dispatcher = new InputActionDispatcher({ mediaRuntime, audioOutput });
 
   assert.equal(await dispatcher.execute(InputActions.RAISE_APP), "raised");
-  assert.deepEqual(calls, [["application-raise", activePlayer]]);
+  assert.deepEqual(await dispatcher.execute(InputActions.SWITCH_AUDIO_OUTPUT), {
+    id: 18,
+  });
+  assert.deepEqual(calls, [
+    ["application-raise", activePlayer],
+    "switch-output",
+  ]);
   dispatcher.destroy();
 });
 
@@ -457,9 +469,14 @@ test("input actions expose only executable 3.x actions", async () => {
           SWITCH_APP: 12,
           SEEK_BACKWARD: 13,
           SEEK_FORWARD: 14,
+          SWITCH_AUDIO_OUTPUT: 18,
         });
         for (const unsupported of [15, 16, 17])
           assert.equal(normalizeInputAction(unsupported), InputActions.NONE);
+        assert.equal(
+          normalizeInputAction(InputActions.SWITCH_AUDIO_OUTPUT),
+          InputActions.SWITCH_AUDIO_OUTPUT,
+        );
       },
     ],
     [
@@ -474,6 +491,11 @@ test("input actions expose only executable 3.x actions", async () => {
           InputActions.NEXT_TRACK,
           InputActions.SEEK_FORWARD,
           InputActions.TOGGLE_LOOP,
+        ]);
+        assert.deepEqual(MOUSE_ACTION_VALUES.slice(8, 11), [
+          InputActions.VOLUME_UP,
+          InputActions.VOLUME_DOWN,
+          InputActions.SWITCH_AUDIO_OUTPUT,
         ]);
       },
     ],

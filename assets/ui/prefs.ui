@@ -815,6 +815,23 @@
               </object>
             </child>
             <child>
+              <object class="AdwActionRow" id="ar-interactions-shortcut-switch-audio-output">
+                <property name="activatable">true</property>
+                <property name="title" translatable="yes">Switch Audio Output</property>
+                <child type="prefix">
+                  <object class="GtkImage">
+                    <property name="icon-name">audio-card-symbolic</property>
+                  </object>
+                </child>
+                <child type="suffix">
+                  <object class="GtkShortcutLabel" id="sl-interactions-shortcut-switch-audio-output">
+                    <property name="disabled-text" translatable="yes">Set</property>
+                    <property name="valign">3</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="AdwActionRow" id="ar-interactions-shortcut-toggle-popup">
                 <property name="activatable">true</property>
                 <property name="title" translatable="yes">Popup</property>
@@ -1276,6 +1293,7 @@
       <item translatable="yes">Repeat</item>
       <item translatable="yes">Volume Up</item>
       <item translatable="yes">Volume Down</item>
+      <item translatable="yes">Switch Audio Output</item>
       <item translatable="yes">Popup</item>
       <item translatable="yes">Preferences</item>
       <item translatable="yes">Open App</item>

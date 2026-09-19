@@ -100,6 +100,8 @@ export const SettingsKeys = Object.freeze({
   INTERACTIONS_SHORTCUT_TOGGLE_LOOP: "interactions-shortcut-toggle-loop",
   INTERACTIONS_SHORTCUT_VOLUME_UP: "interactions-shortcut-volume-up",
   INTERACTIONS_SHORTCUT_VOLUME_DOWN: "interactions-shortcut-volume-down",
+  INTERACTIONS_SHORTCUT_SWITCH_AUDIO_OUTPUT:
+    "interactions-shortcut-switch-audio-output",
   INTERACTIONS_SHORTCUT_TOGGLE_POPUP: "interactions-shortcut-toggle-popup",
   INTERACTIONS_SHORTCUT_OPEN_PREFERENCES:
     "interactions-shortcut-open-preferences",

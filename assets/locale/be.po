@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MediaShell 2.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 16:12-0300\n"
+"POT-Creation-Date: 2026-09-19 02:00-0300\n"
 "PO-Revision-Date: 2026-07-29 13:14-0300\n"
 "Language: be\n"
 "MIME-Version: 1.0\n"
@@ -33,154 +33,159 @@ msgstr "Распрацавана"
 
 #: src/prefs/controllers/interactionsPageController.js:49
 #: src/shell/media/playback/accessibility.js:41 assets/ui/prefs.ui:49
-#: assets/ui/prefs.ui:312 assets/ui/prefs.ui:667 assets/ui/prefs.ui:1270
+#: assets/ui/prefs.ui:312 assets/ui/prefs.ui:667 assets/ui/prefs.ui:1287
 msgid "Shuffle"
 msgstr "Выпадкова"
 
 #: src/prefs/controllers/interactionsPageController.js:53
 #: src/shell/media/playback/accessibility.js:43 assets/ui/prefs.ui:59
-#: assets/ui/prefs.ui:322 assets/ui/prefs.ui:684 assets/ui/prefs.ui:1271
+#: assets/ui/prefs.ui:322 assets/ui/prefs.ui:684 assets/ui/prefs.ui:1288
 msgid "Seek Backward"
 msgstr "Пераматаць назад"
 
 #: src/prefs/controllers/interactionsPageController.js:57
 #: src/shell/media/playback/accessibility.js:45 assets/ui/prefs.ui:69
-#: assets/ui/prefs.ui:332 assets/ui/prefs.ui:701 assets/ui/prefs.ui:1272
+#: assets/ui/prefs.ui:332 assets/ui/prefs.ui:701 assets/ui/prefs.ui:1289
 msgid "Previous Track"
 msgstr "Папярэдні трэк"
 
 #: src/prefs/controllers/interactionsPageController.js:61
 #: src/shell/media/playback/accessibility.js:50 assets/ui/prefs.ui:79
-#: assets/ui/prefs.ui:342 assets/ui/prefs.ui:718 assets/ui/prefs.ui:1273
+#: assets/ui/prefs.ui:342 assets/ui/prefs.ui:718 assets/ui/prefs.ui:1290
 msgid "Play / Pause"
 msgstr "Прайграць / Паўза"
 
 #: src/prefs/controllers/interactionsPageController.js:65
 #: src/shell/media/playback/accessibility.js:52 assets/ui/prefs.ui:89
-#: assets/ui/prefs.ui:352 assets/ui/prefs.ui:735 assets/ui/prefs.ui:1274
+#: assets/ui/prefs.ui:352 assets/ui/prefs.ui:735 assets/ui/prefs.ui:1291
 msgid "Next Track"
 msgstr "Наступны трэк"
 
 #: src/prefs/controllers/interactionsPageController.js:69
 #: src/shell/media/playback/accessibility.js:54 assets/ui/prefs.ui:99
-#: assets/ui/prefs.ui:362 assets/ui/prefs.ui:752 assets/ui/prefs.ui:1275
+#: assets/ui/prefs.ui:362 assets/ui/prefs.ui:752 assets/ui/prefs.ui:1292
 msgid "Seek Forward"
 msgstr "Пераматаць наперад"
 
 #: src/prefs/controllers/interactionsPageController.js:72
 #: src/shell/media/playback/accessibility.js:62 assets/ui/prefs.ui:109
-#: assets/ui/prefs.ui:372 assets/ui/prefs.ui:769 assets/ui/prefs.ui:1276
+#: assets/ui/prefs.ui:372 assets/ui/prefs.ui:769 assets/ui/prefs.ui:1293
 msgid "Repeat"
 msgstr "Паўтор"
 
 #: src/prefs/controllers/interactionsPageController.js:73
 #: src/shell/ui/popup/popupVolumeControl.js:136 assets/ui/prefs.ui:786
-#: assets/ui/prefs.ui:1277
+#: assets/ui/prefs.ui:1294
 msgid "Volume Up"
 msgstr "Павялічыць гучнасць"
 
 #: src/prefs/controllers/interactionsPageController.js:74
-#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:1278
+#: assets/ui/prefs.ui:803 assets/ui/prefs.ui:1295
 msgid "Volume Down"
 msgstr "Паменшыць гучнасць"
 
-#: src/prefs/controllers/interactionsPageController.js:75 assets/ui/prefs.ui:4
-#: assets/ui/prefs.ui:820 assets/ui/prefs.ui:1279
+#: src/prefs/controllers/interactionsPageController.js:76
+#: assets/ui/prefs.ui:820 assets/ui/prefs.ui:1296
+msgid "Switch Audio Output"
+msgstr "Пераключыць аўдыявыхад"
+
+#: src/prefs/controllers/interactionsPageController.js:79 assets/ui/prefs.ui:4
+#: assets/ui/prefs.ui:837 assets/ui/prefs.ui:1297
 msgid "Popup"
 msgstr "Усплывальнае меню"
 
-#: src/prefs/controllers/interactionsPageController.js:77
-#: assets/ui/prefs.ui:837 assets/ui/prefs.ui:1280
+#: src/prefs/controllers/interactionsPageController.js:81
+#: assets/ui/prefs.ui:854 assets/ui/prefs.ui:1298
 msgid "Preferences"
 msgstr "Налады"
 
-#: src/prefs/controllers/interactionsPageController.js:81
-#: assets/ui/prefs.ui:854 assets/ui/prefs.ui:1281
+#: src/prefs/controllers/interactionsPageController.js:85
+#: assets/ui/prefs.ui:871 assets/ui/prefs.ui:1299
 msgid "Open App"
 msgstr "Адкрыць праграму"
 
-#: src/prefs/controllers/interactionsPageController.js:84
-#: assets/ui/prefs.ui:871 assets/ui/prefs.ui:1282
+#: src/prefs/controllers/interactionsPageController.js:88
+#: assets/ui/prefs.ui:888 assets/ui/prefs.ui:1300
 msgid "Quit App"
 msgstr "Завяршыць праграму"
 
-#: src/prefs/controllers/interactionsPageController.js:85
-#: assets/ui/prefs.ui:888 assets/ui/prefs.ui:1283
+#: src/prefs/controllers/interactionsPageController.js:89
+#: assets/ui/prefs.ui:905 assets/ui/prefs.ui:1301
 msgid "Switch App"
 msgstr "Пераключыць праграму"
 
-#: src/prefs/controllers/interactionsPageController.js:91
+#: src/prefs/controllers/interactionsPageController.js:95
 msgid "Playback"
 msgstr "Прайграванне"
 
-#: src/prefs/controllers/interactionsPageController.js:92
+#: src/prefs/controllers/interactionsPageController.js:96
 msgid "Audio"
 msgstr "Аўдыя"
 
-#: src/prefs/controllers/interactionsPageController.js:93
+#: src/prefs/controllers/interactionsPageController.js:97
 #: assets/ui/prefs.ui:250 assets/ui/prefs.ui:553
 msgid "Apps"
 msgstr "Праграмы"
 
-#: src/prefs/controllers/interactionsPageController.js:94
+#: src/prefs/controllers/interactionsPageController.js:98
 msgid "Interface"
 msgstr "Інтэрфейс"
 
-#: src/prefs/controllers/interactionsPageController.js:136
-#: src/prefs/controllers/interactionsPageController.js:416
+#: src/prefs/controllers/interactionsPageController.js:140
+#: src/prefs/controllers/interactionsPageController.js:420
 #: src/prefs/controllers/othersPageController.js:327
 msgid "Reset"
 msgstr "Скінуць"
 
-#: src/prefs/controllers/interactionsPageController.js:185
-#: src/prefs/controllers/interactionsPageController.js:415
+#: src/prefs/controllers/interactionsPageController.js:189
+#: src/prefs/controllers/interactionsPageController.js:419
 #: src/prefs/controllers/othersPageController.js:238
 #: src/prefs/controllers/othersPageController.js:403
 #: src/prefs/widgets/blockedAppChooserDialog.js:67
 msgid "Cancel"
 msgstr "Скасаваць"
 
-#: src/prefs/controllers/interactionsPageController.js:187
+#: src/prefs/controllers/interactionsPageController.js:191
 #: assets/ui/prefs.ui:675 assets/ui/prefs.ui:692 assets/ui/prefs.ui:709
 #: assets/ui/prefs.ui:726 assets/ui/prefs.ui:743 assets/ui/prefs.ui:760
 #: assets/ui/prefs.ui:777 assets/ui/prefs.ui:794 assets/ui/prefs.ui:811
 #: assets/ui/prefs.ui:828 assets/ui/prefs.ui:845 assets/ui/prefs.ui:862
-#: assets/ui/prefs.ui:879 assets/ui/prefs.ui:896
+#: assets/ui/prefs.ui:879 assets/ui/prefs.ui:896 assets/ui/prefs.ui:913
 msgid "Set"
 msgstr "Задаць"
 
-#: src/prefs/controllers/interactionsPageController.js:207
+#: src/prefs/controllers/interactionsPageController.js:211
 msgid "Press a shortcut"
 msgstr "Націсніце клавіятурнае спалучэнне"
 
-#: src/prefs/controllers/interactionsPageController.js:215
-#: src/prefs/controllers/interactionsPageController.js:383
+#: src/prefs/controllers/interactionsPageController.js:219
+#: src/prefs/controllers/interactionsPageController.js:387
 msgid "Not set"
 msgstr "Не зададзена"
 
-#: src/prefs/controllers/interactionsPageController.js:340
+#: src/prefs/controllers/interactionsPageController.js:344
 #, javascript-format
 msgid "Shortcut already used by %s"
 msgstr "Спалучэнне ўжо выкарыстоўваецца для %s"
 
-#: src/prefs/controllers/interactionsPageController.js:360
+#: src/prefs/controllers/interactionsPageController.js:364
 #: assets/ui/prefs.ui:658
 msgid "Keyboard Shortcuts"
 msgstr "Спалучэнні клавіш"
 
-#: src/prefs/controllers/interactionsPageController.js:411
+#: src/prefs/controllers/interactionsPageController.js:415
 msgid "Reset keyboard shortcuts?"
 msgstr "Скінуць спалучэнні клавіш?"
 
-#: src/prefs/controllers/interactionsPageController.js:412
+#: src/prefs/controllers/interactionsPageController.js:416
 msgid "Every keyboard shortcut will be disabled"
 msgstr "Усе спалучэнні клавіш будуць адключаны"
 
-#: src/prefs/controllers/interactionsPageController.js:435
+#: src/prefs/controllers/interactionsPageController.js:439
 msgid "Keyboard shortcuts reset"
 msgstr "Спалучэнні клавіш скінуты"
 
-#: src/prefs/controllers/othersPageController.js:170 assets/ui/prefs.ui:1079
+#: src/prefs/controllers/othersPageController.js:170 assets/ui/prefs.ui:1096
 msgid "Export Settings"
 msgstr ""
 
@@ -192,7 +197,7 @@ msgstr ""
 msgid "Could not export settings"
 msgstr ""
 
-#: src/prefs/controllers/othersPageController.js:194 assets/ui/prefs.ui:1074
+#: src/prefs/controllers/othersPageController.js:194 assets/ui/prefs.ui:1091
 msgid "Import Settings"
 msgstr ""
 
@@ -236,7 +241,7 @@ msgstr "Ачысціць кэш?"
 msgid "Cached content will be downloaded again when needed"
 msgstr "Кэшаваны змест будзе загружаны зноў пры неабходнасці"
 
-#: src/prefs/controllers/othersPageController.js:347 assets/ui/prefs.ui:1035
+#: src/prefs/controllers/othersPageController.js:347 assets/ui/prefs.ui:1052
 msgid "Clear Cache"
 msgstr "Ачысціць кэш"
 
@@ -327,7 +332,7 @@ msgstr "Дыск"
 
 #: src/prefs/widgets/trackInformationContentRow.js:33
 #: src/shell/media/playback/accessibility.js:58
-#: src/shell/ui/toast/mediaActionToast.js:91
+#: src/shell/ui/toast/mediaActionToast.js:118
 msgid "Track"
 msgstr "Трэк"
 
@@ -352,11 +357,11 @@ msgid "Stop"
 msgstr "Спыніць"
 
 #: src/shell/media/playback/accessibility.js:60
-#: src/shell/ui/toast/mediaActionToast.js:93
+#: src/shell/ui/toast/mediaActionToast.js:120
 msgid "Playlist"
 msgstr "Спіс прайгравання"
 
-#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1269
+#: src/shell/media/playback/accessibility.js:61 assets/ui/prefs.ui:1286
 msgid "None"
 msgstr "Няма"
 
@@ -386,23 +391,23 @@ msgstr "Уключыць гук"
 msgid "Mute"
 msgstr "Выключыць гук"
 
-#: src/shell/ui/toast/mediaActionToast.js:62
+#: src/shell/ui/toast/mediaActionToast.js:89
 msgid "Playing"
 msgstr "Прайграецца"
 
-#: src/shell/ui/toast/mediaActionToast.js:62
+#: src/shell/ui/toast/mediaActionToast.js:89
 msgid "Paused"
 msgstr "Прыпынена"
 
-#: src/shell/ui/toast/mediaActionToast.js:74
+#: src/shell/ui/toast/mediaActionToast.js:101
 msgid "Enabled"
 msgstr "Уключана"
 
-#: src/shell/ui/toast/mediaActionToast.js:74
+#: src/shell/ui/toast/mediaActionToast.js:101
 msgid "Disabled"
 msgstr "Выключана"
 
-#: src/shell/ui/toast/mediaActionToast.js:94
+#: src/shell/ui/toast/mediaActionToast.js:121
 msgid "Off"
 msgstr "Выключана"
 
@@ -703,79 +708,79 @@ msgstr "Прызначэнні спалучэнняў клавіш"
 msgid "Configure each keyboard action"
 msgstr "Наладзьце кожнае дзеянне клавіятуры"
 
-#: assets/ui/prefs.ui:906
+#: assets/ui/prefs.ui:923
 msgid "Shortcut Overview"
 msgstr "Агляд спалучэнняў"
 
-#: assets/ui/prefs.ui:907
+#: assets/ui/prefs.ui:924
 msgid "View all assigned shortcuts"
 msgstr "Праглядзіце ўсе прызначаныя спалучэнні"
 
-#: assets/ui/prefs.ui:912
+#: assets/ui/prefs.ui:929
 msgid "View"
 msgstr "Паказаць"
 
-#: assets/ui/prefs.ui:920
+#: assets/ui/prefs.ui:937
 msgid "Reset Keyboard Shortcuts"
 msgstr "Скінуць спалучэнні клавіш"
 
-#: assets/ui/prefs.ui:931
+#: assets/ui/prefs.ui:948
 msgid "Mouse Actions"
 msgstr "Дзеянні мышы"
 
-#: assets/ui/prefs.ui:932
+#: assets/ui/prefs.ui:949
 msgid "Assign actions to clicks and scrolling on the top bar indicator"
 msgstr "Прызначце дзеянні пстрычкам і пракрутцы на індыкатары верхняй панэлі"
 
-#: assets/ui/prefs.ui:935
+#: assets/ui/prefs.ui:952
 msgid "Left click / tap"
 msgstr "Левая пстрычка / Дотык"
 
-#: assets/ui/prefs.ui:941
+#: assets/ui/prefs.ui:958
 msgid "Middle click"
 msgstr "Сярэдні клік"
 
-#: assets/ui/prefs.ui:947
+#: assets/ui/prefs.ui:964
 msgid "Right click"
 msgstr "Правы клік"
 
-#: assets/ui/prefs.ui:953
+#: assets/ui/prefs.ui:970
 msgid "Double click / tap"
 msgstr "Падвойная пстрычка / Дотык"
 
-#: assets/ui/prefs.ui:959
+#: assets/ui/prefs.ui:976
 msgid "Scroll up"
 msgstr "Пракруціць уверх"
 
-#: assets/ui/prefs.ui:965
+#: assets/ui/prefs.ui:982
 msgid "Scroll down"
 msgstr "Пракруціць уніз"
 
-#: assets/ui/prefs.ui:973
+#: assets/ui/prefs.ui:990
 msgid "Others"
 msgstr "Іншае"
 
-#: assets/ui/prefs.ui:977
+#: assets/ui/prefs.ui:994
 msgid "System"
 msgstr "Сістэма"
 
-#: assets/ui/prefs.ui:978
+#: assets/ui/prefs.ui:995
 msgid "Control how MediaShell integrates with GNOME"
 msgstr "Наладзьце інтэграцыю MediaShell з GNOME"
 
-#: assets/ui/prefs.ui:981
+#: assets/ui/prefs.ui:998
 msgid "Media Controls"
 msgstr "Элементы кіравання медыя"
 
-#: assets/ui/prefs.ui:982
+#: assets/ui/prefs.ui:999
 msgid "Customize system media controls"
 msgstr "Наладзьце сістэмныя элементы кіравання медыя"
 
-#: assets/ui/prefs.ui:987
+#: assets/ui/prefs.ui:1004
 msgid "Private API Integration"
 msgstr "Інтэграцыя праз прыватны API"
 
-#: assets/ui/prefs.ui:994
+#: assets/ui/prefs.ui:1011
 msgid ""
 "These options rely on private GNOME Shell APIs. GNOME Shell updates or "
 "distribution customizations may cause them to stop working."
@@ -784,77 +789,77 @@ msgstr ""
 "Shell або змены ў дыстрыбутыве могуць прывесці да таго, што яны перастануць "
 "працаваць."
 
-#: assets/ui/prefs.ui:1010
+#: assets/ui/prefs.ui:1027
 msgid "Hide Media Controls"
 msgstr "Схаваць элементы кіравання медыя"
 
-#: assets/ui/prefs.ui:1011
+#: assets/ui/prefs.ui:1028
 msgid "Hide media control banners from the notification center"
 msgstr "Схаваць банеры кіравання медыя з цэнтра апавяшчэнняў"
 
-#: assets/ui/prefs.ui:1016
+#: assets/ui/prefs.ui:1033
 msgid "Enhance Media Controls"
 msgstr "Палепшыць элементы кіравання медыя"
 
-#: assets/ui/prefs.ui:1017
+#: assets/ui/prefs.ui:1034
 msgid ""
 "Enhance media control banners in the notification center and on the lock "
 "screen"
 msgstr ""
 "Палепшыць банеры кіравання медыя ў цэнтры апавяшчэнняў і на экране блакіроўкі"
 
-#: assets/ui/prefs.ui:1026
+#: assets/ui/prefs.ui:1043
 msgid "Cache"
 msgstr "Кэш"
 
-#: assets/ui/prefs.ui:1027
+#: assets/ui/prefs.ui:1044
 msgid "Store content on disk to load it faster"
 msgstr "Захоўвайце змест на дыску, каб ён загружаўся хутчэй"
 
-#: assets/ui/prefs.ui:1030
+#: assets/ui/prefs.ui:1047
 msgid "Store Album Art"
 msgstr "Захоўваць вокладкі альбомаў"
 
-#: assets/ui/prefs.ui:1039 assets/ui/prefs.ui:1043
+#: assets/ui/prefs.ui:1056 assets/ui/prefs.ui:1060
 msgid "Open Cache Directory"
 msgstr "Адкрыць каталог кэша"
 
-#: assets/ui/prefs.ui:1056
+#: assets/ui/prefs.ui:1073
 msgid "Clear"
 msgstr "Ачысціць"
 
-#: assets/ui/prefs.ui:1071
+#: assets/ui/prefs.ui:1088
 msgid "Extension Settings"
 msgstr "Налады пашырэння"
 
-#: assets/ui/prefs.ui:1088
+#: assets/ui/prefs.ui:1105
 msgid "Reset All Settings"
 msgstr "Скінуць усе налады"
 
-#: assets/ui/prefs.ui:1113 assets/ui/prefs.ui:1194 assets/ui/prefs.ui:1262
+#: assets/ui/prefs.ui:1130 assets/ui/prefs.ui:1211 assets/ui/prefs.ui:1279
 msgid "Manual"
 msgstr "Ручны"
 
-#: assets/ui/prefs.ui:1122 assets/ui/prefs.ui:1203
+#: assets/ui/prefs.ui:1139 assets/ui/prefs.ui:1220
 msgid "Show the playback controls selected below."
 msgstr "Паказваць выбраныя ніжэй элементы кіравання прайграваннем."
 
-#: assets/ui/prefs.ui:1136 assets/ui/prefs.ui:1217 assets/ui/prefs.ui:1263
+#: assets/ui/prefs.ui:1153 assets/ui/prefs.ui:1234 assets/ui/prefs.ui:1280
 msgid "Adaptive"
 msgstr "Адаптыўны"
 
-#: assets/ui/prefs.ui:1145 assets/ui/prefs.ui:1226
+#: assets/ui/prefs.ui:1162 assets/ui/prefs.ui:1243
 msgid ""
 "Show available playback controls, prioritizing the most appropriate ones."
 msgstr ""
 "Паказваць даступныя элементы кіравання прайграваннем, аддаючы перавагу "
 "найбольш прыдатным."
 
-#: assets/ui/prefs.ui:1159 assets/ui/prefs.ui:1240 assets/ui/prefs.ui:1264
+#: assets/ui/prefs.ui:1176 assets/ui/prefs.ui:1257 assets/ui/prefs.ui:1281
 msgid "Full"
 msgstr "Поўны"
 
-#: assets/ui/prefs.ui:1168 assets/ui/prefs.ui:1249
+#: assets/ui/prefs.ui:1185 assets/ui/prefs.ui:1266
 msgid "Show all playback controls available for the current app."
 msgstr ""
 "Паказваць усе элементы кіравання прайграваннем, даступныя для бягучай "

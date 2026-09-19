@@ -24,4 +24,6 @@ export const InputActions = Object.freeze({
   SWITCH_APP: 12,
   SEEK_BACKWARD: 13,
   SEEK_FORWARD: 14,
+  // 15–17 are retired playback-rate actions and must never be reused.
+  SWITCH_AUDIO_OUTPUT: 18,
 });

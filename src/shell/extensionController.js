@@ -18,6 +18,7 @@ import MediaRuntime from "./runtime/mediaRuntime.js";
 import TrackTransitionTracker from "./media/playback/trackTransitionTracker.js";
 import InputActionDispatcher from "./input/actionDispatcher.js";
 import GlobalShortcuts from "./input/globalShortcuts.js";
+import AudioOutputIntegration from "./integrations/audioOutput.js";
 import NativeControlsIntegration from "./integrations/nativeControls.js";
 import { showOsd } from "./integrations/osd.js";
 import ResourceRegistry from "./resources/resourceRegistry.js";
@@ -306,9 +307,13 @@ export default class ExtensionController {
         playbackCommands: this.mediaRuntime.playback,
       });
 
+    if (!this.audioOutputIntegration)
+      this.audioOutputIntegration = new AudioOutputIntegration();
+
     if (!this.inputActionDispatcher)
       this.inputActionDispatcher = new InputActionDispatcher({
         mediaRuntime: this.mediaRuntime,
+        audioOutput: this.audioOutputIntegration,
         onTogglePopup: () => this.indicator?.menu.toggle(),
         onOpenPreferences: () => this.openPreferences(),
       });
@@ -429,6 +434,9 @@ export default class ExtensionController {
 
     this.inputActionDispatcher?.destroy();
     this.inputActionDispatcher = null;
+
+    this.audioOutputIntegration?.destroy();
+    this.audioOutputIntegration = null;
     clearIconCache();
   }
 
