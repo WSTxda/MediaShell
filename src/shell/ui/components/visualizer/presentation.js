@@ -6,7 +6,7 @@
  *
  * Pure animation tuning remains in UI component definitions. This module owns only
  * pixel dimensions and the mapping from a persisted style to its Shell renderer,
- * CSS classes, pivot, and optional shared animation identity.
+ * pivot, layout presentation, and optional shared animation identity.
  */
 
 import { MediaShellStyleClasses } from "../../style.js";
@@ -92,24 +92,18 @@ export const TOP_BAR_VISUALIZER_STYLE_DEFINITIONS = Object.freeze({
     rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
     elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
     pivotY: 1,
-    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_BEATS,
-    barStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_BEATS_BAR,
   }),
   [VisualizerStyles.PULSE]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.PULSE,
     rendererKind: VisualizerRendererKinds.CONTINUOUS_BARS,
     elementCount: TOP_BAR_VISUALIZER_BAND_COUNT,
     pivotY: 0.5,
-    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_PULSE,
-    barStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_PULSE_BAR,
   }),
   [VisualizerStyles.CLASSIC]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.BEATS,
     rendererKind: VisualizerRendererKinds.SEGMENTED_BARS,
     elementCount: TOP_BAR_VISUALIZER_CLASSIC_COLUMN_COUNT,
-    containerStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC,
     columnStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC_COLUMN,
-    segmentStyleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER_CLASSIC_BLOCK,
   }),
   [VisualizerStyles.SPECTRUM]: createStyleDefinition({
     animationKind: VisualizerAnimationKinds.SPECTRUM,

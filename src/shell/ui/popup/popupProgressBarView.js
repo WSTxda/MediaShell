@@ -36,9 +36,7 @@ class PopupProgressBarView extends St.BoxLayout {
     this.lastRenderedElapsedSecond = -1;
 
     this.slider = new Slider.Slider(0);
-    this.timeLabelsBox = new St.BoxLayout({
-      styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR_TIME,
-    });
+    this.timeLabelsBox = new St.BoxLayout();
     this.elapsedLabel = new St.Label({
       styleClass: MediaShellStyleClasses.POPUP_PROGRESS_BAR_TIME_LABEL,
       text: "00:00",

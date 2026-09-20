@@ -40,7 +40,6 @@ const logger = createLogger("MediaShellIndicator");
 class MediaShellIndicator extends PanelMenu.Button {
   constructor(player, { mediaRuntime, settings, inputActions }) {
     super(0.5, "MediaShell", false);
-    this.add_style_class_name(MediaShellStyleClasses.INDICATOR);
     this.player = player;
     this.inputActions = inputActions;
     this.mediaRuntime = mediaRuntime;

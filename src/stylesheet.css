@@ -35,30 +35,15 @@
   background-color: rgba(128, 128, 128, 0.4);
 }
 
-.mediashell-artwork-image {
-  margin: 0;
-  padding: 0;
-}
-
 /* Popup and top-bar fallbacks use the native .button surface. */
 .mediashell-artwork-fallback {
   padding: 0;
-}
-
-/* Indicator ---------------------------------------------------------- */
-.mediashell-indicator {
-  padding-left: 6px;
-  padding-right: 6px;
 }
 
 /* Top Bar — Root / layout --------------------------------------------
  * Top bar actions live on the non-playback action boxes. Playback controls are
  * separate interactive actors so their clicks never trigger button gestures.
  */
-.mediashell-top-bar-box {
-  spacing: 0;
-}
-
 .mediashell-top-bar-action-box > * {
   padding-left: 6px;
   padding-right: 6px;
@@ -81,23 +66,6 @@
 
 /* Top Bar — Visualizer ----------------------------------------------- */
 .mediashell-top-bar-visualizer {
-  spacing: 0;
-}
-
-.mediashell-top-bar-visualizer-beats,
-.mediashell-top-bar-visualizer-pulse {
-  spacing: 2px;
-}
-
-.mediashell-top-bar-visualizer-beats-bar {
-  border-radius: 1px;
-}
-
-.mediashell-top-bar-visualizer-pulse-bar {
-  border-radius: 3px;
-}
-
-.mediashell-top-bar-visualizer-classic {
   spacing: 2px;
 }
 
@@ -105,16 +73,7 @@
   spacing: 1px;
 }
 
-.mediashell-top-bar-visualizer-classic-block {
-  border-radius: 1px;
-}
-
 /* Top Bar — Playback controls --------------------------------------- */
-.mediashell-top-bar-playback-controls {
-  padding-left: 0;
-  padding-right: 0;
-}
-
 .mediashell-top-bar-control-button {
   padding-left: 6px;
   padding-right: 6px;
@@ -144,10 +103,6 @@
   padding-right: 0;
 }
 
-.mediashell-top-bar-control-label {
-  margin: 0;
-}
-
 /* Popup structure ------------------------------------------------------
  * `.mediashell-popup-container` is the Shell menu box; it stays flush so only the
  * component root below controls spacing.
@@ -165,11 +120,6 @@
   border-width: 0;
   padding: 16px 16px 18px;
   spacing: 12px;
-}
-
-.mediashell-popup-box > * {
-  margin-top: 0;
-  margin-bottom: 0;
 }
 
 /* Popup — Player selector button --------------------------------------
@@ -222,19 +172,10 @@
  * black/white: it gets slightly lighter on dark themes and slightly darker on
  * light themes while preserving custom user colors behind it.
  */
-.mediashell-popup-player-selector-revealer {
-  padding: 0;
-  min-width: 0;
-}
-
 .mediashell-popup-player-selector-card {
   background-color: rgba(128, 128, 128, 0.12);
   border-radius: 20px;
-  border-width: 0;
-  box-shadow: none;
-  margin: 0;
   padding: 12px;
-  min-width: 0;
 }
 
 .mediashell-popup-player-selector-list {
@@ -312,11 +253,6 @@
  */
 .mediashell-popup-progress-bar {
   spacing: 8px;
-}
-
-.mediashell-popup-progress-bar-time {
-  padding-left: 0;
-  padding-right: 0;
 }
 
 .mediashell-popup-progress-bar-time-label {

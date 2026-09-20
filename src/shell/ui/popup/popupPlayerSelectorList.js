@@ -104,7 +104,6 @@ export default class PopupPlayerSelectorList {
 
     this.revealer = new St.BoxLayout({
       orientation: Clutter.Orientation.VERTICAL,
-      styleClass: MediaShellStyleClasses.POPUP_PLAYER_SELECTOR_REVEALER,
       clipToAllocation: true,
     });
     this.card = new St.BoxLayout({

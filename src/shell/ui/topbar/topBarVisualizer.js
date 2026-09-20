@@ -66,7 +66,7 @@ import {
   VisualizerSpectrumLayers,
   VisualizerStyles,
 } from "../components/visualizer/types.js";
-import { MediaShellStyleClasses, styleClassNames } from "../style.js";
+import { MediaShellStyleClasses } from "../style.js";
 
 const BEATS_STYLE_DEFINITION =
   TOP_BAR_VISUALIZER_STYLE_DEFINITIONS[VisualizerStyles.BEATS];
@@ -125,10 +125,7 @@ export default class TopBarVisualizer {
     if (this.actor) return;
 
     this.actor = new St.BoxLayout({
-      styleClass: styleClassNames(
-        MediaShellStyleClasses.TOP_BAR_VISUALIZER,
-        this.styleDefinition.containerStyleClass,
-      ),
+      styleClass: MediaShellStyleClasses.TOP_BAR_VISUALIZER,
       orientation: Clutter.Orientation.HORIZONTAL,
       height: VISUALIZER_HEIGHT,
       opacity: INACTIVE_OPACITY,
@@ -222,8 +219,7 @@ export default class TopBarVisualizer {
   activateStyleRenderer() {
     if (!this.actor) return;
 
-    const { rendererKind, containerStyleClass, barStyleClass, pivotY } =
-      this.styleDefinition;
+    const { rendererKind, pivotY } = this.styleDefinition;
     const continuousBarsVisible =
       rendererKind === VisualizerRendererKinds.CONTINUOUS_BARS;
     const classicVisible =
@@ -231,15 +227,8 @@ export default class TopBarVisualizer {
     const spectrumVisible = rendererKind === VisualizerRendererKinds.SPECTRUM;
     const vinylVisible = rendererKind === VisualizerRendererKinds.VINYL;
 
-    this.actor.set_style_class_name(
-      styleClassNames(
-        MediaShellStyleClasses.TOP_BAR_VISUALIZER,
-        containerStyleClass,
-      ),
-    );
     configureContinuousBars(this.continuousBars, {
       visible: continuousBarsVisible,
-      barStyleClass,
       pivotY,
     });
     setClassicColumnsVisible(this.classicColumns, classicVisible);

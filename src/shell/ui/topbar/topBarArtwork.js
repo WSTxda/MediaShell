@@ -123,7 +123,6 @@ export default class TopBarArtwork {
 
     this.artworkImage = createIcon(
       {
-        styleClass: MediaShellStyleClasses.ARTWORK_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,

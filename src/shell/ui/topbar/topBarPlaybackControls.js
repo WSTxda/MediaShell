@@ -72,10 +72,7 @@ export default class TopBarPlaybackControls {
   ensureActor() {
     if (this.actor) return;
 
-    this.actor = new St.BoxLayout({
-      name: MediaShellStyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
-      styleClass: MediaShellStyleClasses.TOP_BAR_PLAYBACK_CONTROLS,
-    });
+    this.actor = new St.BoxLayout();
   }
 
   reconcilePlaybackControl(controlId, isVisible) {
@@ -105,7 +102,6 @@ export default class TopBarPlaybackControls {
         NativeStyleClasses.SYSTEM_STATUS_ICON,
         MediaShellStyleClasses.TOP_BAR_CONTROL_ICON,
       ),
-      labelStyleClass: MediaShellStyleClasses.TOP_BAR_CONTROL_LABEL,
     });
     buttonState = { button, content, signalId: 0, action: null };
     buttonState.signalId = button.connect("clicked", () => {

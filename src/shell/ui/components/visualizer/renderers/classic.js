@@ -28,7 +28,6 @@ function createClassicColumn(parent, definition) {
     { length: VISUALIZER_CLASSIC_SEGMENT_COUNT },
     () => {
       const block = new St.Widget({
-        styleClass: definition.segmentStyleClass,
         width: VISUALIZER_CLASSIC_COLUMN_WIDTH,
         height: VISUALIZER_CLASSIC_SEGMENT_HEIGHT,
         reactive: false,

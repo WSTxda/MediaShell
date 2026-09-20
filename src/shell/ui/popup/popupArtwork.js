@@ -120,7 +120,6 @@ export default class PopupArtwork {
 
     this.artworkImage = createIcon(
       {
-        styleClass: MediaShellStyleClasses.ARTWORK_IMAGE,
         xExpand: false,
         yExpand: false,
         xAlign: Clutter.ActorAlign.CENTER,

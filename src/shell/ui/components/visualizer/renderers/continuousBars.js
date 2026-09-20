@@ -19,7 +19,6 @@ import {
 export function createContinuousBars(parent, definition) {
   return Array.from({ length: definition.elementCount }, () => {
     const bar = new St.Widget({
-      styleClass: definition.barStyleClass,
       width: VISUALIZER_BAR_WIDTH,
       height: VISUALIZER_BAR_HEIGHT,
       yAlign: Clutter.ActorAlign.CENTER,
@@ -30,14 +29,10 @@ export function createContinuousBars(parent, definition) {
   });
 }
 
-export function configureContinuousBars(
-  bars,
-  { visible, barStyleClass = null, pivotY = 0.5 },
-) {
+export function configureContinuousBars(bars, { visible, pivotY = 0.5 }) {
   for (const bar of bars) {
     bar.visible = visible;
     if (!visible) continue;
-    bar.set_style_class_name(barStyleClass);
     bar.set_pivot_point(0.5, pivotY);
   }
 }

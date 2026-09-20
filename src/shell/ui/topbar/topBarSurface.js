@@ -238,9 +238,7 @@ export default class TopBarSurface {
   ensureLayout() {
     if (this.topBarBox) return;
 
-    this.topBarBox = new St.BoxLayout({
-      styleClass: MediaShellStyleClasses.TOP_BAR_BOX,
-    });
+    this.topBarBox = new St.BoxLayout();
     this.topBarActionBoxBefore = this.createActionBox();
     this.topBarActionBoxAfter = this.createActionBox();
     this.topBarBox.add_child(this.topBarActionBoxBefore);
@@ -267,7 +265,6 @@ export default class TopBarSurface {
       this.settings.trackInformationWidth,
       this.settings.trackInformationFixedWidth,
     );
-    this.topBarBox.set_style(null);
   }
 
   createActionBox() {

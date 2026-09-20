@@ -26,31 +26,17 @@ export const MediaShellStyleClasses = Object.freeze({
   APP_ICON_SYMBOLIC: "mediashell-app-icon-symbolic",
   SCROLLING_LABEL: "mediashell-scrolling-label",
   ARTWORK_FRAME: "mediashell-artwork-frame",
-  ARTWORK_IMAGE: "mediashell-artwork-image",
   ARTWORK_FALLBACK: "mediashell-artwork-fallback",
-
-  // Indicator
-  INDICATOR: "mediashell-indicator",
 
   // Top bar
   TOP_BAR_ACTION_BOX: "mediashell-top-bar-action-box",
   TOP_BAR_APP_ICON: "mediashell-top-bar-app-icon",
   TOP_BAR_ARTWORK: "mediashell-top-bar-artwork",
-  TOP_BAR_BOX: "mediashell-top-bar-box",
   TOP_BAR_CONTROL_BUTTON: "mediashell-top-bar-control-button",
   TOP_BAR_CONTROL_ICON: "mediashell-top-bar-control-icon",
-  TOP_BAR_CONTROL_LABEL: "mediashell-top-bar-control-label",
-  TOP_BAR_PLAYBACK_CONTROLS: "mediashell-top-bar-playback-controls",
   TOP_BAR_VISUALIZER: "mediashell-top-bar-visualizer",
-  TOP_BAR_VISUALIZER_BEATS: "mediashell-top-bar-visualizer-beats",
-  TOP_BAR_VISUALIZER_BEATS_BAR: "mediashell-top-bar-visualizer-beats-bar",
-  TOP_BAR_VISUALIZER_PULSE: "mediashell-top-bar-visualizer-pulse",
-  TOP_BAR_VISUALIZER_PULSE_BAR: "mediashell-top-bar-visualizer-pulse-bar",
-  TOP_BAR_VISUALIZER_CLASSIC: "mediashell-top-bar-visualizer-classic",
   TOP_BAR_VISUALIZER_CLASSIC_COLUMN:
     "mediashell-top-bar-visualizer-classic-column",
-  TOP_BAR_VISUALIZER_CLASSIC_BLOCK:
-    "mediashell-top-bar-visualizer-classic-block",
 
   // Popup
   POPUP_BOX: "mediashell-popup-box",
@@ -67,7 +53,6 @@ export const MediaShellStyleClasses = Object.freeze({
     "mediashell-popup-player-selector-button-label",
   POPUP_PLAYER_SELECTOR_CARD: "mediashell-popup-player-selector-card",
   POPUP_PLAYER_SELECTOR_LIST: "mediashell-popup-player-selector-list",
-  POPUP_PLAYER_SELECTOR_REVEALER: "mediashell-popup-player-selector-revealer",
   POPUP_PLAYER_SELECTOR_ROW: "mediashell-popup-player-selector-row",
   POPUP_PLAYER_SELECTOR_ROW_APP_ICON:
     "mediashell-popup-player-selector-row-app-icon",
@@ -83,7 +68,6 @@ export const MediaShellStyleClasses = Object.freeze({
   POPUP_TRACK_INFORMATION_ALBUM: "mediashell-popup-track-information-album",
   POPUP_TRACK_INFORMATION_TITLE: "mediashell-popup-track-information-title",
   POPUP_PROGRESS_BAR: "mediashell-popup-progress-bar",
-  POPUP_PROGRESS_BAR_TIME: "mediashell-popup-progress-bar-time",
   POPUP_PROGRESS_BAR_TIME_LABEL: "mediashell-popup-progress-bar-time-label",
   POPUP_VOLUME_CONTROL: "mediashell-popup-volume-control",
   POPUP_VOLUME_ICON_BUTTON: "mediashell-popup-volume-icon-button",
