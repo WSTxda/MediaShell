@@ -30,6 +30,7 @@ import {
   POPUP_PLAYER_SELECTOR_ROW_ANIMATION_MS,
 } from "./presentation.js";
 import { createIcon } from "../icons.js";
+import { readAppStringSafely } from "../../media/identity/appInfo.js";
 
 function actorContainsDescendant(actor, candidateDescendant) {
   return (
@@ -64,7 +65,7 @@ function resolvePlayerRows(players, desktopAppResolver) {
       desktopApp,
       resolvedDesktopAppKey:
         desktopApp && desktopAppResolver.hasResolvedDesktopAppIcon(desktopApp)
-          ? player.busName
+          ? readAppStringSafely(() => desktopApp.get_id())
           : null,
     };
   });

@@ -16,6 +16,7 @@ import {
 } from "../style.js";
 import { placeActorAtIndex } from "../components/actorOrder.js";
 import { createIcon, setGIcon } from "../icons.js";
+import { readAppStringSafely } from "../../media/identity/appInfo.js";
 
 /**
  * Displays the desktop-app icon resolved for the active MPRIS player.
@@ -41,7 +42,13 @@ export default class TopBarAppIcon {
     const identity = this.player.identity;
     const desktopEntry = this.player.desktopEntry;
     const useColoredIcon = this.settings.appIconUseColor;
-    const iconKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}`;
+    const desktopApp = this.desktopAppResolver.resolveDesktopApp(
+      identity,
+      desktopEntry,
+      this.player.busName,
+    );
+    const desktopAppId = readAppStringSafely(() => desktopApp?.get_id());
+    const iconKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${desktopAppId}`;
 
     // St can retain the previously resolved symbolic/regular texture when
     // only the CSS icon style changes. Replacing this tiny actor on a mode
@@ -51,11 +58,6 @@ export default class TopBarAppIcon {
       this.replaceIconActor(index, useColoredIcon);
 
     if (iconKey !== this.iconKey) {
-      const desktopApp = this.desktopAppResolver.resolveDesktopApp(
-        identity,
-        desktopEntry,
-        this.player.busName,
-      );
       setGIcon(
         this.actor,
         this.desktopAppResolver.resolveDesktopAppIcon(desktopApp),

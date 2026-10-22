@@ -222,25 +222,17 @@ export default class DesktopAppResolver {
       );
       runningApps ??= appSystem.get_running();
 
+      // Shell orders running apps by current visibility and recent interaction.
+      // A heuristic match must not persist across browser media-source changes.
       const runningApp = findRunningShellApp(runningApps, normalizedCandidates);
-      if (runningApp)
-        return storeBoundedCacheValue(
-          this.#shellAppCache,
-          appCacheKey,
-          runningApp,
-        );
+      if (runningApp) return runningApp;
 
       const lookupHints = buildAppLookupHints(identity, desktopEntry, busName);
       const heuristicApp = findShellAppByHeuristicLookup(
         appSystem,
         lookupHints,
       );
-      if (heuristicApp)
-        return storeBoundedCacheValue(
-          this.#shellAppCache,
-          appCacheKey,
-          heuristicApp,
-        );
+      if (heuristicApp) return heuristicApp;
 
       const runningAppsById = new Map(
         runningApps
@@ -256,12 +248,7 @@ export default class DesktopAppResolver {
         normalizedCandidates,
         runningAppsById,
       );
-      if (searchedApp)
-        return storeBoundedCacheValue(
-          this.#shellAppCache,
-          appCacheKey,
-          searchedApp,
-        );
+      if (searchedApp) return searchedApp;
     } catch (error) {
       logger.warnOnce(
         "shell-app-enumeration",
@@ -325,11 +312,7 @@ export default class DesktopAppResolver {
             desktopApp,
           );
         if (appMatchesIdentityCandidates(desktopApp, normalizedCandidates))
-          return storeBoundedCacheValue(
-            this.#appInfoCache,
-            appCacheKey,
-            desktopApp,
-          );
+          return desktopApp;
       }
     } catch (error) {
       logger.warnOnce(

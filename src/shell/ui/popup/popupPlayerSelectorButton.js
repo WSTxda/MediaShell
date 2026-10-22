@@ -20,6 +20,7 @@ import {
   styleClassNames,
 } from "../style.js";
 import { createIcon, setGIcon } from "../icons.js";
+import { readAppStringSafely } from "../../media/identity/appInfo.js";
 
 /**
  * Renders the popup player selector button for the active player.
@@ -72,16 +73,17 @@ export default class PopupPlayerSelectorButton {
 
     const identity = this.player.identity;
     const desktopEntry = this.player.desktopEntry;
+    const desktopApp = this.desktopAppResolver.resolveDesktopApp(
+      identity,
+      desktopEntry,
+      this.player.busName,
+    );
+    const desktopAppId = readAppStringSafely(() => desktopApp?.get_id());
     const appIconStyleClass = this.settings.playerSelectorAppIconUseColor
       ? MediaShellStyleClasses.APP_ICON_COLORED
       : MediaShellStyleClasses.APP_ICON_SYMBOLIC;
-    const renderKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${appIconStyleClass}`;
+    const renderKey = `${this.player.busName}\u0001${identity}\u0001${desktopEntry}\u0001${desktopAppId}\u0001${appIconStyleClass}`;
     if (renderKey !== this.renderKey) {
-      const desktopApp = this.desktopAppResolver.resolveDesktopApp(
-        identity,
-        desktopEntry,
-        this.player.busName,
-      );
       this.label.text = this.desktopAppResolver.resolveDesktopAppName(
         desktopApp,
         identity || _("Unknown app"),

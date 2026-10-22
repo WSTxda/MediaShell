@@ -107,6 +107,8 @@ class MediaShellIndicator extends PanelMenu.Button {
   connectPlayerPropertyListeners() {
     this.connectPlayerPropertyListener(MprisPlayerProperties.METADATA, () => {
       this.requestMetadataSurfaceUpdate();
+      this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
+      this.scheduleDesktopAppResolutionRetry();
     });
     const updatePlayerIdentity = () => {
       this.requestSurfaceUpdate(PlayerSurfaceUpdates.IDENTITY);
