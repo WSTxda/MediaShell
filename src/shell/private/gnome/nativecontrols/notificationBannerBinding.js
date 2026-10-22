@@ -105,13 +105,19 @@ export default class EnhanceNotificationBannerBinding {
   constructor(
     bannerContext,
     player,
-    { artworkService, playbackController, onDestroyed = null },
+    {
+      artworkService,
+      playbackController,
+      useForegroundSeekColor = false,
+      onDestroyed = null,
+    },
   ) {
     this.context = bannerContext;
     this.banner = bannerContext.banner;
     this.player = player;
     this.artworkService = artworkService;
     this.playbackController = playbackController;
+    this.useForegroundSeekColor = useForegroundSeekColor;
     this.onDestroyed = onDestroyed;
 
     this.updateSourceId = null;
@@ -535,7 +541,9 @@ export default class EnhanceNotificationBannerBinding {
   syncSeekTheme() {
     if (!this.slider || !this.context) return;
 
-    const activeColor = colorToRgba(this.context.getForegroundColor());
+    const activeColor = this.useForegroundSeekColor
+      ? colorToRgba(this.context.getForegroundColor())
+      : null;
     this.slider.style = activeColor
       ? `color: ${activeColor}; -barlevel-active-background-color: ${activeColor};`
       : "";

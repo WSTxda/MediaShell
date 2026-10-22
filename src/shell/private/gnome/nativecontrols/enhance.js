@@ -27,6 +27,7 @@ const NOTIFICATION_CENTER_CONFIG = Object.freeze({
   resolveContext: resolveNotificationCenterContext,
   grouping: true,
   watchLockScreen: false,
+  useForegroundSeekColor: false,
   warnUnavailable: true,
   unavailableWarningKey: "notification-center-context-unavailable",
   unavailableWarningMessage:
@@ -40,6 +41,7 @@ const LOCK_SCREEN_CONFIG = Object.freeze({
   resolveContext: resolveLockScreenContext,
   grouping: false,
   watchLockScreen: true,
+  useForegroundSeekColor: true,
   warnUnavailable: false,
   unavailableWarningKey: null,
   unavailableWarningMessage: null,
@@ -278,6 +280,7 @@ export default class EnhanceNativeControls {
       {
         artworkService: this.artworkService,
         playbackController: this.playbackController,
+        useForegroundSeekColor: this.config.useForegroundSeekColor,
         onDestroyed: (destroyedBinding) => {
           if (this.bindings.get(banner) === destroyedBinding) {
             this.bindings.delete(banner);
